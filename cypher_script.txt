@@ -1,11 +1,6 @@
 LOAD CSV WITH HEADERS FROM 'file:///99names.csv' AS row
 MERGE (arabic_root:Root {root: row.`الجذر`})
 
-FOREACH(ignoreMe IN CASE WHEN row.`الجذر` IS NOT NULL AND row.`الجذر` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_word:Word {script: 'arabic', text: row.`الجذر`})
-    MERGE (arabic_root)-[:HAS_WORD]->(arabic_word)
-)
-
 FOREACH(ignoreMe IN CASE WHEN row.transliterated_root IS NOT NULL AND row.transliterated_root <> '' THEN [1] ELSE [] END |
     MERGE (transliterated_word:Word {script: 'transliteration', text: row.transliterated_root})
     MERGE (transliterated_root)-[:HAS_WORD]->(transliterated_word)
