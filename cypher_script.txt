@@ -1,15 +1,20 @@
 LOAD CSV WITH HEADERS FROM 'file:///99names.csv' AS row
-MERGE (arabic_root:Root {root: row.`الجذر`})
 
-FOREACH(ignoreMe IN CASE WHEN row.`الجذر` IS NOT NULL AND row.`الجذر` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_word:Word {script: 'arabic', text: row.`الجذر`})
-    MERGE (arabic_root)-[:HAS_WORD]->(arabic_word)
-)
+// Create single radical nodes
+MERGE (radical1:Radical {letter: row.r1})
+MERGE (radical2:Radical {letter: row.r2})
+MERGE (radical3:Radical {letter: row.r3})
 
-FOREACH(ignoreMe IN CASE WHEN row.transliterated_root IS NOT NULL AND row.transliterated_root <> '' THEN [1] ELSE [] END |
-    MERGE (transliterated_word:Word {script: 'transliteration', text: row.transliterated_root})
-    MERGE (transliterated_root)-[:HAS_WORD]->(transliterated_word)
-)
+// Create etyma nodes and establish relationships with single radicals
+MERGE (etyma:Etyma {letter1: row.r1, letter2: row.r2})
+MERGE (etyma)-[:STARTS_WITH]->(radical1)
+MERGE (etyma)-[:INCLUDES]->(radical2)
+
+// Create root nodes and establish relationships with etyma
+MERGE (root:Root {root: row.`الجذر`})
+MERGE (root)-[:BELONGS_TO]->(etyma)
+
+// Create Arabic words and relationships
 
 FOREACH(ignoreMe IN CASE WHEN row.`المصدر` IS NOT NULL AND row.`المصدر` <> '' THEN [1] ELSE [] END |
     MERGE (arabic_infinitive:Word {script: 'arabic', text: row.`المصدر`})
