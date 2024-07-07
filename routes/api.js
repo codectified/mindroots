@@ -1,14 +1,22 @@
 const express = require('express');
 const router = express.Router();
 
-// Helper function to format the data
-const formatData = (records) => {
+// Helper function to format simple lists of data
+const formatSimpleData = (records) => {
   return records.map(record => {
     return {
       arabic: record.get('arabic'),
       english: record.get('english')
     };
   });
+};
+
+// Helper function to format complex data structures
+const formatComplexData = (records) => {
+  if (records.length === 0) return null;
+  const root = records[0].get('root').properties;
+  const words = records[0].get('words').map(word => word.properties);
+  return { root, words };
 };
 
 // Endpoint to list all root nodes
@@ -20,10 +28,7 @@ router.get('/list/roots', async (req, res) => {
       RETURN root.arabic AS arabic, root.english AS english
     `);
 
-    const roots = result.records.map(record => ({
-      arabic: record.get('arabic'),
-      english: record.get('english')
-    }));
+    const roots = formatSimpleData(result.records);
     console.log('Fetched all roots:', roots); // Add logging
     res.json(roots);
   } catch (error) {
@@ -37,15 +42,16 @@ router.get('/list/roots', async (req, res) => {
 // Endpoint to list words from a specific column
 router.get('/list/:column', async (req, res) => {
   const { column } = req.params;
+  const { script } = req.query;
   const session = req.driver.session();
   try {
     const result = await session.run(`
       MATCH (type:WordType {english: $column})-[:TYPE_HAS_WORD]->(word:Word)
-      RETURN word.arabic AS arabic, word.english AS english
-    `, { column });
+      RETURN word.${script} AS text
+    `, { column, script });
 
-    const words = formatData(result.records);
-    console.log(`Fetched words for column ${column}:`, words); // Add logging
+    const words = result.records.map(record => record.get('text'));
+    console.log(`Fetched words for column ${column} and script ${script}:`, words); // Add logging
     res.json(words);
   } catch (error) {
     console.error('Error fetching data:', error);
@@ -69,7 +75,7 @@ router.get('/root/:word', async (req, res) => {
       RETURN root, collect(relatedWord) AS words
     `, { word, script });
 
-    const data = formatData(result.records);
+    const data = formatComplexData(result.records);
     console.log(`Fetched data for word ${word} with script ${script}:`, data); // Add logging
     res.json(data);
   } catch (error) {
@@ -80,26 +86,25 @@ router.get('/root/:word', async (req, res) => {
   }
 });
 
-// Endpoint to switch scripts
-router.get('/switch-script', async (req, res) => {
-  const { root, script } = req.query; // Expecting `root` and `script` as query parameters
+// New endpoint to fetch data for a specific root based on its property
+router.get('/root-data/:root', async (req, res) => {
+  const { root } = req.params;
+  const { script } = req.query;
   const session = req.driver.session();
   try {
     const result = await session.run(`
-      MATCH (root:Root {root: $root})-[:HAS_WORD|HAS_INFINITIVE|HAS_ACTIVE_PARTICIPLE|HAS_PASSIVE_PARTICIPLE|HAS_NOUN_OF_PLACE|HAS_SINGULAR|HAS_NOUN_OF_STATE|HAS_NOUN_OF_INSTRUMENTATION|HAS_NOUN_OF_ESSENCE|HAS_NOUN_OF_HYPERBOLE]->(word:Word)
-      WHERE word.${script} IS NOT NULL
+      MATCH (root:Root {${script}: $root})
+      WITH root
+      MATCH (root)-[r]->(word:Word)
       RETURN root, collect(word) AS words
     `, { root, script });
 
-    const data = result.records.map(record => ({
-      root: record.get('root').properties,
-      words: record.get('words').map(word => word.properties)
-    }));
-
+    const data = formatComplexData(result.records);
+    console.log(`Fetched data for root ${root} with script ${script}:`, data); // Add logging
     res.json(data);
   } catch (error) {
-    console.error('Error switching script:', error);
-    res.status(500).send('Error switching script');
+    console.error('Error fetching data:', error);
+    res.status(500).send('Error fetching data');
   } finally {
     await session.close();
   }

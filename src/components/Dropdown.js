@@ -14,13 +14,14 @@ const Dropdown = ({ onSelect, script }) => {
         } else {
           response = await fetchWords(column, script);
         }
+        console.log('Fetched words:', response.data);
         setWords(response.data);
       } catch (error) {
         console.error('Error fetching words:', error);
       }
     };
     fetchData();
-  }, [column, script]); // Add script as a dependency here
+  }, [column, script]);
 
   return (
     <div>
@@ -33,7 +34,7 @@ const Dropdown = ({ onSelect, script }) => {
       <ul>
         {words.map((word, index) => (
           <li key={index} onClick={() => onSelect(word)}>
-            {script === 'english' ? word.english : word.arabic}
+            {typeof word === 'object' ? (script === 'english' ? word.english : word.arabic) : word}
           </li>
         ))}
       </ul>
