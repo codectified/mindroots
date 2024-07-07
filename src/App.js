@@ -1,30 +1,34 @@
-const express = require('express');
-const neo4j = require('neo4j-driver');
-const cors = require('cors');
-const apiRoutes = require('./routes/api'); // Import the API routes
+import React, { useState } from 'react';
+import Dropdown from './components/Dropdown';
+import WordList from './components/WordList';
+import Visualization from './components/Visualization';
+import { fetchRootData } from './services/apiService';
 
-const app = express();
-const port = 3000;
+const App = () => {
+  const [selectedWord, setSelectedWord] = useState(null);
+  const [script, setScript] = useState('english');
 
-app.use(cors());
-app.use(express.json()); // To parse JSON bodies
+  const handleSelectWord = (word) => {
+    setSelectedWord(word);
+  };
 
-// Neo4j driver setup
-const driver = neo4j.driver(
-  'bolt://localhost', 
-  neo4j.auth.basic('neo4j', 'raymond-guide-monarch-change-reward-8670') // 
-);
+  const handleSwitchScript = () => {
+    setScript(script === 'english' ? 'arabic' : 'english');
+  };
 
-// Make the driver available to the routes
-app.use((req, res, next) => {
-  req.driver = driver;
-  next();
-});
+  return (
+    <div>
+      <header>
+        <h1>Mind Roots</h1>
+        <button onClick={handleSwitchScript}>
+          Switch to {script === 'english' ? 'Arabic' : 'English'}
+        </button>
+      </header>
+      <Dropdown onSelect={handleSelectWord} />
+      <WordList selectedWord={selectedWord} script={script} />
+      <Visualization rootData={selectedWord ? fetchRootData(selectedWord, script) : null} />
+    </div>
+  );
+};
 
-// Use the API routes
-app.use('/api', apiRoutes);
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
-});
+export default App;
