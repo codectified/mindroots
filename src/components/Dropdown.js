@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWords, fetchRoots } from '../services/apiService';
 
-const Dropdown = ({ onSelect }) => {
+const Dropdown = ({ onSelect, script }) => {
   const [column, setColumn] = useState('roots'); // Default column
-  const [script, setScript] = useState('english'); // Default script
   const [words, setWords] = useState([]);
 
   useEffect(() => {
@@ -21,7 +20,7 @@ const Dropdown = ({ onSelect }) => {
       }
     };
     fetchData();
-  }, [column, script]);
+  }, [column, script]); // Add script as a dependency here
 
   return (
     <div>
