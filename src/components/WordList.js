@@ -11,9 +11,9 @@ const WordList = ({ selectedWord, script }) => {
           const isRoot = selectedWord.hasOwnProperty('arabic') && selectedWord.hasOwnProperty('english');
           const response = isRoot
             ? await fetchRootDataByRoot(selectedWord[script], script)
-            : await fetchRootData(selectedWord[script], script);
+            : await fetchRootData(selectedWord, script); 
           console.log('Fetched root data:', response.data);
-          setRootData(response.data);
+          setRootData(response.data[0]); // Make sure we access the first item of the array
         } catch (error) {
           console.error('Error fetching root data:', error);
           setRootData(null);

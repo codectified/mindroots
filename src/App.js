@@ -13,13 +13,11 @@ const App = () => {
   const handleSelectWord = async (word) => {
     setSelectedWord(word);
     try {
-      console.log('Selected word:', word); // Debugging line
       const isRoot = word.hasOwnProperty('arabic') && word.hasOwnProperty('english');
       const response = isRoot
         ? await fetchRootDataByRoot(word[script], script)
-        : await fetchRootData(word[script], script);
-      setRootData(response.data);
-      console.log('Fetched root data:', response.data); // Debugging line
+        : await fetchRootData(word, script);
+      setRootData(response.data[0]); // Make sure we access the first item of the array
     } catch (error) {
       console.error('Error fetching root data:', error);
     }

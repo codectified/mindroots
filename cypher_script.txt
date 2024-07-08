@@ -1,103 +1,93 @@
 // Load the CSV file
 LOAD CSV WITH HEADERS FROM 'file:///99names.csv' AS row
 
-// Create master nodes
-MERGE (rootsMaster:Master {name: "Roots"})
-MERGE (typesMaster:Master {name: "Types"})
+// Create master nodes for roots and word types
+MERGE (roots:Concept {name: "Roots"})
+MERGE (infinitives:Concept {name: "Infinitives"})
+MERGE (activeParticiples:Concept {name: "Active Participles"})
+MERGE (passiveParticiples:Concept {name: "Passive Participles"})
+MERGE (nounsOfPlace:Concept {name: "Nouns of Place"})
+MERGE (singulars:Concept {name: "Singulars"})
+MERGE (nounsOfState:Concept {name: "Nouns of State"})
+MERGE (nounsOfInstrumentation:Concept {name: "Nouns of Instrumentation"})
+MERGE (nounsOfEssence:Concept {name: "Nouns of Essence"})
+MERGE (nounsOfHyperbole:Concept {name: "Nouns of Hyperbole"})
+MERGE (theMostExcellentNames:Concept {name: "The Most Excellent Names"})
 
-// Create root nodes with translations and connect to the master node
-MERGE (root:Root {arabic: row.`الجذر`, english: row.transliterated_root})
-MERGE (rootsMaster)-[:HAS_ROOT]->(root)
+// Create root nodes and link them to the roots concept node, only if root is not null or 'NA'
+FOREACH(ignoreMe IN CASE WHEN row.`الجذور` IS NOT NULL AND row.`الجذور` <> 'NA' THEN [1] ELSE [] END |
+    MERGE (root:Root {arabic: row.`الجذور`, english: row.transliterated_root})
+    MERGE (roots)-[:HAS_ROOT]->(root)
 
-// Create word type nodes with translations and connect to the master node
-MERGE (infinitive:WordType {arabic: "المصدر", english: "infinitive"})
-MERGE (typesMaster)-[:HAS_TYPE]->(infinitive)
+    // Create word nodes and link them to the appropriate concept nodes and the root node
+    // Infinitive words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`المصدر` IS NOT NULL AND row.`المصدر` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (infinitive:Word {arabic: row.`المصدر`, english: row.infinitive})
+        MERGE (infinitives)-[:HAS_WORD]->(infinitive)
+        MERGE (root)-[:HAS_INFINTIVE]->(infinitive)
+    )
 
-MERGE (active_participle:WordType {arabic: "اسم الفاعل", english: "active participle"})
-MERGE (typesMaster)-[:HAS_TYPE]->(active_participle)
+    // Active participle words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_الفاعل` IS NOT NULL AND row.`اسم_الفاعل` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (activeParticiple:Word {arabic: row.`اسم_الفاعل`, english: row.active_participle})
+        MERGE (activeParticiples)-[:HAS_WORD]->(activeParticiple)
+        MERGE (root)-[:HAS_ACTIVE_PARTICIPLE]->(activeParticiple)
+    )
 
-MERGE (passive_participle:WordType {arabic: "اسم المفعول", english: "passive participle"})
-MERGE (typesMaster)-[:HAS_TYPE]->(passive_participle)
+    // Passive participle words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_المفعول` IS NOT NULL AND row.`اسم_المفعول` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (passiveParticiple:Word {arabic: row.`اسم_المفعول`, english: row.passive_participle})
+        MERGE (passiveParticiples)-[:HAS_WORD]->(passiveParticiple)
+        MERGE (root)-[:HAS_PASSIVE_PARTICIPLE]->(passiveParticiple)
+    )
 
-MERGE (noun_of_place:WordType {arabic: "اسم المكان", english: "noun of place"})
-MERGE (typesMaster)-[:HAS_TYPE]->(noun_of_place)
+    // Noun of place words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_المكان` IS NOT NULL AND row.`اسم_المكان` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (nounOfPlace:Word {arabic: row.`اسم_المكان`, english: row.noun_of_place})
+        MERGE (nounsOfPlace)-[:HAS_WORD]->(nounOfPlace)
+        MERGE (root)-[:HAS_NOUN_OF_PLACE]->(nounOfPlace)
+    )
 
-MERGE (singular:WordType {arabic: "اسم المرة", english: "singular"})
-MERGE (typesMaster)-[:HAS_TYPE]->(singular)
+    // Singular words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_المرة` IS NOT NULL AND row.`اسم_المرة` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (singular:Word {arabic: row.`اسم_المرة`, english: row.singular})
+        MERGE (singulars)-[:HAS_WORD]->(singular)
+        MERGE (root)-[:HAS_SINGULAR]->(singular)
+    )
 
-MERGE (noun_of_state:WordType {arabic: "اسم الحال", english: "noun of state"})
-MERGE (typesMaster)-[:HAS_TYPE]->(noun_of_state)
+    // Noun of state words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_الحال` IS NOT NULL AND row.`اسم_الحال` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (nounOfState:Word {arabic: row.`اسم_الحال`, english: row.noun_of_state})
+        MERGE (nounsOfState)-[:HAS_WORD]->(nounOfState)
+        MERGE (root)-[:HAS_NOUN_OF_STATE]->(nounOfState)
+    )
 
-MERGE (noun_of_instrumentation:WordType {arabic: "اسم الآلة", english: "noun of instrumentation"})
-MERGE (typesMaster)-[:HAS_TYPE]->(noun_of_instrumentation)
+    // Noun of instrumentation words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_الآلة` IS NOT NULL AND row.`اسم_الآلة` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (nounOfInstrumentation:Word {arabic: row.`اسم_الآلة`, english: row.noun_of_instrumentation})
+        MERGE (nounsOfInstrumentation)-[:HAS_WORD]->(nounOfInstrumentation)
+        MERGE (root)-[:HAS_NOUN_OF_INSTRUMENTATION]->(nounOfInstrumentation)
+    )
 
-MERGE (noun_of_essence:WordType {arabic: "اسم ذات", english: "noun of essence"})
-MERGE (typesMaster)-[:HAS_TYPE]->(noun_of_essence)
+    // Noun of essence words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_ذات` IS NOT NULL AND row.`اسم_ذات` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (nounOfEssence:Word {arabic: row.`اسم_ذات`, english: row.noun_of_essence})
+        MERGE (nounsOfEssence)-[:HAS_WORD]->(nounOfEssence)
+        MERGE (root)-[:HAS_NOUN_OF_ESSENCE]->(nounOfEssence)
+    )
 
-MERGE (noun_of_hyperbole:WordType {arabic: "اسم التفعيل", english: "noun of hyperbole"})
-MERGE (typesMaster)-[:HAS_TYPE]->(noun_of_hyperbole)
+    // Noun of hyperbole words
+    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_التفعيل` IS NOT NULL AND row.`اسم_التفعيل` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (nounOfHyperbole:Word {arabic: row.`اسم_التفعيل`, english: row.noun_of_hyperbole})
+        MERGE (nounsOfHyperbole)-[:HAS_WORD]->(nounOfHyperbole)
+        MERGE (root)-[:HAS_NOUN_OF_HYPERBOLE]->(nounOfHyperbole)
+    )
 
-// Create word nodes with translations and establish specific relationships
-
-// Infinitive words
-FOREACH(ignoreMe IN CASE WHEN row.`المصدر` IS NOT NULL AND row.`المصدر` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`المصدر`, english: row.infinitive})
-    MERGE (root)-[:ROOT_HAS_INFINITIVE]->(word)
-    MERGE (infinitive)-[:TYPE_HAS_WORD]->(word)
+    // Create separate nodes for the 99 names
+    FOREACH(ignoreMe2 IN CASE WHEN row.`الأسماء_الله_الحسنى` IS NOT NULL AND row.`الأسماء_الله_الحسنى` <> 'NA' THEN [1] ELSE [] END |
+        MERGE (nameOfAllah:NameOfAllah {arabic: row.`الأسماء_الله_الحسنى`, english: row.transliterated_name})
+        MERGE (theMostExcellentNames)-[:HAS_NAME]->(nameOfAllah)
+        MERGE (root)-[:HAS_NAME]->(nameOfAllah)
+    )
 )
 
-// Active participle words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_الفاعل` IS NOT NULL AND row.`اسم_الفاعل` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_الفاعل`, english: row.active_participle})
-    MERGE (root)-[:ROOT_HAS_ACTIVE_PARTICIPLE]->(word)
-    MERGE (active_participle)-[:TYPE_HAS_WORD]->(word)
-)
-
-// Passive participle words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_المفعول` IS NOT NULL AND row.`اسم_المفعول` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_المفعول`, english: row.passive_participle})
-    MERGE (root)-[:ROOT_HAS_PASSIVE_PARTICIPLE]->(word)
-    MERGE (passive_participle)-[:TYPE_HAS_WORD]->(word)
-)
-
-// Noun of place words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_المكان` IS NOT NULL AND row.`اسم_المكان` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_المكان`, english: row.noun_of_place})
-    MERGE (root)-[:ROOT_HAS_NOUN_OF_PLACE]->(word)
-    MERGE (noun_of_place)-[:TYPE_HAS_WORD]->(word)
-)
-
-// Singular words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_المرة` IS NOT NULL AND row.`اسم_المرة` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_المرة`, english: row.singular})
-    MERGE (root)-[:ROOT_HAS_SINGULAR]->(word)
-    MERGE (singular)-[:TYPE_HAS_WORD]->(word)
-)
-
-// Noun of state words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_الحال` IS NOT NULL AND row.`اسم_الحال` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_الحال`, english: row.noun_of_state})
-    MERGE (root)-[:ROOT_HAS_NOUN_OF_STATE]->(word)
-    MERGE (noun_of_state)-[:TYPE_HAS_WORD]->(word)
-)
-
-// Noun of instrumentation words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_الآلة` IS NOT NULL AND row.`اسم_الآلة` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_الآلة`, english: row.noun_of_instrumentation})
-    MERGE (root)-[:ROOT_HAS_NOUN_OF_INSTRUMENTATION]->(word)
-    MERGE (noun_of_instrumentation)-[:TYPE_HAS_WORD]->(word)
-)
-
-// Noun of essence words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_ذات` IS NOT NULL AND row.`اسم_ذات` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_ذات`, english: row.noun_of_essence})
-    MERGE (root)-[:ROOT_HAS_NOUN_OF_ESSENCE]->(word)
-    MERGE (noun_of_essence)-[:TYPE_HAS_WORD]->(word)
-)
-
-// Noun of hyperbole words
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_التفعيل` IS NOT NULL AND row.`اسم_التفعيل` <> '' THEN [1] ELSE [] END |
-    MERGE (word:Word {arabic: row.`اسم_التفعيل`, english: row.noun_of_hyperbole})
-    MERGE (root)-[:ROOT_HAS_NOUN_OF_HYPERBOLE]->(word)
-    MERGE (noun_of_hyperbole)-[:TYPE_HAS_WORD]->(word)
-)
