@@ -6,14 +6,14 @@ const api = axios.create({
 });
 
 /**
- * Fetches a list of words from a specific column and script.
- * Used in the Dropdown component to get the list of words based on the selected column and script.
+ * Fetches a list of words from a specific concept and script.
+ * Used in the Dropdown component to get the list of words based on the selected concept and script.
  *
- * @param {string} column - The column to fetch words from (e.g., 'infinitive').
+ * @param {string} concept - The concept to fetch words from (e.g., 'Infinitives').
  * @param {string} script - The script to use ('english' or 'arabic').
  * @returns {Promise} - The Axios promise with the list of words.
  */
-export const fetchWords = (column, script) => api.get(`/list/${column}`, { params: { script } });
+export const fetchWords = (concept, script) => api.get(`/list/${concept}`, { params: { script } });
 
 /**
  * Fetches the root data for a specific word and script.
@@ -42,13 +42,3 @@ export const fetchRootDataByRoot = (root, script) => api.get(`/root-data/${root}
  * @returns {Promise} - The Axios promise with the list of roots.
  */
 export const fetchRoots = () => api.get('/list/roots');
-
-/**
- * Switches the script for a specific root.
- * This endpoint is not used in the current implementation but can be used if needed.
- *
- * @param {string} root - The root to switch scripts for.
- * @param {string} script - The new script to use ('english' or 'arabic').
- * @returns {Promise} - The Axios promise with the switched script data.
- */
-export const switchScript = (root, script) => api.get(`/switch-script`, { params: { root, script } });
