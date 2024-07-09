@@ -1,19 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { fetchRootData, fetchRootDataByRoot } from '../services/apiService';
+import { fetchRootData, fetchWordData } from '../services/apiService';
 
-const WordList = ({ selectedWord, script }) => {
+const WordList = ({ selectedWord, script, concept }) => {
   const [rootData, setRootData] = useState(null);
 
   useEffect(() => {
     if (selectedWord) {
       const fetchData = async () => {
         try {
-          const isRoot = selectedWord.hasOwnProperty('arabic') && selectedWord.hasOwnProperty('english');
+          const isRoot = concept === 'Roots';
           const response = isRoot
-            ? await fetchRootDataByRoot(selectedWord[script], script)
-            : await fetchRootData(selectedWord, script); 
+            ? await fetchRootData(selectedWord[script], script)
+            : await fetchWordData(selectedWord[script], script);
           console.log('Fetched root data:', response.data);
-          setRootData(response.data[0]); // Make sure we access the first item of the array
+          setRootData(response.data[0]); // Assuming response.data is an array and we need the first item
         } catch (error) {
           console.error('Error fetching root data:', error);
           setRootData(null);
@@ -21,7 +21,7 @@ const WordList = ({ selectedWord, script }) => {
       };
       fetchData();
     }
-  }, [selectedWord, script]);
+  }, [selectedWord, script, concept]);
 
   if (!selectedWord) {
     return <div>Select a word to see the details</div>;
