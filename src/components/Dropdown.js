@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { fetchWords } from '../services/apiService';
 
-const Dropdown = ({ onSelect, script, onSelectConcept }) => {
+const Dropdown = ({ onSelect, script }) => {
   const [concept, setConcept] = useState('The Most Excellent Names'); // Default concept
   const [words, setWords] = useState([]);
 
@@ -17,15 +17,10 @@ const Dropdown = ({ onSelect, script, onSelectConcept }) => {
     fetchData();
   }, [concept, script]);
 
-  const handleConceptChange = (e) => {
-    const newConcept = e.target.value;
-    setConcept(newConcept);
-    onSelectConcept(newConcept);
-  };
-
   return (
     <div>
-      <select value={concept} onChange={handleConceptChange}>
+      <select value={concept} onChange={(e) => setConcept(e.target.value)}>
+        <option value="The Most Excellent Names">The Most Excellent Names</option>
         <option value="Roots">Roots</option>
         <option value="Infinitives">Infinitives</option>
         <option value="Active Participles">Active Participles</option>
@@ -36,7 +31,6 @@ const Dropdown = ({ onSelect, script, onSelectConcept }) => {
         <option value="Nouns of Instrumentation">Nouns of Instrumentation</option>
         <option value="Nouns of Essence">Nouns of Essence</option>
         <option value="Nouns of Hyperbole">Nouns of Hyperbole</option>
-        <option value="The Most Excellent Names">The Most Excellent Names</option>
       </select>
       <ul>
         {words.map((word, index) => (

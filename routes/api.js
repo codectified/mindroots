@@ -42,10 +42,8 @@ router.get('/list/:concept', async (req, res) => {
   const { concept } = req.params;
   const session = req.driver.session();
   try {
-    const relationshipType = concept === 'The Most Excellent Names' ? 'HAS_NAME' : 'HAS_WORD';
-    const nodeType = concept === 'The Most Excellent Names' ? 'NameOfAllah' : 'Word';
     const result = await session.run(`
-      MATCH (concept:Concept {name: $concept})-[:${relationshipType}]->(item:${nodeType})
+      MATCH (concept:Concept {name: $concept})-[:HAS_WORD]->(item:Word)
       RETURN item.arabic AS arabic, item.english AS english
     `, { concept });
 
