@@ -85,9 +85,9 @@ FOREACH(ignoreMe IN CASE WHEN row.`الجذور` IS NOT NULL AND row.`الجذو
 
     // Create separate nodes for the 99 names
     FOREACH(ignoreMe2 IN CASE WHEN row.`الأسماء_الله_الحسنى` IS NOT NULL AND row.`الأسماء_الله_الحسنى` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (nameOfAllah:NameOfAllah {arabic: row.`الأسماء_الله_الحسنى`, english: row.transliterated_name})
-        MERGE (theMostExcellentNames)-[:HAS_NAME]->(nameOfAllah)
-        MERGE (root)-[:HAS_NAME]->(nameOfAllah)
+        MERGE (nameOfAllah:Word {arabic: row.`الأسماء_الله_الحسنى`, english: row.transliterated_name})
+        MERGE (theMostExcellentNames)-[:HAS_WORD]->(nameOfAllah)
+        MERGE (root)-[:HAS_NAME_OF_ALLAH]->(nameOfAllah)
     )
 )
 
