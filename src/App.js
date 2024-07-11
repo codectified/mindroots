@@ -1,24 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
-import Dropdown from './components/Dropdown';
 import WordList from './components/WordList';
 import Visualization from './components/Visualization';
-import { fetchRootData, fetchWordData } from './services/apiService';
+import { fetchWords, fetchRootData } from './services/apiService';
 
 const App = () => {
-  const [selectedWord, setSelectedWord] = useState(null);
+  const [selectedName, setSelectedName] = useState(null);
   const [script, setScript] = useState('arabic'); // Default script set to Arabic
+  const [names, setNames] = useState([]);
   const [rootData, setRootData] = useState(null);
-  const [concept, setConcept] = useState('The Most Excellent Names'); // Default concept
 
-  const handleSelectWord = async (word) => {
-    setSelectedWord(word);
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetchWords('The Most Excellent Names', script);
+        setNames(response.data);
+      } catch (error) {
+        console.error('Error fetching names:', error);
+      }
+    };
+    fetchData();
+  }, [script]);
+
+  const handleSelectName = async (name) => {
+    setSelectedName(name);
     try {
-      const isRoot = concept === 'Roots';
-      const response = isRoot
-        ? await fetchRootData(word[script], script)
-        : await fetchWordData(word[script], script);
-      setRootData(response.data[0]); // Update to access the first object in the array
+      const response = await fetchRootData(name[script], script);
+      setRootData(response.data);
     } catch (error) {
       console.error('Error fetching root data:', error);
     }
@@ -28,17 +36,19 @@ const App = () => {
     setScript(script === 'english' ? 'arabic' : 'english');
   };
 
-  const handleSelectConcept = (concept) => {
-    setConcept(concept);
-    setSelectedWord(null); // Reset selected word when concept changes
-    setRootData(null); // Reset root data when concept changes
-  };
-
   return (
     <div>
       <Header script={script} onSwitchScript={handleSwitchScript} />
-      <Dropdown onSelect={handleSelectWord} script={script} onSelectConcept={handleSelectConcept} />
-      <WordList selectedWord={selectedWord} script={script} concept={concept} />
+      <div style={{ height: '200px', overflowY: 'scroll' }}>
+        <ul>
+          {names.map((name, index) => (
+            <li key={index} onClick={() => handleSelectName(name)}>
+              {script === 'english' ? name.english : name.arabic}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <WordList selectedWord={selectedName} script={script} />
       <Visualization rootData={rootData} />
     </div>
   );
