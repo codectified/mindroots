@@ -13,3 +13,5 @@ export const fetchRootForName = (name, script) => api.get(`/name/${name}`, { par
 export const fetchWords = (concept, script) => api.get(`/list/${concept}`, { params: { script } });
 export const fetchRootData = (root, script) => api.get(`/root/${root}`, { params: { script } });
 export const fetchWordData = (word, script) => api.get(`/word/${word}`, { params: { script } });
+export const fetchWordsByForm = (formId, script) => api.get(`/form/${formId}`, { params: { script } });
+
