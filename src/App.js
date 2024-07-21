@@ -28,10 +28,9 @@ const App = () => {
 
       if (response.data.length > 0) {
         const data = response.data[0];
-        // Transform data to match the required format for the graph visualization
         const nodes = [data.root, ...data.words].map((item, index) => ({
           id: item[script],
-          label: item[script], // Ensure label is set for display
+          label: item[script],
           ...item
         }));
         const links = data.words.map((word, index) => ({
@@ -51,52 +50,58 @@ const App = () => {
   };
 
   const handleNodeClick = async (node) => {
-    if (node.form_id) {
-      // If the node is a form, fetch words by form ID
-      try {
-        const response = await fetchWordsByForm(node.form_id, script);
-        if (response.data.length > 0) {
-          const newWords = response.data.map(word => ({
-            id: word[script],
-            label: word[script],
-            ...word
-          }));
-          const newLinks = newWords.map(word => ({
-            source: node.id,
-            target: word.id
-          }));
-          setRootData(prevData => ({
-            nodes: [...prevData.nodes, ...newWords],
-            links: [...prevData.links, ...newLinks]
-          }));
+    try {
+      let response;
+      console.log('Clicked node:', node); // Log clicked node
+  
+      if (node.form_id) {
+        // If form_id is an array, handle it accordingly
+        if (Array.isArray(node.form_id)) {
+          for (const formId of node.form_id) {
+            response = await fetchWordsByForm(formId, script);
+            if (response && response.data.length > 0) {
+              const newWords = response.data.map(word => ({
+                id: word[script],
+                label: word[script],
+                ...word
+              }));
+              const newLinks = newWords.map(word => ({
+                source: node.id,
+                target: word.id
+              }));
+              const newData = { nodes: [...rootData.nodes, ...newWords], links: [...rootData.links, ...newLinks] };
+              console.log('New rootData after node click:', newData); // Add logging
+              setRootData(newData);
+            }
+          }
+        } else {
+          response = await fetchWordsByForm(node.form_id, script);
+          console.log('Fetched words by form:', response.data); // Log fetched words by form
         }
-      } catch (error) {
-        console.error('Error fetching words by form:', error);
+      } else if (node.id) {
+        response = await fetchWordData(node.id, script);
+        console.log('Fetched word data:', response.data); // Log fetched word data
       }
-    } else if (node.id) {
-      // If the node is a word, fetch related word data
-      try {
-        const response = await fetchWordData(node.id, script);
-        if (response.data.length > 0) {
-          const newWords = response.data.map(word => ({
-            id: word[script],
-            label: word[script],
-            ...word
-          }));
-          const newLinks = newWords.map(word => ({
-            source: node.id,
-            target: word.id
-          }));
-          setRootData(prevData => ({
-            nodes: [...prevData.nodes, ...newWords],
-            links: [...prevData.links, ...newLinks]
-          }));
-        }
-      } catch (error) {
-        console.error('Error fetching word data:', error);
+  
+      if (response && response.data.length > 0) {
+        const newWords = response.data.map(word => ({
+          id: word[script],
+          label: word[script],
+          ...word
+        }));
+        const newLinks = newWords.map(word => ({
+          source: node.id,
+          target: word.id
+        }));
+        const newData = { nodes: [...rootData.nodes, ...newWords], links: [...rootData.links, ...newLinks] };
+        console.log('New rootData after node click:', newData); // Add logging
+        setRootData(newData);
       }
+    } catch (error) {
+      console.error('Error fetching data for clicked node:', error);
     }
   };
+  
 
   const handleSwitchScript = () => {
     setScript(script === 'english' ? 'arabic' : 'english');
