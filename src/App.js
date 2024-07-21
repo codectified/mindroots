@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import GraphVisualization from './components/GraphVisualization';
-import { fetchNamesOfAllah, fetchRootForName } from './services/apiService';
+import { fetchNamesOfAllah, fetchRootForName, fetchWordsByForm, fetchWordData } from './services/apiService';
 
 const App = () => {
   const [script, setScript] = useState('arabic'); // Default script set to Arabic
@@ -31,6 +31,7 @@ const App = () => {
         // Transform data to match the required format for the graph visualization
         const nodes = [data.root, ...data.words].map((item, index) => ({
           id: item[script],
+          label: item[script], // Ensure label is set for display
           ...item
         }));
         const links = data.words.map((word, index) => ({
@@ -46,6 +47,54 @@ const App = () => {
       }
     } catch (error) {
       console.error('Error fetching root data for name:', error);
+    }
+  };
+
+  const handleNodeClick = async (node) => {
+    if (node.form_id) {
+      // If the node is a form, fetch words by form ID
+      try {
+        const response = await fetchWordsByForm(node.form_id, script);
+        if (response.data.length > 0) {
+          const newWords = response.data.map(word => ({
+            id: word[script],
+            label: word[script],
+            ...word
+          }));
+          const newLinks = newWords.map(word => ({
+            source: node.id,
+            target: word.id
+          }));
+          setRootData(prevData => ({
+            nodes: [...prevData.nodes, ...newWords],
+            links: [...prevData.links, ...newLinks]
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching words by form:', error);
+      }
+    } else if (node.id) {
+      // If the node is a word, fetch related word data
+      try {
+        const response = await fetchWordData(node.id, script);
+        if (response.data.length > 0) {
+          const newWords = response.data.map(word => ({
+            id: word[script],
+            label: word[script],
+            ...word
+          }));
+          const newLinks = newWords.map(word => ({
+            source: node.id,
+            target: word.id
+          }));
+          setRootData(prevData => ({
+            nodes: [...prevData.nodes, ...newWords],
+            links: [...prevData.links, ...newLinks]
+          }));
+        }
+      } catch (error) {
+        console.error('Error fetching word data:', error);
+      }
     }
   };
 
@@ -65,7 +114,7 @@ const App = () => {
           ))}
         </ul>
       </div>
-      <GraphVisualization rootData={rootData} onNodeClick={handleSelectName} />
+      <GraphVisualization data={rootData} onNodeClick={handleNodeClick} />
     </div>
   );
 };

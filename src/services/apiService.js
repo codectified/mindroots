@@ -8,8 +8,6 @@ const api = axios.create({
 export const fetchNamesOfAllah = (script) => api.get('/list/names_of_allah', { params: { script } });
 
 export const fetchRootForName = (name, script) => api.get(`/name/${name}`, { params: { script } });
-
-// Existing exports...
 export const fetchWords = (concept, script) => api.get(`/list/${concept}`, { params: { script } });
 export const fetchRootData = (root, script) => api.get(`/root/${root}`, { params: { script } });
 export const fetchWordData = (word, script) => api.get(`/word/${word}`, { params: { script } });
