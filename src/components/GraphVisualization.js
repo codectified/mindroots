@@ -1,16 +1,16 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const GraphVisualization = ({ rootData, onNodeClick }) => {
+const GraphVisualization = ({ data, onNodeClick }) => {
   const svgRef = useRef();
 
   useEffect(() => {
-    if (!rootData || rootData.nodes.length === 0) {
+    if (!data || data.nodes.length === 0) {
       console.log('No data to render');
       return;
     }
 
-    console.log('Rendering data:', rootData);
+    console.log('Rendering data:', data);
 
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove(); // Clear previous contents
@@ -18,15 +18,15 @@ const GraphVisualization = ({ rootData, onNodeClick }) => {
     const width = svg.attr('width');
     const height = svg.attr('height');
 
-    const simulation = d3.forceSimulation(rootData.nodes)
-      .force('link', d3.forceLink(rootData.links).id(d => d.id).distance(100))
+    const simulation = d3.forceSimulation(data.nodes)
+      .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
     const link = svg.append('g')
       .attr('class', 'links')
       .selectAll('line')
-      .data(rootData.links)
+      .data(data.links)
       .enter().append('line')
       .attr('stroke-width', 2)
       .attr('stroke', '#999');
@@ -34,7 +34,7 @@ const GraphVisualization = ({ rootData, onNodeClick }) => {
     const node = svg.append('g')
       .attr('class', 'nodes')
       .selectAll('circle')
-      .data(rootData.nodes)
+      .data(data.nodes)
       .enter().append('circle')
       .attr('r', 10)
       .attr('fill', '#69b3a2')
@@ -45,26 +45,26 @@ const GraphVisualization = ({ rootData, onNodeClick }) => {
       .on('click', (event, d) => onNodeClick(d));
 
     node.append('title')
-      .text(d => d.id);
+      .text(d => d.label);
 
     const text = svg.append('g')
       .attr('class', 'labels')
       .selectAll('text')
-      .data(rootData.nodes)
+      .data(data.nodes)
       .enter().append('text')
       .attr('x', 12)
       .attr('y', '.31em')
-      .text(d => d.id);
+      .text(d => d.label);
 
     console.log('Appended nodes:', node);
     console.log('Appended links:', link);
 
     simulation
-      .nodes(rootData.nodes)
+      .nodes(data.nodes)
       .on('tick', ticked);
 
     simulation.force('link')
-      .links(rootData.links);
+      .links(data.links);
 
     function ticked() {
       link
@@ -107,7 +107,7 @@ const GraphVisualization = ({ rootData, onNodeClick }) => {
       d.fx = null;
       d.fy = null;
     }
-  }, [rootData, onNodeClick]);
+  }, [data, onNodeClick]);
 
   return <svg ref={svgRef} width="800" height="600" style={{ border: '1px solid black' }}></svg>;
 };
