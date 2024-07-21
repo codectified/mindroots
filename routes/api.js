@@ -6,7 +6,7 @@ const router = express.Router();
 const convertIntegers = (obj) => {
   if (typeof obj === 'object' && obj !== null) {
     if ('low' in obj && 'high' in obj) {
-      return neo4j.int(obj.low, obj.high).toNumber();
+      return neo4j.int(obj.low, obj.high).toNumber(); // Convert Neo4j integers to numbers
     }
     for (const key in obj) {
       if (obj.hasOwnProperty(key)) {
@@ -32,8 +32,6 @@ const formatSimpleData = (records) => {
     english: record.get('english')
   }));
 };
-
-
 
 // Endpoint to list all root nodes
 router.get('/list/roots', async (req, res) => {
@@ -74,8 +72,6 @@ router.get('/list/names_of_allah', async (req, res) => {
     await session.close();
   }
 });
-
-module.exports = router;
 
 // Endpoint to list words from a specific concept
 router.get('/list/:concept', async (req, res) => {
@@ -207,10 +203,5 @@ router.get('/form/:formId', async (req, res) => {
     await session.close();
   }
 });
-
-
-
-
-
 
 module.exports = router;
