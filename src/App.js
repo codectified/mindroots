@@ -12,10 +12,11 @@ const App = () => {
     const fetchData = async () => {
       try {
         const response = await fetchNamesOfAllah(script);
-        setNames(response.data);
-        console.log('Fetched names of Allah:', response.data); // Add logging
+        setNames(Array.isArray(response) ? response : []); // Ensure response is an array
+        console.log('Fetched names of Allah:', response); // Add logging
       } catch (error) {
         console.error('Error fetching names of Allah:', error);
+        setNames([]); // Set to empty array on error
       }
     };
     fetchData();
@@ -24,16 +25,16 @@ const App = () => {
   const handleSelectName = async (name) => {
     try {
       const response = await fetchRootForName(name[script], script);
-      console.log('Response data:', response.data); // Add logging to inspect the structure
+      console.log('Response data:', response); // Add logging to inspect the structure
 
-      if (response.data.length > 0) {
-        const data = response.data[0];
-        const nodes = [data.root, ...data.words].map((item, index) => ({
+      if (response && response.length > 0) {
+        const data = response[0];
+        const nodes = [data.root, ...data.words].map((item) => ({
           id: item[script],
           label: item[script],
           ...item
         }));
-        const links = data.words.map((word, index) => ({
+        const links = data.words.map((word) => ({
           source: data.root[script],
           target: word[script]
         }));
@@ -52,15 +53,15 @@ const App = () => {
   const handleNodeClick = async (node) => {
     try {
       let response;
-      console.log('Clicked node:', node); // Log clicked node
+      console.log('Clicked node:', node);
   
       if (node.form_id) {
-        // If form_id is an array, handle it accordingly
+        console.log('Node form_id:', node.form_id);
         if (Array.isArray(node.form_id)) {
           for (const formId of node.form_id) {
             response = await fetchWordsByForm(formId, script);
-            if (response && response.data.length > 0) {
-              const newWords = response.data.map(word => ({
+            if (response && response.length > 0) {
+              const newWords = response.map(word => ({
                 id: word[script],
                 label: word[script],
                 ...word
@@ -70,21 +71,21 @@ const App = () => {
                 target: word.id
               }));
               const newData = { nodes: [...rootData.nodes, ...newWords], links: [...rootData.links, ...newLinks] };
-              console.log('New rootData after node click:', newData); // Add logging
+              console.log('New rootData after node click:', newData);
               setRootData(newData);
             }
           }
         } else {
           response = await fetchWordsByForm(node.form_id, script);
-          console.log('Fetched words by form:', response.data); // Log fetched words by form
+          console.log('Fetched words by form:', response);
         }
       } else if (node.id) {
         response = await fetchWordData(node.id, script);
-        console.log('Fetched word data:', response.data); // Log fetched word data
+        console.log('Fetched word data:', response);
       }
   
-      if (response && response.data.length > 0) {
-        const newWords = response.data.map(word => ({
+      if (response && response.length > 0) {
+        const newWords = response.map(word => ({
           id: word[script],
           label: word[script],
           ...word
@@ -94,7 +95,7 @@ const App = () => {
           target: word.id
         }));
         const newData = { nodes: [...rootData.nodes, ...newWords], links: [...rootData.links, ...newLinks] };
-        console.log('New rootData after node click:', newData); // Add logging
+        console.log('New rootData after node click:', newData);
         setRootData(newData);
       }
     } catch (error) {

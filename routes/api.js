@@ -1,5 +1,21 @@
 const express = require('express');
+const neo4j = require('neo4j-driver'); // Import neo4j
 const router = express.Router();
+
+// Helper function to convert Neo4j integers to regular numbers
+const convertIntegers = (obj) => {
+  if (typeof obj === 'object' && obj !== null) {
+    if ('low' in obj && 'high' in obj) {
+      return neo4j.int(obj.low, obj.high).toNumber();
+    }
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        obj[key] = convertIntegers(obj[key]);
+      }
+    }
+  }
+  return obj;
+};
 
 // Helper function to format the data
 const formatData = (records) => {
@@ -16,6 +32,8 @@ const formatSimpleData = (records) => {
     english: record.get('english')
   }));
 };
+
+
 
 // Endpoint to list all root nodes
 router.get('/list/roots', async (req, res) => {
@@ -162,14 +180,25 @@ router.get('/form/:formId', async (req, res) => {
   const { script } = req.query;
   const session = req.driver.session();
   try {
+    console.log(`Received request for form ID ${formId} with script ${script}`);
+
     const result = await session.run(`
       MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
       WHERE word.${script} IS NOT NULL
-      RETURN word
+      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
     `, { formId, script });
 
-    const words = formatSimpleData(result.records);
-    console.log(`Fetched words for form ${formId} with script ${script}:`, words); // Add logging
+    console.log(`Raw records for form ${formId} with script ${script}:`, result.records);
+
+    const words = result.records.map(record => ({
+      scriptField: record.get('scriptField'),
+      wordId: convertIntegers(record.get('wordId')),
+      arabic: record.get('arabic'),
+      english: record.get('english'),
+      formId: convertIntegers(record.get('formId'))
+    }));
+
+    console.log(`Formatted words for form ${formId} with script ${script}:`, words);
     res.json(words);
   } catch (error) {
     console.error('Error fetching words by form:', error);
@@ -178,6 +207,8 @@ router.get('/form/:formId', async (req, res) => {
     await session.close();
   }
 });
+
+
 
 
 
