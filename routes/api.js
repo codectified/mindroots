@@ -179,6 +179,29 @@ router.get('/form/:formId', async (req, res) => {
   }
 });
 
+// Endpoint to fetch words by form ID
+router.get('/form/:formId', async (req, res) => {
+  const { formId } = req.params;
+  const { script } = req.query;
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
+      WHERE word.${script} IS NOT NULL
+      RETURN word
+    `, { formId, script });
+
+    const words = formatSimpleData(result.records);
+    console.log(`Fetched words for form ID ${formId} with script ${script}:`, words); // Add logging
+    res.json(words);
+  } catch (error) {
+    console.error(`Error fetching words for form ID ${formId}:`, error);
+    res.status(500).send('Error fetching words for form');
+  } finally {
+    await session.close();
+  }
+});
+
 
 
 module.exports = router;
