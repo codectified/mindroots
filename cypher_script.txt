@@ -1,93 +1,24 @@
-// Load the CSV file
-LOAD CSV WITH HEADERS FROM 'file:///99names.csv' AS row
+LOAD CSV WITH HEADERS FROM 'file:///roots.csv' AS row
+MERGE (root:Root {root_id: toInteger(row.id), arabic: row.`الجذور`, transliterated_root: row.transliterated_root, r3: row.r3, r2: row.r2, r1: row.r1})
 
-// Create master nodes for roots and word types
-MERGE (roots:Concept {name: "Roots"})
-MERGE (infinitives:Concept {name: "Infinitives"})
-MERGE (activeParticiples:Concept {name: "Active Participles"})
-MERGE (passiveParticiples:Concept {name: "Passive Participles"})
-MERGE (nounsOfPlace:Concept {name: "Nouns of Place"})
-MERGE (singulars:Concept {name: "Singulars"})
-MERGE (nounsOfState:Concept {name: "Nouns of State"})
-MERGE (nounsOfInstrumentation:Concept {name: "Nouns of Instrumentation"})
-MERGE (nounsOfEssence:Concept {name: "Nouns of Essence"})
-MERGE (nounsOfHyperbole:Concept {name: "Nouns of Hyperbole"})
-MERGE (theMostExcellentNames:Concept {name: "The Most Excellent Names"})
+LOAD CSV WITH HEADERS FROM 'file:///forms.csv' AS row
+MERGE (form:Form {form_id: toInteger(row.id), arabic: row.arabic, english: row.english})
 
-// Create root nodes and link them to the roots concept node, only if root is not null or 'NA'
-FOREACH(ignoreMe IN CASE WHEN row.`الجذور` IS NOT NULL AND row.`الجذور` <> 'NA' THEN [1] ELSE [] END |
-    MERGE (root:Root {arabic: row.`الجذور`, english: row.transliterated_root})
-    MERGE (roots)-[:HAS_ROOT]->(root)
+LOAD CSV WITH HEADERS FROM 'file:///derivatives.csv' AS row
+MERGE (derivative:Word {word_id: toInteger(row.id), arabic: row.arabic, english: row.english})
+WITH row, derivative
+MATCH (root:Root {root_id: toInteger(row.root_id)})
+MERGE (root)-[:HAS_WORD]->(derivative)
+WITH row, derivative
+WITH derivative, split(replace(replace(row.form_id, '[', ''), ']', ''), ',') AS form_ids
+UNWIND form_ids AS form_id
+MATCH (form:Form {form_id: toInteger(form_id)})
+MERGE (derivative)-[:HAS_FORM]->(form)
 
-    // Create word nodes and link them to the appropriate concept nodes and the root node
-    // Infinitive words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`المصدر` IS NOT NULL AND row.`المصدر` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (infinitive:Word {arabic: row.`المصدر`, english: row.infinitive})
-        MERGE (infinitives)-[:HAS_WORD]->(infinitive)
-        MERGE (root)-[:HAS_INFINTIVE]->(infinitive)
-    )
-
-    // Active participle words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_الفاعل` IS NOT NULL AND row.`اسم_الفاعل` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (activeParticiple:Word {arabic: row.`اسم_الفاعل`, english: row.active_participle})
-        MERGE (activeParticiples)-[:HAS_WORD]->(activeParticiple)
-        MERGE (root)-[:HAS_ACTIVE_PARTICIPLE]->(activeParticiple)
-    )
-
-    // Passive participle words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_المفعول` IS NOT NULL AND row.`اسم_المفعول` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (passiveParticiple:Word {arabic: row.`اسم_المفعول`, english: row.passive_participle})
-        MERGE (passiveParticiples)-[:HAS_WORD]->(passiveParticiple)
-        MERGE (root)-[:HAS_PASSIVE_PARTICIPLE]->(passiveParticiple)
-    )
-
-    // Noun of place words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_المكان` IS NOT NULL AND row.`اسم_المكان` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (nounOfPlace:Word {arabic: row.`اسم_المكان`, english: row.noun_of_place})
-        MERGE (nounsOfPlace)-[:HAS_WORD]->(nounOfPlace)
-        MERGE (root)-[:HAS_NOUN_OF_PLACE]->(nounOfPlace)
-    )
-
-    // Singular words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_المرة` IS NOT NULL AND row.`اسم_المرة` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (singular:Word {arabic: row.`اسم_المرة`, english: row.singular})
-        MERGE (singulars)-[:HAS_WORD]->(singular)
-        MERGE (root)-[:HAS_SINGULAR]->(singular)
-    )
-
-    // Noun of state words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_الحال` IS NOT NULL AND row.`اسم_الحال` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (nounOfState:Word {arabic: row.`اسم_الحال`, english: row.noun_of_state})
-        MERGE (nounsOfState)-[:HAS_WORD]->(nounOfState)
-        MERGE (root)-[:HAS_NOUN_OF_STATE]->(nounOfState)
-    )
-
-    // Noun of instrumentation words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_الآلة` IS NOT NULL AND row.`اسم_الآلة` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (nounOfInstrumentation:Word {arabic: row.`اسم_الآلة`, english: row.noun_of_instrumentation})
-        MERGE (nounsOfInstrumentation)-[:HAS_WORD]->(nounOfInstrumentation)
-        MERGE (root)-[:HAS_NOUN_OF_INSTRUMENTATION]->(nounOfInstrumentation)
-    )
-
-    // Noun of essence words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_ذات` IS NOT NULL AND row.`اسم_ذات` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (nounOfEssence:Word {arabic: row.`اسم_ذات`, english: row.noun_of_essence})
-        MERGE (nounsOfEssence)-[:HAS_WORD]->(nounOfEssence)
-        MERGE (root)-[:HAS_NOUN_OF_ESSENCE]->(nounOfEssence)
-    )
-
-    // Noun of hyperbole words
-    FOREACH(ignoreMe2 IN CASE WHEN row.`اسم_التفعيل` IS NOT NULL AND row.`اسم_التفعيل` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (nounOfHyperbole:Word {arabic: row.`اسم_التفعيل`, english: row.noun_of_hyperbole})
-        MERGE (nounsOfHyperbole)-[:HAS_WORD]->(nounOfHyperbole)
-        MERGE (root)-[:HAS_NOUN_OF_HYPERBOLE]->(nounOfHyperbole)
-    )
-
-    // Create separate nodes for the 99 names
-    FOREACH(ignoreMe2 IN CASE WHEN row.`الأسماء_الله_الحسنى` IS NOT NULL AND row.`الأسماء_الله_الحسنى` <> 'NA' THEN [1] ELSE [] END |
-        MERGE (nameOfAllah:Word {arabic: row.`الأسماء_الله_الحسنى`, english: row.transliterated_name})
-        MERGE (theMostExcellentNames)-[:HAS_WORD]->(nameOfAllah)
-        MERGE (root)-[:HAS_NAME_OF_ALLAH]->(nameOfAllah)
-    )
-)
+LOAD CSV WITH HEADERS FROM 'file:///most_excellent_names.csv' AS row
+WITH row WHERE row.`الأسماء_الله_الحسنى` IS NOT NULL AND row.id IS NOT NULL
+MERGE (name:NameOfAllah {name_id: toInteger(row.id), arabic: row.`الأسماء_الله_الحسنى`, transliteration: row.transliterated_name, the_most_excellent_names: row.the_most_excellent_names})
+WITH name, row
+MATCH (root:Root {root_id: toInteger(row.id)})
+MERGE (name)-[:HAS_ROOT]->(root)
 

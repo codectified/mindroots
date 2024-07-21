@@ -1,34 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
-import WordList from './components/WordList';
-import Visualization from './components/Visualization';
-import { fetchWords, fetchRootData } from './services/apiService';
+import GraphVisualization from './components/GraphVisualization';
+import { fetchNamesOfAllah, fetchRootForName } from './services/apiService';
 
 const App = () => {
-  const [selectedName, setSelectedName] = useState(null);
   const [script, setScript] = useState('arabic'); // Default script set to Arabic
   const [names, setNames] = useState([]);
-  const [rootData, setRootData] = useState(null);
+  const [rootData, setRootData] = useState({ nodes: [], links: [] });
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetchWords('The Most Excellent Names', script);
+        const response = await fetchNamesOfAllah(script);
         setNames(response.data);
+        console.log('Fetched names of Allah:', response.data); // Add logging
       } catch (error) {
-        console.error('Error fetching names:', error);
+        console.error('Error fetching names of Allah:', error);
       }
     };
     fetchData();
   }, [script]);
 
   const handleSelectName = async (name) => {
-    setSelectedName(name);
     try {
-      const response = await fetchRootData(name[script], script);
-      setRootData(response.data);
+      const response = await fetchRootForName(name[script], script);
+      console.log('Response data:', response.data); // Add logging to inspect the structure
+
+      if (response.data.length > 0) {
+        const data = response.data[0];
+        // Transform data to match the required format for the graph visualization
+        const nodes = [data.root, ...data.words].map((item, index) => ({
+          id: item[script],
+          ...item
+        }));
+        const links = data.words.map((word, index) => ({
+          source: data.root[script],
+          target: word[script]
+        }));
+        const newData = { nodes, links };
+        console.log('Transformed rootData:', newData); // Add logging
+        setRootData(newData);
+      } else {
+        console.log('No data received for the selected name');
+        setRootData({ nodes: [], links: [] });
+      }
     } catch (error) {
-      console.error('Error fetching root data:', error);
+      console.error('Error fetching root data for name:', error);
     }
   };
 
@@ -48,8 +65,7 @@ const App = () => {
           ))}
         </ul>
       </div>
-      <WordList selectedWord={selectedName} script={script} />
-      <Visualization rootData={rootData} />
+      <GraphVisualization rootData={rootData} onNodeClick={handleSelectName} />
     </div>
   );
 };

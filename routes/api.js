@@ -37,6 +37,28 @@ router.get('/list/roots', async (req, res) => {
   }
 });
 
+// Endpoint to list all the names of Allah
+router.get('/list/names_of_allah', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (name:NameOfAllah)
+      RETURN name.arabic AS arabic, name.transliteration AS english
+    `);
+
+    const names = formatSimpleData(result.records);
+    console.log('Fetched all names of Allah:', names); // Add logging
+    res.json(names);
+  } catch (error) {
+    console.error('Error fetching names of Allah:', error);
+    res.status(500).send('Error fetching names of Allah');
+  } finally {
+    await session.close();
+  }
+});
+
+module.exports = router;
+
 // Endpoint to list words from a specific concept
 router.get('/list/:concept', async (req, res) => {
   const { concept } = req.params;
@@ -107,5 +129,56 @@ router.get('/word/:word', async (req, res) => {
     await session.close();
   }
 });
+
+// Endpoint to fetch the root for a selected name of Allah
+router.get('/name/:name', async (req, res) => {
+  const { name } = req.params;
+  const { script } = req.query;
+  const session = req.driver.session();
+  try {
+    const field = script === 'english' ? 'transliteration' : 'arabic';
+    const result = await session.run(`
+      MATCH (name:NameOfAllah {${field}: $name})-[:HAS_ROOT]->(root:Root)
+      WITH root
+      MATCH (root)-[r]->(relatedWord:Word)
+      WHERE relatedWord.${script} IS NOT NULL
+      RETURN root, collect(relatedWord) AS words
+    `, { name, script });
+
+    const data = formatData(result.records);
+    console.log(`Fetched data for name ${name} with script ${script}:`, data); // Add logging
+    res.json(data);
+  } catch (error) {
+    console.error('Error fetching data for name:', error);
+    res.status(500).send('Error fetching data for name');
+  } finally {
+    await session.close();
+  }
+});
+
+// Endpoint to fetch words by form ID
+router.get('/form/:formId', async (req, res) => {
+  const { formId } = req.params;
+  const { script } = req.query;
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
+      WHERE word.${script} IS NOT NULL
+      RETURN word
+    `, { formId, script });
+
+    const words = formatSimpleData(result.records);
+    console.log(`Fetched words for form ${formId} with script ${script}:`, words); // Add logging
+    res.json(words);
+  } catch (error) {
+    console.error('Error fetching words by form:', error);
+    res.status(500).send('Error fetching words by form');
+  } finally {
+    await session.close();
+  }
+});
+
+
 
 module.exports = router;
