@@ -5,40 +5,11 @@ const api = axios.create({
   baseURL: 'http://localhost:5001/api',
 });
 
-/**
- * Fetches a list of words from a specific concept and script.
- * Used in the Dropdown component to get the list of words based on the selected concept and script.
- *
- * @param {string} concept - The concept to fetch words from (e.g., 'Roots').
- * @param {string} script - The script to use ('english' or 'arabic').
- * @returns {Promise} - The Axios promise with the list of words.
- */
+export const fetchNamesOfAllah = (script) => api.get('/list/names_of_allah', { params: { script } });
+
+export const fetchRootForName = (name, script) => api.get(`/name/${name}`, { params: { script } });
+
+// Existing exports...
 export const fetchWords = (concept, script) => api.get(`/list/${concept}`, { params: { script } });
-
-/**
- * Fetches the root data for a specific root and script.
- * Used in the WordList component to fetch related words when a root is selected.
- *
- * @param {string} root - The root to fetch data for.
- * @param {string} script - The script to use ('english' or 'arabic').
- * @returns {Promise} - The Axios promise with the root data.
- */
 export const fetchRootData = (root, script) => api.get(`/root/${root}`, { params: { script } });
-
-/**
- * Fetches the word data for a specific word and script.
- * Used in the WordList component to fetch related words when a word is selected.
- *
- * @param {string} word - The word to fetch data for.
- * @param {string} script - The script to use ('english' or 'arabic').
- * @returns {Promise} - The Axios promise with the word data.
- */
 export const fetchWordData = (word, script) => api.get(`/word/${word}`, { params: { script } });
-
-/**
- * Fetches a list of all root nodes.
- * Used in the Dropdown component to get the initial list of roots.
- *
- * @returns {Promise} - The Axios promise with the list of roots.
- */
-export const fetchRoots = () => api.get('/list/roots');
