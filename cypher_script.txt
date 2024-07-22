@@ -4,21 +4,26 @@ MERGE (root:Root {root_id: toInteger(row.id), arabic: row.`الجذور`, transl
 LOAD CSV WITH HEADERS FROM 'file:///forms.csv' AS row
 MERGE (form:Form {form_id: toInteger(row.id), arabic: row.arabic, english: row.english})
 
+// Load the derivatives and link them to names of Allah by name_id
 LOAD CSV WITH HEADERS FROM 'file:///derivatives.csv' AS row
-MERGE (derivative:Word {word_id: toInteger(row.id), arabic: row.arabic, english: row.english})
-WITH row, derivative
+WITH row
+MERGE (word:Word {word_id: toInteger(row.id), arabic: row.arabic, english: row.english})
+SET word.name_id = toInteger(row.name_id)
+WITH row, word
 MATCH (root:Root {root_id: toInteger(row.root_id)})
-MERGE (root)-[:HAS_WORD]->(derivative)
-WITH row, derivative
-WITH derivative, split(replace(replace(row.form_id, '[', ''), ']', ''), ',') AS form_ids
+MERGE (root)-[:HAS_WORD]->(word)
+WITH row, word
+WITH word, split(replace(replace(row.form_id, '[', ''), ']', ''), ',') AS form_ids
 UNWIND form_ids AS form_id
 MATCH (form:Form {form_id: toInteger(form_id)})
-MERGE (derivative)-[:HAS_FORM]->(form)
+MERGE (word)-[:HAS_FORM]->(form)
 
+// Load the most excellent names
 LOAD CSV WITH HEADERS FROM 'file:///most_excellent_names.csv' AS row
-WITH row WHERE row.`الأسماء_الله_الحسنى` IS NOT NULL AND row.id IS NOT NULL
+WITH row 
+WHERE row.`الأسماء_الله_الحسنى` IS NOT NULL AND row.id IS NOT NULL
 MERGE (name:NameOfAllah {name_id: toInteger(row.id), arabic: row.`الأسماء_الله_الحسنى`, transliteration: row.transliterated_name, the_most_excellent_names: row.the_most_excellent_names})
 WITH name, row
-MATCH (root:Root {root_id: toInteger(row.id)})
-MERGE (name)-[:HAS_ROOT]->(root)
-
+MATCH (name:NameOfAllah), (word:Word)
+WHERE name.name_id = word.name_id AND word.name_id <> 0
+MERGE (name)-[:HAS_WORD]->(word)
