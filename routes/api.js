@@ -17,41 +17,13 @@ const convertIntegers = (obj) => {
   return obj;
 };
 
-// Helper function to format the data
-const formatData = (records) => {
-  return records.map(record => {
-    const root = record.get('root').properties;
-    const words = record.get('words').map(word => word.properties);
-    return { root, words };
-  });
-};
-
 const formatSimpleData = (records) => {
   return records.map(record => ({
     arabic: record.get('arabic'),
-    english: record.get('english')
+    english: record.get('english'),
+    name_id: convertIntegers(record.get('name_id')) // Convert and include name_id
   }));
 };
-
-// Endpoint to list all root nodes
-router.get('/list/roots', async (req, res) => {
-  const session = req.driver.session();
-  try {
-    const result = await session.run(`
-      MATCH (root:Root)
-      RETURN root.arabic AS arabic, root.english AS english
-    `);
-
-    const roots = formatSimpleData(result.records);
-    console.log('Fetched all roots:', roots); // Add logging
-    res.json(roots);
-  } catch (error) {
-    console.error('Error fetching roots:', error);
-    res.status(500).send('Error fetching roots');
-  } finally {
-    await session.close();
-  }
-});
 
 // Endpoint to list all the names of Allah
 router.get('/list/names_of_allah', async (req, res) => {
@@ -59,7 +31,7 @@ router.get('/list/names_of_allah', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (name:NameOfAllah)
-      RETURN name.arabic AS arabic, name.transliteration AS english
+      RETURN name.arabic AS arabic, name.transliteration AS english, name.name_id AS name_id
     `);
 
     const names = formatSimpleData(result.records);
@@ -73,102 +45,38 @@ router.get('/list/names_of_allah', async (req, res) => {
   }
 });
 
-// Endpoint to list words from a specific concept
-router.get('/list/:concept', async (req, res) => {
-  const { concept } = req.params;
-  const session = req.driver.session();
-  try {
-    const result = await session.run(`
-      MATCH (concept:Concept {name: $concept})-[:HAS_WORD]->(item:Word)
-      RETURN item.arabic AS arabic, item.english AS english
-    `, { concept });
 
-    const words = formatSimpleData(result.records);
-    console.log(`Fetched words for concept ${concept}:`, words); // Add logging
-    res.json(words);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  } finally {
-    await session.close();
-  }
-});
-
-// Endpoint to fetch data for a specific root and all its subnodes/related nodes
-router.get('/root/:root', async (req, res) => {
-  const { root } = req.params;
+// Endpoint to fetch words, forms, and roots by name ID
+router.get('/words_by_name/:nameId', async (req, res) => {
+  const { nameId } = req.params;
   const { script } = req.query;
   const session = req.driver.session();
   try {
     const result = await session.run(`
-      MATCH (root:Root {${script}: $root})
-      WITH root
-      MATCH (root)-[r]->(relatedWord:Word)
-      WHERE relatedWord.${script} IS NOT NULL
-      RETURN root, collect(relatedWord) AS words
-    `, { root, script });
+      MATCH (name:NameOfAllah {name_id: toInteger($nameId)})-[:HAS_WORD]->(word:Word)
+      OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
+      OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
+      RETURN name, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
+    `, { nameId });
 
-    const data = formatData(result.records);
-    console.log(`Fetched data for root ${root} with script ${script}:`, data); // Add logging
-    res.json(data);
+    const records = result.records[0];
+    if (records) {
+      const name = records.get('name').properties;
+      const words = records.get('words').map(record => convertIntegers(record.properties));
+      const forms = records.get('forms').map(record => convertIntegers(record.properties));
+      const roots = records.get('roots').map(record => convertIntegers(record.properties));
+      res.json({ name, words, forms, roots });
+    } else {
+      res.json({});
+    }
   } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
+    console.error('Error fetching words, forms, and roots by name:', error);
+    res.status(500).send('Error fetching words, forms, and roots by name');
   } finally {
     await session.close();
   }
 });
 
-// Endpoint to fetch data for a specific word and its root
-router.get('/word/:word', async (req, res) => {
-  const { word } = req.params;
-  const { script } = req.query;
-  const session = req.driver.session();
-  try {
-    const result = await session.run(`
-      MATCH (root:Root)-[r]->(word:Word {${script}: $word})
-      WITH root
-      MATCH (root)-[r2]->(relatedWord:Word)
-      WHERE relatedWord.${script} IS NOT NULL
-      RETURN root, collect(relatedWord) AS words
-    `, { word, script });
-
-    const data = formatData(result.records);
-    console.log(`Fetched data for word ${word} with script ${script}:`, data); // Add logging
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  } finally {
-    await session.close();
-  }
-});
-
-// Endpoint to fetch the root for a selected name of Allah
-router.get('/name/:name', async (req, res) => {
-  const { name } = req.params;
-  const { script } = req.query;
-  const session = req.driver.session();
-  try {
-    const field = script === 'english' ? 'transliteration' : 'arabic';
-    const result = await session.run(`
-      MATCH (name:NameOfAllah {${field}: $name})-[:HAS_ROOT]->(root:Root)
-      WITH root
-      MATCH (root)-[r]->(relatedWord:Word)
-      WHERE relatedWord.${script} IS NOT NULL
-      RETURN root, collect(relatedWord) AS words
-    `, { name, script });
-
-    const data = formatData(result.records);
-    console.log(`Fetched data for name ${name} with script ${script}:`, data); // Add logging
-    res.json(data);
-  } catch (error) {
-    console.error('Error fetching data for name:', error);
-    res.status(500).send('Error fetching data for name');
-  } finally {
-    await session.close();
-  }
-});
 
 // Endpoint to fetch words by form ID
 router.get('/form/:formId', async (req, res) => {
