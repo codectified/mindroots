@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import GraphVisualization from './components/GraphVisualization';
-import { fetchNamesOfAllah, fetchRootForName, fetchWordsByForm, fetchWordData } from './services/apiService';
+import { fetchNamesOfAllah, fetchWordsByForm, fetchWordsByNameId } from './services/apiService';
 
 const App = () => {
   const [script, setScript] = useState('arabic'); // Default script set to Arabic
@@ -12,11 +12,10 @@ const App = () => {
     const fetchData = async () => {
       try {
         const response = await fetchNamesOfAllah(script);
-        setNames(Array.isArray(response) ? response : []); // Ensure response is an array
-        console.log('Fetched names of Allah:', response); // Add logging
+        setNames(response);
+        console.log('Fetched names of Allah:', response);
       } catch (error) {
         console.error('Error fetching names of Allah:', error);
-        setNames([]); // Set to empty array on error
       }
     };
     fetchData();
@@ -24,20 +23,27 @@ const App = () => {
 
   const handleSelectName = async (name) => {
     try {
-      const response = await fetchRootForName(name[script], script);
+      console.log('Selected name:', name); // Add logging to inspect the selected name
+
+      const nameId = name.name_id.low !== undefined ? name.name_id.low : name.name_id; // Ensure name_id is properly retrieved
+      console.log('nameId:', nameId); // Add logging to check the value of nameId
+
+      const response = await fetchWordsByNameId(nameId, script);
       console.log('Response data:', response); // Add logging to inspect the structure
 
-      if (response && response.length > 0) {
-        const data = response[0];
-        const nodes = [data.root, ...data.words].map((item) => ({
-          id: item[script],
-          label: item[script],
-          ...item
-        }));
-        const links = data.words.map((word) => ({
-          source: data.root[script],
-          target: word[script]
-        }));
+      if (response.words.length > 0) {
+        const nameNode = { id: response.name[script], label: response.name[script], ...response.name };
+        const wordNodes = response.words.map(word => ({ id: word[script], label: word[script], ...word }));
+        const formNodes = response.forms.map(form => ({ id: form[script], label: form[script], ...form }));
+        const rootNodes = response.roots.map(root => ({ id: root[script], label: root[script], ...root }));
+
+        const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
+        const links = [
+          ...response.words.map(word => ({ source: nameNode.id, target: word[script] })),
+          ...response.forms.map(form => ({ source: wordNodes[0].id, target: form[script] })), // Assuming each word has one form for simplicity
+          ...response.roots.map(root => ({ source: wordNodes[0].id, target: root[script] }))  // Assuming each word has one root for simplicity
+        ];
+
         const newData = { nodes, links };
         console.log('Transformed rootData:', newData); // Add logging
         setRootData(newData);
@@ -46,55 +52,42 @@ const App = () => {
         setRootData({ nodes: [], links: [] });
       }
     } catch (error) {
-      console.error('Error fetching root data for name:', error);
+      console.error('Error fetching words for name:', error);
     }
   };
 
   const handleNodeClick = async (node) => {
     try {
-      let response;
       console.log('Clicked node:', node);
-  
+
       if (node.form_id) {
-        console.log('Node form_id:', node.form_id);
-        if (Array.isArray(node.form_id)) {
-          for (const formId of node.form_id) {
-            response = await fetchWordsByForm(formId, script);
-            if (response && response.length > 0) {
-              const newWords = response.map(word => ({
-                id: word[script],
-                label: word[script],
-                ...word
-              }));
-              const newLinks = newWords.map(word => ({
-                source: node.id,
-                target: word.id
-              }));
-              const newData = { nodes: [...rootData.nodes, ...newWords], links: [...rootData.links, ...newLinks] };
-              console.log('New rootData after node click:', newData);
-              setRootData(newData);
-            }
-          }
-        } else {
-          response = await fetchWordsByForm(node.form_id, script);
-          console.log('Fetched words by form:', response);
-        }
-      } else if (node.id) {
-        response = await fetchWordData(node.id, script);
-        console.log('Fetched word data:', response);
-      }
-  
-      if (response && response.length > 0) {
-        const newWords = response.map(word => ({
+        const formIds = Array.isArray(node.form_id) ? node.form_id : [node.form_id];
+        const allResponses = await Promise.all(formIds.map(formId => fetchWordsByForm(formId, script)));
+        const allNewWords = allResponses.flat().map(word => ({
           id: word[script],
           label: word[script],
           ...word
         }));
-        const newLinks = newWords.map(word => ({
-          source: node.id,
-          target: word.id
-        }));
-        const newData = { nodes: [...rootData.nodes, ...newWords], links: [...rootData.links, ...newLinks] };
+
+        const formNode = {
+          id: `form_${formIds[0]}`,
+          label: `Form ${formIds[0]}`,
+        };
+
+        const newNodes = [formNode, ...allNewWords];
+        const newLinks = [
+          { source: node.id, target: formNode.id },
+          ...allNewWords.map(word => ({
+            source: formNode.id,
+            target: word.id
+          }))
+        ];
+
+        const newData = {
+          nodes: [...rootData.nodes, ...newNodes],
+          links: [...rootData.links, ...newLinks]
+        };
+
         console.log('New rootData after node click:', newData);
         setRootData(newData);
       }
@@ -102,7 +95,6 @@ const App = () => {
       console.error('Error fetching data for clicked node:', error);
     }
   };
-  
 
   const handleSwitchScript = () => {
     setScript(script === 'english' ? 'arabic' : 'english');

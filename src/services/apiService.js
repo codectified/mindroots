@@ -26,11 +26,6 @@ export const fetchWords = async (concept, script) => {
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchRootData = async (root, script) => {
-  const response = await api.get(`/root/${root}`, { params: { script } });
-  return response.data.map(item => convertIntegers(item));
-};
-
 export const fetchWordData = async (word, script) => {
   const response = await api.get(`/word/${word}`, { params: { script } });
   return convertIntegers(response.data);
@@ -47,14 +42,13 @@ export const fetchWordsByForm = async (formId, script) => {
   }
 };
 
-
-
 export const fetchNamesOfAllah = async (script) => {
   const response = await api.get('/list/names_of_allah', { params: { script } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchRootForName = async (name, script) => {
-  const response = await api.get(`/name/${name}`, { params: { script } });
+export const fetchWordsByNameId = async (nameId, script) => {
+  const response = await api.get(`/words_by_name/${nameId}`, { params: { script } });
   return convertIntegers(response.data);
 };
+

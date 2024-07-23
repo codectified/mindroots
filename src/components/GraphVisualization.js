@@ -45,7 +45,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .on('click', (event, d) => onNodeClick(d));
 
     node.append('title')
-      .text(d => d.label);
+      .text(d => d.id);
 
     const text = svg.append('g')
       .attr('class', 'labels')
