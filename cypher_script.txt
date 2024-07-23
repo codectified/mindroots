@@ -1,92 +1,31 @@
-LOAD CSV WITH HEADERS FROM 'file:///99names.csv' AS row
-MERGE (arabic_root:Root {root: row.`الجذر`})
+LOAD CSV WITH HEADERS FROM 'file:///roots.csv' AS row
+MERGE (root:Root {root_id: toInteger(row.id), arabic: row.`الجذور`, english: row.transliterated_root, r3: row.r3, r2: row.r2, r1: row.r1})
 
-FOREACH(ignoreMe IN CASE WHEN row.`المصدر` IS NOT NULL AND row.`المصدر` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_infinitive:Word {script: 'arabic', text: row.`المصدر`})
-    MERGE (arabic_root)-[:HAS_INFINITIVE]->(arabic_infinitive)
-)
+LOAD CSV WITH HEADERS FROM 'file:///forms.csv' AS row
+MERGE (form:Form {form_id: toInteger(row.id), arabic: row.arabic, english: row.english})
 
-FOREACH(ignoreMe IN CASE WHEN row.infinitive IS NOT NULL AND row.infinitive <> '' THEN [1] ELSE [] END |
-    MERGE (english_infinitive:Word {script: 'english', text: row.infinitive})
-    MERGE (arabic_root)-[:HAS_INFINITIVE]->(english_infinitive)
-)
+// Load the derivatives and link them to names of Allah by name_id
+LOAD CSV WITH HEADERS FROM 'file:///derivatives.csv' AS row
+WITH row
+MERGE (word:Word {word_id: toInteger(row.id), arabic: row.arabic, english: row.english})
+SET word.name_id = toInteger(row.name_id)
+WITH row, word
+MATCH (root:Root {root_id: toInteger(row.root_id)})
+MERGE (root)-[:HAS_WORD]->(word)
+SET word.root_id = root.root_id  // Include root_id in word properties
+WITH row, word
+WITH word, split(replace(replace(row.form_id, '[', ''), ']', ''), ',') AS form_ids
+UNWIND form_ids AS form_id
+MATCH (form:Form {form_id: toInteger(form_id)})
+MERGE (word)-[:HAS_FORM]->(form)
 
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_الفاعل` IS NOT NULL AND row.`اسم_الفاعل` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_active_participle:Word {script: 'arabic', text: row.`اسم_الفاعل`})
-    MERGE (arabic_root)-[:HAS_ACTIVE_PARTICIPLE]->(arabic_active_participle)
-)
 
-FOREACH(ignoreMe IN CASE WHEN row.active_participle IS NOT NULL AND row.active_participle <> '' THEN [1] ELSE [] END |
-    MERGE (english_active_participle:Word {script: 'english', text: row.active_participle})
-    MERGE (arabic_root)-[:HAS_ACTIVE_PARTICIPLE]->(english_active_participle)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_المفعول` IS NOT NULL AND row.`اسم_المفعول` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_passive_participle:Word {script: 'arabic', text: row.`اسم_المفعول`})
-    MERGE (arabic_root)-[:HAS_PASSIVE_PARTICIPLE]->(arabic_passive_participle)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.passive_participle IS NOT NULL AND row.passive_participle <> '' THEN [1] ELSE [] END |
-    MERGE (english_passive_participle:Word {script: 'english', text: row.passive_participle})
-    MERGE (arabic_root)-[:HAS_PASSIVE_PARTICIPLE]->(english_passive_participle)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_المكان` IS NOT NULL AND row.`اسم_المكان` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_noun_of_place:Word {script: 'arabic', text: row.`اسم_المكان`})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_PLACE]->(arabic_noun_of_place)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.noun_of_place IS NOT NULL AND row.noun_of_place <> '' THEN [1] ELSE [] END |
-    MERGE (english_noun_of_place:Word {script: 'english', text: row.noun_of_place})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_PLACE]->(english_noun_of_place)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_المرة` IS NOT NULL AND row.`اسم_المرة` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_singular:Word {script: 'arabic', text: row.`اسم_المرة`})
-    MERGE (arabic_root)-[:HAS_SINGULAR]->(arabic_singular)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.singular IS NOT NULL AND row.singular <> '' THEN [1] ELSE [] END |
-    MERGE (english_singular:Word {script: 'english', text: row.singular})
-    MERGE (arabic_root)-[:HAS_SINGULAR]->(english_singular)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_الحال` IS NOT NULL AND row.`اسم_الحال` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_noun_of_state:Word {script: 'arabic', text: row.`اسم_الحال`})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_STATE]->(arabic_noun_of_state)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.noun_of_state IS NOT NULL AND row.noun_of_state <> '' THEN [1] ELSE [] END |
-    MERGE (english_noun_of_state:Word {script: 'english', text: row.noun_of_state})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_STATE]->(english_noun_of_state)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_الآلة` IS NOT NULL AND row.`اسم_الآلة` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_noun_of_instrumentation:Word {script: 'arabic', text: row.`اسم_الآلة`})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_INSTRUMENTATION]->(arabic_noun_of_instrumentation)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.noun_of_instrumentation IS NOT NULL AND row.noun_of_instrumentation <> '' THEN [1] ELSE [] END |
-    MERGE (english_noun_of_instrumentation:Word {script: 'english', text: row.noun_of_instrumentation})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_INSTRUMENTATION]->(english_noun_of_instrumentation)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_ذات` IS NOT NULL AND row.`اسم_ذات` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_noun_of_essence:Word {script: 'arabic', text: row.`اسم_ذات`})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_ESSENCE]->(arabic_noun_of_essence)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.noun_of_essence IS NOT NULL AND row.noun_of_essence <> '' THEN [1] ELSE [] END |
-    MERGE (english_noun_of_essence:Word {script: 'english', text: row.noun_of_essence})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_ESSENCE]->(english_noun_of_essence)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.`اسم_التفعيل` IS NOT NULL AND row.`اسم_التفعيل` <> '' THEN [1] ELSE [] END |
-    MERGE (arabic_noun_of_hyperbole:Word {script: 'arabic', text: row.`اسم_التفعيل`})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_HYPERBOLE]->(arabic_noun_of_hyperbole)
-)
-
-FOREACH(ignoreMe IN CASE WHEN row.noun_of_hyperbole IS NOT NULL AND row.noun_of_hyperbole <> '' THEN [1] ELSE [] END |
-    MERGE (english_noun_of_hyperbole:Word {script: 'english', text: row.noun_of_hyperbole})
-    MERGE (arabic_root)-[:HAS_NOUN_OF_HYPERBOLE]->(english_noun_of_hyperbole)
-)
+// Load the most excellent names
+LOAD CSV WITH HEADERS FROM 'file:///most_excellent_names.csv' AS row
+WITH row 
+WHERE row.`أسماء_الله_الحسنى` IS NOT NULL AND row.id IS NOT NULL
+MERGE (name:NameOfAllah {name_id: toInteger(row.id), arabic: row.`أسماء_الله_الحسنى`, transliteration: row.transliteration, english: row.the_most_excellent_names})
+WITH name, row
+MATCH (name:NameOfAllah), (word:Word)
+WHERE name.name_id = word.name_id AND word.name_id <> 0
+MERGE (name)-[:HAS_WORD]->(word)
