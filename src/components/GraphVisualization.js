@@ -23,13 +23,18 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX(d => {
-        if (d.type === 'name') return width / 2; // Center the name node horizontally
-        return d.index % 2 === 0 ? width / 3 : (2 * width) / 3; // Distribute other nodes symmetrically
+        if (d.type === 'name') return width / 2;
+        if (d.type === 'word') return width / 2;
+        if (d.type === 'form') return width / 3;
+        if (d.type === 'root') return (2 * width) / 3;
+        return width / 2;
       }).strength(0.5))
       .force('y', d3.forceY(d => {
-        if (d.type === 'name') return height / 4; // Pull the name node towards the top
-        if (d.type === 'word') return height / 2; // Place words in the middle
-        return (3 * height) / 4; // Place forms and roots further down
+        if (d.type === 'name') return height / 4;
+        if (d.type === 'word') return height / 2;
+        if (d.type === 'form') return (3 * height) / 4;
+        if (d.type === 'root') return (3 * height) / 4;
+        return height / 2;
       }).strength(0.5))
       .force('collide', d3.forceCollide(50)); // Add collision force to prevent overlap
 
