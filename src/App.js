@@ -40,16 +40,16 @@ const App = () => {
       console.log('Response data:', response); // Add logging to inspect the structure
 
       if (response.words.length > 0) {
-        const nameNode = { id: response.name[script], label: response.name[script], ...response.name };
-        const wordNodes = response.words.map(word => ({ id: word[script], label: word[script], ...word }));
-        const formNodes = response.forms.map(form => ({ id: form[script], label: form[script], ...form }));
-        const rootNodes = response.roots.map(root => ({ id: root[script], label: root[script], ...root }));
+        const nameNode = { id: `${response.name[script]}_name`, label: response.name[script], ...response.name, type: 'name' };
+        const wordNodes = response.words.map(word => ({ id: `${word[script]}_word`, label: word[script], ...word, type: 'word' }));
+        const formNodes = response.forms.map(form => ({ id: `${form[script]}_form`, label: form[script], ...form, type: 'form' }));
+        const rootNodes = response.roots.map(root => ({ id: `${root[script]}_root`, label: root[script], ...root, type: 'root' }));
 
         const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
         const links = [
-          ...response.words.map(word => ({ source: nameNode.id, target: word[script] })),
-          ...response.forms.map(form => ({ source: wordNodes[0].id, target: form[script] })), // Assuming each word has one form for simplicity
-          ...response.roots.map(root => ({ source: wordNodes[0].id, target: root[script] }))  // Assuming each word has one root for simplicity
+          ...response.words.map(word => ({ source: nameNode.id, target: `${word[script]}_word` })),
+          ...response.forms.map(form => ({ source: `${wordNodes[0].id}`, target: `${form[script]}_form` })), // Assuming each word has one form for simplicity
+          ...response.roots.map(root => ({ source: `${wordNodes[0].id}`, target: `${root[script]}_root` }))  // Assuming each word has one root for simplicity
         ];
 
         const newData = { nodes, links };
@@ -72,14 +72,16 @@ const App = () => {
         const formIds = Array.isArray(node.form_id) ? node.form_id : [node.form_id];
         const allResponses = await Promise.all(formIds.map(formId => fetchWordsByForm(formId, script)));
         const allNewWords = allResponses.flat().map(word => ({
-          id: word[script],
+          id: `${word[script]}_word`,
           label: word[script],
-          ...word
+          ...word,
+          type: 'word'
         }));
 
         const formNode = {
           id: `form_${formIds[0]}`,
           label: `Form ${formIds[0]}`,
+          type: 'form'
         };
 
         const newNodes = [formNode, ...allNewWords];

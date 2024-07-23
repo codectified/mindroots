@@ -23,6 +23,10 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .force('charge', d3.forceManyBody().strength(-300))
       .force('center', d3.forceCenter(width / 2, height / 2));
 
+    const color = d3.scaleOrdinal()
+      .domain(['name', 'word', 'form', 'root'])
+      .range(['gold', 'red', 'blue', 'green']);
+
     const link = svg.append('g')
       .attr('class', 'links')
       .selectAll('line')
@@ -37,7 +41,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .data(data.nodes)
       .enter().append('circle')
       .attr('r', 10)
-      .attr('fill', '#69b3a2')
+      .attr('fill', d => color(d.type))
       .call(d3.drag()
         .on('start', dragstarted)
         .on('drag', dragged)
@@ -80,6 +84,15 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       text
         .attr('x', d => d.x)
         .attr('y', d => d.y);
+
+      // Log positions less frequently
+      if (Math.random() < 0.05) {
+        console.log('Node positions:', node.data().map(d => ({ x: d.x, y: d.y })));
+        console.log('Link positions:', link.data().map(d => ({
+          source: { x: d.source.x, y: d.source.y },
+          target: { x: d.target.x, y: d.target.y }
+        })));
+      }
     }
 
     function dragstarted(event, d) {
