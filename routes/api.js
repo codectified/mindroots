@@ -112,4 +112,39 @@ router.get('/form/:formId', async (req, res) => {
   }
 });
 
+// Endpoint to fetch words related to a root node
+router.get('/root/:rootId', async (req, res) => {
+  const { rootId } = req.params;
+  const { script } = req.query;
+  const session = req.driver.session();
+  try {
+    console.log(`Received request for root ID ${rootId} with script ${script}`);
+
+    const result = await session.run(`
+      MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
+      WHERE word.${script} IS NOT NULL
+      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+    `, { rootId, script });
+
+    console.log(`Raw records for root ${rootId} with script ${script}:`, result.records);
+
+    const words = result.records.map(record => ({
+      scriptField: record.get('scriptField'),
+      wordId: convertIntegers(record.get('wordId')),
+      arabic: record.get('arabic'),
+      english: record.get('english'),
+      formId: convertIntegers(record.get('formId'))
+    }));
+
+    console.log(`Formatted words for root ${rootId} with script ${script}:`, words);
+    res.json(words);
+  } catch (error) {
+    console.error('Error fetching words by root:', error);
+    res.status(500).send('Error fetching words by root');
+  } finally {
+    await session.close();
+  }
+});
+
+
 module.exports = router;

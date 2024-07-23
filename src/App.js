@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import Header from './components/Header';
 import GraphVisualization from './components/GraphVisualization';
-import { fetchNamesOfAllah, fetchWordsByForm, fetchWordsByNameId } from './services/apiService';
+import { fetchNamesOfAllah, fetchWordsByForm, fetchWordsByNameId, fetchRootData } from './services/apiService';
 
 const App = () => {
   const [script, setScript] = useState('arabic'); // Default script set to Arabic
@@ -67,44 +67,68 @@ const App = () => {
   const handleNodeClick = async (node) => {
     try {
       console.log('Clicked node:', node);
-
-      if (node.form_id) {
-        const formIds = Array.isArray(node.form_id) ? node.form_id : [node.form_id];
-        const allResponses = await Promise.all(formIds.map(formId => fetchWordsByForm(formId, script)));
-        const allNewWords = allResponses.flat().map(word => ({
+  
+      if (node.type === 'form') {
+        // Prevent duplicate form nodes
+        const formNodeExists = rootData.nodes.some(n => n.id === node.id);
+        if (!formNodeExists) {
+          const formIds = Array.isArray(node.form_id) ? node.form_id : [node.form_id];
+          const allResponses = await Promise.all(formIds.map(formId => fetchWordsByForm(formId, script)));
+          const allNewWords = allResponses.flat().map(word => ({
+            id: `${word[script]}_word`,
+            label: word[script],
+            ...word,
+            type: 'word'
+          }));
+  
+          const newNodes = [...allNewWords];
+          const newLinks = [
+            ...allNewWords.map(word => ({
+              source: node.id,
+              target: word.id
+            }))
+          ];
+  
+          const newData = {
+            nodes: [...rootData.nodes, ...newNodes],
+            links: [...rootData.links, ...newLinks]
+          };
+  
+          console.log('New rootData after node click:', newData);
+          setRootData(newData);
+        }
+      } else if (node.type === 'root') {
+        // Handle root node click to display related nodes
+        const response = await fetchRootData(node.root_id, script);
+        const relatedNodes = response.map(word => ({
           id: `${word[script]}_word`,
           label: word[script],
           ...word,
           type: 'word'
         }));
-
-        const formNode = {
-          id: `form_${formIds[0]}`,
-          label: `Form ${formIds[0]}`,
-          type: 'form'
-        };
-
-        const newNodes = [formNode, ...allNewWords];
+  
+        const newNodes = [...relatedNodes];
         const newLinks = [
-          { source: node.id, target: formNode.id },
-          ...allNewWords.map(word => ({
-            source: formNode.id,
+          ...relatedNodes.map(word => ({
+            source: node.id,
             target: word.id
           }))
         ];
-
+  
         const newData = {
           nodes: [...rootData.nodes, ...newNodes],
           links: [...rootData.links, ...newLinks]
         };
-
-        console.log('New rootData after node click:', newData);
+  
+        console.log('New rootData after root node click:', newData);
         setRootData(newData);
       }
     } catch (error) {
       console.error('Error fetching data for clicked node:', error);
     }
   };
+  
+  
 
   const handleSwitchScript = async () => {
     setScript(script === 'english' ? 'arabic' : 'english');

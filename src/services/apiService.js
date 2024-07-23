@@ -52,3 +52,7 @@ export const fetchWordsByNameId = async (nameId, script) => {
   return convertIntegers(response.data);
 };
 
+export const fetchRootData = async (rootId, script) => {
+  const response = await api.get(`/root/${rootId}`, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
