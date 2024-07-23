@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import Header from './components/Header';
 import GraphVisualization from './components/GraphVisualization';
 import { fetchNamesOfAllah, fetchWordsByForm, fetchWordsByNameId, fetchRootData } from './services/apiService';
@@ -24,13 +24,7 @@ const App = () => {
     fetchData();
   }, [script]);
 
-  useEffect(() => {
-    if (selectedName) {
-      handleSelectName(selectedName);
-    }
-  }, [script]);
-
-  const handleSelectName = async (name) => {
+  const handleSelectName = useCallback(async (name) => {
     try {
       setSelectedName(name);
       console.log('Selected name:', name);
@@ -66,9 +60,13 @@ const App = () => {
     } catch (error) {
       console.error('Error fetching words for name:', error);
     }
-  };
-  
-  
+  }, [script]);
+
+  useEffect(() => {
+    if (selectedName) {
+      handleSelectName(selectedName);
+    }
+  }, [script, selectedName, handleSelectName]);
 
   const handleNodeClick = async (node) => {
     try {
@@ -85,23 +83,16 @@ const App = () => {
           type: 'word'
         }));
   
-        const existingFormNode = rootData.nodes.find(n => n.id === node.id);
+        const newNodes = [];
+        const newLinks = [];
   
-        // Only create a new form node if it doesn't already exist
-        const newFormNode = existingFormNode ? [] : [{
-          id: `form_${formIds[0]}`,
-          label: script === 'both' ? `${node.arabic} / ${node.english}` : node[script],
-          type: 'form'
-        }];
-  
-        const newNodes = [...newFormNode, ...allNewWords];
-        const newLinks = [
-          ...newFormNode.map(formNode => ({ source: node.id, target: formNode.id })),
-          ...allNewWords.map(word => ({
-            source: newFormNode.length > 0 ? newFormNode[0].id : existingFormNode.id,
-            target: word.id
-          }))
-        ];
+        allNewWords.forEach(word => {
+          const existingNode = rootData.nodes.find(n => n.id === word.id);
+          if (!existingNode) {
+            newNodes.push(word);
+          }
+          newLinks.push({ source: node.id, target: word.id });
+        });
   
         const newData = {
           nodes: [...rootData.nodes, ...newNodes],
@@ -117,18 +108,23 @@ const App = () => {
         console.log('Fetched words by root:', response);
   
         if (response && response.length > 0) {
-          const existingRootNode = rootData.nodes.find(n => n.id === node.id);
-          const wordNodes = response.map(word => ({
-            id: `${word[script]}_word`,
-            label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
-            ...word,
-            type: 'word'
-          }));
+          const newNodes = [];
+          const newLinks = [];
   
-          const newNodes = [...wordNodes];
-          const newLinks = [
-            ...wordNodes.map(word => ({ source: existingRootNode.id, target: word.id }))
-          ];
+          response.forEach(word => {
+            const wordNode = {
+              id: `${word[script]}_word`,
+              label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
+              ...word,
+              type: 'word'
+            };
+  
+            const existingNode = rootData.nodes.find(n => n.id === wordNode.id);
+            if (!existingNode) {
+              newNodes.push(wordNode);
+            }
+            newLinks.push({ source: node.id, target: wordNode.id });
+          });
   
           const newData = {
             nodes: [...rootData.nodes, ...newNodes],
@@ -145,11 +141,6 @@ const App = () => {
       console.error('Error fetching data for clicked node:', error);
     }
   };
-  
-  
-  
-  
-  
   
 
   const handleSwitchScript = (newScript) => {
