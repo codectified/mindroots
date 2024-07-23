@@ -1,5 +1,5 @@
 LOAD CSV WITH HEADERS FROM 'file:///roots.csv' AS row
-MERGE (root:Root {root_id: toInteger(row.id), arabic: row.`الجذور`, transliterated_root: row.transliterated_root, r3: row.r3, r2: row.r2, r1: row.r1})
+MERGE (root:Root {root_id: toInteger(row.id), arabic: row.`الجذور`, english: row.transliterated_root, r3: row.r3, r2: row.r2, r1: row.r1})
 
 LOAD CSV WITH HEADERS FROM 'file:///forms.csv' AS row
 MERGE (form:Form {form_id: toInteger(row.id), arabic: row.arabic, english: row.english})
@@ -23,8 +23,8 @@ MERGE (word)-[:HAS_FORM]->(form)
 // Load the most excellent names
 LOAD CSV WITH HEADERS FROM 'file:///most_excellent_names.csv' AS row
 WITH row 
-WHERE row.`الأسماء_الله_الحسنى` IS NOT NULL AND row.id IS NOT NULL
-MERGE (name:NameOfAllah {name_id: toInteger(row.id), arabic: row.`الأسماء_الله_الحسنى`, transliteration: row.transliterated_name, the_most_excellent_names: row.the_most_excellent_names})
+WHERE row.`أسماء_الله_الحسنى` IS NOT NULL AND row.id IS NOT NULL
+MERGE (name:NameOfAllah {name_id: toInteger(row.id), arabic: row.`أسماء_الله_الحسنى`, transliteration: row.transliteration, english: row.the_most_excellent_names})
 WITH name, row
 MATCH (name:NameOfAllah), (word:Word)
 WHERE name.name_id = word.name_id AND word.name_id <> 0
