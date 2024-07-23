@@ -45,7 +45,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .on('click', (event, d) => onNodeClick(d));
 
     node.append('title')
-      .text(d => d.id);
+      .text(d => d.label);
 
     const text = svg.append('g')
       .attr('class', 'labels')
@@ -80,15 +80,6 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       text
         .attr('x', d => d.x)
         .attr('y', d => d.y);
-
-      // Log positions less frequently
-      if (Math.random() < 0.05) {
-        console.log('Node positions:', node.data().map(d => ({ x: d.x, y: d.y })));
-        console.log('Link positions:', link.data().map(d => ({
-          source: { x: d.source.x, y: d.source.y },
-          target: { x: d.target.x, y: d.target.y }
-        })));
-      }
     }
 
     function dragstarted(event, d) {

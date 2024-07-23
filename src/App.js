@@ -7,6 +7,7 @@ const App = () => {
   const [script, setScript] = useState('arabic'); // Default script set to Arabic
   const [names, setNames] = useState([]);
   const [rootData, setRootData] = useState({ nodes: [], links: [] });
+  const [selectedName, setSelectedName] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,8 +22,15 @@ const App = () => {
     fetchData();
   }, [script]);
 
+  useEffect(() => {
+    if (selectedName) {
+      handleSelectName(selectedName);
+    }
+  }, [script]);
+
   const handleSelectName = async (name) => {
     try {
+      setSelectedName(name);
       console.log('Selected name:', name); // Add logging to inspect the selected name
 
       const nameId = name.name_id.low !== undefined ? name.name_id.low : name.name_id; // Ensure name_id is properly retrieved
@@ -96,7 +104,7 @@ const App = () => {
     }
   };
 
-  const handleSwitchScript = () => {
+  const handleSwitchScript = async () => {
     setScript(script === 'english' ? 'arabic' : 'english');
   };
 
