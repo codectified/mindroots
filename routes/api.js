@@ -1,85 +1,168 @@
 const express = require('express');
+const neo4j = require('neo4j-driver'); // Import neo4j
 const router = express.Router();
 
-// Helper function to format the data
-const formatData = (records) => {
-  return records.map(record => {
-    const root = record.get('root').properties;
-    const words = record.get('words').map(word => word.properties);
-    return { root, words };
-  });
+// Helper function to convert Neo4j integers to regular numbers
+const convertIntegers = (obj) => {
+  if (typeof obj === 'object' && obj !== null) {
+    if ('low' in obj && 'high' in obj) {
+      return neo4j.int(obj.low, obj.high).toNumber(); // Convert Neo4j integers to numbers
+    }
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        obj[key] = convertIntegers(obj[key]);
+      }
+    }
+  }
+  return obj;
 };
 
-// Endpoint to list words from a specific column
-router.get('/list/:column', async (req, res) => {
-  const { column } = req.params;
-  const { script } = req.query;
-  const session = req.driver.session();
-  try {
-    const relationshipType = `HAS_${column.toUpperCase()}`;
-    const result = await session.run(`
-      MATCH (root:Root)-[:${relationshipType}]->(word:Word {script: $script})
-      RETURN word.text AS text
-    `, { script });
+const formatSimpleData = (records) => {
+  return records.map(record => ({
+    arabic: record.get('arabic'),
+    english: record.get('english'),
+    name_id: convertIntegers(record.get('name_id')) // Convert and include name_id
+  }));
+};
 
-    const words = result.records.map(record => record.get('text'));
-    console.log(`Fetched words for column ${column} and script ${script}:`, words); // Add logging
-    res.json(words);
-  } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
-  } finally {
-    await session.close();
-  }
-});
-
-// Endpoint to fetch data for a specific root and all its subnodes/related nodes with script as a variable
-router.get('/root/:word', async (req, res) => {
-  const { word } = req.params;
-  const { script } = req.query;
+// Endpoint to list all the names of Allah
+router.get('/list/names_of_allah', async (req, res) => {
   const session = req.driver.session();
   try {
     const result = await session.run(`
-      MATCH (root:Root)-[r]->(word:Word {text: $word, script: $script})
-      WITH root
-      MATCH (root)-[r2]->(relatedWord:Word {script: $script})
-      RETURN root, collect(relatedWord) AS words
-    `, { word, script });
+      MATCH (name:NameOfAllah)
+      RETURN name.arabic AS arabic, name.transliteration AS english, name.name_id AS name_id
+    `);
 
-    const data = formatData(result.records);
-    console.log(`Fetched data for word ${word} with script ${script}:`, data); // Add logging
-    res.json(data);
+    const names = formatSimpleData(result.records);
+    console.log('Fetched all names of Allah:', names); // Add logging
+    res.json(names);
   } catch (error) {
-    console.error('Error fetching data:', error);
-    res.status(500).send('Error fetching data');
+    console.error('Error fetching names of Allah:', error);
+    res.status(500).send('Error fetching names of Allah');
   } finally {
     await session.close();
   }
 });
 
 
-// Endpoint to switch scripts
-router.get('/switch-script', async (req, res) => {
-  const { root, script } = req.query; // Expecting `root` and `script` as query parameters
+// Endpoint to fetch words, forms, and roots by name ID
+router.get('/words_by_name/:nameId', async (req, res) => {
+  const { nameId } = req.params;
+  const { script } = req.query;
   const session = req.driver.session();
   try {
     const result = await session.run(`
-      MATCH (root:Root {root: $root})-[:HAS_WORD|HAS_INFINITIVE|HAS_ACTIVE_PARTICIPLE|HAS_PASSIVE_PARTICIPLE|HAS_NOUN_OF_PLACE|HAS_SINGULAR|HAS_NOUN_OF_STATE|HAS_NOUN_OF_INSTRUMENTATION|HAS_NOUN_OF_ESSENCE|HAS_NOUN_OF_HYPERBOLE]->(word:Word {script: $script})
-      RETURN root, collect(word) AS words
-    `, { root, script });
+      MATCH (name:NameOfAllah {name_id: toInteger($nameId)})-[:HAS_WORD]->(word:Word)
+      OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
+      OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
+      RETURN name, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
+    `, { nameId });
 
-    const data = result.records.map(record => ({
-      root: record.get('root').properties,
-      words: record.get('words').map(word => word.properties)
+    const records = result.records[0];
+    if (records) {
+      const name = records.get('name').properties;
+      const words = records.get('words').map(record => convertIntegers(record.properties));
+      const forms = records.get('forms').map(record => convertIntegers(record.properties));
+      const roots = records.get('roots').map(record => convertIntegers(record.properties));
+      res.json({ name, words, forms, roots });
+    } else {
+      res.json({});
+    }
+  } catch (error) {
+    console.error('Error fetching words, forms, and roots by name:', error);
+    res.status(500).send('Error fetching words, forms, and roots by name');
+  } finally {
+    await session.close();
+  }
+});
+
+
+// Endpoint to fetch words by form ID
+router.get('/form/:formId', async (req, res) => {
+  const { formId } = req.params;
+  const { script } = req.query;
+  const session = req.driver.session();
+  try {
+    console.log(`Received request for form ID ${formId} with script ${script}`);
+
+    let query = `
+      MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
+      WHERE word.${script} IS NOT NULL
+      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+    `;
+
+    if (script === 'both') {
+      query = `
+        MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
+        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+      `;
+    }
+
+    const result = await session.run(query, { formId, script });
+    console.log(`Raw records for form ${formId} with script ${script}:`, result.records);
+
+    const words = result.records.map(record => ({
+      scriptField: record.get('scriptField'),
+      wordId: convertIntegers(record.get('wordId')),
+      arabic: record.get('arabic'),
+      english: record.get('english'),
+      formId: convertIntegers(record.get('formId'))
     }));
 
-    res.json(data);
+    console.log(`Formatted words for form ${formId} with script ${script}:`, words);
+    res.json(words);
   } catch (error) {
-    console.error('Error switching script:', error);
-    res.status(500).send('Error switching script');
+    console.error('Error fetching words by form:', error);
+    res.status(500).send('Error fetching words by form');
   } finally {
     await session.close();
   }
 });
+
+
+// Endpoint to fetch words related to a root node
+router.get('/root/:rootId', async (req, res) => {
+  const { rootId } = req.params;
+  const { script } = req.query;
+  const session = req.driver.session();
+  try {
+    console.log(`Received request for root ID ${rootId} with script ${script}`);
+
+    let query = `
+      MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
+      WHERE word.${script} IS NOT NULL
+      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+    `;
+
+    if (script === 'both') {
+      query = `
+        MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
+        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+      `;
+    }
+
+    const result = await session.run(query, { rootId });
+    console.log(`Raw records for root ${rootId} with script ${script}:`, result.records);
+
+    const words = result.records.map(record => ({
+      scriptField: record.get('scriptField'),
+      wordId: convertIntegers(record.get('wordId')),
+      arabic: record.get('arabic'),
+      english: record.get('english'),
+      formId: convertIntegers(record.get('formId'))
+    }));
+
+    console.log(`Formatted words for root ${rootId} with script ${script}:`, words);
+    res.json(words);
+  } catch (error) {
+    console.error('Error fetching words by root:', error);
+    res.status(500).send('Error fetching words by root');
+  } finally {
+    await session.close();
+  }
+});
+
+
 
 module.exports = router;
