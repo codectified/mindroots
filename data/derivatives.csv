@@ -1,0 +1,123 @@
+id,root_id,form_id,arabic,english
+1,1,[1],رَحْمَةٌ,Mercy
+2,1,"[2,5]",رَاحِمٌ,Merciful
+3,1,[3],مَرْحُومٌ,One who is shown mercy
+4,1,[4],مَرْحَمَةٌ,Place of mercy
+5,1,[5],رَحِيمٌ, Merciful
+6,1,"[4,7]",رَحِمٌ,Womb
+7,1,[8],رَحْمَانٌ,Most Merciful
+8,2,[1],مُلْكٌ,Sovereignty
+9,2,[2],مَالِكٌ,Owner
+10,2,[3],مَمْلُوكٌ,"Owned, slave"
+11,2,[4],مَمْلَكَةٌ,Kingdom
+12,2,[6],مِلْكٌ,"Possession, Property"
+13,2,[7],مَلِكٌ,King
+14,3,[2],قَادِسٌ,Sanctifier
+15,3,[3],مُقَدَّسٌ,Sanctified
+16,3,[4],مَقْدِسٌ,Sanctuary
+17,3,"[3,5]",قُدُّوسٌ, holy
+18,3,[7],قُدْسٌ,Sanctity
+19,4,[2],سَالِمٌ,Peacemaker
+20,4,[3],مَسْلُومٌ,"Protected, Delivered"
+21,4,[4],مَسْلَمَةٌ,Place of safety
+22,4,[5],سَالِمٌ, peaceful
+23,4,[6],مِسْلَمٌ, making peace
+24,4,[7],"سِلْمٌ ,  سَلَمٌ","Submission ,  Peace"
+25,5,[2],"آمِنٌ, مُؤْمِنٌ","Believer, Safe, Believer"
+26,5,[3],مَأْمُونٌ,"Trusted, Protected"
+27,5,[4],مَأْمَنٌ,Place of safety
+28,5,[5],آمِنٌ, safe
+29,5,[6],مِئْمَنٌ, securing
+30,5,[7],أَمَانٌ,"Safety, Trust"
+31,6,[2],"هَائِمٌ, مُهَيْمِنٌ","Wanderer, Guardian, Protector"
+32,6,[3],مَهْيُومٌ,Wandered
+33,6,[4],مَهْيَمٌ,Place of wandering
+34,6,[5],هَائِمٌ,State of wandering
+35,6,[6],مِهْيَمٌ, wandering
+36,6,[7],هَيْمٌ,Wandering
+37,7,[2],عَزِيزٌ,"Mighty, Glorious"
+38,7,[3],مَعْزُوزٌ,Honored
+39,7,[4],مَعَزٌّ,"Place of honor, glory"
+40,7,[5],عَزِيزٌ," honored, glorious"
+41,7,[6],مِعَزٌّ, honoring
+42,7,[7],عِزٌّ,"Might, Glory"
+43,8,[2],جَابِرٌ,"Restorer, Healer"
+44,8,[3],مَجْبُورٌ,"Restored, Healed"
+45,8,[4],مَجْبَرَةٌ,"Place of restoration, healing"
+46,8,[5],جَابِرٌ," restored, healed"
+47,8,[6],مِجْبَرٌ," restoration, healing"
+48,8,[7],جَبْرٌ,Restoration
+49,8,[8],جَبَّارٌ,Compeller
+50,9,[2],"كَبِيرٌ, مُتَكَبِّرٌ","Great, Arrogant, Proud"
+51,9,[3],مَكْبُورٌ,Made great
+52,9,[4],مَكْبَرٌ,Place of greatness
+53,9,[5],كَبِيرٌ, great
+54,9,[6],مِكْبَرٌ, making great
+55,9,[7],كِبْرٌ,Greatness
+56,10,[2],خَالِقٌ,Creator
+57,10,[3],مَخْلُوقٌ,Created
+58,10,[4],مَخْلَقَةٌ,Place of creation
+59,10,[5],خَالِقٌ, created
+60,10,[6],مِخْلَقٌ, creating
+61,10,[7],خَلْقٌ,Creation
+62,10,[8],خَلَّاقٌ,The Creator
+63,11,[2],"بَارِئٌ, بَرِيءٌ","Creator, One who cures, Innocent"
+64,11,[3],مَبْرُوءٌ,"Created, Cured"
+65,11,[4],مَبْرَأٌ,"Place of creation, cure"
+66,11,[5],بَارِئٌ," created, cured"
+67,11,[6],مِبْرَأٌ," creating, curing"
+68,11,[7],بَرَاءَةٌ,Innocence
+69,12,[2],مُصَوِّرٌ,Photographer
+70,12,[3],مُصَوَّرٌ,Photographed
+71,12,[4],مَصْوَرٌ,Place of photography
+72,12,[5],مُصَوِّرٌ, photographed
+73,12,[6],مِصْوَرٌ, photographing
+74,12,[7],صُورَةٌ,Image
+75,13,[2],غَافِرٌ,Forgiver
+76,13,[3],مَغْفُورٌ,Forgiven
+77,13,[4],مَغْفَرٌ,Place of forgiveness
+78,13,[5],غَافِرٌ, forgiven
+79,13,[6],مِغْفَرٌ, forgiveness
+80,13,[7],غُفْرَانٌ,Forgiveness
+81,13,[8],غَفَّارٌ,All-forgiving
+82,14,[2],قَاهِرٌ,Subduer
+83,14,[3],مَقْهُورٌ,Subjugated
+84,14,[4],مَقْهَرٌ,Place of subjugation
+85,14,[5],قَاهِرٌ, subjugated
+86,14,[6],مِقْهَرٌ, subjugating
+87,14,[7],قَهْرٌ,Subjugation
+88,14,[8],قَهَّارٌ,Subduer
+89,15,[2],وَاهِبٌ,Giver
+90,15,[3],مَوْهُوبٌ,Gifted
+91,15,[4],مَوْهِبَةٌ,Place of gifting
+92,15,[5],وَاهِبٌ,State of being a giver
+93,15,[6],مِوْهَبٌ,Instrument for gifting
+94,15,[7],وَهْبٌ,Gifting
+95,15,[8],وَهَّابٌ,Bestower
+96,16,[2],رَازِقٌ,Provider
+97,16,[3],مَرْزُوقٌ,Provided
+98,16,[4],مَرْزَقٌ,Place of provision
+99,16,[5],رَازِقٌ, provided
+100,16,[6],مِرْزَقٌ, providing
+101,16,[7],رِزْقٌ,Provision
+102,16,[8],رَزَّاقٌ,Provider
+103,17,[2],فَاتِحٌ,"Opener, Conqueror"
+104,17,[3],مَفْتُوحٌ,Opened
+105,17,[4],مَفْتَحٌ,Place of opening
+106,17,[5],فَاتِحٌ, opened
+107,17,[6],مِفْتَاحٌ, opening (key)
+108,17,[7],فَتْحٌ,Opening
+109,17,[8],فَتَّاحٌ,Opener
+110,18,[2],عَالِمٌ,"Scholar, Knower"
+111,18,[3],مَعْلُومٌ,Known
+112,18,[4],مَعْلَمٌ,Place of knowledge
+113,18,[5],عَالِمٌ, known
+114,18,[6],مِعْلَمٌ, knowing
+115,18,[7],عِلْمٌ,Knowledge
+116,18,[8],عَلِيمٌ,The All-Knowing
+117,19,[2],قَابِضٌ,"Grasper, Seizer"
+118,19,[3],مَقْبُوضٌ,Seized
+119,19,[4],مَقْبَضٌ,Place of seizing
+120,19,[5],قَابِضٌ, seized
+121,19,[6],مِقْبَضٌ, seizing
+122,19,[7],قَبْضٌ,Grasping
