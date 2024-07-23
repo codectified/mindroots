@@ -21,7 +21,17 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     const simulation = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-300))
-      .force('center', d3.forceCenter(width / 2, height / 2));
+      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('x', d3.forceX(d => {
+        if (d.type === 'name') return width / 2; // Center the name node horizontally
+        return d.index % 2 === 0 ? width / 3 : (2 * width) / 3; // Distribute other nodes symmetrically
+      }).strength(0.5))
+      .force('y', d3.forceY(d => {
+        if (d.type === 'name') return height / 4; // Pull the name node towards the top
+        if (d.type === 'word') return height / 2; // Place words in the middle
+        return (3 * height) / 4; // Place forms and roots further down
+      }).strength(0.5))
+      .force('collide', d3.forceCollide(50)); // Add collision force to prevent overlap
 
     const color = d3.scaleOrdinal()
       .domain(['name', 'word', 'form', 'root'])
