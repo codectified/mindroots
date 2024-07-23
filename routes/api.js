@@ -86,12 +86,20 @@ router.get('/form/:formId', async (req, res) => {
   try {
     console.log(`Received request for form ID ${formId} with script ${script}`);
 
-    const result = await session.run(`
+    let query = `
       MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
       WHERE word.${script} IS NOT NULL
       RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
-    `, { formId, script });
+    `;
 
+    if (script === 'both') {
+      query = `
+        MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
+        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+      `;
+    }
+
+    const result = await session.run(query, { formId, script });
     console.log(`Raw records for form ${formId} with script ${script}:`, result.records);
 
     const words = result.records.map(record => ({
@@ -112,6 +120,7 @@ router.get('/form/:formId', async (req, res) => {
   }
 });
 
+
 // Endpoint to fetch words related to a root node
 router.get('/root/:rootId', async (req, res) => {
   const { rootId } = req.params;
@@ -120,12 +129,20 @@ router.get('/root/:rootId', async (req, res) => {
   try {
     console.log(`Received request for root ID ${rootId} with script ${script}`);
 
-    const result = await session.run(`
+    let query = `
       MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
       WHERE word.${script} IS NOT NULL
       RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
-    `, { rootId, script });
+    `;
 
+    if (script === 'both') {
+      query = `
+        MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
+        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+      `;
+    }
+
+    const result = await session.run(query, { rootId });
     console.log(`Raw records for root ${rootId} with script ${script}:`, result.records);
 
     const words = result.records.map(record => ({
@@ -145,6 +162,7 @@ router.get('/root/:rootId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 module.exports = router;

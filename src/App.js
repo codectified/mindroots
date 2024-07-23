@@ -77,7 +77,7 @@ const App = () => {
         const formIds = Array.isArray(node.form_id) ? node.form_id : [node.form_id];
         const allResponses = await Promise.all(formIds.map(formId => fetchWordsByForm(formId, script)));
         const allNewWords = allResponses.flat().map(word => ({
-          id: `${word[script]}_word`,
+          id: `${word.arabic}_word_${word.english}`,
           label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
           ...word,
           type: 'word'
@@ -113,7 +113,7 @@ const App = () => {
   
           response.forEach(word => {
             const wordNode = {
-              id: `${word[script]}_word`,
+              id: `${word.arabic}_word_${word.english}`,
               label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
               ...word,
               type: 'word'
@@ -141,6 +141,7 @@ const App = () => {
       console.error('Error fetching data for clicked node:', error);
     }
   };
+  
   
 
   const handleSwitchScript = (newScript) => {

@@ -34,13 +34,20 @@ export const fetchWordData = async (word, script) => {
 export const fetchWordsByForm = async (formId, script) => {
   try {
     const response = await api.get(`/form/${formId}`, { params: { script } });
-    console.log('API response for form ID:', formId, response.data);
-    return response.data;
+    const data = response.data.map(item => convertIntegers(item));
+    if (script === 'both') {
+      return data.map(item => ({
+        ...item,
+        label: `${item.arabic} / ${item.english}`
+      }));
+    }
+    return data;
   } catch (error) {
     console.error('API error for fetchWordsByForm:', error);
     throw error;
   }
 };
+
 
 export const fetchNamesOfAllah = async (script) => {
   const response = await api.get('/list/names_of_allah', { params: { script } });
@@ -54,5 +61,13 @@ export const fetchWordsByNameId = async (nameId, script) => {
 
 export const fetchRootData = async (rootId, script) => {
   const response = await api.get(`/root/${rootId}`, { params: { script } });
-  return response.data.map(item => convertIntegers(item));
+  const data = response.data.map(item => convertIntegers(item));
+  if (script === 'both') {
+    return data.map(item => ({
+      ...item,
+      label: `${item.arabic} / ${item.english}`
+    }));
+  }
+  return data;
 };
+
