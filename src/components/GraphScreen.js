@@ -1,10 +1,13 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
-import { fetchWordsByNameId, fetchRootData, fetchWordsByForm } from '../services/apiService';
+import { fetchWordsByNameId, fetchRootData, fetchWordsByForm, fetchWordsByRootRadicals } from '../services/apiService';
 
 const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData }) => {
   const navigate = useNavigate();
+  const [r1, setR1] = useState('');
+  const [r2, setR2] = useState('');
+  const [r3, setR3] = useState('');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -31,6 +34,30 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
     };
     fetchData();
   }, [selectedName, script, setRootData]);
+
+  const handleRootRadicalChange = useCallback(async () => {
+    const response = await fetchWordsByRootRadicals(r1, r2, r3, script);
+    if (response.words.length > 0) {
+      const wordNodes = response.words.map(word => ({ id: `${word[script]}_word`, label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script], ...word, type: 'word' }));
+      const formNodes = response.forms.map(form => ({ id: `${form[script]}_form`, label: script === 'both' ? `${form.arabic} / ${form.english}` : form[script], ...form, type: 'form' }));
+      const rootNodes = response.roots.map(root => ({ id: `${root[script]}_root`, label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script], ...root, type: 'root' }));
+
+      const nodes = [...wordNodes, ...formNodes, ...rootNodes];
+      const links = [
+        ...response.words.map(word => ({ source: `${r1}${r2}${r3}_root`, target: `${word[script]}_word` })),
+        ...response.forms.map(form => ({ source: wordNodes[0].id, target: `${form[script]}_form` }))
+      ];
+
+      const newData = { nodes, links };
+      setRootData(newData);
+    }
+  }, [r1, r2, r3, script, setRootData]);
+
+  useEffect(() => {
+    if (r1 && r2 && r3) {
+      handleRootRadicalChange();
+    }
+  }, [r1, r2, r3, handleRootRadicalChange]);
 
   const handleBack = () => {
     navigate('/list');
@@ -132,6 +159,20 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
       </select>
       <button onClick={handlePrevious}>Previous</button>
       <button onClick={handleNext}>Next</button>
+      <div>
+        <label>
+          R1:
+          <input type="text" value={r1} onChange={(e) => setR1(e.target.value)} />
+        </label>
+        <label>
+          R2:
+          <input type="text" value={r2} onChange={(e) => setR2(e.target.value)} />
+        </label>
+        <label>
+          R3:
+          <input type="text" value={r3} onChange={(e) => setR3(e.target.value)} />
+        </label>
+      </div>
       <GraphVisualization data={rootData} onNodeClick={handleNodeClick} />
     </div>
   );

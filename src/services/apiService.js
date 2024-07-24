@@ -71,3 +71,8 @@ export const fetchRootData = async (rootId, script) => {
   return data;
 };
 
+export const fetchWordsByRootRadicals = async (r1, r2, r3, script) => {
+  const response = await api.get('/words_by_root_radicals', { params: { r1, r2, r3, script } });
+  return convertIntegers(response.data);
+};
+
