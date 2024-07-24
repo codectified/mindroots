@@ -3,7 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
 import handleRootRadicalChange from './handleRootRadicalChange';
 import handleNodeClick from './handleNodeClick';
-import { fetchWordsByNameId } from '../services/apiService';
+import { fetchWordsByNameId, fetchNamesOfAllah } from '../services/apiService';
+import ScriptSelector from './ScriptSelector';
+import NameSelector from './NameSelector';
+import RootRadicalSelector from './RootRadicalSelector';
+import ContextFilterSelector from './ContextFilterSelector';
 
 const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData }) => {
   const navigate = useNavigate();
@@ -11,7 +15,17 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
-  const [contextFilter, setContextFilter] = useState('lexicon'); // Default to lexicon
+  const [contextFilter, setContextFilter] = useState('lexicon');
+  const [namesOfAllah, setNamesOfAllah] = useState([]);
+
+  const fetchNames = useCallback(async () => {
+    const names = await fetchNamesOfAllah(script);
+    setNamesOfAllah(names);
+  }, [script]);
+
+  useEffect(() => {
+    fetchNames();
+  }, [fetchNames]);
 
   useEffect(() => {
     if (selectedName && selectedName.roots && selectedName.roots.length > 0) {
@@ -57,71 +71,29 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
     navigate('/list');
   };
 
-  const handleNext = () => {
-    // Logic to navigate to the next name
-  };
-
-  const handlePrevious = () => {
-    // Logic to navigate to the previous name
-  };
-
   const handleScriptChange = (event) => {
     setScript(event.target.value);
+    fetchNames(); // Update names list when script changes
   };
 
   const handleContextFilterChange = (event) => {
     setContextFilter(event.target.value);
   };
 
+  const handleNameChange = (event) => {
+    const selectedNameId = event.target.value;
+    const selectedName = namesOfAllah.find(name => name.name_id === parseInt(selectedNameId));
+    // Assuming the parent component manages the selectedName state, update it here
+    // setSelectedName(selectedName); // Uncomment and implement this line if needed
+  };
+
   return (
     <div>
       <button onClick={handleBack}>Back</button>
-      <select value={script} onChange={handleScriptChange}>
-        <option value="arabic">Arabic</option>
-        <option value="english">English</option>
-        <option value="both">Both</option>
-      </select>
-      <button onClick={handlePrevious}>Previous</button>
-      <button onClick={handleNext}>Next</button>
-      <div>
-        <label>
-          Context Filter:
-          <select value={contextFilter} onChange={handleContextFilterChange}>
-            <option value="lexicon">Lexicon</option>
-            <option value="corpus">The Most Excellent Names</option>
-          </select>
-        </label>
-      </div>
-      <div>
-        <label>
-          R1:
-          <select value={r1} onChange={(e) => setR1(e.target.value)}>
-            <option value="">*</option>
-            {arabicAlphabet.map((letter, index) => (
-              <option key={index} value={letter}>{letter}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          R2:
-          <select value={r2} onChange={(e) => setR2(e.target.value)}>
-            <option value="">*</option>
-            {arabicAlphabet.map((letter, index) => (
-              <option key={index} value={letter}>{letter}</option>
-            ))}
-          </select>
-        </label>
-        <label>
-          R3:
-          <select value={r3} onChange={(e) => setR3(e.target.value)}>
-            <option value="">*</option>
-            {arabicAlphabet.map((letter, index) => (
-              <option key={index} value={letter}>{letter}</option>
-            ))}
-          </select>
-        </label>
-        <button onClick={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilter)}>Filter</button>
-      </div>
+      <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
+      <ContextFilterSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} />
+      <NameSelector namesOfAllah={namesOfAllah} script={script} handleNameChange={handleNameChange} />
+      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilter)} />
       <GraphVisualization data={rootData} onNodeClick={(node) => handleNodeClick(node, script, rootData, setRootData, contextFilter)} />
     </div>
   );
