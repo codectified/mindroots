@@ -11,7 +11,7 @@ const MainMenu = () => {
   return (
     <div>
       <ul>
-        <li onClick={() => handleSelect('/list')}>99 Names</li>
+        <li onClick={() => handleSelect('/list')}>The Most Excellent Names of Allah</li>
         <li onClick={() => handleSelect('/lexicon')}>Lexicon</li>
         <li onClick={() => handleSelect('/quran')}>Quran</li>
         <li onClick={() => handleSelect('/hadith')}>Hadith</li>
