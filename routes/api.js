@@ -89,13 +89,13 @@ router.get('/form/:formId', async (req, res) => {
     let query = `
       MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
       WHERE word.${script} IS NOT NULL
-      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId, word.name_id AS nameId
     `;
 
     if (script === 'both') {
       query = `
         MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
-        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId, word.name_id AS nameId
       `;
     }
 
@@ -107,7 +107,8 @@ router.get('/form/:formId', async (req, res) => {
       wordId: convertIntegers(record.get('wordId')),
       arabic: record.get('arabic'),
       english: record.get('english'),
-      formId: convertIntegers(record.get('formId'))
+      formId: convertIntegers(record.get('formId')),
+      nameId: convertIntegers(record.get('nameId')) // Include name_id
     }));
 
     console.log(`Formatted words for form ${formId} with script ${script}:`, words);
