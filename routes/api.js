@@ -163,6 +163,53 @@ router.get('/root/:rootId', async (req, res) => {
   }
 });
 
+// Endpoint to fetch words by root radicals
+router.get('/words_by_root_radicals', async (req, res) => {
+  const { r1, r2, r3, script } = req.query;
+  const session = req.driver.session();
+  try {
+    console.log(`Received request with r1: ${r1}, r2: ${r2}, r3: ${r3}, script: ${script}`);
+
+    let query = `
+      MATCH (root:Root)
+      WHERE root.r1 = $r1
+    `;
+    if (r2) query += ` AND root.r2 = $r2`;
+    if (r3) query += ` AND root.r3 = $r3`;
+    query += `
+      MATCH (root)-[:HAS_WORD]->(word:Word)
+      RETURN root, collect(DISTINCT word) as words
+    `;
+
+    console.log(`Generated query: ${query}`);
+
+    const params = { r1 };
+    if (r2) params.r2 = r2;
+    if (r3) params.r3 = r3;
+
+    console.log(`Query parameters: ${JSON.stringify(params)}`);
+
+    const result = await session.run(query, params);
+    console.log(`Query result: ${JSON.stringify(result.records)}`);
+
+    const records = result.records[0];
+    if (records) {
+      const root = records.get('root').properties;
+      const words = records.get('words').map(record => convertIntegers(record.properties));
+      res.json({ root, words });
+    } else {
+      res.json({});
+    }
+  } catch (error) {
+    console.error('Error fetching words by root radicals:', error);
+    res.status(500).send('Error fetching words by root radicals');
+  } finally {
+    await session.close();
+  }
+});
+
+
+
 
 
 module.exports = router;
