@@ -59,16 +59,22 @@ export const fetchWordsByNameId = async (nameId, script) => {
   return convertIntegers(response.data);
 };
 
+
 export const fetchRootData = async (rootId, script) => {
-  const response = await api.get(`/root/${rootId}`, { params: { script } });
-  const data = response.data.map(item => convertIntegers(item));
-  if (script === 'both') {
+  try {
+    const response = await api.get(`/root/${rootId}`, { params: { script } });
+    const data = response.data.map(item => convertIntegers(item));
+
+    // Format data based on script setting
     return data.map(item => ({
       ...item,
-      label: `${item.arabic} / ${item.english}`
+      label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
+      id: `word_${item.word_id}`
     }));
+  } catch (error) {
+    console.error('Error fetching root data:', error);
+    throw error;
   }
-  return data;
 };
 
 export const fetchWordsByRootRadicals = async (r1, r2, r3, script) => {
