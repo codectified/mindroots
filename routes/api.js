@@ -122,7 +122,7 @@ router.get('/form/:formId', async (req, res) => {
 });
 
 
-// Endpoint to fetch words related to a root node
+// Endpoint to fetch words by root ID
 router.get('/root/:rootId', async (req, res) => {
   const { rootId } = req.params;
   const { script } = req.query;
@@ -133,28 +133,13 @@ router.get('/root/:rootId', async (req, res) => {
     let query = `
       MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
       WHERE word.${script} IS NOT NULL
-      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
+      RETURN word
     `;
-
-    if (script === 'both') {
-      query = `
-        MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
-        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId
-      `;
-    }
 
     const result = await session.run(query, { rootId });
     console.log(`Raw records for root ${rootId} with script ${script}:`, result.records);
 
-    const words = result.records.map(record => ({
-      scriptField: record.get('scriptField'),
-      wordId: convertIntegers(record.get('wordId')),
-      arabic: record.get('arabic'),
-      english: record.get('english'),
-      formId: convertIntegers(record.get('formId'))
-    }));
-
-    console.log(`Formatted words for root ${rootId} with script ${script}:`, words);
+    const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words);
   } catch (error) {
     console.error('Error fetching words by root:', error);
@@ -163,6 +148,7 @@ router.get('/root/:rootId', async (req, res) => {
     await session.close();
   }
 });
+
 
 // Endpoint to fetch words by root radicals
 router.get('/words_by_root_radicals', async (req, res) => {
