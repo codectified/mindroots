@@ -31,22 +31,24 @@ export const fetchWordData = async (word, script) => {
   return convertIntegers(response.data);
 };
 
+// In apiService.js
 export const fetchWordsByForm = async (formId, script) => {
   try {
     const response = await api.get(`/form/${formId}`, { params: { script } });
     const data = response.data.map(item => convertIntegers(item));
-    if (script === 'both') {
-      return data.map(item => ({
-        ...item,
-        label: `${item.arabic} / ${item.english}`
-      }));
-    }
-    return data;
+
+    // Format data based on script setting
+    return data.map(item => ({
+      ...item,
+      label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
+      id: `word_${item.word_id}`
+    }));
   } catch (error) {
     console.error('API error for fetchWordsByForm:', error);
     throw error;
   }
 };
+
 
 
 export const fetchNamesOfAllah = async (script) => {

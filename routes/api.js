@@ -88,31 +88,22 @@ router.get('/form/:formId', async (req, res) => {
 
     let query = `
       MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
-      WHERE word.${script} IS NOT NULL
-      RETURN word.${script} AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId, word.name_id AS nameId
+      RETURN word
     `;
-
-    if (script === 'both') {
-      query = `
-        MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
-        RETURN word.arabic AS scriptField, word.word_id AS wordId, word.arabic AS arabic, word.english AS english, word.form_id AS formId, word.name_id AS nameId
-      `;
-    }
 
     const result = await session.run(query, { formId, script });
     console.log(`Raw records for form ${formId} with script ${script}:`, result.records);
 
-    const words = result.records.map(record => ({
-      scriptField: record.get('scriptField'),
-      wordId: convertIntegers(record.get('wordId')),
-      arabic: record.get('arabic'),
-      english: record.get('english'),
-      formId: convertIntegers(record.get('formId')),
-      nameId: convertIntegers(record.get('nameId')) // Include name_id
-    }));
+    const words = result.records.map(record => convertIntegers(record.get('word').properties));
 
-    console.log(`Formatted words for form ${formId} with script ${script}:`, words);
-    res.json(words);
+    const formattedWords = words.map(word => {
+      return {
+        ...word,
+        label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
+      };
+    });
+
+    res.json(formattedWords);
   } catch (error) {
     console.error('Error fetching words by form:', error);
     res.status(500).send('Error fetching words by form');
@@ -120,6 +111,7 @@ router.get('/form/:formId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 // Endpoint to fetch words by root ID
