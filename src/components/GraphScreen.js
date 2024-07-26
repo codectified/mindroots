@@ -7,15 +7,15 @@ import { fetchWordsByNameId, fetchNamesOfAllah } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
 import NameSelector from './NameSelector';
 import RootRadicalSelector from './RootRadicalSelector';
-import ContextFilterSelector from './ContextFilterSelector';
+import FormFilterSelector from './FormFilterSelector';
 
 const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData }) => {
   const navigate = useNavigate();
-  const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
+  const arabicAlphabet = ['*', 'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
-  const [contextFilter, setContextFilter] = useState('lexicon');
+  const [contextFilter, setContextFilter] = useState('mostExcellentNames');
   const [namesOfAllah, setNamesOfAllah] = useState([]);
 
   const fetchNames = useCallback(async () => {
@@ -91,8 +91,7 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
     <div>
       <button onClick={handleBack}>Back</button>
       <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
-      <ContextFilterSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} />
-      <NameSelector namesOfAllah={namesOfAllah} script={script} handleNameChange={handleNameChange} />
+      <FormFilterSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} />
       <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilter)} />
       <GraphVisualization data={rootData} onNodeClick={(node) => handleNodeClick(node, script, rootData, setRootData, contextFilter)} />
     </div>
