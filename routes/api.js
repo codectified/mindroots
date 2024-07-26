@@ -124,15 +124,22 @@ router.get('/root/:rootId', async (req, res) => {
 
     let query = `
       MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
-      WHERE word.${script} IS NOT NULL
       RETURN word
     `;
 
-    const result = await session.run(query, { rootId });
+    const result = await session.run(query, { rootId, script });
     console.log(`Raw records for root ${rootId} with script ${script}:`, result.records);
 
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
-    res.json(words);
+
+    const formattedWords = words.map(word => {
+      return {
+        ...word,
+        label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
+      };
+    });
+
+    res.json(formattedWords);
   } catch (error) {
     console.error('Error fetching words by root:', error);
     res.status(500).send('Error fetching words by root');
@@ -140,6 +147,7 @@ router.get('/root/:rootId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 // Endpoint to fetch words by root radicals
