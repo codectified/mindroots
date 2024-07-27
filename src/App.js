@@ -3,7 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './components/MainMenu';
 import PrimaryList from './components/PrimaryList';
 import GraphScreen from './components/GraphScreen';
-import { fetchNamesOfAllah, fetchWordsByForm, fetchWordsByNameId, fetchRootData } from './services/apiService';
+import { CorpusProvider } from './components/CorpusContext';
+import { fetchNamesOfAllah, fetchWordsByNameId } from './services/apiService';
 import './App.css'; // Correct path to the CSS file
 
 const App = () => {
@@ -74,17 +75,19 @@ const App = () => {
   };
 
   return (
-    <div className="App">
-      <Router>
-        <div className="overlay">
-          <Routes>
-            <Route path="/" element={<MainMenu />} />
-            <Route path="/list" element={<PrimaryList names={names} script={script} setScript={handleSwitchScript} onSelectName={handleSelectName} />} />
-            <Route path="/graph" element={<GraphScreen selectedName={selectedName} script={script} setScript={handleSwitchScript} rootData={rootData} setRootData={setRootData} />} />
-          </Routes>
-        </div>
-      </Router>
-    </div>
+    <CorpusProvider>
+      <div className="App">
+        <Router>
+          <div className="overlay">
+            <Routes>
+              <Route path="/" element={<MainMenu />} />
+              <Route path="/list" element={<PrimaryList names={names} script={script} setScript={handleSwitchScript} onSelectName={handleSelectName} />} />
+              <Route path="/graph" element={<GraphScreen selectedName={selectedName} script={script} setScript={handleSwitchScript} rootData={rootData} setRootData={setRootData} />} />
+            </Routes>
+          </div>
+        </Router>
+      </div>
+    </CorpusProvider>
   );
 };
 

@@ -1,93 +1,103 @@
-import { fetchWordsByForm, fetchRootData } from '../services/apiService';
+import axios from 'axios';
 
-const handleRootNodeClick = async (node, script, rootData, setRootData, contextFilter) => {
-  try {
-    console.log('Fetching words for root ID:', node.root_id);
-    const rootId = node.root_id.low !== undefined ? node.root_id.low : node.root_id;
-    const response = await fetchRootData(rootId, script);
-    console.log('Fetched words by root:', response);
+// Create an Axios instance with the base URL for the API
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
-    if (response && response.length > 0) {
-      const newNodes = [];
-      const newLinks = [];
-
-      response.forEach(word => {
-        const wordNode = {
-          id: `word_${word.word_id}`,
-          label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
-          ...word,
-          type: 'word'
-        };
-
-        const existingNode = rootData.nodes.find(n => n.id === wordNode.id);
-        if (!existingNode) {
-          newNodes.push(wordNode);
-        }
-        newLinks.push({ source: node.id, target: wordNode.id });
-      });
-
-      const newData = {
-        nodes: [...rootData.nodes, ...newNodes],
-        links: [...rootData.links, ...newLinks]
-      };
-
-      console.log('New rootData after fetching root data:', newData);
-      setRootData(newData);
-    } else {
-      console.log('No data received for the clicked root');
+// Helper function to convert Neo4j integers to regular numbers
+const convertIntegers = (obj) => {
+  if (typeof obj === 'object' && obj !== null) {
+    if ('low' in obj && 'high' in obj) {
+      return obj.low;
     }
-  } catch (error) {
-    console.error('Error fetching data for clicked root node:', error);
-  }
-};
-
-const handleFormNodeClick = async (node, script, rootData, setRootData, contextFilter) => {
-  try {
-    console.log('Fetching words for form ID:', node.form_id);
-    const formIds = Array.isArray(node.form_id) ? node.form_id : [node.form_id];
-    const allResponses = await Promise.all(formIds.map(formId => fetchWordsByForm(formId, script)));
-    const allNewWords = allResponses.flat().map(word => ({
-      id: `word_${word.word_id}`,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
-      ...word,
-      type: 'word'
-    }));
-
-    let newNodes = [];
-    let newLinks = [];
-
-    allNewWords.forEach(word => {
-      const existingNode = rootData.nodes.find(n => n.id === word.id);
-      if (!existingNode) {
-        newNodes.push(word);
+    for (const key in obj) {
+      if (obj.hasOwnProperty(key)) {
+        obj[key] = convertIntegers(obj[key]);
       }
-      newLinks.push({ source: node.id, target: word.id });
-    });
-
-    // Apply context filter
-    if (contextFilter === 'corpus') {
-      newNodes = newNodes.filter(node => node.name_id);
-      newLinks = newLinks.filter(link => newNodes.find(node => node.id === link.target));
     }
+  }
+  return obj;
+};
 
-    const newData = {
-      nodes: [...rootData.nodes, ...newNodes],
-      links: [...rootData.links, ...newLinks]
-    };
+// Updated fetch functions to handle Neo4j integers
+export const fetchWords = async (concept, script) => {
+  const response = await api.get(`/list/${concept}`, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
 
-    console.log('New rootData after fetching form data:', newData);
-    setRootData(newData);
+export const fetchWordData = async (word, script) => {
+  const response = await api.get(`/word/${word}`, { params: { script } });
+  return convertIntegers(response.data);
+};
+
+// In apiService.js
+export const fetchWordsByForm = async (formId, script) => {
+  try {
+    const response = await api.get(`/form/${formId}`, { params: { script } });
+    const data = response.data.map(item => convertIntegers(item));
+
+    // Format data based on script setting
+    return data.map(item => ({
+      ...item,
+      label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
+      id: `word_${item.word_id}`
+    }));
   } catch (error) {
-    console.error('Error fetching data for clicked form node:', error);
+    console.error('API error for fetchWordsByForm:', error);
+    throw error;
   }
 };
 
-const handleNodeClick = async (node, script, rootData, setRootData, contextFilter) => {
-  if (node.root_id) {
-    await handleRootNodeClick(node, script, rootData, setRootData, contextFilter);
-  } else if (node.form_id) {
-    await handleFormNodeClick(node, script, rootData, setRootData, contextFilter);
+
+
+export const fetchNamesOfAllah = async (script) => {
+  const response = await api.get('/list/names_of_allah', { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
+
+export const fetchWordsByNameId = async (nameId, script) => {
+  const response = await api.get(`/words_by_name/${nameId}`, { params: { script } });
+  return convertIntegers(response.data);
+};
+
+
+export const fetchRootData = async (rootId, script) => {
+  try {
+    const response = await api.get(`/root/${rootId}`, { params: { script } });
+    const data = response.data.map(item => convertIntegers(item));
+
+    // Format data based on script setting
+    return data.map(item => ({
+      ...item,
+      label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
+      id: `word_${item.word_id}`
+    }));
+  } catch (error) {
+    console.error('Error fetching root data:', error);
+    throw error;
   }
 };
 
-export default handleNodeClick;
+export const fetchWordsByRootRadicals = async (r1, r2, r3, script) => {
+  const response = await api.get('/words_by_root_radicals', { params: { r1, r2, r3, script } });
+  return convertIntegers(response.data);
+};
+
+export const fetchRootsByRadicals = async (r1, r2, r3, script) => {
+  try {
+    const response = await api.get('/roots_by_radicals', {
+      params: { r1, r2, r3, script }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching roots by radicals:', error);
+    throw error;
+  }
+};
+
+// Fetch all available corpora
+export const fetchCorpora = async () => {
+  const response = await api.get('/list/corpora');
+  return response.data.map(item => convertIntegers(item));
+};
