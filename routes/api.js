@@ -49,16 +49,26 @@ router.get('/list/names_of_allah', async (req, res) => {
 // Endpoint to fetch words, forms, and roots by name ID
 router.get('/words_by_name/:nameId', async (req, res) => {
   const { nameId } = req.params;
-  const { script } = req.query;
+  const { script, corpusId } = req.query;
   const session = req.driver.session();
   try {
-    const result = await session.run(`
+    let query = `
       MATCH (name:NameOfAllah {name_id: toInteger($nameId)})-[:HAS_WORD]->(word:Word)
       OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
       OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
-      RETURN name, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
-    `, { nameId });
+    `;
 
+    if (corpusId) {
+      query += `
+        WHERE word.corpus_id = toInteger($corpusId)
+      `;
+    }
+
+    query += `
+      RETURN name, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
+    `;
+
+    const result = await session.run(query, { nameId, corpusId });
     const records = result.records[0];
     if (records) {
       const name = records.get('name').properties;
@@ -78,22 +88,35 @@ router.get('/words_by_name/:nameId', async (req, res) => {
 });
 
 
+
 // Endpoint to fetch words by form ID
 router.get('/form/:formId', async (req, res) => {
   const { formId } = req.params;
-  const { script } = req.query;
+  const { script, corpusId, rootIds } = req.query;
   const session = req.driver.session();
   try {
-    console.log(`Received request for form ID ${formId} with script ${script}`);
-
     let query = `
       MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
+    `;
+
+    if (corpusId) {
+      query += `
+        WHERE word.corpus_id = toInteger($corpusId)
+      `;
+    }
+
+    if (rootIds) {
+      const rootIdArray = rootIds.split(',').map(id => `toInteger(${id})`);
+      query += `
+        AND word.root_id IN [${rootIdArray.join(',')}]
+      `;
+    }
+
+    query += `
       RETURN word
     `;
 
-    const result = await session.run(query, { formId, script });
-    console.log(`Raw records for form ${formId} with script ${script}:`, result.records);
-
+    const result = await session.run(query, { formId, script, corpusId });
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
 
     const formattedWords = words.map(word => {
@@ -114,22 +137,28 @@ router.get('/form/:formId', async (req, res) => {
 
 
 
+
 // Endpoint to fetch words by root ID
 router.get('/root/:rootId', async (req, res) => {
   const { rootId } = req.params;
-  const { script } = req.query;
+  const { script, corpusId } = req.query;
   const session = req.driver.session();
   try {
-    console.log(`Received request for root ID ${rootId} with script ${script}`);
-
     let query = `
       MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
+    `;
+
+    if (corpusId) {
+      query += `
+        WHERE word.corpus_id = toInteger($corpusId)
+      `;
+    }
+
+    query += `
       RETURN word
     `;
 
-    const result = await session.run(query, { rootId, script });
-    console.log(`Raw records for root ${rootId} with script ${script}:`, result.records);
-
+    const result = await session.run(query, { rootId, script, corpusId });
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
 
     const formattedWords = words.map(word => {
@@ -147,6 +176,7 @@ router.get('/root/:rootId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 
@@ -232,6 +262,28 @@ router.get('/roots_by_radicals', async (req, res) => {
   }
 });
 
+// Endpoint to list all available corpora
+router.get('/list/corpora', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (corpus:Corpus)
+      RETURN corpus.id AS id, corpus.name AS name
+    `);
+
+    const corpora = result.records.map(record => ({
+      id: convertIntegers(record.get('id')),
+      name: record.get('name')
+    }));
+
+    res.json(corpora);
+  } catch (error) {
+    console.error('Error fetching corpora:', error);
+    res.status(500).send('Error fetching corpora');
+  } finally {
+    await session.close();
+  }
+});
 
 
 module.exports = router;

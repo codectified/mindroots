@@ -1,48 +1,45 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { useCorpus } from './CorpusContext';
 import GraphVisualization from './GraphVisualization';
 import handleRootRadicalChange from './handleRootRadicalChange';
 import handleNodeClick from './handleNodeClick';
-import { fetchWordsByNameId, fetchNamesOfAllah } from '../services/apiService';
+import { fetchWordsByNameId, fetchNamesOfAllah, fetchCorpora } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
 import RootRadicalSelector from './RootRadicalSelector';
 import ContextShiftSelector from './ContextShiftSelector';
 
 const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData }) => {
   const navigate = useNavigate();
-  const arabicAlphabet = ['*', 'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
+  const { selectedCorpus } = useCorpus();
+  const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
-  const [contextFilter, setContextFilter] = useState('lexicon');
+  const [contextFilter, setContextFilter] = useState(selectedCorpus ? `corpus_${selectedCorpus}` : 'lexicon');
   const [namesOfAllah, setNamesOfAllah] = useState([]);
+  const [corpora, setCorpora] = useState([]);
 
   const fetchNames = useCallback(async () => {
     const names = await fetchNamesOfAllah(script);
     setNamesOfAllah(names);
   }, [script]);
 
-  useEffect(() => {
-    fetchNames();
-  }, [fetchNames]);
+  const fetchCorporaData = useCallback(async () => {
+    const corporaList = await fetchCorpora();
+    setCorpora(corporaList);
+  }, []);
 
   useEffect(() => {
-    if (selectedName && selectedName.roots && selectedName.roots.length > 0) {
-      const root = selectedName.roots[0]; // Assuming the first root is the default
-      setR1(root.r1 || '');
-      setR2(root.r2 || '');
-      setR3(root.r3 || '');
-    } else {
-      setR1('');
-      setR2('');
-      setR3('');
-    }
-  }, [selectedName]);
+    fetchNames();
+    fetchCorporaData();
+  }, [fetchNames, fetchCorporaData]);
 
   const fetchData = useCallback(async () => {
     if (selectedName) {
       const nameId = selectedName.name_id.low !== undefined ? selectedName.name_id.low : selectedName.name_id;
-      const response = await fetchWordsByNameId(nameId, script);
+      const corpusId = contextFilter.startsWith('corpus_') ? contextFilter.split('_')[1] : null;
+      const response = await fetchWordsByNameId(nameId, script, corpusId);
       if (response.words.length > 0) {
         const nameNode = { id: `${response.name[script]}_name`, label: script === 'both' ? `${response.name.arabic} / ${response.name.english}` : response.name[script], ...response.name, type: 'name' };
         const wordNodes = response.words.map(word => ({ id: `${word[script]}_word`, label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script], ...word, type: 'word' }));
@@ -60,7 +57,7 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
         setRootData(newData);
       }
     }
-  }, [selectedName, script, setRootData]);
+  }, [selectedName, script, setRootData, contextFilter]);
 
   useEffect(() => {
     fetchData();
@@ -83,9 +80,8 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
     <div>
       <button onClick={handleBack}>Back</button>
       <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
-      <label>Context: </label>
-      <ContextShiftSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} />
-      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, rootData, setRootData, contextFilter)} />
+      <ContextShiftSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} corpora={corpora} />
+      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilter)} />
       <GraphVisualization data={rootData} onNodeClick={(node) => handleNodeClick(node, script, rootData, setRootData, contextFilter)} />
     </div>
   );
