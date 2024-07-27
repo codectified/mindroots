@@ -84,3 +84,14 @@ export const fetchWordsByRootRadicals = async (r1, r2, r3, script) => {
   return convertIntegers(response.data);
 };
 
+export const fetchRootsByRadicals = async (r1, r2, r3, script) => {
+  try {
+    const response = await api.get('/roots_by_radicals', {
+      params: { r1, r2, r3, script }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching roots by radicals:', error);
+    throw error;
+  }
+};

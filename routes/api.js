@@ -196,6 +196,41 @@ router.get('/words_by_root_radicals', async (req, res) => {
 });
 
 
+// Endpoint to fetch roots by radicals
+router.get('/roots_by_radicals', async (req, res) => {
+  const { r1, r2, r3, script } = req.query;
+  const session = req.driver.session();
+  try {
+    console.log(`Received request for roots with radicals r1: ${r1}, r2: ${r2}, r3: ${r3}, script: ${script}`);
+
+    let query = `
+      MATCH (root:Root)
+      WHERE (root.r1 = $r1 OR $r1 = '*')
+        AND (root.r2 = $r2 OR $r2 = '*')
+        AND (root.r3 = $r3 OR $r3 = '*')
+      RETURN root
+    `;
+
+    const result = await session.run(query, { r1, r2, r3 });
+    console.log(`Raw records for roots with radicals r1: ${r1}, r2: ${r2}, r3: ${r3}:`, result.records);
+
+    const roots = result.records.map(record => convertIntegers(record.get('root').properties));
+
+    const formattedRoots = roots.map(root => {
+      return {
+        ...root,
+        label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script]
+      };
+    });
+
+    res.json(formattedRoots);
+  } catch (error) {
+    console.error('Error fetching roots by radicals:', error);
+    res.status(500).send('Error fetching roots by radicals');
+  } finally {
+    await session.close();
+  }
+});
 
 
 

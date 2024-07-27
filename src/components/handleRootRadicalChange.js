@@ -1,42 +1,33 @@
-import { fetchWordsByRootRadicals } from '../services/apiService';
+import { fetchRootsByRadicals } from '../services/apiService';
 
-const handleRootRadicalChange = async (r1, r2, r3, script, setRootData) => {
+const handleRootRadicalChange = async (r1, r2, r3, script, rootData, setRootData, contextFilter) => {
   try {
-    const response = await fetchWordsByRootRadicals(r1 || '', r2 || '', r3 || '', script);
-    if (response.words && response.words.length > 0) {
-      const wordNodes = response.words.map(word => ({
-        id: `${word[script]}_word`,
-        label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
-        ...word,
-        type: 'word'
-      }));
-      const formNodes = response.forms.map(form => ({
-        id: `${form[script]}_form`,
-        label: script === 'both' ? `${form.arabic} / ${form.english}` : form[script],
-        ...form,
-        type: 'form'
-      }));
-      const rootNodes = response.roots.map(root => ({
-        id: `${root[script]}_root`,
+    console.log('Fetching roots with radicals:', r1, r2, r3);
+    const response = await fetchRootsByRadicals(r1, r2, r3, script);
+    console.log('Fetched roots by radicals:', response);
+
+    if (response && response.length > 0) {
+      const newNodes = response.map(root => ({
+        id: `root_${root.root_id}`,
         label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script],
         ...root,
         type: 'root'
       }));
 
-      const nodes = [...wordNodes, ...formNodes, ...rootNodes];
-      const links = [
-        ...response.words.map(word => ({ source: `${r1}${r2}${r3}_root`, target: `${word[script]}_word` })),
-        ...response.forms.map(form => ({ source: wordNodes[0]?.id, target: `${form[script]}_form` }))
-      ];
+      const newLinks = []; // Add links if necessary based on your graph structure
 
-      const newData = { nodes, links };
+      const newData = {
+        nodes: [...rootData.nodes, ...newNodes],
+        links: [...rootData.links, ...newLinks]
+      };
+
+      console.log('New rootData after fetching root radicals:', newData);
       setRootData(newData);
     } else {
-      setRootData({ nodes: [], links: [] }); // Clear graph if no data is found
+      console.log('No data received for the selected radicals');
     }
   } catch (error) {
-    console.error('Error fetching words by root radicals:', error);
-    setRootData({ nodes: [], links: [] }); // Clear graph in case of error
+    console.error('Error fetching roots by radicals:', error);
   }
 };
 

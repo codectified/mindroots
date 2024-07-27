@@ -1,99 +1,99 @@
-id,word_id,أسماء_الله_الحسنى,transliterated_name,the_most_excellent_names
-1,"[5,7]",ٱلْرَّحْمَـانُ ٱلْرَّحِيْمُ,AR-RAHMAAN AR-RAHEEM,The Most or Entirely Merciful
-2,,ٱلْمَلِكُ,AL-MALIK,The King and Owner of Dominion
-3,,ٱلْقُدُّوسُ,AL-QUDDUS,The Absolutely Pure
-4,,ٱلْسَّلَامُ,AS-SALAM,The Perfection and Giver of Peace
-5,,ٱلْمُؤْمِنُ,AL-MU’MIN,The One Who gives Emaan and Security
-6,,ٱلْمُهَيْمِنُ,AL-MUHAYMIN,"The Guardian, The Witness, The Overseer"
-7,,ٱلْعَزِيزُ,AL-AZEEZ,The All Mighty
-8,,ٱلْجَبَّارُ,AL-JABBAR,"The Compeller, The Restorer"
-9,,ٱلْمُتَكَبِّرُ,AL-MUTAKABBIR,"The Supreme, The Majestic"
-10,,ٱلْخَالِقُ,AL-KHAALIQ,"The Creator, The Maker"
-11,,ٱلْبَارِئُ,AL-BAARI’,The Originator
-12,,ٱلْمُصَوِّرُ,AL-MUSAWWIR,The Fashioner
-13,,ٱلْغَفَّارُ,AL-GHAFFAR,The All- and Oft-Forgiving
-14,,ٱلْقَهَّارُ,AL-QAHHAR,"The Subduer, The Ever-Dominating"
-15,,ٱلْوَهَّابُ,AL-WAHHAAB,The Giver of Gifts
-16,,ٱلْرَّزَّاقُ,AR-RAZZAAQ,The Provider
-17,,ٱلْفَتَّاحُ,AL-FATTAAH,"The Opener, The Judge"
-18,,ٱلْعَلِيمُ,AL-‘ALEEM,"The All-Knowing, The Omniscient"
-19,,ٱلْقَابِضُ,AL-QAABID,The Withholder
-20,,ٱلْبَاسِطُ,AL-BAASIT,The Extender
-21,,ٱلْخَافِضُ,AL-KHAAFIDH,"The Reducer, The Abaser"
-22,,ٱلْرَّافِعُ,AR-RAAFI’,"The Exalter, The Elevator"
-23,,ٱلْمُعِزُّ,AL-MU’IZZ,"The Honourer, The Bestower"
-24,,ٱلْمُذِلُّ,AL-MUZIL,"The Dishonourer, The Humiliator"
-25,,ٱلْسَّمِيعُ,AS-SAMEE’,The All-Hearing
-26,,ٱلْبَصِيرُ,AL-BASEER,The All-Seeing
-27,,ٱلْحَكَمُ,AL-HAKAM,"The Judge, The Giver of Justice"
-28,,ٱلْعَدْلُ,AL-‘ADL,The Utterly Just
-29,,ٱلْلَّطِيفُ,AL-LATEEF,"The Subtle One, The Most Gentle"
-30,,ٱلْخَبِيرُ,AL-KHABEER,"The Acquainted, the All-Aware"
-31,,ٱلْحَلِيمُ,AL-HALEEM,The Most Forbearing
-32,,ٱلْعَظِيمُ,AL-‘ATHEEM,"The Magnificent, The Supreme"
-33,,ٱلْغَفُورُ,AL-GHAFOOR,"The Forgiving, The Exceedingly Forgiving"
-34,,ٱلْشَّكُورُ,ASH-SHAKOOR,The Most Appreciative
-35,,ٱلْعَلِيُّ,AL-‘ALEE,"The Most High, The Exalted"
-36,,ٱلْكَبِيرُ,AL-KABEER,"The Greatest, The Most Grand"
-37,,ٱلْحَفِيظُ,AL-HAFEEDH,"The Preserver, The All-Heedful and All-Protecting"
-38,,ٱلْمُقِيتُ,AL-MUQEET,The Sustainer
-39,,ٱلْحَسِيبُ,AL-HASEEB,"The Reckoner, The Sufficient"
-40,,ٱلْجَلِيلُ,AL-JALEEL,The Majestic
-41,,ٱلْكَرِيمُ,AL-KAREEM,"The Most Generous, The Most Esteemed"
-42,,ٱلْرَّقِيبُ,AR-RAQEEB,The Watchful
-43,,ٱلْمُجِيبُ,AL-MUJEEB,The Responsive One
-44,,ٱلْوَاسِعُ,AL-WAASI’,"The All-Encompassing, the Boundless"
-45,,ٱلْحَكِيمُ,AL-HAKEEM,The All-Wise
-46,,ٱلْوَدُودُ,AL-WADOOD,The Most Loving
-47,,ٱلْمَجِيدُ,AL-MAJEED,"The Glorious, The Most Honorable"
-48,,ٱلْبَاعِثُ,AL-BA’ITH,"The Resurrector, The Raiser of the Dead"
-49,,ٱلْشَّهِيدُ,ASH-SHAHEED,The All- and Ever Witnessing
-50,,ٱلْحَقُّ,AL-HAQQ,The Absolute Truth
-51,,ٱلْوَكِيلُ,AL-WAKEEL,"The Trustee, The Disposer of Affairs"
-52,,ٱلْقَوِيُّ,AL-QAWIYY,The All-Strong
-53,,ٱلْمَتِينُ,AL-MATEEN,"The Firm, The Steadfast"
-54,,ٱلْوَلِيُّ,AL-WALIYY,The Protecting Associate
-55,,ٱلْحَمِيدُ,AL-HAMEED,The Praiseworthy
-56,,ٱلْمُحْصِيُ,AL-MUHSEE,"The All-Enumerating, The Counter"
-57,,ٱلْمُبْدِئُ,AL-MUBDI,"The Originator, The Initiator"
-58,,ٱلْمُعِيدُ,AL-MU’ID,"The Restorer, The Reinstater"
-59,,ٱلْمُحْيِى,AL-MUHYEE,The Giver of Life
-60,,ٱلْمُمِيتُ,AL-MUMEET,"The Bringer of Death, the Destroyer"
-61,,ٱلْحَىُّ,AL-HAYY,The Ever-Living
-62,,ٱلْقَيُّومُ,AL-QAYYOOM,"The Sustainer, The Self-Subsisting"
-63,,ٱلْوَاجِدُ,AL-WAAJID,The Perceiver
-64,,ٱلْمَاجِدُ,AL-MAAJID,"The Illustrious, the Magnificent"
-65,,ٱلْوَاحِدُ,AL-WAAHID,The One
-66,,ٱلْأَحَد,AL-AHAD,"The Unique, The Only One"
-67,,ٱلْصَّمَدُ,AS-SAMAD,"The Eternal, Satisfier of Needs"
-68,,ٱلْقَادِرُ,AL-QADIR,"The Capable, The Powerful"
-69,,ٱلْمُقْتَدِرُ,AL-MUQTADIR,The Omnipotent
-70,,ٱلْمُقَدِّمُ,AL-MUQADDIM,"The Expediter, The Promoter"
-71,,ٱلْمُؤَخِّرُ,AL-MU’AKHKHIR,"The Delayer, the Retarder"
-72,,ٱلأَوَّلُ,AL-AWWAL,The First
-73,,ٱلْآخِرُ,AL-AAKHIR,The Last
-74,,ٱلْظَّاهِرُ,AZ-DHAAHIR,The Manifest
-75,,ٱلْبَاطِنُ,AL-BAATIN,"The Hidden One, Knower of the Hidden"
-76,,ٱلْوَالِي,AL-WAALI,"The Governor, The Patron"
-77,,ٱلْمُتَعَالِي,AL-MUTA’ALI,The Self Exalted
-78,,ٱلْبَرُّ,AL-BARR,"The Source of Goodness, the Kind Benefactor"
-79,,ٱلْتَّوَّابُ,AT-TAWWAB,"The Ever-Pardoning, The Relenting"
-80,,ٱلْمُنْتَقِمُ,AL-MUNTAQIM,The Avenger
-81,,ٱلْعَفُوُّ,AL-‘AFUWW,The Pardoner
-82,,ٱلْرَّؤُفُ,AR-RA’OOF,The Most Kind
-83,,مَالِكُ ٱلْمُلْكُ,MAALIK-UL-MULK,"Master of the Kingdom, Owner of the Dominion"
-84,,ذُو ٱلْجَلَالِ وَٱلْإِكْرَامُ,DHUL-JALAALI WAL-IKRAAM,"Possessor of Glory and Honour, Lord of Majesty and Generosity"
-85,,ٱلْمُقْسِطُ,AL-MUQSIT,"The Equitable, the Requiter"
-86,,ٱلْجَامِعُ,AL-JAAMI’,"The Gatherer, the Uniter"
-87,,ٱلْغَنيُّ,AL-GHANIYY,"The Self-Sufficient, The Wealthy"
-88,,ٱلْمُغْنِيُّ,AL-MUGHNI,The Enricher
-89,,ٱلْمَانِعُ,AL-MANI’,The Withholder
-90,,ٱلْضَّارُ,AD-DHARR,The Distresser
-91,,ٱلْنَّافِعُ,AN-NAFI’,"The Propitious, the Benefactor"
-92,,ٱلْنُّورُ,AN-NUR,"The Light, The Illuminator"
-93,,ٱلْهَادِي,AL-HAADI,The Guide
-94,,ٱلْبَدِيعُ,AL-BADEE’,The Incomparable Originator
-95,,ٱلْبَاقِي,AL-BAAQI,"The Ever-Surviving, The Everlasting"
-96,,ٱلْوَارِثُ,AL-WAARITH,"The Inheritor, The Heir"
-97,,ٱلْرَّشِيدُ,AR-RASHEED,"The Guide, Infallible Teacher"
-98,,ٱلْصَّبُورُ,AS-SABOOR,"The Forbearing, The Patient"
+id,corpus_id,أسماء_الله_الحسنى,transliteration,the_most_excellent_names
+1,1,ٱلْرَّحْمَـانُ ٱلْرَّحِيْمُ,AR-RAHMAAN AR-RAHEEM,The Most or Entirely Merciful
+2,1,ٱلْمَلِكُ,AL-MALIK,The King and Owner of Dominion
+3,1,ٱلْقُدُّوسُ,AL-QUDDUS,The Absolutely Pure
+4,1,ٱلْسَّلَامُ,AS-SALAM,The Perfection and Giver of Peace
+5,1,ٱلْمُؤْمِنُ,AL-MU’MIN,The One Who gives Emaan and Security
+6,1,ٱلْمُهَيْمِنُ,AL-MUHAYMIN,"The Guardian, The Witness, The Overseer"
+7,1,ٱلْعَزِيزُ,AL-AZEEZ,The All Mighty
+8,1,ٱلْجَبَّارُ,AL-JABBAR,"The Compeller, The Restorer"
+9,1,ٱلْمُتَكَبِّرُ,AL-MUTAKABBIR,"The Supreme, The Majestic"
+10,1,ٱلْخَالِقُ,AL-KHAALIQ,"The Creator, The Maker"
+11,1,ٱلْبَارِئُ,AL-BAARI’,The Originator
+12,1,ٱلْمُصَوِّرُ,AL-MUSAWWIR,The Fashioner
+13,1,ٱلْغَفَّارُ,AL-GHAFFAR,The All- and Oft-Forgiving
+14,1,ٱلْقَهَّارُ,AL-QAHHAR,"The Subduer, The Ever-Dominating"
+15,1,ٱلْوَهَّابُ,AL-WAHHAAB,The Giver of Gifts
+16,1,ٱلْرَّزَّاقُ,AR-RAZZAAQ,The Provider
+17,1,ٱلْفَتَّاحُ,AL-FATTAAH,"The Opener, The Judge"
+18,1,ٱلْعَلِيمُ,AL-‘ALEEM,"The All-Knowing, The Omniscient"
+19,1,ٱلْقَابِضُ,AL-QAABID,The Withholder
+20,1,ٱلْبَاسِطُ,AL-BAASIT,The Extender
+21,1,ٱلْخَافِضُ,AL-KHAAFIDH,"The Reducer, The Abaser"
+22,1,ٱلْرَّافِعُ,AR-RAAFI’,"The Exalter, The Elevator"
+23,1,ٱلْمُعِزُّ,AL-MU’IZZ,"The Honourer, The Bestower"
+24,1,ٱلْمُذِلُّ,AL-MUZIL,"The Dishonourer, The Humiliator"
+25,1,ٱلْسَّمِيعُ,AS-SAMEE’,The All-Hearing
+26,1,ٱلْبَصِيرُ,AL-BASEER,The All-Seeing
+27,1,ٱلْحَكَمُ,AL-HAKAM,"The Judge, The Giver of Justice"
+28,1,ٱلْعَدْلُ,AL-‘ADL,The Utterly Just
+29,1,ٱلْلَّطِيفُ,AL-LATEEF,"The Subtle One, The Most Gentle"
+30,1,ٱلْخَبِيرُ,AL-KHABEER,"The Acquainted, the All-Aware"
+31,1,ٱلْحَلِيمُ,AL-HALEEM,The Most Forbearing
+32,1,ٱلْعَظِيمُ,AL-‘ATHEEM,"The Magnificent, The Supreme"
+33,1,ٱلْغَفُورُ,AL-GHAFOOR,"The Forgiving, The Exceedingly Forgiving"
+34,1,ٱلْشَّكُورُ,ASH-SHAKOOR,The Most Appreciative
+35,1,ٱلْعَلِيُّ,AL-‘ALEE,"The Most High, The Exalted"
+36,1,ٱلْكَبِيرُ,AL-KABEER,"The Greatest, The Most Grand"
+37,1,ٱلْحَفِيظُ,AL-HAFEEDH,"The Preserver, The All-Heedful and All-Protecting"
+38,1,ٱلْمُقِيتُ,AL-MUQEET,The Sustainer
+39,1,ٱلْحَسِيبُ,AL-HASEEB,"The Reckoner, The Sufficient"
+40,1,ٱلْجَلِيلُ,AL-JALEEL,The Majestic
+41,1,ٱلْكَرِيمُ,AL-KAREEM,"The Most Generous, The Most Esteemed"
+42,1,ٱلْرَّقِيبُ,AR-RAQEEB,The Watchful
+43,1,ٱلْمُجِيبُ,AL-MUJEEB,The Responsive One
+44,1,ٱلْوَاسِعُ,AL-WAASI’,"The All-Encompassing, the Boundless"
+45,1,ٱلْحَكِيمُ,AL-HAKEEM,The All-Wise
+46,1,ٱلْوَدُودُ,AL-WADOOD,The Most Loving
+47,1,ٱلْمَجِيدُ,AL-MAJEED,"The Glorious, The Most Honorable"
+48,1,ٱلْبَاعِثُ,AL-BA’ITH,"The Resurrector, The Raiser of the Dead"
+49,1,ٱلْشَّهِيدُ,ASH-SHAHEED,The All- and Ever Witnessing
+50,1,ٱلْحَقُّ,AL-HAQQ,The Absolute Truth
+51,1,ٱلْوَكِيلُ,AL-WAKEEL,"The Trustee, The Disposer of Affairs"
+52,1,ٱلْقَوِيُّ,AL-QAWIYY,The All-Strong
+53,1,ٱلْمَتِينُ,AL-MATEEN,"The Firm, The Steadfast"
+54,1,ٱلْوَلِيُّ,AL-WALIYY,The Protecting Associate
+55,1,ٱلْحَمِيدُ,AL-HAMEED,The Praiseworthy
+56,1,ٱلْمُحْصِيُ,AL-MUHSEE,"The All-Enumerating, The Counter"
+57,1,ٱلْمُبْدِئُ,AL-MUBDI,"The Originator, The Initiator"
+58,1,ٱلْمُعِيدُ,AL-MU’ID,"The Restorer, The Reinstater"
+59,1,ٱلْمُحْيِى,AL-MUHYEE,The Giver of Life
+60,1,ٱلْمُمِيتُ,AL-MUMEET,"The Bringer of Death, the Destroyer"
+61,1,ٱلْحَىُّ,AL-HAYY,The Ever-Living
+62,1,ٱلْقَيُّومُ,AL-QAYYOOM,"The Sustainer, The Self-Subsisting"
+63,1,ٱلْوَاجِدُ,AL-WAAJID,The Perceiver
+64,1,ٱلْمَاجِدُ,AL-MAAJID,"The Illustrious, the Magnificent"
+65,1,ٱلْوَاحِدُ,AL-WAAHID,The One
+66,1,ٱلْأَحَد,AL-AHAD,"The Unique, The Only One"
+67,1,ٱلْصَّمَدُ,AS-SAMAD,"The Eternal, Satisfier of Needs"
+68,1,ٱلْقَادِرُ,AL-QADIR,"The Capable, The Powerful"
+69,1,ٱلْمُقْتَدِرُ,AL-MUQTADIR,The Omnipotent
+70,1,ٱلْمُقَدِّمُ,AL-MUQADDIM,"The Expediter, The Promoter"
+71,1,ٱلْمُؤَخِّرُ,AL-MU’AKHKHIR,"The Delayer, the Retarder"
+72,1,ٱلأَوَّلُ,AL-AWWAL,The First
+73,1,ٱلْآخِرُ,AL-AAKHIR,The Last
+74,1,ٱلْظَّاهِرُ,AZ-DHAAHIR,The Manifest
+75,1,ٱلْبَاطِنُ,AL-BAATIN,"The Hidden One, Knower of the Hidden"
+76,1,ٱلْوَالِي,AL-WAALI,"The Governor, The Patron"
+77,1,ٱلْمُتَعَالِي,AL-MUTA’ALI,The Self Exalted
+78,1,ٱلْبَرُّ,AL-BARR,"The Source of Goodness, the Kind Benefactor"
+79,1,ٱلْتَّوَّابُ,AT-TAWWAB,"The Ever-Pardoning, The Relenting"
+80,1,ٱلْمُنْتَقِمُ,AL-MUNTAQIM,The Avenger
+81,1,ٱلْعَفُوُّ,AL-‘AFUWW,The Pardoner
+82,1,ٱلْرَّؤُفُ,AR-RA’OOF,The Most Kind
+83,1,مَالِكُ ٱلْمُلْكُ,MAALIK-UL-MULK,"Master of the Kingdom, Owner of the Dominion"
+84,1,ذُو ٱلْجَلَالِ وَٱلْإِكْرَامُ,DHUL-JALAALI WAL-IKRAAM,"Possessor of Glory and Honour, Lord of Majesty and Generosity"
+85,1,ٱلْمُقْسِطُ,AL-MUQSIT,"The Equitable, the Requiter"
+86,1,ٱلْجَامِعُ,AL-JAAMI’,"The Gatherer, the Uniter"
+87,1,ٱلْغَنيُّ,AL-GHANIYY,"The Self-Sufficient, The Wealthy"
+88,1,ٱلْمُغْنِيُّ,AL-MUGHNI,The Enricher
+89,1,ٱلْمَانِعُ,AL-MANI’,The Withholder
+90,1,ٱلْضَّارُ,AD-DHARR,The Distresser
+91,1,ٱلْنَّافِعُ,AN-NAFI’,"The Propitious, the Benefactor"
+92,1,ٱلْنُّورُ,AN-NUR,"The Light, The Illuminator"
+93,1,ٱلْهَادِي,AL-HAADI,The Guide
+94,1,ٱلْبَدِيعُ,AL-BADEE’,The Incomparable Originator
+95,1,ٱلْبَاقِي,AL-BAAQI,"The Ever-Surviving, The Everlasting"
+96,1,ٱلْوَارِثُ,AL-WAARITH,"The Inheritor, The Heir"
+97,1,ٱلْرَّشِيدُ,AR-RASHEED,"The Guide, Infallible Teacher"
+98,1,ٱلْصَّبُورُ,AS-SABOOR,"The Forbearing, The Patient"

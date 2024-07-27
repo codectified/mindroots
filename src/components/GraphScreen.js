@@ -5,9 +5,8 @@ import handleRootRadicalChange from './handleRootRadicalChange';
 import handleNodeClick from './handleNodeClick';
 import { fetchWordsByNameId, fetchNamesOfAllah } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
-import NameSelector from './NameSelector';
 import RootRadicalSelector from './RootRadicalSelector';
-import FormFilterSelector from './FormFilterSelector';
+import ContextShiftSelector from './ContextShiftSelector';
 
 const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData }) => {
   const navigate = useNavigate();
@@ -15,7 +14,7 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
-  const [contextFilter, setContextFilter] = useState('mostExcellentNames');
+  const [contextFilter, setContextFilter] = useState('lexicon');
   const [namesOfAllah, setNamesOfAllah] = useState([]);
 
   const fetchNames = useCallback(async () => {
@@ -80,19 +79,13 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData })
     setContextFilter(event.target.value);
   };
 
-  const handleNameChange = (event) => {
-    const selectedNameId = event.target.value;
-    const selectedName = namesOfAllah.find(name => name.name_id === parseInt(selectedNameId));
-    // Assuming the parent component manages the selectedName state, update it here
-    // setSelectedName(selectedName); // Uncomment and implement this line if needed
-  };
-
   return (
     <div>
       <button onClick={handleBack}>Back</button>
       <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
-      <FormFilterSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} />
-      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilter)} />
+      <label>Context: </label>
+      <ContextShiftSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} />
+      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, rootData, setRootData, contextFilter)} />
       <GraphVisualization data={rootData} onNodeClick={(node) => handleNodeClick(node, script, rootData, setRootData, contextFilter)} />
     </div>
   );

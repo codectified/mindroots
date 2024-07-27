@@ -4,7 +4,7 @@ id,arabic,english
 3,اسم_المفعول,passive_participle
 4,اسم_المكان,noun_of_place
 5,اسم_الحال,noun_of_state
-6,اسم_الآلة,noun_of_instrumentation
+6,اسم_الآلة,noun_of_instrument
 7,اسم_ذات,noun_of_essence
-8,اسم_التفعيل,noun_of_hyperbole
-9,الأسماء_الله_الحسنى,the_most_excellent_names
+8,اسم_المبالغة,noun_of_hyperbole
+9,أسم_العلة,noun_of_defect
