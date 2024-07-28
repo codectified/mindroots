@@ -1,6 +1,12 @@
-import React, { createContext, useState, useContext } from 'react';
+// src/components/CorpusContext.js
+
+import React, { createContext, useContext, useState } from 'react';
 
 const CorpusContext = createContext();
+
+export const useCorpus = () => {
+  return useContext(CorpusContext);
+};
 
 export const CorpusProvider = ({ children }) => {
   const [selectedCorpus, setSelectedCorpus] = useState(null);
@@ -10,12 +16,4 @@ export const CorpusProvider = ({ children }) => {
       {children}
     </CorpusContext.Provider>
   );
-};
-
-export const useCorpus = () => {
-  const context = useContext(CorpusContext);
-  if (!context) {
-    throw new Error('useCorpus must be used within a CorpusProvider');
-  }
-  return context;
 };
