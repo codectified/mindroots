@@ -41,3 +41,11 @@ MERGE (name)-[:HAS_WORD]->(word)
 WITH row
 MATCH (item:Quran {item_id: toInteger(row.item_id), corpus_id: toInteger(row.corpus_id)})
 MERGE (item)-[:HAS_WORD]->(word)
+
+// Load corpora nodes
+LOAD CSV WITH HEADERS FROM 'file:///corpora.csv' AS row
+MERGE (corpus:Corpus {corpus_id: toInteger(row.id), name: row.name});
+
+// Link names of Allah to Corpus 1 (The Most Excellent Names)
+MATCH (name:NameOfAllah), (corpus:Corpus {corpus_id: 1})
+MERGE (name)-[:BELONGS_TO]->(corpus);
