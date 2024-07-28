@@ -1,3 +1,5 @@
+// src/components/PrimaryList.js
+
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
@@ -13,8 +15,12 @@ const PrimaryList = ({ names, script, setScript, onSelectName }) => {
   };
 
   const handleNameClick = (name) => {
-    onSelectName(name);
-    navigate('/graph');
+    if (name) {
+      onSelectName(name);
+      navigate('/graph');
+    } else {
+      console.error('Name is undefined');
+    }
   };
 
   return (
@@ -28,7 +34,7 @@ const PrimaryList = ({ names, script, setScript, onSelectName }) => {
       </select>
       <ul>
         {names.map((name, index) => (
-          <li key={index} onClick={() => handleNameClick(name)}>
+          <li key={name.name_id} onClick={() => handleNameClick(name)}>
             {script === 'arabic' ? name.arabic : script === 'english' ? name.english : `${name.arabic} / ${name.english}`}
           </li>
         ))}

@@ -2,125 +2,125 @@ id,root_id,form_id,arabic,english
 1,1,[1],رَحْمَةٌ,Mercy
 2,1,"[2,5]",رَاحِمٌ,Being merciful
 3,1,[3],مَرْحُومٌ,One who is shown mercy
-6,1,"[4,7]",رَحِمٌ,Womb
-4,1,[4],مَرْحَمَةٌ,Place of mercy
-5,1,[5],رَحِيمٌ, Merciful
+4,1,"[4,7]",رَحِمٌ,Womb
+5,1,[4],مَرْحَمَةٌ,Place of mercy
+6,1,[5],رَحِيمٌ, Merciful
 7,1,[8],رَحْمَانٌ,Extremely Merciful
-9,2,[1],مُلْكٌ,Sovereignty
-10,2,[2],مَالِكٌ,Owner
-11,2,[3],مَمْلُوكٌ,"Owned, slave"
-12,2,[4],مَمْلَكَةٌ,Kingdom
-13,2,[6],مِلْكٌ,"Possession, Property"
-15,2,[7],مَلَكٌ,"Angel, water"
+8,2,[1],مُلْكٌ,Sovereignty
+9,2,[2],مَالِكٌ,Owner
+10,2,[3],مَمْلُوكٌ,"Owned, slave"
+11,2,[4],مَمْلَكَةٌ,Kingdom
+12,2,[6],مِلْكٌ,"Possession, Property"
+13,2,[7],مَلَكٌ,"Angel, water"
 14,2,[7],مَلِكٌ,King
-16,3,[2],قَادِسٌ,Sanctifier
-17,3,[3],مُقَدَّسٌ,Sanctified
-18,3,[4],مَقْدِسٌ,Sanctuary
-21,3,"[1,7]",قُدْسٌ,Holiness
+15,3,[2],قَادِسٌ,Sanctifier
+16,3,[3],مُقَدَّسٌ,Sanctified
+17,3,[4],مَقْدِسٌ,Sanctuary
+18,3,"[1,7]",قُدْسٌ,Holiness
 19,3,"[3,5]",قُدُّوسٌ, holy
-27,4,"[1,5,7]",سِلْمٌ ,"Submission ,  Peace"
-26,4,"[2,6]",مُسْلِمٌ,"Submissive, "
+20,4,"[1,5,7]",سِلْمٌ ,"Submission ,  Peace"
+21,4,"[2,6]",مُسْلِمٌ,"Submissive, "
 22,4,[2],سَالِمٌ,Peacemaker
 23,4,[3],مَسْلُومٌ,"Protected, Delivered"
 24,4,[4],مَسْلَمَةٌ,Place of safety
 25,4,[5],سَلِيمٌ,"Secure, uncorrupted"
-28,4,[7],سَلَمٌ,"Safety, freedom"
-29,4,"[1,5]",سَلامٌ,"Safety, security "
-38,5,"[1,6]",أَمَانَةٌ,"A trust, commitment "
-35,5,"[1,7]",أَمْنٌ,"Safety, freedom from fear"
-39,5,[1],إِيمَانٌ,"Faith, belief "
+26,4,[7],سَلَمٌ,"Safety, freedom"
+27,4,"[1,5]",سَلامٌ,"Safety, security "
+28,5,"[1,6]",أَمَانَةٌ,"A trust, commitment "
+29,5,"[1,7]",أَمْنٌ,"Safety, freedom from fear"
+30,5,[1],إِيمَانٌ,"Faith, belief "
 31,5,[2],آمِنٌ,"Believer, Safe, Believer"
 32,5,[3],مَأْمُونٌ,"Trusted, Protected"
 33,5,[4],مَأْمَنٌ,Place of safety
 34,5,[5],أَمِينٌ, Trustworthy
-36,5,[7],أَمَانٌ,"Assurance, protection, security "
-37,5,[2],مُؤْمِنٌ,Believer
-42,6,"[1,7]",هَيْمَنَةٌ,Guardianship 
-41,6,[2],مُهَيْمِنٌ,Guardian
-45,7,[3],مَعْزُوزٌ,Honored
-46,7,[4],مَعَزٌّ,Cause of honor
-47,7,[7],عَزِازٌ,Hard ground
-48,7,"[1,7]",عِزٌّ,"Might, Glory"
-44,7,"[2,5]",عَزِيزٌ,"Mighty, Glorious"
-50,8,[2],جَابِرٌ,"Restorer, Healer"
-51,8,[3],مَجْبُورٌ,"Restored, Healed"
-52,8,[4],مَجْبَرَةٌ,"Place of restoration, healing"
-53,8,[5],جَابِرٌ," restored, healed"
-54,8,[6],جِبَارَةٌ,Splint
-55,8,"[1,7]",جَبْرٌ,Restoration
-57,8,[9],جُبَارٌ,unavenged
-56,8,[8],جَبَّارٌ,Compeller
-59,9,[2],كَبِيرٌ,"Great, Arrogant, Proud"
-60,9,[3],مَكْبُورٌ,Made great
-61,9,[4],مَكْبَرٌ,Place of greatness
-62,9,[5],مُتَكَبِّرٌ, The uniquely great
-63,9,"[1,7]",كِبْرٌ,Greatness
-66,10,[3],مَخْلُوقٌ,Created
-67,10,[5],خَلِيقٌ,"Perfect, complete"
-68,10,[6],خَلَاقٌ,Portion
-69,10,"[1,7]",خَلْقٌ,Creation
-71,10,[7],خُلُقٌ,"Nature, disposition "
-70,10,"[2,8]",خَلَّاقٌ,The Creator
-65,10,[2],خَالِقٌ,Creator
-77,11,"[1,7]",بَرْءٌ,Innocence
-74,11,[5],بَرِئٌ,"Innocent, immune "
-76,11,[6],بَرَاءَةٌ,Immunity
-75,11,[7],الْبَرِيَّةٌ,The creation
-73,11,[2],بَارِئٌ,"Fashioner, curator"
-84,12,"[1,7]",صَورَةٌ,"Inclination, desire"
-80,12,[1],صَوْرٌ,"Inclining, extention, bending "
-79,12,[3],مُصَوَّرٌ,Photographed
-81,12,[5],مُصَوِّرٌ,Photographed
-82,12,"[6,7]",صُورٌ,Horn of resurrection 
-83,12,[7],صُورَةٌ,"Form, fashion, mode"
-78,12,[2],مُصَوِّرٌ,"Sculptor, fashioner, photographer "
-90,13,"[1,7]",غُفْرَانٌ,Forgiveness
-93,13,"[1,7]",غَفْرٌ,"Concealment, the belly"
-85,13,[2],غَافِرٌ,Forgiver
-86,13,[3],مَغْفُورٌ,Forgiven
-92,13,"[4,6]",مَغْفِرَةٌ,Cause of forgiveness
-87,13,[4],مَغْفَرٌ,Place of forgiveness
-88,13,"[5,8]",غَفُورٌ,Oft-forgiving
-95,13,"[6,7]",غُفْرَةٌ,Cover
-89,13,[6],مِغْفَرٌ, forgiveness
-96,13,[6],مِغْفَرَة,Cover underneath helmet
-94,13,[7],غَفَرٌ,"Small hairs, ""peach fuzz"""
-91,13,"[2,8]",غَفَّارٌ,All-forgiving
-100,14,[1],قَهْرٌ,Subjugation
-97,14,[2],قَاهِرٌ,Subduer
-98,14,[3],مَقْهُورٌ,Subjugated
-99,14,"[2,8]",قَهَّارٌ,Subduer
-105,15,[1],وَهْبٌ,Gifting
-101,15,[2],وَاهِبٌ,Giver
-102,15,[3],مَوْهُوبٌ,(the) Gifted
-103,15,"[4,7]",مَوْهِبَةٌ,A gift
-104,15,[8],وَهَّابٌ,Bestower
-108,16,"[1,7]",رِزْقٌ,Providence
-110,16,[1],رَزْقٌ,Provision
-106,16,[2],رَازِقٌ,Provider
-107,16,[3],مَرْزُوقٌ,Provided
-109,16,[8],رَزَّاقٌ,Provider
-118,17,"[1,7]",فَتْحٌ,Opening
-114,17,"[2,5]",فَاتِحٌ,Opened
-112,17,[3],مَفْتُوحٌ,Opened
-113,17,[4],مَفْتَحٌ,Place of opening
-115,17,[6],مِفْتَاحٌ,Key
-111,17,[7],فَاتِحَةٌ,Commencement 
-116,17,[7],فُتْحَةٌ,Opening
-117,17,[8],فَتَّاحٌ,Opener
-126,18,"[1,7]",عِلْمٌ,Knowledge
-119,18,"[2,5]",عَالِمٌ,"Scholar, Knower"
-127,18,"[2,8]",عَلَّامَةٌ,All-knowing
-120,18,[3],مَعْلُومٌ,Known
-121,18,[4],مَعْلَمٌ,Place of knowledge
-122,18,[5],عَلَامَةٌ,"A sign, mark"
-123,18,[6],مُعَلِّمٌ,Teacher
-124,18,[7],عَلَمٌ,"A track, trace"
-125,18,"[5,8]",عَلِيمٌ,Knowing
-133,19,"[1,7]",قَبْضٌ,Grasping
-129,19,[3],مَقْبُوضٌ,Seized
-130,19,[4],مَقْبَضٌ,Place of seizing
-131,19,[5],قَابِضٌ, seized
-132,19,[6],مِقْبَضٌ, seizing
-134,19,[7],قَبَضٌ,Spoils
-128,19,[2],قَابِضٌ,"Grasper, Seizer"
+35,5,[7],أَمَانٌ,"Assurance, protection, security "
+36,5,[2],مُؤْمِنٌ,Believer
+37,6,"[1,7]",هَيْمَنَةٌ,Guardianship 
+38,6,[2],مُهَيْمِنٌ,Guardian
+39,7,[3],مَعْزُوزٌ,Honored
+40,7,[4],مَعَزٌّ,Cause of honor
+41,7,[7],عَزِازٌ,Hard ground
+42,7,"[1,7]",عِزٌّ,"Might, Glory"
+43,7,"[2,5]",عَزِيزٌ,"Mighty, Glorious"
+44,8,[2],جَابِرٌ,"Restorer, Healer"
+45,8,[3],مَجْبُورٌ,"Restored, Healed"
+46,8,[4],مَجْبَرَةٌ,"Place of restoration, healing"
+47,8,[5],جَابِرٌ," restored, healed"
+48,8,[6],جِبَارَةٌ,Splint
+49,8,"[1,7]",جَبْرٌ,Restoration
+50,8,[9],جُبَارٌ,unavenged
+51,8,[8],جَبَّارٌ,Compeller
+52,9,[2],كَبِيرٌ,"Great, Arrogant, Proud"
+53,9,[3],مَكْبُورٌ,Made great
+54,9,[4],مَكْبَرٌ,Place of greatness
+55,9,[5],مُتَكَبِّرٌ, The uniquely great
+56,9,"[1,7]",كِبْرٌ,Greatness
+57,10,[3],مَخْلُوقٌ,Created
+58,10,[5],خَلِيقٌ,"Perfect, complete"
+59,10,[6],خَلَاقٌ,Portion
+60,10,"[1,7]",خَلْقٌ,Creation
+61,10,[7],خُلُقٌ,"Nature, disposition "
+62,10,"[2,8]",خَلَّاقٌ,The Creator
+63,10,[2],خَالِقٌ,Creator
+64,11,"[1,7]",بَرْءٌ,Innocence
+65,11,[5],بَرِئٌ,"Innocent, immune "
+66,11,[6],بَرَاءَةٌ,Immunity
+67,11,[7],الْبَرِيَّةٌ,The creation
+68,11,[2],بَارِئٌ,"Fashioner, curator"
+69,12,"[1,7]",صَورَةٌ,"Inclination, desire"
+70,12,[1],صَوْرٌ,"Inclining, extention, bending "
+71,12,[3],مُصَوَّرٌ,Photographed
+72,12,[5],مُصَوِّرٌ,Photographed
+73,12,"[6,7]",صُورٌ,Horn of resurrection 
+74,12,[7],صُورَةٌ,"Form, fashion, mode"
+75,12,[2],مُصَوِّرٌ,"Sculptor, fashioner, photographer "
+76,13,"[1,7]",غُفْرَانٌ,Forgiveness
+77,13,"[1,7]",غَفْرٌ,"Concealment, the belly"
+78,13,[2],غَافِرٌ,Forgiver
+79,13,[3],مَغْفُورٌ,Forgiven
+80,13,"[4,6]",مَغْفِرَةٌ,Cause of forgiveness
+81,13,[4],مَغْفَرٌ,Place of forgiveness
+82,13,"[5,8]",غَفُورٌ,Oft-forgiving
+83,13,"[6,7]",غُفْرَةٌ,Cover
+84,13,[6],مِغْفَرٌ, forgiveness
+85,13,[6],مِغْفَرَة,Cover underneath helmet
+86,13,[7],غَفَرٌ,"Small hairs, ""peach fuzz"""
+87,13,"[2,8]",غَفَّارٌ,All-forgiving
+88,14,[1],قَهْرٌ,Subjugation
+89,14,[2],قَاهِرٌ,Subduer
+90,14,[3],مَقْهُورٌ,Subjugated
+91,14,"[2,8]",قَهَّارٌ,Subduer
+92,15,[1],وَهْبٌ,Gifting
+93,15,[2],وَاهِبٌ,Giver
+94,15,[3],مَوْهُوبٌ,(the) Gifted
+95,15,"[4,7]",مَوْهِبَةٌ,A gift
+96,15,[8],وَهَّابٌ,Bestower
+97,16,"[1,7]",رِزْقٌ,Providence
+98,16,[1],رَزْقٌ,Provision
+99,16,[2],رَازِقٌ,Provider
+100,16,[3],مَرْزُوقٌ,Provided
+101,16,[8],رَزَّاقٌ,Provider
+102,17,"[1,7]",فَتْحٌ,Opening
+103,17,"[2,5]",فَاتِحٌ,Opened
+104,17,[3],مَفْتُوحٌ,Opened
+105,17,[4],مَفْتَحٌ,Place of opening
+106,17,[6],مِفْتَاحٌ,Key
+107,17,[7],فَاتِحَةٌ,Commencement 
+108,17,[7],فُتْحَةٌ,Opening
+109,17,[8],فَتَّاحٌ,Opener
+110,18,"[1,7]",عِلْمٌ,Knowledge
+111,18,"[2,5]",عَالِمٌ,"Scholar, Knower"
+112,18,"[2,8]",عَلَّامَةٌ,All-knowing
+113,18,[3],مَعْلُومٌ,Known
+114,18,[4],مَعْلَمٌ,Place of knowledge
+115,18,[5],عَلَامَةٌ,"A sign, mark"
+116,18,[6],مُعَلِّمٌ,Teacher
+117,18,[7],عَلَمٌ,"A track, trace"
+118,18,"[5,8]",عَلِيمٌ,Knowing
+119,19,"[1,7]",قَبْضٌ,Grasping
+120,19,[3],مَقْبُوضٌ,Seized
+121,19,[4],مَقْبَضٌ,Place of seizing
+122,19,[5],قَابِضٌ, seized
+123,19,[6],مِقْبَضٌ, seizing
+124,19,[7],قَبَضٌ,Spoils
+125,19,[2],قَابِضٌ,"Grasper, Seizer"
