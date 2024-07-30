@@ -1,29 +1,34 @@
-// src/components/ContextShiftSelector.js
-
 import React, { useEffect } from 'react';
-import { useCorpus } from './CorpusContext';
 
-const ContextShiftSelector = ({ contextFilter, handleContextFilterChange, corpora }) => {
-  const { selectedCorpus } = useCorpus();
+const ContextShiftSelector = ({ contextFilterRoot, contextFilterForm, handleContextFilterChange, corpora }) => {
+  useEffect(() => {
+    console.log(`Context filter root changed to: ${contextFilterRoot}`);
+  }, [contextFilterRoot]);
 
   useEffect(() => {
-    if (selectedCorpus) {
-      handleContextFilterChange({ target: { value: `corpus_${selectedCorpus.id}` } });
-    }
-  }, [selectedCorpus, handleContextFilterChange]);
+    console.log(`Context filter form changed to: ${contextFilterForm}`);
+  }, [contextFilterForm]);
 
-  useEffect(() => {
-    console.log(`Context filter changed to: ${contextFilter}`);
-  }, [contextFilter]);
+  const isCorporaArray = Array.isArray(corpora);
 
   return (
-    <select value={contextFilter} onChange={handleContextFilterChange}>
-      <option value="lexicon">Lexicon</option>
-      {corpora.map(corpus => (
-        <option key={corpus.id} value={`corpus_${corpus.id}`}>{corpus.name}</option>
-      ))}
-      <option value="currentRoots">Current Root(s)</option>
-    </select>
+    <div>
+      <label>Root Context:</label>
+      <select name="root" value={contextFilterRoot} onChange={handleContextFilterChange}>
+        <option value="lexicon">Lexicon</option>
+        {isCorporaArray && corpora.map(corpus => (
+          <option key={corpus.id} value={`corpus_${corpus.id}`}>{corpus.name}</option>
+        ))}
+      </select>
+
+      <label>Form Context:</label>
+      <select name="form" value={contextFilterForm} onChange={handleContextFilterChange}>
+        <option value="lexicon">Lexicon</option>
+        {isCorporaArray && corpora.map(corpus => (
+          <option key={corpus.id} value={`corpus_${corpus.id}`}>{corpus.name}</option>
+        ))}
+      </select>
+    </div>
   );
 };
 

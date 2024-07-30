@@ -260,7 +260,7 @@ router.get('/list/corpora', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (corpus:Corpus)
-      RETURN corpus.id AS id, corpus.name AS name
+      RETURN corpus.corpus_id AS id, corpus.name AS name
     `);
 
     const corpora = result.records.map(record => ({

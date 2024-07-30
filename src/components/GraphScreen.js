@@ -9,11 +9,9 @@ import { fetchWordsByCorpusItem } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
 import RootRadicalSelector from './RootRadicalSelector';
 import ContextShiftSelector from './ContextShiftSelector';
-import { useCorpus } from './CorpusContext';
 
-const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, corpora, contextFilter, handleContextFilterChange }) => {
+const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, corpora, contextFilterRoot, contextFilterForm, handleContextFilterChange }) => {
   const navigate = useNavigate();
-  const { selectedCorpus } = useCorpus();
   const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
@@ -96,9 +94,14 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
     <div>
       <button onClick={handleBack}>Back</button>
       <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
-      <ContextShiftSelector contextFilter={contextFilter} handleContextFilterChange={handleContextFilterChange} corpora={corpora} />
-      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilter)} />
-      <GraphVisualization data={rootData} onNodeClick={(node) => handleNodeClick(node, script, rootData, setRootData, contextFilter)} />
+      <ContextShiftSelector 
+        contextFilterRoot={contextFilterRoot}
+        contextFilterForm={contextFilterForm}
+        handleContextFilterChange={handleContextFilterChange}
+        corpora={corpora}
+      />
+      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilterRoot)} />
+      <GraphVisualization data={rootData} onNodeClick={(node) => handleNodeClick(node, script, rootData, setRootData, contextFilterRoot)} />
     </div>
   );
 };
