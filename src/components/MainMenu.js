@@ -1,20 +1,16 @@
-// src/components/MainMenu.js
-
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchCorpora } from '../services/apiService';
-import { useCorpus } from './CorpusContext';
 
-const MainMenu = () => {
+const MainMenu = ({ onSelectCorpus }) => {
   const navigate = useNavigate();
-  const { setSelectedCorpus } = useCorpus();
-  const [corpora, setCorpora] = useState([]);
+  const [corpora, setCorpora] = useState([]); // Initialize corpora state
 
   useEffect(() => {
     const fetchCorporaData = async () => {
       try {
         const data = await fetchCorpora();
-        setCorpora(data);
+        setCorpora(data); // Set the corpora state with fetched data
       } catch (error) {
         console.error('Error fetching corpora:', error);
       }
@@ -22,16 +18,17 @@ const MainMenu = () => {
     fetchCorporaData();
   }, []);
 
-  const handleSelect = (path, corpus) => {
-    setSelectedCorpus(corpus);
-    navigate(path);
+  const handleSelect = (corpus) => {
+    console.log('Selected corpus in MainMenu:', corpus);
+    onSelectCorpus(corpus); // Call the function to handle corpus selection
+    navigate('/list'); // Navigate to the list of items in the selected corpus
   };
 
   return (
     <div>
       <ul>
         {corpora.map(corpus => (
-          <li key={corpus.id} onClick={() => handleSelect('/list', corpus)}>{corpus.name}</li>
+          <li key={corpus.id} onClick={() => handleSelect(corpus)}>{corpus.name}</li>
         ))}
       </ul>
     </div>
