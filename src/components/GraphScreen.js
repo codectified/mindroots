@@ -1,16 +1,15 @@
-// src/components/GraphScreen.js
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
 import handleRootRadicalChange from './handleRootRadicalChange';
-import handleNodeClick from './handleNodeClick';
+import handleFormNodeClick from './handleFormNodeClick';
+import handleRootNodeClick from './handleRootNodeClick';
 import { fetchWordsByCorpusItem } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
 import RootRadicalSelector from './RootRadicalSelector';
 import ContextShiftSelector from './ContextShiftSelector';
 
-const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, corpora, contextFilterRoot, contextFilterForm, handleContextFilterChange }) => {
+const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus, corpora }) => {
   const navigate = useNavigate();
   const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
   const [r1, setR1] = useState('');
@@ -90,6 +89,18 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
     setScript(event.target.value);
   };
 
+  const handleNodeClick = async (node) => {
+    console.log('Node clicked:', node);
+    console.log('Context filters:', { contextFilterRoot, contextFilterForm });
+    const corpusId = selectedCorpus ? selectedCorpus.id : null;
+
+    if (node.type === 'form') {
+      await handleFormNodeClick(node, script, rootData, setRootData, contextFilterForm, corpusId, [r1, r2, r3]);
+    } else if (node.type === 'root') {
+      await handleRootNodeClick(node, script, rootData, setRootData, contextFilterRoot, corpusId, [r1, r2, r3]);
+    }
+  };
+
   return (
     <div>
       <button onClick={handleBack}>Back</button>
@@ -101,7 +112,7 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
         corpora={corpora}
       />
       <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilterRoot)} />
-      <GraphVisualization data={rootData} onNodeClick={(node) => handleNodeClick(node, script, rootData, setRootData, contextFilterRoot)} />
+      <GraphVisualization data={rootData} onNodeClick={handleNodeClick} />
     </div>
   );
 };
