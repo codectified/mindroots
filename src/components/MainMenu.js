@@ -20,7 +20,7 @@ const MainMenu = ({ onSelectCorpus }) => {
 
   const handleSelect = (corpus) => {
     console.log('Selected corpus in MainMenu:', corpus);
-    onSelectCorpus(corpus); // Call the function to handle corpus selection
+    onSelectCorpus(corpus, corpora); // Pass corpora to the function to handle corpus selection
     navigate('/list'); // Navigate to the list of items in the selected corpus
   };
 

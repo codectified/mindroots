@@ -31,26 +31,26 @@ export const fetchWordData = async (word, script) => {
   return convertIntegers(response.data);
 };
 
-// Fetch words by form ID with context
-export const fetchWordsByForm = async (formId, script, context, corpusId, rootIds) => {
-  let endpoint = `/form/${formId}/lexicon`;
-  if (context === 'currentCorpus' && corpusId) {
-    endpoint = `/form/${formId}/corpus/${corpusId}`;
-  } else if (context === 'currentRoots' && rootIds) {
-    endpoint = `/form/${formId}/roots?rootIds=${rootIds.join(',')}`;
-  }
+export const fetchWordsByFormWithLexicon = async (formId, script) => {
+  const endpoint = `/form/${formId}/lexicon`;
   const response = await api.get(endpoint, { params: { script } });
   return response.data.map(item => convertIntegers(item));
 };
 
-// Fetch words by root ID with context
-export const fetchRootData = async (rootId, script, context, corpusId, rootIds) => {
-  let endpoint = `/root/${rootId}/lexicon`;
-  if (context === 'currentCorpus' && corpusId) {
-    endpoint = `/root/${rootId}/corpus/${corpusId}`;
-  } else if (context === 'currentRoots' && rootIds) {
-    endpoint = `/root/${rootId}/roots?rootIds=${rootIds.join(',')}`;
-  }
+export const fetchWordsByFormWithCorpus = async (formId, corpusId, script) => {
+  const endpoint = `/form/${formId}/corpus/${corpusId}`;
+  const response = await api.get(endpoint, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
+
+export const fetchWordsByRootWithLexicon = async (rootId, script) => {
+  const endpoint = `/root/${rootId}/lexicon`;
+  const response = await api.get(endpoint, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
+
+export const fetchWordsByRootWithCorpus = async (rootId, corpusId, script) => {
+  const endpoint = `/root/${rootId}/corpus/${corpusId}`;
   const response = await api.get(endpoint, { params: { script } });
   return response.data.map(item => convertIntegers(item));
 };
