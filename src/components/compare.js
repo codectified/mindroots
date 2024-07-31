@@ -1,86 +1,120 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchNamesOfAllah, fetchWordsByCorpusItem } from '../services/apiService';
+import GraphVisualization from './GraphVisualization';
+import handleRootRadicalChange from './handleRootRadicalChange';
+import handleFormNodeClick from './handleFormNodeClick';
+import handleRootNodeClick from './handleRootNodeClick';
+import { fetchWordsByCorpusItem } from '../services/apiService';
+import ScriptSelector from './ScriptSelector';
+import RootRadicalSelector from './RootRadicalSelector';
+import ContextShiftSelector from './ContextShiftSelector';
 
-const PrimaryList = ({ script, setScript, setRootData, setSelectedName, selectedCorpus }) => {
+const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus }) => {
   const navigate = useNavigate();
-  const [names, setNames] = useState([]);
+  const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
+  const [r1, setR1] = useState('');
+  const [r2, setR2] = useState('');
+  const [r3, setR3] = useState('');
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetchNamesOfAllah(script);
-        setNames(response);
-        console.log('Fetched names of Allah:', response);
-      } catch (error) {
-        console.error('Error fetching names of Allah:', error);
-      }
-    };
-    fetchData();
-  }, [script]);
+    if (selectedName && selectedName.roots && selectedName.roots.length > 0) {
+      const root = selectedName.roots[0]; // Assuming the first root is the default
+      setR1(root.r1 || '');
+      setR2(root.r2 || '');
+      setR3(root.r3 || '');
+    } else {
+      setR1('');
+      setR2('');
+      setR3('');
+    }
+  }, [selectedName]);
 
-  const handleNameClick = useCallback(async (name) => {
-    try {
-      setSelectedName(name);
-      console.log('Selected name:', name);
-
-      const nameId = name.name_id.low !== undefined ? name.name_id.low : name.name_id;
-      console.log('nameId:', nameId);
-
+  const fetchData = useCallback(async () => {
+    if (selectedName) {
+      const nameId = selectedName.name_id.low !== undefined ? selectedName.name_id.low : selectedName.name_id;
       const response = await fetchWordsByCorpusItem(nameId, script);
-      console.log('Response data:', response);
+      if (response && response.words && response.words.length > 0) {
+        const nameNode = {
+          id: `${response.item?.[script]}_name`,
+          label: script === 'both' ? `${response.item?.arabic} / ${response.item?.english}` : response.item?.[script],
+          ...response.item,
+          type: 'name',
+        };
 
-      if (response.words.length > 0) {
-        const nameNode = { id: `${response.item[script]}_name`, label: script === 'both' ? `${response.item.arabic} / ${response.item.english}` : response.item[script], ...response.item, type: 'name' };
-        const wordNodes = response.words.map(word => ({ id: `${word[script]}_word`, label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script], ...word, type: 'word' }));
-        const formNodes = response.forms.map(form => ({ id: `${form[script]}_form`, label: script === 'both' ? `${form.arabic} / ${form.english}` : form[script], ...form, type: 'form' }));
-        const rootNodes = response.roots.map(root => ({ id: `${root[script]}_root`, label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script], ...root, type: 'root' }));
+        const wordNodes = response.words.map(word => ({
+          id: `${word?.[script]}_word`,
+          label: script === 'both' ? `${word?.arabic} / ${word?.english}` : word?.[script],
+          ...word,
+          type: 'word',
+        }));
+
+        const formNodes = response.forms.map(form => ({
+          id: `${form?.[script]}_form`,
+          label: script === 'both' ? `${form?.arabic} / ${form?.english}` : form?.[script],
+          ...form,
+          type: 'form',
+        }));
+
+        const rootNodes = response.roots.map(root => ({
+          id: `${root?.[script]}_root`,
+          label: script === 'both' ? `${root?.arabic} / ${root?.english}` : root?.[script],
+          ...root,
+          type: 'root',
+        }));
 
         const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
         const links = [
-          ...response.words.map(word => ({ source: nameNode.id, target: `${word[script]}_word` })),
-          ...response.forms.map(form => ({ source: wordNodes[0]?.id, target: `${form[script]}_form` })), // Assuming each word has one form for simplicity
-          ...response.roots.map(root => ({ source: wordNodes[0]?.id, target: `${root[script]}_root` }))  // Assuming each word has one root for simplicity
+          ...response.words.map(word => ({ source: nameNode.id, target: `${word?.[script]}_word` })),
+          ...response.forms.map(form => ({ source: wordNodes[0]?.id, target: `${form?.[script]}_form` })), // Assuming each word has one form for simplicity
+          ...response.roots.map(root => ({ source: wordNodes[0]?.id, target: `${root?.[script]}_root` })),  // Assuming each word has one root for simplicity
         ];
 
         const newData = { nodes, links };
-        console.log('Transformed rootData:', newData);
         setRootData(newData);
       } else {
         setRootData({ nodes: [], links: [] });
       }
-      navigate('/graph');
-    } catch (error) {
-      console.error('Error fetching words for name:', error);
     }
-  }, [script, setRootData, setSelectedName, navigate]);
+  }, [selectedName, script, setRootData]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  const handleBack = () => {
+    navigate('/list');
+  };
 
   const handleScriptChange = (event) => {
     setScript(event.target.value);
   };
 
-  const handleBack = () => {
-    navigate('/');
+  const handleNodeClick = async (node) => {
+    console.log('Node clicked:', node);
+    console.log('Context filters:', { contextFilterRoot, contextFilterForm });
+    const corpusId = selectedCorpus ? selectedCorpus.id : null;
+
+    if (node.type === 'form') {
+      await handleFormNodeClick(node, script, rootData, setRootData, contextFilterForm, corpusId, [r1, r2, r3]);
+    } else if (node.type === 'root') {
+      await handleRootNodeClick(node, script, rootData, setRootData, contextFilterRoot, corpusId, [r1, r2, r3]);
+    }
   };
 
   return (
     <div>
       <button onClick={handleBack}>Back</button>
-      <h1>Names of Allah</h1>
-      <select value={script} onChange={handleScriptChange}>
-        <option value="arabic">Arabic</option>
-        <option value="english">English</option>
-        <option value="both">Both</option>
-      </select>
-      <ul>
-        {names.map((name, index) => (
-          <li key={name.name_id} onClick={() => handleNameClick(name)}>
-            {script === 'arabic' ? name.arabic : script === 'english' ? name.english : `${name.arabic} / ${name.english}`}
-          </li>
-        ))}
-      </ul>
+      <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
+      <ContextShiftSelector 
+        contextFilterRoot={contextFilterRoot}
+        contextFilterForm={contextFilterForm}
+        handleContextFilterChange={handleContextFilterChange}
+        corpora={corpora}
+      />
+      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilterRoot)} />
+      <GraphVisualization data={rootData} onNodeClick={handleNodeClick} />
     </div>
   );
 };
 
-export default PrimaryList;
+export default GraphScreen;

@@ -333,7 +333,7 @@ router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
   const session = req.driver.session();
   try {
     let query = `
-      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})-[:HAS_ITEM]->(item)-[:HAS_WORD]->(word:Word)-[:HAS_FORM]->(form:Form {form_id: toInteger($formId)})
+      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(name:NameOfAllah)-[:HAS_WORD]->(word:Word)-[:HAS_FORM]->(form:Form {form_id: toInteger($formId)})
       RETURN word
     `;
     const result = await session.run(query, { formId, corpusId, script });
@@ -356,7 +356,7 @@ router.get('/root/:rootId/corpus/:corpusId', async (req, res) => {
   const session = req.driver.session();
   try {
     let query = `
-      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})-[:HAS_ITEM]->(item)-[:HAS_WORD]->(word:Word)-[:HAS_ROOT]->(root:Root {root_id: toInteger($rootId)})
+      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(name:NameOfAllah)-[:HAS_WORD]->(word:Word)-[:HAS_ROOT]->(root:Root {root_id: toInteger($rootId)})
       RETURN word
     `;
     const result = await session.run(query, { rootId, corpusId, script });

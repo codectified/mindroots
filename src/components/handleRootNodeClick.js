@@ -1,33 +1,24 @@
-import { fetchRootData } from '../services/apiService';
+import { fetchWordsByRootWithLexicon, fetchWordsByRootWithCorpus } from '../services/apiService';
 
-const handleRootNodeClick = async (node, script, rootData, setRootData, contextFilter) => {
+const handleRootNodeClick = async (node, script, rootData, setRootData, contextFilter, corpusId) => {
   try {
     console.log('Fetching words for root ID:', node.root_id);
-    const rootIds = Array.isArray(node.root_id) ? node.root_id : [node.root_id];
-    const allResponses = await Promise.all(rootIds.map(rootId => fetchRootData(rootId, script)));
-    const allNewWords = allResponses.flat().map(word => ({
+    let allNewWords = [];
+
+    if (contextFilter === 'lexicon') {
+      allNewWords = await fetchWordsByRootWithLexicon(node.root_id, script);
+    } else if (contextFilter === corpusId) {
+      allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, script);
+    }
+
+    const newNodes = allNewWords.map(word => ({
       id: `word_${word.word_id}`,
       label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
       ...word,
       type: 'word'
     }));
 
-    let newNodes = [];
-    let newLinks = [];
-
-    allNewWords.forEach(word => {
-      const existingNode = rootData.nodes.find(n => n.id === word.id);
-      if (!existingNode) {
-        newNodes.push(word);
-      }
-      newLinks.push({ source: node.id, target: word.id });
-    });
-
-    // Apply context filter
-    if (contextFilter === 'corpus') {
-      newNodes = newNodes.filter(node => node.name_id);
-      newLinks = newLinks.filter(link => newNodes.find(node => node.id === link.target));
-    }
+    const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
 
     const newData = {
       nodes: [...rootData.nodes, ...newNodes],

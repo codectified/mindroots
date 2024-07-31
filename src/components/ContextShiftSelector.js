@@ -9,23 +9,21 @@ const ContextShiftSelector = ({ contextFilterRoot, contextFilterForm, handleCont
     console.log(`Context filter form changed to: ${contextFilterForm}`);
   }, [contextFilterForm]);
 
-  const isCorporaArray = Array.isArray(corpora);
-
   return (
     <div>
       <label>Root Context:</label>
       <select name="root" value={contextFilterRoot} onChange={handleContextFilterChange}>
         <option value="lexicon">Lexicon</option>
-        {isCorporaArray && corpora.map(corpus => (
-          <option key={corpus.id} value={`corpus_${corpus.id}`}>{corpus.name}</option>
+        {corpora.map(corpus => (
+          <option key={corpus.id} value={corpus.id}>{corpus.name}</option>
         ))}
       </select>
 
       <label>Form Context:</label>
       <select name="form" value={contextFilterForm} onChange={handleContextFilterChange}>
         <option value="lexicon">Lexicon</option>
-        {isCorporaArray && corpora.map(corpus => (
-          <option key={corpus.id} value={`corpus_${corpus.id}`}>{corpus.name}</option>
+        {corpora.map(corpus => (
+          <option key={corpus.id} value={corpus.id}>{corpus.name}</option>
         ))}
       </select>
     </div>
