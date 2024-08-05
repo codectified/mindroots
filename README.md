@@ -1,3 +1,20 @@
+# Setting up the neo4j database
+
+Ensure you have Neo4j installed on your machine.
+
+* From the the Neo4j installation directory run:   `./bin/neo4j start`
+
+* The Neo4j browser should be accessible at http://localhost:7474.
+
+* Copy the CSV files from the data folder to the Neo4j import directory, typically located at <NEO4J_HOME>/import.
+
+* Open the Neo4j browser at http://localhost:7474.
+* Login with your credentials.
+* Sequentially execute the Cypher commands in the provided script (/data/cypher_script)
+
+Ensure the paths to the CSV files are correctly specified relative to the import directory.
+
+
 # Getting Started with Create React App
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

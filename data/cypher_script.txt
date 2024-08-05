@@ -38,6 +38,8 @@ WITH row
 MATCH (word:Word {word_id: toInteger(row.derivative_id)})
 MATCH (name:NameOfAllah {name_id: toInteger(row.item_id), corpus_id: toInteger(row.corpus_id)})
 MERGE (name)-[:HAS_WORD]->(word)
+
+//(dataset not available)
 WITH row
 MATCH (item:Quran {item_id: toInteger(row.item_id), corpus_id: toInteger(row.corpus_id)})
 MERGE (item)-[:HAS_WORD]->(word)
