@@ -31,43 +31,105 @@ export const fetchWordData = async (word, script) => {
   return convertIntegers(response.data);
 };
 
-export const fetchWordsByForm = async (formId, script) => {
-  try {
-    const response = await api.get(`/form/${formId}`, { params: { script } });
-    const data = response.data.map(item => convertIntegers(item));
-    if (script === 'both') {
-      return data.map(item => ({
-        ...item,
-        label: `${item.arabic} / ${item.english}`
-      }));
-    }
-    return data;
-  } catch (error) {
-    console.error('API error for fetchWordsByForm:', error);
-    throw error;
-  }
+export const fetchWordsByFormWithLexicon = async (formId, script) => {
+  const endpoint = `/form/${formId}/lexicon`;
+  const response = await api.get(endpoint, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
 };
 
+export const fetchWordsByFormWithCorpus = async (formId, corpusId, script) => {
+  const endpoint = `/form/${formId}/corpus/${corpusId}`;
+  const response = await api.get(endpoint, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
 
+export const fetchWordsByRootWithLexicon = async (rootId, script) => {
+  const endpoint = `/root/${rootId}/lexicon`;
+  const response = await api.get(endpoint, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
+
+export const fetchWordsByRootWithCorpus = async (rootId, corpusId, script) => {
+  const endpoint = `/root/${rootId}/corpus/${corpusId}`;
+  const response = await api.get(endpoint, { params: { script } });
+  return response.data.map(item => convertIntegers(item));
+};
+
+// Fetch names of allah for PrimaryList
 export const fetchNamesOfAllah = async (script) => {
   const response = await api.get('/list/names_of_allah', { params: { script } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByNameId = async (nameId, script) => {
-  const response = await api.get(`/words_by_name/${nameId}`, { params: { script } });
+
+// Fetch words, forms, and roots by name ID
+export const fetchWordsByNameId = async (nameId, script, corpusId) => {
+  const response = await api.get(`/words_by_name/${nameId}`, { params: { script, corpusId } });
+  const data = convertIntegers(response.data);
+
+  // Format data based on script setting
+  const formatData = (item) => ({
+    ...item,
+    label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
+  });
+
+  return {
+    ...data,
+    words: data.words.map(formatData),
+    forms: data.forms.map(formatData),
+    roots: data.roots.map(formatData),
+  };
+};
+
+// src/services/apiService.js
+
+// Fetch words, forms, and roots by corpus item ID
+export const fetchWordsByCorpusItem = async (itemId, script) => {
+  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { script } });
+  const data = convertIntegers(response.data);
+
+  // Ensure all expected data is defined and available
+  return {
+    ...data,
+    words: data.words ? data.words.map(word => ({
+      ...word,
+      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
+    })) : [],
+    forms: data.forms ? data.forms.map(form => ({
+      ...form,
+      label: script === 'both' ? `${form.arabic} / ${form.english}` : form[script],
+    })) : [],
+    roots: data.roots ? data.roots.map(root => ({
+      ...root,
+      label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script],
+    })) : [],
+  };
+};
+
+
+
+
+// Fetch words by radicals
+export const fetchWordsByRootRadicals = async (r1, r2, r3, script) => {
+  const response = await api.get('/words_by_root_radicals', { params: { r1, r2, r3, script } });
   return convertIntegers(response.data);
 };
 
-export const fetchRootData = async (rootId, script) => {
-  const response = await api.get(`/root/${rootId}`, { params: { script } });
-  const data = response.data.map(item => convertIntegers(item));
-  if (script === 'both') {
-    return data.map(item => ({
-      ...item,
-      label: `${item.arabic} / ${item.english}`
-    }));
+//Fetch roots by radicals
+export const fetchRootsByRadicals = async (r1, r2, r3, script) => {
+  try {
+    const response = await api.get('/roots_by_radicals', {
+      params: { r1, r2, r3, script }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching roots by radicals:', error);
+    throw error;
   }
-  return data;
 };
 
+// Fetch all available corpora
+export const fetchCorpora = async () => {
+  const response = await api.get('/list/corpora');
+  return response.data.map(item => convertIntegers(item));
+};
