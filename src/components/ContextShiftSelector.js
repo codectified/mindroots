@@ -11,16 +11,18 @@ const ContextShiftSelector = ({ contextFilterRoot, contextFilterForm, handleCont
 
   return (
     <div>
-      <label>Root Context:</label>
-      <select name="root" value={contextFilterRoot} onChange={handleContextFilterChange}>
+
+
+      <label>Form Context:</label>
+      <select name="form" value={contextFilterForm} onChange={handleContextFilterChange}>
         <option value="lexicon">Lexicon</option>
         {corpora.map(corpus => (
           <option key={corpus.id} value={corpus.id}>{corpus.name}</option>
         ))}
       </select>
 
-      <label>Form Context:</label>
-      <select name="form" value={contextFilterForm} onChange={handleContextFilterChange}>
+      <label>Root Context:</label>
+      <select name="root" value={contextFilterRoot} onChange={handleContextFilterChange}>
         <option value="lexicon">Lexicon</option>
         {corpora.map(corpus => (
           <option key={corpus.id} value={corpus.id}>{corpus.name}</option>
