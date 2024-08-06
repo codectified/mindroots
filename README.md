@@ -2,9 +2,7 @@
 
 Ensure you have Neo4j installed on your machine.
 
-* From the the Neo4j installation directory run:   `./bin/neo4j start`
-
-* The Neo4j browser should be accessible at http://localhost:7474.
+* From the the Neo4j installation directory run:   `./bin/neo4j start` or launch Neo4j Desktop.
 
 * Copy the CSV files from the data folder to the Neo4j import directory, typically located at <NEO4J_HOME>/import.
 
