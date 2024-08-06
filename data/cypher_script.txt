@@ -40,8 +40,9 @@ MATCH (name:NameOfAllah {name_id: toInteger(row.item_id), corpus_id: toInteger(r
 MERGE (name)-[:HAS_WORD]->(word)
 
 //(dataset not available)
+LOAD CSV WITH HEADERS FROM 'file:///quran.csv' AS row
 WITH row
-MATCH (item:Quran {item_id: toInteger(row.item_id), corpus_id: toInteger(row.corpus_id)})
+MATCH (item:Quran {qid: toInteger(row.qid), corpus_id: toInteger(row.corpus_id)})
 MERGE (item)-[:HAS_WORD]->(word)
 
 // Load corpora nodes
