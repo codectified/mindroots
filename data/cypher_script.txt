@@ -3,12 +3,13 @@ LOAD CSV WITH HEADERS FROM 'file:///roots.csv' AS rootRow
 MERGE (root:Root {root_id: toInteger(rootRow.id), arabic: rootRow.`الجذور`, english: rootRow.transliterated_root, r3: rootRow.r3, r2: rootRow.r2, r1: rootRow.r1})
 
 // Load forms data
+WITH *  // Ensure all variables are passed to the next context
 LOAD CSV WITH HEADERS FROM 'file:///forms.csv' AS formRow
 MERGE (form:Form {form_id: toInteger(formRow.id), arabic: formRow.arabic, english: formRow.english})
 
 // Load derivatives data and link them to roots and forms
+WITH *  // Ensure all variables are passed to the next context
 LOAD CSV WITH HEADERS FROM 'file:///derivatives.csv' AS derivativeRow
-WITH derivativeRow
 MERGE (word:Word {word_id: toInteger(derivativeRow.id), arabic: derivativeRow.arabic, english: derivativeRow.english})
 SET word.name_id = toInteger(derivativeRow.name_id)
 WITH derivativeRow, word
@@ -22,18 +23,21 @@ MATCH (form:Form {form_id: toInteger(form_id)})
 MERGE (word)-[:HAS_FORM]->(form)
 
 // Load the most excellent names data
+WITH *  // Ensure all variables are passed to the next context
 LOAD CSV WITH HEADERS FROM 'file:///most_excellent_names.csv' AS nameRow
 WITH nameRow 
 WHERE nameRow.`أسماء_الله_الحسنى` IS NOT NULL AND nameRow.id IS NOT NULL
 MERGE (name:NameOfAllah {name_id: toInteger(nameRow.id), corpus_id: toInteger(nameRow.corpus_id), arabic: nameRow.`أسماء_الله_الحسنى`, transliteration: nameRow.transliteration, english: nameRow.the_most_excellent_names})
 
 // Load the Quran corpus data
+WITH *  // Ensure all variables are passed to the next context
 LOAD CSV WITH HEADERS FROM 'file:///quran.csv' AS quranRow
 WITH quranRow 
 WHERE quranRow.word IS NOT NULL AND quranRow.id IS NOT NULL
 MERGE (item:Quran {item_id: toInteger(quranRow.id), corpus_id: toInteger(quranRow.corpus_id), word: quranRow.word})
 
 // Load the mapping table to link derivatives to corpus items
+WITH *  // Ensure all variables are passed to the next context
 LOAD CSV WITH HEADERS FROM 'file:///mapping.csv' AS mappingRow
 WITH mappingRow
 MATCH (word:Word {word_id: toInteger(mappingRow.derivative_id)})
@@ -41,12 +45,14 @@ MATCH (name:NameOfAllah {name_id: toInteger(mappingRow.item_id), corpus_id: toIn
 MERGE (name)-[:HAS_WORD]->(word)
 
 // Load the Quran corpus data again for another purpose
+WITH *  // Ensure all variables are passed to the next context
 LOAD CSV WITH HEADERS FROM 'file:///quran.csv' AS quranLinkRow
 WITH quranLinkRow
 MATCH (item:Quran {item_id: toInteger(quranLinkRow.item_id), corpus_id: toInteger(quranLinkRow.corpus_id)})
 MERGE (item)-[:HAS_WORD]->(word)
 
 // Load corpora nodes
+WITH *  // Ensure all variables are passed to the next context
 LOAD CSV WITH HEADERS FROM 'file:///corpora.csv' AS corpusRow
 MERGE (corpus:Corpus {corpus_id: toInteger(corpusRow.id), name: corpusRow.name})
 
