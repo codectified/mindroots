@@ -1,0 +1,62 @@
+// Load roots data
+LOAD CSV WITH HEADERS FROM 'httpss://theoption.life/data/roots.csv' AS rootRow
+MERGE (root:Root {root_id: toInteger(rootRow.id), arabic: rootRow.`الجذور`, english: rootRow.transliterated_root, r3: rootRow.r3, r2: rootRow.r2, r1: rootRow.r1})
+
+// Load forms data
+WITH *  // Pass all variables to the next context
+LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/forms.csv' AS formRow
+MERGE (form:Form {form_id: toInteger(formRow.id), arabic: formRow.arabic, english: formRow.english})
+
+// Load derivatives data and link them to roots and forms
+WITH *  // Pass all variables to the next context
+LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/derivatives.csv' AS derivativeRow
+MERGE (word:Word {word_id: toInteger(derivativeRow.id), arabic: derivativeRow.arabic, english: derivativeRow.english})
+SET word.name_id = toInteger(derivativeRow.name_id)
+WITH derivativeRow, word
+MATCH (root:Root {root_id: toInteger(derivativeRow.root_id)})
+MERGE (root)-[:HAS_WORD]->(word)
+SET word.root_id = root.root_id
+WITH derivativeRow, word
+WITH word, split(replace(replace(derivativeRow.form_id, '[', ''), ']', ''), ',') AS form_ids
+UNWIND form_ids AS form_id
+MATCH (form:Form {form_id: toInteger(form_id)})
+MERGE (word)-[:HAS_FORM]->(form)
+
+// Load the most excellent names data
+WITH *  // Pass all variables to the next context
+LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/most_excellent_names.csv' AS nameRow
+WITH nameRow 
+WHERE nameRow.`أسماء_الله_الحسنى` IS NOT NULL AND nameRow.id IS NOT NULL
+MERGE (name:NameOfAllah {name_id: toInteger(nameRow.id), corpus_id: toInteger(nameRow.corpus_id), arabic: nameRow.`أسماء_الله_الحسنى`, transliteration: nameRow.transliteration, english: nameRow.the_most_excellent_names})
+
+// Load the Quran corpus data
+WITH *  // Pass all variables to the next context
+LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/quran.csv' AS quranRow
+WITH quranRow 
+WHERE quranRow.word IS NOT NULL AND quranRow.id IS NOT NULL
+MERGE (item:Quran {item_id: toInteger(quranRow.id), corpus_id: toInteger(quranRow.corpus_id), word: quranRow.word})
+
+// Load the mapping table to link derivatives to corpus items
+WITH *  // Pass all variables to the next context
+LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/mapping.csv' AS mappingRow
+WITH mappingRow
+MATCH (word:Word {word_id: toInteger(mappingRow.derivative_id)})
+MATCH (name:NameOfAllah {name_id: toInteger(mappingRow.item_id), corpus_id: toInteger(mappingRow.corpus_id)})
+MERGE (name)-[:HAS_WORD]->(word)
+
+// Load the Quran corpus data again for another purpose
+WITH *  // Pass all variables to the next context
+LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/quran.csv' AS quranLinkRow
+WITH quranLinkRow
+MATCH (item:Quran {item_id: toInteger(quranLinkRow.item_id), corpus_id: toInteger(quranLinkRow.corpus_id)})
+MERGE (item)-[:HAS_WORD]->(word)
+
+// Load corpora nodes
+WITH *  // Pass all variables to the next context
+LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/corpora.csv' AS corpusRow
+MERGE (corpus:Corpus {corpus_id: toInteger(corpusRow.id), name: corpusRow.name})
+
+// Link names of Allah to Corpus 1 (The Most Excellent Names)
+WITH *  // Pass all variables to the next context
+MATCH (name:NameOfAllah), (corpus:Corpus {corpus_id: 1})
+MERGE (name)-[:BELONGS_TO]->(corpus);

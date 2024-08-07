@@ -8,10 +8,10 @@ const port = 5001;
 
 app.use(cors());
 
-// Neo4j driver setup
+// Neo4j Aura driver setup
 const driver = neo4j.driver(
-  'bolt://localhost', 
-  neo4j.auth.basic('neo4j', 'raymond-guide-monarch-change-reward-8670') // Replace 'your_password' with your Neo4j password
+  'neo4j+s://f6ead924.databases.neo4j.io', // Neo4j Aura connection URI
+  neo4j.auth.basic('omaribrahim1130@gmail.com', 'GVLw6Rd-#*Dqy_c') // Replace with your Neo4j Aura credentials
 );
 
 // Middleware to make the Neo4j driver available to all routes
