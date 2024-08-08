@@ -39,7 +39,7 @@ const App = () => {
   };
 
   return (
-    <Router>
+    <Router basename="/mindroots">
       <div className="overlay">
         <Routes>
           <Route path="/" element={<MainMenu onSelectCorpus={handleSelectCorpus} />} />
