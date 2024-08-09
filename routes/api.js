@@ -1,6 +1,22 @@
 const express = require('express');
-const neo4j = require('neo4j-driver'); // Import neo4j
+const neo4j = require('neo4j-driver');
 const router = express.Router();
+
+// CORS Middleware
+router.use((req, res, next) => {
+  res.setHeader('Access-Control-Allow-Origin', '*');  // Adjust according to your security policy
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.setHeader('Access-Control-Allow-Private-Network', 'true');
+  
+  // If the request method is OPTIONS, send a response with status 200 and end the request
+  if (req.method === 'OPTIONS') {
+    res.sendStatus(200);
+  } else {
+    next();
+  }
+});
+
 
 // Helper function to convert Neo4j integers to regular numbers
 const convertIntegers = (obj) => {
