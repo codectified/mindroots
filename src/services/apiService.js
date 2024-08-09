@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an Axios instance with the base URL for the API
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api',
+  baseURL: 'https://www.theoption.life/api/',
 });
 
 // Helper function to convert Neo4j integers to regular numbers
