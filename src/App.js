@@ -9,7 +9,7 @@ const App = () => {
   const [script, setScript] = useState('arabic'); // Initialize script state
   const [rootData, setRootData] = useState({ nodes: [], links: [] }); // Initialize root data state
   const [selectedName, setSelectedName] = useState(null); // Initialize selected name state
-  const [contextFilterRoot, setContextFilterRoot] = useState('corpus'); // Initialize root context filter state
+  const [contextFilterRoot, setContextFilterRoot] = useState('lexicon'); // Initialize root context filter state
   const [contextFilterForm, setContextFilterForm] = useState('corpus'); // Initialize form context filter state
   const [selectedCorpus, setSelectedCorpus] = useState(null); // Initialize selected corpus state
   const [corpora, setCorpora] = useState([]); // Initialize corpora state
@@ -18,7 +18,6 @@ const App = () => {
   const handleSelectCorpus = (corpus, corpora) => {
     console.log('Selected corpus:', corpus);
     setSelectedCorpus(corpus);
-    setContextFilterRoot(corpus.id); // Set the default root context to the selected corpus ID
     setContextFilterForm(corpus.id); // Set the default form context to the selected corpus ID
     setSelectedName(null); // Reset selected name
     setCorpora(corpora); // Set the corpora state with the passed corpora
@@ -32,11 +31,14 @@ const App = () => {
     const { name, value } = event.target;
     console.log(`Context filter change - ${name}: ${value}`);
     if (name === 'root') {
-      setContextFilterRoot(value); // Change the root context filter
+      console.log('Updating root context:', value); // Debugging
+      setContextFilterRoot(value);
     } else if (name === 'form') {
-      setContextFilterForm(value); // Change the form context filter
+      console.log('Updating form context:', value); // Debugging
+      setContextFilterForm(value);
     }
   };
+  
 
   return (
     <Router basename="/mindroots">
