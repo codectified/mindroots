@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an Axios instance with the base URL for the API
 const api = axios.create({
-  baseURL: 'https://www.theoption.life/api/',
+  baseURL: 'http://localhost:5001/api',
 });
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -55,11 +55,16 @@ export const fetchWordsByRootWithCorpus = async (rootId, corpusId, script) => {
   return response.data.map(item => convertIntegers(item));
 };
 
-// Fetch names of allah for PrimaryList
-export const fetchNamesOfAllah = async (script) => {
-  const response = await api.get('/list/names_of_allah', { params: { script } });
-  return response.data.map(item => convertIntegers(item));
+// Fetch corpus items for a given corpus_id
+export const fetchCorpusItems = async (corpusId, script) => {
+  const response = await api.get('/list/corpus_items', { params: { corpus_id: corpusId } });
+
+  return response.data.map(item => ({
+    ...convertIntegers(item),
+    label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
+  }));
 };
+
 
 
 // Fetch words, forms, and roots by name ID

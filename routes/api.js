@@ -35,31 +35,39 @@ const convertIntegers = (obj) => {
 
 const formatSimpleData = (records) => {
   return records.map(record => ({
+    item_id: record.get('item_id'),
     arabic: record.get('arabic'),
     english: record.get('english'),
-    name_id: convertIntegers(record.get('name_id')) // Convert and include name_id
+    transliteration: record.get('transliteration')
   }));
 };
 
-// Endpoint to list all the names of Allah
-router.get('/list/names_of_allah', async (req, res) => {
+
+// Endpoint to list all corpus items by corpus_id
+router.get('/list/corpus_items', async (req, res) => {
+  const { corpus_id } = req.query; // Get corpus_id from query parameters
+  if (!corpus_id) {
+    return res.status(400).send('Missing corpus_id parameter');
+  }
+
   const session = req.driver.session();
   try {
     const result = await session.run(`
-      MATCH (name:NameOfAllah)
-      RETURN name.arabic AS arabic, name.transliteration AS english, name.name_id AS name_id
-    `);
+      MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
+      RETURN item.arabic AS arabic, item.transliteration AS transliteration, item.item_id AS item_id, item.english AS english
+    `, { corpus_id });
 
-    const names = formatSimpleData(result.records);
-    console.log('Fetched all names of Allah:', names); // Add logging
-    res.json(names);
+    const corpusItems = formatSimpleData(result.records);
+    console.log('Fetched all corpus items:', corpusItems); // Add logging
+    res.json(corpusItems);
   } catch (error) {
-    console.error('Error fetching names of Allah:', error);
-    res.status(500).send('Error fetching names of Allah');
+    console.error('Error fetching corpus items:', error);
+    res.status(500).send('Error fetching corpus items');
   } finally {
     await session.close();
   }
 });
+
 
 
 // Endpoint to fetch words, forms, and roots by name ID
@@ -104,27 +112,26 @@ router.get('/words_by_name/:nameId', async (req, res) => {
 });
 
 
-// Endpoint to fetch words, forms, and roots by corpus item ID (specific to names of Allah)
 router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const { itemId } = req.params;
   const { script } = req.query;
   const session = req.driver.session();
   try {
     let query = `
-      MATCH (name:NameOfAllah {name_id: toInteger($itemId)})-[:HAS_WORD]->(word:Word)
+      MATCH (item:CorpusItem {item_id: toInteger($itemId)})-[:HAS_WORD]->(word:Word)
       OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
       OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
-      RETURN name, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
+      RETURN item, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
     `;
 
     const result = await session.run(query, { itemId });
     const records = result.records[0];
     if (records) {
-      const name = records.get('name').properties;
+      const item = records.get('item').properties;
       const words = records.get('words').map(record => convertIntegers(record.properties));
       const forms = records.get('forms').map(record => convertIntegers(record.properties));
       const roots = records.get('roots').map(record => convertIntegers(record.properties));
-      res.json({ name, words, forms, roots });
+      res.json({ item, words, forms, roots });
     } else {
       res.json({});
     }
@@ -135,6 +142,7 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 // Endpoint to fetch words by form ID
