@@ -65,32 +65,9 @@ export const fetchCorpusItems = async (corpusId, script) => {
   }));
 };
 
-
-
-// Fetch words, forms, and roots by name ID
-export const fetchWordsByNameId = async (nameId, script, corpusId) => {
-  const response = await api.get(`/words_by_name/${nameId}`, { params: { script, corpusId } });
-  const data = convertIntegers(response.data);
-
-  // Format data based on script setting
-  const formatData = (item) => ({
-    ...item,
-    label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
-  });
-
-  return {
-    ...data,
-    words: data.words.map(formatData),
-    forms: data.forms.map(formatData),
-    roots: data.roots.map(formatData),
-  };
-};
-
-// src/services/apiService.js
-
 // Fetch words, forms, and roots by corpus item ID
-export const fetchWordsByCorpusItem = async (itemId, script) => {
-  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { script } });
+export const fetchWordsByCorpusItem = async (itemId, corpusId, script) => {
+  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, script } });
   const data = convertIntegers(response.data);
 
   // Ensure all expected data is defined and available
@@ -110,6 +87,7 @@ export const fetchWordsByCorpusItem = async (itemId, script) => {
     })) : [],
   };
 };
+
 
 
 

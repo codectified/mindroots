@@ -112,19 +112,23 @@ router.get('/words_by_name/:nameId', async (req, res) => {
 });
 
 
+// routes.js (or the file where you define your routes)
 router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const { itemId } = req.params;
-  const { script } = req.query;
+  const { corpusId, script } = req.query; // Added corpusId here
   const session = req.driver.session();
+  
   try {
+    // Updated query to match the CorpusItem with both item_id and corpus_id
     let query = `
-      MATCH (item:CorpusItem {item_id: toInteger($itemId)})-[:HAS_WORD]->(word:Word)
+      MATCH (item:CorpusItem {item_id: toInteger($itemId), corpus_id: toInteger($corpusId)})
+      OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
       OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
       OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
       RETURN item, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
     `;
 
-    const result = await session.run(query, { itemId });
+    const result = await session.run(query, { itemId, corpusId });
     const records = result.records[0];
     if (records) {
       const item = records.get('item').properties;
@@ -142,6 +146,9 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
     await session.close();
   }
 });
+
+
+
 
 
 
