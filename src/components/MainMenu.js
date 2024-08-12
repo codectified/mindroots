@@ -31,6 +31,7 @@ const MainMenu = ({ onSelectCorpus }) => {
 
   return (
     <div>
+            <h2>Select a corpus...</h2> {/* Added text */}
       <ul>
         {corpora.map(corpus => (
           <li key={corpus.id} onClick={() => handleSelect(corpus)}>

@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './components/MainMenu';
 import PrimaryList from './components/PrimaryList';
 import GraphScreen from './components/GraphScreen';
+import MindRoots from './components/MindRoots'; // Import MindRoots
+import About from './components/About'; // Import About
 import './App.css';
 
 const App = () => {
@@ -38,7 +40,6 @@ const App = () => {
       setContextFilterForm(value);
     }
   };
-  
 
   return (
     <Router basename="/mindroots">
@@ -47,6 +48,7 @@ const App = () => {
           <Route path="/" element={<MainMenu onSelectCorpus={handleSelectCorpus} />} />
           <Route path="/list" element={<PrimaryList script={script} setScript={handleSwitchScript} setRootData={setRootData} setSelectedName={setSelectedName} />} />
           <Route path="/graph" element={<GraphScreen selectedName={selectedName} script={script} setScript={handleSwitchScript} rootData={rootData} setRootData={setRootData} contextFilterRoot={contextFilterRoot} contextFilterForm={contextFilterForm} handleContextFilterChange={handleContextFilterChange} selectedCorpus={selectedCorpus} corpora={corpora} />} />
+          <Route path="/about" element={<About />} />
         </Routes>
       </div>
     </Router>
