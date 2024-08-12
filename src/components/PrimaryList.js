@@ -1,3 +1,4 @@
+// PrimaryList.js
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchCorpusItems, fetchWordsByCorpusItem } from '../services/apiService';
@@ -7,9 +8,10 @@ const PrimaryList = ({ script, setScript, setRootData, setSelectedName }) => {
   const location = useLocation();
   const [names, setNames] = useState([]);
 
-  // Extract corpus_id from the query parameters
+  // Extract corpus_id and corpus_name from the query parameters
   const queryParams = new URLSearchParams(location.search);
   const corpusId = queryParams.get('corpus_id');
+  const corpusName = queryParams.get('corpus_name');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -34,7 +36,7 @@ const PrimaryList = ({ script, setScript, setRootData, setSelectedName }) => {
       console.log('Selected name:', name);
   
       const nameId = name.item_id;
-      const response = await fetchWordsByCorpusItem(nameId, script);
+      const response = await fetchWordsByCorpusItem(nameId, corpusId, script); // Pass corpusId here
       console.log('Response data:', response);
   
       if (response && response.words.length > 0) {
@@ -85,7 +87,6 @@ const PrimaryList = ({ script, setScript, setRootData, setSelectedName }) => {
     }
     navigate('/graph');
   };
-  
 
   const handleScriptChange = (event) => {
     setScript(event.target.value);
@@ -98,7 +99,7 @@ const PrimaryList = ({ script, setScript, setRootData, setSelectedName }) => {
   return (
     <div>
       <button onClick={handleBack}>Back</button>
-      <h1>Corpus Items</h1>
+      <h1>{corpusName}</h1>
       <select value={script} onChange={handleScriptChange}>
         <option value="arabic">Arabic</option>
         <option value="english">English</option>
