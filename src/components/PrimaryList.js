@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchCorpusItems, fetchWordsByCorpusItem } from '../services/apiService';
 
-const PrimaryList = ({ script, setScript, setRootData, setSelectedName }) => {
+const PrimaryList = ({ script, setScript, setRootData, setSelectedName, selectedCorpus }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [names, setNames] = useState([]);

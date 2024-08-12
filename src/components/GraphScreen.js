@@ -82,8 +82,9 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
   }, [fetchData]);
 
   const handleBack = () => {
-    navigate('/list');
+    navigate(`/list?corpus_id=${selectedCorpus.id}&corpus_name=${encodeURIComponent(selectedCorpus.name)}&script=${script}`);
   };
+  
 
   const handleScriptChange = (event) => {
     setScript(event.target.value);
