@@ -31,7 +31,7 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
 
   const fetchData = useCallback(async () => {
     if (selectedName) {
-      const nameId = selectedName.name_id.low !== undefined ? selectedName.name_id.low : selectedName.name_id;
+      const nameId = selectedName.item_id.low !== undefined ? selectedName.item_id.low : selectedName.item_id;
       const response = await fetchWordsByCorpusItem(nameId, script);
       if (response && response.words && response.words.length > 0) {
         const nameNode = {

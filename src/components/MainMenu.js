@@ -20,9 +20,14 @@ const MainMenu = ({ onSelectCorpus }) => {
 
   const handleSelect = (corpus) => {
     console.log('Selected corpus in MainMenu:', corpus);
-    onSelectCorpus(corpus); // Pass selected corpus to the handler
-    navigate(`/list?corpus_id=${corpus.id}`); // Pass corpus_id in query parameters
+  
+    // Ensure onSelectCorpus function can handle both corpus and corpora
+    onSelectCorpus(corpus, corpora); 
+  
+    // Navigate to the list of items in the selected corpus with query parameters
+    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus.name)}`);
   };
+  
 
   return (
     <div>
@@ -36,7 +41,5 @@ const MainMenu = ({ onSelectCorpus }) => {
     </div>
   );
 };
-
-
 
 export default MainMenu;
