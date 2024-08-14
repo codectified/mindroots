@@ -119,13 +119,12 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const session = req.driver.session();
   
   try {
-    // Updated query to match the CorpusItem with both item_id and corpus_id
+    // Updated query to match the CorpusItem with both item_id and corpus_id, and remove form
     let query = `
       MATCH (item:CorpusItem {item_id: toInteger($itemId), corpus_id: toInteger($corpusId)})
       OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
-      OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
       OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
-      RETURN item, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
+      RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots
     `;
 
     const result = await session.run(query, { itemId, corpusId });
@@ -133,19 +132,19 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
     if (records) {
       const item = records.get('item').properties;
       const words = records.get('words').map(record => convertIntegers(record.properties));
-      const forms = records.get('forms').map(record => convertIntegers(record.properties));
       const roots = records.get('roots').map(record => convertIntegers(record.properties));
-      res.json({ item, words, forms, roots });
+      res.json({ item, words, roots });
     } else {
       res.json({});
     }
   } catch (error) {
-    console.error('Error fetching words, forms, and roots by corpus item:', error);
-    res.status(500).send('Error fetching words, forms, and roots by corpus item');
+    console.error('Error fetching words and roots by corpus item:', error);
+    res.status(500).send('Error fetching words and roots by corpus item');
   } finally {
     await session.close();
   }
 });
+
 
 
 
