@@ -10,8 +10,6 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       return;
     }
 
-    console.log('Rendering data:', data);
-
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove(); // Clear previous contents
 
@@ -25,29 +23,13 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     });
 
     const simulation = d3.forceSimulation(data.nodes)
-      .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
-      .force('charge', d3.forceManyBody().strength(-50))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('x', d3.forceX(d => {
-        if (d.type === 'name') return width / 2;
-        if (d.type === 'form') return width / 4;
-        if (d.type === 'root') return (3 * width) / 4;
-        if (d.type === 'word') {
-          return width / 2;
-        }
-        return width / 2;
-      }).strength(1))
-      .force('y', d3.forceY(d => {
-        if (d.type === 'name') return height / 4;
-        if (d.type === 'form' || d.type === 'root') return height / 2;
-        if (d.type === 'word') {
-          return height * 0.75;
-        }
-        return height / 2;
-      }).strength(1))
-      .force('collide', d3.forceCollide(50)) // Add collision force to prevent overlap
-      .alphaDecay(0.01) // Slower cooling rate
-      .velocityDecay(0.9); // Higher velocity decay for smoother motion
+    .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
+    .force('charge', d3.forceManyBody().strength(-50))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collide', d3.forceCollide(50)) // Add collision force to prevent overlap
+    .alphaDecay(0.005) // Even slower cooling rate for a dramatic slow effect
+    .velocityDecay(0.6); // Lower velocity decay for slower motion
+  
 
     const color = d3.scaleOrdinal()
       .domain(['name', 'word', 'form', 'root'])
@@ -86,8 +68,47 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .attr('y', '.31em')
       .text(d => d.label);
 
-    console.log('Appended nodes:', node);
-    console.log('Appended links:', link);
+
+// Position the root and word nodes symmetrically
+const rootNode = data.nodes.find(node => node.type === 'root');
+const wordNode = data.nodes.find(node => node.type === 'word');
+
+if (rootNode && wordNode) {
+  const offset = 100; // Adjusts the horizontal distance between root and word nodes
+  const verticalShift = 50; // Adjust this value to lower the root node
+
+  // Swap the positions: root node on the right, word node on the left
+  wordNode.fx = width / 2 - offset;
+  wordNode.fy = height / 2;
+
+  rootNode.fx = width / 2 + offset;
+  rootNode.fy = height / 2 + verticalShift; // Lower the root node
+
+  // Center the item node directly above the midpoint between the root and word nodes, but higher up
+  const midX = (rootNode.fx + wordNode.fx) / 2;
+  const itemNode = data.nodes.find(node => node.type === 'name');
+  if (itemNode) {
+    itemNode.fx = midX;
+    itemNode.fy = height / 2 - 200; // Adjusted higher vertical position
+  }
+}
+
+// Radial distribution of word nodes around the root when expanded
+if (rootNode) {
+  const childWordNodes = data.nodes.filter(node => node.type === 'word' && node.root_id === rootNode.id);
+  
+  // Start with an initial angle to distribute the nodes symmetrically
+  const startAngle = Math.PI / 4; // Adjust this starting angle as needed
+  const angleIncrement = (2 * Math.PI - startAngle * 2) / childWordNodes.length;
+  
+  childWordNodes.forEach((node, index) => {
+    const angle = startAngle + index * angleIncrement;
+    const radius = 100; // Distance from the root node
+    node.fx = rootNode.fx + radius * Math.cos(angle);
+    node.fy = rootNode.fy + radius * Math.sin(angle);
+  });
+}
+
 
     simulation
       .nodes(data.nodes)
@@ -110,15 +131,6 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       text
         .attr('x', d => validatePosition(d.x))
         .attr('y', d => validatePosition(d.y));
-
-      // Log positions less frequently
-      if (Math.random() < 0.05) {
-        console.log('Node positions:', node.data().map(d => ({ x: d.x, y: d.y })));
-        console.log('Link positions:', link.data().map(d => ({
-          source: { x: d.source.x, y: d.source.y },
-          target: { x: d.target.x, y: d.target.y }
-        })));
-      }
     }
 
     function validatePosition(value) {
