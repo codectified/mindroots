@@ -8,6 +8,8 @@ import { fetchWordsByCorpusItem } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
 import RootRadicalSelector from './RootRadicalSelector';
 import ContextShiftSelector from './ContextShiftSelector';
+import Menu from './Menu';
+
 
 const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus, corpora }) => {
   const navigate = useNavigate();
@@ -104,6 +106,7 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
 
   return (
     <div>
+                  <Menu /> {/* Add this line */}
       <button onClick={handleBack}>Back</button>
       <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
       <ContextShiftSelector 
