@@ -45,7 +45,7 @@ Double click a node to remove it.
 
 
 
-Translator’s notes:
+### Translator’s notes:
 
 The dictionary function of this tool is intentionally limited for the sake of providing a generalized picture of meaning as verb, as the process of language. 
 
