@@ -10,6 +10,10 @@ const Menu = ({ script, handleScriptChange, contextFilterRoot, contextFilterForm
   const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
 
+  const toggleOption = (option) => {
+    setSelectedOption((prevOption) => (prevOption === option ? null : option));
+  };
+
   const renderContent = () => {
     switch (selectedOption) {
       case 'settings':
@@ -57,13 +61,31 @@ const Menu = ({ script, handleScriptChange, contextFilterRoot, contextFilterForm
   return (
     <div>
       <div style={styles.menuContainer}>
-        <button style={styles.menuButton} onClick={() => setSelectedOption('settings')}>
+        <button
+          style={{
+            ...styles.menuButton,
+            backgroundColor: selectedOption === 'settings' ? '#4a4a4a' : '#333',
+          }}
+          onClick={() => toggleOption('settings')}
+        >
           <FontAwesomeIcon icon={faCog} />
         </button>
-        <button style={styles.menuButton} onClick={() => setSelectedOption('about')}>
+        <button
+          style={{
+            ...styles.menuButton,
+            backgroundColor: selectedOption === 'about' ? '#4a4a4a' : '#333',
+          }}
+          onClick={() => toggleOption('about')}
+        >
           <FontAwesomeIcon icon={faInfoCircle} />
         </button>
-        <button style={styles.menuButton} onClick={() => setSelectedOption('changelog')}>
+        <button
+          style={{
+            ...styles.menuButton,
+            backgroundColor: selectedOption === 'changelog' ? '#4a4a4a' : '#333',
+          }}
+          onClick={() => toggleOption('changelog')}
+        >
           <FontAwesomeIcon icon={faHistory} />
         </button>
       </div>
@@ -87,7 +109,7 @@ const styles = {
     padding: '10px',
     borderRadius: '50%',
     border: 'none',
-    backgroundColor: '#4a4a4a',
+    backgroundColor: '#333',
     color: '#fff',
     cursor: 'pointer',
     fontSize: '20px',
