@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 
-const ContextShiftSelector = ({ contextFilterRoot, contextFilterForm, handleContextFilterChange, corpora }) => {
+const ContextShiftSelector = ({ contextFilterRoot, contextFilterForm, handleContextFilterChange, corpora = [] }) => {
   useEffect(() => {
     console.log(`Context filter root changed to: ${contextFilterRoot}`);
   }, [contextFilterRoot]);
@@ -11,8 +11,6 @@ const ContextShiftSelector = ({ contextFilterRoot, contextFilterForm, handleCont
 
   return (
     <div>
-
-
       <label>Form Context:</label>
       <select name="form" value={contextFilterForm} onChange={handleContextFilterChange}>
         <option value="lexicon">Lexicon</option>
