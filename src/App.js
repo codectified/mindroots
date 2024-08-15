@@ -4,7 +4,8 @@ import MainMenu from './components/MainMenu';
 import PrimaryList from './components/PrimaryList';
 import GraphScreen from './components/GraphScreen';
 import MindRoots from './components/MindRoots'; // Import MindRoots
-import About from './components/About'; // Import About
+import Menu from './components/Menu'; // Import the combined component
+
 import './App.css';
 
 const App = () => {
@@ -48,7 +49,7 @@ const App = () => {
           <Route path="/" element={<MainMenu onSelectCorpus={handleSelectCorpus} />} />
           <Route path="/list" element={<PrimaryList script={script} setScript={handleSwitchScript} setRootData={setRootData} setSelectedName={setSelectedName} />} />
           <Route path="/graph" element={<GraphScreen selectedName={selectedName} script={script} setScript={handleSwitchScript} rootData={rootData} setRootData={setRootData} contextFilterRoot={contextFilterRoot} contextFilterForm={contextFilterForm} handleContextFilterChange={handleContextFilterChange} selectedCorpus={selectedCorpus} corpora={corpora} />} />
-          <Route path="/about" element={<About />} />
+          <Route path="/settings" element={<Menu script={script} handleScriptChange={handleSwitchScript} contextFilterRoot={contextFilterRoot} contextFilterForm={contextFilterForm} handleContextFilterChange={handleContextFilterChange} corpora={corpora} />} />
         </Routes>
       </div>
     </Router>
