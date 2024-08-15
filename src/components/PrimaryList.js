@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchCorpusItems, fetchWordsByCorpusItem } from '../services/apiService';
+import Menu from './Menu';
 
 const PrimaryList = ({ script, setScript, setRootData, setSelectedName, selectedCorpus }) => {
   const navigate = useNavigate();
@@ -98,6 +99,7 @@ const PrimaryList = ({ script, setScript, setRootData, setSelectedName, selected
 
   return (
     <div>
+                  <Menu /> {/* Add this line */}
       <button onClick={handleBack}>Back</button>
       <h1>{corpusName}</h1>
       <select value={script} onChange={handleScriptChange}>
