@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { fetchCorpora } from '../services/apiService';
+import Menu from './Menu';
+
 
 const MainMenu = ({ onSelectCorpus }) => {
   const navigate = useNavigate();
@@ -31,6 +33,8 @@ const MainMenu = ({ onSelectCorpus }) => {
 
   return (
     <div>
+            <Menu /> {/* Add this line */}
+
             <h2>Select a corpus...</h2> {/* Added text */}
       <ul>
         {corpora.map(corpus => (
