@@ -1,12 +1,20 @@
-MindRoots is a graphical ontology and cross-linguistic dictionary.
+MindRoots is a project in cognitive science, linguistics and philosophy, at least.
+
+We can only understand the mind and the self through language. 
+
+If we can see language a little better, the process as a whole, we can probably see ourselves and our minds a bit better, too. 
+
+Featured here as part of the project is a morphosyntactic semantic network modeling tool for navigating a graph database of words and their interrelationships. 
+
+If you imagine language as a tree mixing with the body of the earth, how it roots before it fruits, that’s really the whole idea.
 
 Roots and shoots and fruit slices of every language!
 
-If you can imagine language as a tree mixing with the earth of the body, how it roots before it fruits, the fruit being only the utterance in its proper context and the roots are everything up until that moment in space and time; branches are extended roots.
+The fruit is only the utterance in its proper context and the roots are everything up until that moment in space and time; branches are extended roots.
 
-…more technically, this is a morphosyntactic semantic network model of language with graphical interface.  
+The goal isn’t only learning a language it’s learning what a language is, how it works and moves inside us.  See below.
 
-In the first phase of this project the focus is the arabic language with english translation but more language models and translations are planned. 
+In the first phase of this project the focus is on the arabic language with english translation of the 99 arabic names of god. More language models and translations are planned. 
 
 Currently, there are XX number of words, forms, roots.. in the lexicon database.
 
@@ -49,9 +57,13 @@ Double click a node to remove it.
 
 The dictionary function of this tool is intentionally limited for the sake of providing a generalized picture of meaning as verb, as the process of language. 
 
+Again, the goal here isn’t primarily to learn a new language.  The structure and process of language itself is the aim and focus.  
+
 User-submitted usage examples and links are planned for future updates.
 
-The hope of this project is to provide a guide for navigating and learning language by understanding the most basic relationships between words.  Think of it as a way to imagine how ideas literally are life taking root in the mind:  where every sound fits into our system of sound and meaning.
+Nothing beats immersion for language acquisition, just like anything worthwhile. You might learn a word or even a line or two of poetry if you spend some time, but more than that you’ll likely have made many more conceptual connections.
+
+Think of it as a way to imagine how ideas literally are life taking root in the mind:  where every sound fits into our system of sound and meaning.
 
 Another, way to think about it is like a map of meaning tracing the movement from utterance to context, the physical manners and places of articulation all the way to the thoughts in our head, those we are aware of or not.
 
