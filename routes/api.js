@@ -466,7 +466,21 @@ router.get('/root/:rootId/lexicon', async (req, res) => {
   }
 });
 
-
+// Endpoint for example queries
+router.post('/example-queries', async (req, res) => {
+  const { query } = req.body;
+  const session = driver.session();
+  
+  try {
+      const result = await session.run(query);
+      res.json(result.records);
+  } catch (error) {
+      console.error('Error executing query:', error);
+      res.status(500).send('Error executing query');
+  } finally {
+      await session.close();
+  }
+});
 
 
 
