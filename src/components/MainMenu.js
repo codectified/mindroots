@@ -1,47 +1,35 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCorpora } from '../services/apiService';
-import Menu from './Menu';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faBook, faCog, faInfoCircle, faNewspaper } from '@fortawesome/free-solid-svg-icons';
 
-
-const MainMenu = ({ onSelectCorpus }) => {
+const MainMenu = () => {
   const navigate = useNavigate();
-  const [corpora, setCorpora] = useState([]);
 
-  useEffect(() => {
-    const fetchCorporaData = async () => {
-      try {
-        const data = await fetchCorpora();
-        setCorpora(data);
-      } catch (error) {
-        console.error('Error fetching corpora:', error);
-      }
-    };
-    fetchCorporaData();
-  }, []);
-
-  const handleSelect = (corpus) => {
-    console.log('Selected corpus in MainMenu:', corpus);
-  
-    // Ensure onSelectCorpus function can handle both corpus and corpora
-    onSelectCorpus(corpus, corpora); 
-  
-    // Navigate to the list of items in the selected corpus with query parameters
-    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus.name)}`);
+  const handleNavigation = (path) => {
+    navigate(path);
   };
-  
 
   return (
-    <div>
-            <Menu /> {/* Add this line */}
-
-            <h2>Select a corpus...</h2> {/* Added text */}
-      <ul>
-        {corpora.map(corpus => (
-          <li key={corpus.id} onClick={() => handleSelect(corpus)}>
-            {corpus.name}
-          </li>
-        ))}
+    <div className="mainmenu-container">
+      <h1 className="mainmenu-title">MindRoots</h1>
+      <ul className="mainmenu-list">
+        <li className="mainmenu-item" onClick={() => handleNavigation('/project-news')}>
+          <FontAwesomeIcon icon={faNewspaper} className="mainmenu-icon" />
+          Project News
+        </li>
+        <li className="mainmenu-item" onClick={() => handleNavigation('/corpus-menu')}>
+          <FontAwesomeIcon icon={faBook} className="mainmenu-icon" />
+          Corpus Library
+        </li>
+        <li className="mainmenu-item" onClick={() => handleNavigation('/settings')}>
+          <FontAwesomeIcon icon={faCog} className="mainmenu-icon" />
+          Language and Global Settings
+        </li>
+        <li className="mainmenu-item" onClick={() => handleNavigation('/about')}>
+          <FontAwesomeIcon icon={faInfoCircle} className="mainmenu-icon" />
+          What's this about?
+        </li>
       </ul>
     </div>
   );

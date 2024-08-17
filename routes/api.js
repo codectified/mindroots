@@ -70,49 +70,7 @@ router.get('/list/corpus_items', async (req, res) => {
 
 
 
-// Endpoint to fetch words, forms, and roots by name ID
-router.get('/words_by_name/:nameId', async (req, res) => {
-  const { nameId } = req.params;
-  const { script, corpusId } = req.query;
-  const session = req.driver.session();
-  try {
-    let query = `
-      MATCH (name:NameOfAllah {name_id: toInteger($nameId)})-[:HAS_WORD]->(word:Word)
-      OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
-      OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
-    `;
-
-    if (corpusId) {
-      query += `
-        WHERE word.corpus_id = toInteger($corpusId)
-      `;
-    }
-
-    query += `
-      RETURN name, collect(DISTINCT word) as words, collect(DISTINCT form) as forms, collect(DISTINCT root) as roots
-    `;
-
-    const result = await session.run(query, { nameId, corpusId });
-    const records = result.records[0];
-    if (records) {
-      const name = records.get('name').properties;
-      const words = records.get('words').map(record => convertIntegers(record.properties));
-      const forms = records.get('forms').map(record => convertIntegers(record.properties));
-      const roots = records.get('roots').map(record => convertIntegers(record.properties));
-      res.json({ name, words, forms, roots });
-    } else {
-      res.json({});
-    }
-  } catch (error) {
-    console.error('Error fetching words, forms, and roots by name:', error);
-    res.status(500).send('Error fetching words, forms, and roots by name');
-  } finally {
-    await session.close();
-  }
-});
-
-
-// routes.js (or the file where you define your routes)
+// corpus item graph
 router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const { itemId } = req.params;
   const { corpusId, script } = req.query; // Added corpusId here
@@ -144,10 +102,6 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
     await session.close();
   }
 });
-
-
-
-
 
 
 
@@ -198,11 +152,7 @@ router.get('/form/:formId', async (req, res) => {
 });
 
 
-
-
-
-
-// Endpoint to fetch words by root radicals
+// Endpoint to fetch words by root radicals (not working curently)
 router.get('/words_by_root_radicals', async (req, res) => {
   const { r1, r2, r3, script } = req.query;
   const session = req.driver.session();
@@ -248,7 +198,7 @@ router.get('/words_by_root_radicals', async (req, res) => {
 });
 
 
-// Endpoint to fetch roots by radicals
+// Endpoint to fetch roots by radicals (not working currently)
 router.get('/roots_by_radicals', async (req, res) => {
   const { r1, r2, r3, script } = req.query;
   const session = req.driver.session();
@@ -306,8 +256,6 @@ router.get('/list/corpora', async (req, res) => {
     await session.close();
   }
 });
-
-
 
 // Fetch words by form ID with lexicon context (no filter)
 router.get('/form/:formId/lexicon', async (req, res) => {
@@ -466,7 +414,21 @@ router.get('/root/:rootId/lexicon', async (req, res) => {
   }
 });
 
-
+// Endpoint for example queries
+router.post('/example-queries', async (req, res) => {
+  const { query } = req.body;
+  const session = driver.session();
+  
+  try {
+      const result = await session.run(query);
+      res.json(result.records);
+  } catch (error) {
+      console.error('Error executing query:', error);
+      res.status(500).send('Error executing query');
+  } finally {
+      await session.close();
+  }
+});
 
 
 
