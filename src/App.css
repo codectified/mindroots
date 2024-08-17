@@ -63,6 +63,65 @@ li:hover {
   color: #007BFF;
 }
 
+/* Menu Styles */
+.menu-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.menu-button {
+  padding: 10px;
+  border-radius: 50%;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-button.active {
+  background-color: #4a4a4a;
+}
+
+/* Main Menu Styles */
+.mainmenu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: transparent; /* Remove extra overlay */
+  padding: 20px;
+}
+
+.mainmenu-title {
+  font-family: 'Cinzel', serif;
+  font-size: 48px;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+.mainmenu-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.mainmenu-item {
+  font-family: 'Noto Serif', serif;
+  font-size: 24px;
+  color: #007BFF;
+  cursor: pointer;
+  margin: 20px 0;
+  text-align: center;
+}
+
 /* Media Queries for Mobile Responsiveness */
 @media (max-width: 768px) {
   .overlay {
@@ -81,6 +140,19 @@ li:hover {
   }
 
   li {
+    font-size: 20px;
+  }
+
+  .menu-button {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .mainmenu-title {
+    font-size: 36px;
+  }
+
+  .mainmenu-item {
     font-size: 20px;
   }
 }
@@ -104,4 +176,72 @@ li:hover {
   li {
     font-size: 18px;
   }
+
+  .menu-button {
+    padding: 6px;
+    font-size: 14px;
+  }
+
+  .mainmenu-title {
+    font-size: 28px;
+  }
+
+  .mainmenu-item {
+    font-size: 18px;
+  }
+}
+
+/* Main Menu Styles */
+.mainmenu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background-color: transparent;
+  padding: 20px;
+}
+
+.mainmenu-title {
+  font-family: 'Cinzel', serif;
+  font-size: 48px;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+.mainmenu-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.mainmenu-item {
+  font-family: 'Noto Serif', serif;
+  font-size: 24px;
+  color: #007BFF;
+  cursor: pointer;
+  margin: 20px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mainmenu-item .mainmenu-icon {
+  margin-right: 10px;
+  font-size: 20px;
+}
+
+/* Project News Styles */
+.project-news-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Noto Serif', serif;
+  font-size: 18px;
+  color: #333;
+}
+
+.project-news-title {
+  font-size: 24px;
+  margin-bottom: 20px;
 }

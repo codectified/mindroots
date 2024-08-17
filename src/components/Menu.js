@@ -4,7 +4,7 @@ import { faCog, faInfoCircle, faHistory } from '@fortawesome/free-solid-svg-icon
 import ReactMarkdown from 'react-markdown';
 import aboutContent from '../content/about.md';
 import changelogContent from '../content/changelog.md';
-import Settings from './Settings'; // Import the Settings component
+import Settings from './Settings';
 
 const Menu = ({ script, handleScriptChange, contextFilterRoot, contextFilterForm, handleContextFilterChange, corpora }) => {
   const [selectedOption, setSelectedOption] = useState(null);
@@ -60,30 +60,21 @@ const Menu = ({ script, handleScriptChange, contextFilterRoot, contextFilterForm
 
   return (
     <div>
-      <div style={styles.menuContainer}>
+      <div className="menu-container">
         <button
-          style={{
-            ...styles.menuButton,
-            backgroundColor: selectedOption === 'settings' ? '#4a4a4a' : '#333',
-          }}
+          className={`menu-button ${selectedOption === 'settings' ? 'active' : ''}`}
           onClick={() => toggleOption('settings')}
         >
           <FontAwesomeIcon icon={faCog} />
         </button>
         <button
-          style={{
-            ...styles.menuButton,
-            backgroundColor: selectedOption === 'about' ? '#4a4a4a' : '#333',
-          }}
+          className={`menu-button ${selectedOption === 'about' ? 'active' : ''}`}
           onClick={() => toggleOption('about')}
         >
           <FontAwesomeIcon icon={faInfoCircle} />
         </button>
         <button
-          style={{
-            ...styles.menuButton,
-            backgroundColor: selectedOption === 'changelog' ? '#4a4a4a' : '#333',
-          }}
+          className={`menu-button ${selectedOption === 'changelog' ? 'active' : ''}`}
           onClick={() => toggleOption('changelog')}
         >
           <FontAwesomeIcon icon={faHistory} />
@@ -94,29 +85,6 @@ const Menu = ({ script, handleScriptChange, contextFilterRoot, contextFilterForm
       </div>
     </div>
   );
-};
-
-const styles = {
-  menuContainer: {
-    position: 'absolute',
-    top: '20px',
-    right: '20px',
-    display: 'flex',
-    justifyContent: 'flex-end',
-    gap: '10px',
-  },
-  menuButton: {
-    padding: '10px',
-    borderRadius: '50%',
-    border: 'none',
-    backgroundColor: '#333',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
 };
 
 export default Menu;

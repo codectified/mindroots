@@ -1,9 +1,12 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './components/MainMenu';
+import CorpusMenu from './components/CorpusMenu';
+import ProjectNews from './components/ProjectNews'; // Import the ProjectNews component
 import PrimaryList from './components/PrimaryList';
 import GraphScreen from './components/GraphScreen';
-import MindRoots from './components/MindRoots'; // Import MindRoots
+import Settings from './components/Settings.js'
+import About from './components/About.js'
 import Menu from './components/Menu'; // Import the combined component
 
 import './App.css';
@@ -46,14 +49,31 @@ const App = () => {
     <Router basename="/mindroots">
       <div className="overlay">
         <Routes>
-          <Route path="/" element={<MainMenu onSelectCorpus={handleSelectCorpus} />} />
+          <Route path="/" element={<MainMenu />} />
+          <Route path="/corpus-menu" element={<CorpusMenu onSelectCorpus={handleSelectCorpus} />} />
           <Route path="/list" element={<PrimaryList script={script} setScript={handleSwitchScript} setRootData={setRootData} setSelectedName={setSelectedName} />} />
           <Route path="/graph" element={<GraphScreen selectedName={selectedName} script={script} setScript={handleSwitchScript} rootData={rootData} setRootData={setRootData} contextFilterRoot={contextFilterRoot} contextFilterForm={contextFilterForm} handleContextFilterChange={handleContextFilterChange} selectedCorpus={selectedCorpus} corpora={corpora} />} />
-          <Route path="/settings" element={<Menu script={script} handleScriptChange={handleSwitchScript} contextFilterRoot={contextFilterRoot} contextFilterForm={contextFilterForm} handleContextFilterChange={handleContextFilterChange} corpora={corpora} />} />
+          <Route 
+            path="/settings" 
+            element={
+              <Settings 
+                script={script} 
+                handleScriptChange={handleSwitchScript}
+                contextFilterRoot={contextFilterRoot}
+                contextFilterForm={contextFilterForm}
+                handleContextFilterChange={handleContextFilterChange}
+                corpora={corpora} 
+              />
+            } 
+          />
+          <Route path="/project-news" element={<ProjectNews />} />
+          <Route path="/about" element={<About />} />
+
         </Routes>
       </div>
     </Router>
   );
 };
+
 
 export default App;
