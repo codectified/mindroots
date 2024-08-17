@@ -6,37 +6,6 @@ If we can see language a little better, the process as a whole, we can probably 
 
 Featured here as part of the project is a morphosyntactic semantic network modeling tool for navigating a graph database of words and their interrelationships. 
 
-If you imagine language as a tree mixing with the body of the earth, how it roots before it fruits, that’s really the whole idea.
-
-Roots and shoots and fruit slices of every language!
-
-The fruit is only the utterance in its proper context and the roots are everything up until that moment in space and time; branches are extended roots.
-
-The goal isn’t only learning a language it’s learning what a language is, how it works and moves inside us.  See below.
-
-In the first phase of this project the focus is on the arabic language with english translation of the 99 arabic names of god. More language models and translations are planned. 
-
-Currently, there are XX number of words, forms, roots.. in the lexicon database.
-
-All words are connected through form and sound.  You can view these relationships in a graphical space.
-
-Word to root relationships look like this:
-    
-    
-Word->root
-
-If we expand the root, we see some more of its fruit, other words with the same primary sounds in the same order:
-
-root->words
-
-If we expand a word we see possible grammatical categories or forms of the word.
-
-word->form
-
-Finally, if we expand the form node we see the other words which share the grammatical form.
-
-That’s one part you can generally always take
-
 From the main menu, select from the list of corpora to view a detailed graph of any word in the corpus.
 
 (data is limited in the current version!)
@@ -50,6 +19,51 @@ Click a node to show its children.
 Right-click (or hold) for more information.
 
 Double click a node to remove it.
+
+If you imagine language as a tree mixing with the body of the earth, how it roots before it fruits, that’s really the whole idea.
+
+Roots and shoots and fruit slices of every language!
+
+The fruit is only the utterance in its proper context and the roots are everything up until that moment in space and time; branches are extended roots.
+
+The goal isn’t only learning a language it’s learning what a language is, how it works and moves inside us.  See below.
+
+In the first phase of this project the focus is on the arabic language with english translation of the 99 arabic names of god. More language models and translations are planned. 
+
+Currently, there are [XX] number of words, forms, roots.. in the lexicon database.
+
+All words are connected through form and sound.  
+
+Every word has a root.  Every word has a form.
+
+Just as every person has an external appearance and an internal operation.
+
+Just as in life, linguistic relationships stem from our dimensionality.
+
+You can view these relationships in a graphical space.
+
+Both the root and form of a word have different dimensions, let's take a look at a few examples.
+
+#### Roots
+
+Double click the word node below to see it's root.  (try and guess first, of course)
+
+
+Word->root
+
+Now let's expand the context and see other words which have the same root:
+
+Root->words
+
+To see more dimensions of roots, take a look at this article:
+
+#### Forms
+
+This time double click the word node to see it's grammatical form.
+
+Word->form
+
+Finally, if we expand the form node we see the other words which share the grammatical form.
 
 
 
