@@ -88,7 +88,24 @@ export const fetchWordsByCorpusItem = async (itemId, corpusId, script) => {
   };
 };
 
+// Execute example queries
 
+export const executeQuery = async (query) => {
+  try {
+    const response = await fetch('/api/example-queries', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({ query })
+    });
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error executing query:', error);
+    throw error;
+  }
+};
 
 
 
