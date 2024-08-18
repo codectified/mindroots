@@ -4,9 +4,11 @@ We can only understand the mind and the self through language.
 
 If we can see language a little better, the process as a whole, we can probably see ourselves and our minds a bit better, too. 
 
+For a deep-dive into a specific topic, head to the articles in the Latest News section.
+
 Featured here as part of the project is a morphosyntactic semantic network modeling tool for navigating a graph database of words and their interrelationships. 
 
-From the main menu, select from the list of corpora to view a detailed graph of any word in the corpus.
+From the Corpus Library, select from the list of corpora to view a detailed graph of any word in the corpus.
 
 (data is limited in the current version!)
 
