@@ -100,6 +100,27 @@ export const executeQuery = async (query) => {
   }
 };
 
+export const fetchRootByWord = async (wordId, script) => {
+  try {
+    const response = await fetch(`/api/root/${wordId}?script=${script}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching root by word:', error);
+    throw error;
+  }
+};
+
+export const fetchFormsByWord = async (wordId, script) => {
+  try {
+    const response = await fetch(`/api/forms/${wordId}?script=${script}`);
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error('Error fetching forms by word:', error);
+    throw error;
+  }
+};
 
 
 // Fetch words by radicals

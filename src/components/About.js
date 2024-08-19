@@ -47,14 +47,14 @@ const About = () => {
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
     const links = [];
-
+  
     neo4jData.forEach(record => {
       Object.values(record).forEach(field => {
         if (field.identity && field.labels) {
           // It's a node
           nodes.push({
             id: field.identity.low,
-            label: field.properties.name || 'Unnamed Node',
+            label: field.properties.arabic || field.properties.english || 'Unnamed Node', // Extract label based on properties
             type: field.labels[0].toLowerCase(),
           });
         } else if (field.start && field.end && field.type) {
@@ -66,9 +66,10 @@ const About = () => {
         }
       });
     });
-
+  
     return { nodes, links };
   };
+  
 
   const handleNodeClick = (node) => {
     console.log("Node clicked:", node);
