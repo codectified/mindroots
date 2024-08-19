@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
 import handleRootRadicalChange from './handleRootRadicalChange';
 import handleFormNodeClick from './handleFormNodeClick';
-import handleWordNodeClick from './handleFormNodeClick';
+import handleWordNodeClick from './handleWordNodeClick';
 import handleRootNodeClick from './handleRootNodeClick';
 import { fetchWordsByCorpusItem } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
@@ -11,13 +11,20 @@ import RootRadicalSelector from './RootRadicalSelector';
 import ContextShiftSelector from './ContextShiftSelector';
 import Menu from './Menu';
 
+import { useScript } from '../contexts/ScriptContext';
+import { useContextFilter } from '../contexts/ContextFilterContext';
+import { useCorpus } from '../contexts/CorpusContext';
 
-const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setgraphData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus, corpora }) => {
+const GraphScreen = () => {
+  const { script, setScript } = useScript();
+  const { contextFilterRoot, contextFilterForm, setContextFilterRoot, setContextFilterForm } = useContextFilter();
+  const { selectedCorpus, corpora } = useCorpus();
+  
   const navigate = useNavigate();
-  const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
+  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
 
   useEffect(() => {
     if (selectedCorpusItem && selectedCorpusItem.roots && selectedCorpusItem.roots.length > 0) {
