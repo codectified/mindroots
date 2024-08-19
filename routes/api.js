@@ -434,6 +434,41 @@ router.post('/execute-query', async (req, res) => {
 });
 
 
+router.get('/api/root/:wordId', async (req, res) => {
+  const { wordId } = req.params;
+  const { script } = req.query;
+
+  try {
+    const root = await neo4jSession.run(
+      `MATCH (word:Word {word_id: $wordId})-[:HAS_ROOT]->(root:Root)
+       RETURN root.{arabic: root.arabic, english: root.english, root_id: root.root_id}`,
+      { wordId: parseInt(wordId) }
+    );
+
+    res.json(root.records[0].get('root'));
+  } catch (error) {
+    console.error('Error fetching root by word:', error);
+    res.status(500).json({ error: 'Error fetching root by word' });
+  }
+});
+
+router.get('/api/forms/:wordId', async (req, res) => {
+  const { wordId } = req.params;
+  const { script } = req.query;
+
+  try {
+    const forms = await neo4jSession.run(
+      `MATCH (word:Word {word_id: $wordId})-[:HAS_FORM]->(form:Form)
+       RETURN form.{arabic: form.arabic, english: form.english, form_id: form.form_id}`,
+      { wordId: parseInt(wordId) }
+    );
+
+    res.json(forms.records.map(record => record.get('form')));
+  } catch (error) {
+    console.error('Error fetching forms by word:', error);
+    res.status(500).json({ error: 'Error fetching forms by word' });
+  }
+});
 
 
 

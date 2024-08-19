@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
 import handleRootRadicalChange from './handleRootRadicalChange';
 import handleFormNodeClick from './handleFormNodeClick';
+import handleWordNodeClick from './handleFormNodeClick';
 import handleRootNodeClick from './handleRootNodeClick';
 import { fetchWordsByCorpusItem } from '../services/apiService';
 import ScriptSelector from './ScriptSelector';
@@ -96,13 +97,17 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
     console.log('Node clicked:', node);
     console.log('Context filters:', { contextFilterRoot, contextFilterForm });
     const corpusId = selectedCorpus ? selectedCorpus.id : null;
-
+  
     if (node.type === 'form') {
-      await handleFormNodeClick(node, script, rootData, setRootData, contextFilterForm, corpusId, [r1, r2, r3]);
+      await handleFormNodeClick(node, script, rootData, setRootData, contextFilterForm, corpusId);
     } else if (node.type === 'root') {
-      await handleRootNodeClick(node, script, rootData, setRootData, contextFilterRoot, corpusId, [r1, r2, r3]);
+      await handleRootNodeClick(node, script, rootData, setRootData, contextFilterRoot, corpusId);
+    } else if (node.type === 'word') {
+      await handleWordNodeClick(node, script, rootData, setRootData, corpusId);
     }
   };
+  
+  
 
   return (
     <div>
