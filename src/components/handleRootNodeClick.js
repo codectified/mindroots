@@ -1,6 +1,6 @@
 import { fetchWordsByRootWithLexicon, fetchWordsByRootWithCorpus } from '../services/apiService';
 
-const handleRootNodeClick = async (node, script, rootData, setRootData, contextFilter, corpusId) => {
+const handleRootNodeClick = async (node, script, graphData, setgraphData, contextFilter, corpusId) => {
   try {
     console.log('Fetching words for root ID:', node.root_id);
     let allNewWords = [];
@@ -21,12 +21,12 @@ const handleRootNodeClick = async (node, script, rootData, setRootData, contextF
     const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
 
     const newData = {
-      nodes: [...rootData.nodes, ...newNodes],
-      links: [...rootData.links, ...newLinks]
+      nodes: [...graphData.nodes, ...newNodes],
+      links: [...graphData.links, ...newLinks]
     };
 
-    console.log('New rootData after fetching root data:', newData);
-    setRootData(newData);
+    console.log('New graphData after fetching root data:', newData);
+    setgraphData(newData);
   } catch (error) {
     console.error('Error fetching data for clicked root node:', error);
   }

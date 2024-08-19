@@ -9,7 +9,7 @@ import ScriptSelector from './ScriptSelector';
 import RootRadicalSelector from './RootRadicalSelector';
 import ContextShiftSelector from './ContextShiftSelector';
 
-const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus }) => {
+const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setgraphData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus }) => {
   const navigate = useNavigate();
   const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
   const [r1, setR1] = useState('');
@@ -17,8 +17,8 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
   const [r3, setR3] = useState('');
 
   useEffect(() => {
-    if (selectedName && selectedName.roots && selectedName.roots.length > 0) {
-      const root = selectedName.roots[0]; // Assuming the first root is the default
+    if (selectedCorpusItem && selectedCorpusItem.roots && selectedCorpusItem.roots.length > 0) {
+      const root = selectedCorpusItem.roots[0]; // Assuming the first root is the default
       setR1(root.r1 || '');
       setR2(root.r2 || '');
       setR3(root.r3 || '');
@@ -27,11 +27,11 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
       setR2('');
       setR3('');
     }
-  }, [selectedName]);
+  }, [selectedCorpusItem]);
 
   const fetchData = useCallback(async () => {
-    if (selectedName) {
-      const nameId = selectedName.name_id.low !== undefined ? selectedName.name_id.low : selectedName.name_id;
+    if (selectedCorpusItem) {
+      const nameId = selectedCorpusItem.name_id.low !== undefined ? selectedCorpusItem.name_id.low : selectedCorpusItem.name_id;
       const response = await fetchWordsByCorpusItem(nameId, script);
       if (response && response.words && response.words.length > 0) {
         const nameNode = {
@@ -70,12 +70,12 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
         ];
 
         const newData = { nodes, links };
-        setRootData(newData);
+        setgraphData(newData);
       } else {
-        setRootData({ nodes: [], links: [] });
+        setgraphData({ nodes: [], links: [] });
       }
     }
-  }, [selectedName, script, setRootData]);
+  }, [selectedCorpusItem, script, setgraphData]);
 
   useEffect(() => {
     fetchData();
@@ -95,9 +95,9 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
     const corpusId = selectedCorpus ? selectedCorpus.id : null;
 
     if (node.type === 'form') {
-      await handleFormNodeClick(node, script, rootData, setRootData, contextFilterForm, corpusId, [r1, r2, r3]);
+      await handleFormNodeClick(node, script, graphData, setgraphData, contextFilterForm, corpusId, [r1, r2, r3]);
     } else if (node.type === 'root') {
-      await handleRootNodeClick(node, script, rootData, setRootData, contextFilterRoot, corpusId, [r1, r2, r3]);
+      await handleRootNodeClick(node, script, graphData, setgraphData, contextFilterRoot, corpusId, [r1, r2, r3]);
     }
   };
 
@@ -111,8 +111,8 @@ const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, c
         handleContextFilterChange={handleContextFilterChange}
         corpora={corpora}
       />
-      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilterRoot)} />
-      <GraphVisualization data={rootData} onNodeClick={handleNodeClick} />
+      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setgraphData, contextFilterRoot)} />
+      <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
     </div>
   );
 };
