@@ -13,8 +13,8 @@ import './App.css';
 
 const App = () => {
   const [script, setScript] = useState('arabic'); // Initialize script state
-  const [rootData, setRootData] = useState({ nodes: [], links: [] }); // Initialize root data state
-  const [selectedName, setSelectedName] = useState(null); // Initialize selected name state
+  const [graphData, setgraphData] = useState({ nodes: [], links: [] }); // Initialize root data state
+  const [selectedCorpusItem, setselectedCorpusItem] = useState(null); // Initialize selected name state
   const [contextFilterRoot, setContextFilterRoot] = useState('lexicon'); // Initialize root context filter state
   const [contextFilterForm, setContextFilterForm] = useState('corpus'); // Initialize form context filter state
   const [selectedCorpus, setSelectedCorpus] = useState(null); // Initialize selected corpus state
@@ -25,7 +25,7 @@ const App = () => {
     console.log('Selected corpus:', corpus);
     setSelectedCorpus(corpus);
     setContextFilterForm(corpus.id); // Set the default form context to the selected corpus ID
-    setSelectedName(null); // Reset selected name
+    setselectedCorpusItem(null); // Reset selected name
     setCorpora(corpora); // Set the corpora state with the passed corpora
   };
 
@@ -51,8 +51,8 @@ const App = () => {
         <Routes>
           <Route path="/" element={<MainMenu />} />
           <Route path="/corpus-menu" element={<CorpusMenu onSelectCorpus={handleSelectCorpus} />} />
-          <Route path="/list" element={<PrimaryList script={script} setScript={handleSwitchScript} setRootData={setRootData} setSelectedName={setSelectedName} />} />
-          <Route path="/graph" element={<GraphScreen selectedName={selectedName} script={script} setScript={handleSwitchScript} rootData={rootData} setRootData={setRootData} contextFilterRoot={contextFilterRoot} contextFilterForm={contextFilterForm} handleContextFilterChange={handleContextFilterChange} selectedCorpus={selectedCorpus} corpora={corpora} />} />
+          <Route path="/list" element={<PrimaryList script={script} setScript={handleSwitchScript} setgraphData={setgraphData} setselectedCorpusItem={setselectedCorpusItem} />} />
+          <Route path="/graph" element={<GraphScreen selectedCorpusItem={selectedCorpusItem} script={script} setScript={handleSwitchScript} graphData={graphData} setgraphData={setgraphData} contextFilterRoot={contextFilterRoot} contextFilterForm={contextFilterForm} handleContextFilterChange={handleContextFilterChange} selectedCorpus={selectedCorpus} corpora={corpora} />} />
           <Route 
             path="/settings" 
             element={
