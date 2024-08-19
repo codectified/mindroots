@@ -414,21 +414,26 @@ router.get('/root/:rootId/lexicon', async (req, res) => {
   }
 });
 
-// Endpoint for example queries
-router.post('/example-queries', async (req, res) => {
-  const { query } = req.body;
-  const session = driver.session();
-  
+// Endpoint to execute Cypher queries
+router.post('/execute-query', async (req, res) => {
+  const { query } = req.body;  // Extract the Cypher query from the request body
+  const session = req.driver.session();  // Use req.driver instead of driver
+
+  console.log('Received query:', query);  // Add a log to check the received query
+
   try {
-      const result = await session.run(query);
-      res.json(result.records);
+    const result = await session.run(query);
+    const records = result.records.map(record => record.toObject());
+    res.json(records);
   } catch (error) {
-      console.error('Error executing query:', error);
-      res.status(500).send('Error executing query');
+    console.error('Error executing query:', error);
+    res.status(500).json({ error: 'Error executing query' });
   } finally {
-      await session.close();
+    await session.close();
   }
 });
+
+
 
 
 
