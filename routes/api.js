@@ -240,12 +240,13 @@ router.get('/list/corpora', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (corpus:Corpus)
-      RETURN corpus.corpus_id AS id, corpus.name AS name
+      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english
     `);
 
     const corpora = result.records.map(record => ({
       id: convertIntegers(record.get('id')),
-      name: record.get('name')
+      arabic: record.get('arabic'),
+      english: record.get('english')
     }));
 
     res.json(corpora);
@@ -256,6 +257,7 @@ router.get('/list/corpora', async (req, res) => {
     await session.close();
   }
 });
+
 
 // Fetch words by form ID with lexicon context (no filter)
 router.get('/form/:formId/lexicon', async (req, res) => {
