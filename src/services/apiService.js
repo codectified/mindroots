@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an Axios instance with the base URL for the API
 const api = axios.create({
-  baseURL: 'https://theoption.life/api',
+  baseURL: 'http://localhost:5001/api',
 });
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -88,19 +88,12 @@ export const fetchWordsByCorpusItem = async (itemId, corpusId, script) => {
   };
 };
 
-// Execute example queries
 
+// Execute a Cypher query by sending it to the backend
 export const executeQuery = async (query) => {
   try {
-    const response = await fetch('/api/example-queries', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ query })
-    });
-    const data = await response.json();
-    return data;
+    const response = await api.post('/execute-query', { query });  // Axios uses the baseURL set earlier
+    return response.data;
   } catch (error) {
     console.error('Error executing query:', error);
     throw error;
