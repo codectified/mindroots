@@ -8,6 +8,8 @@ const port = 5001;
 
 app.use(cors());
 
+app.use(express.json());
+
 // // Neo4j driver setup
 // const driver = neo4j.driver(
 //   'bolt://localhost', 
