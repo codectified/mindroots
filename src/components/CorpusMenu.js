@@ -1,45 +1,28 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCorpora } from '../services/apiService';
 import Menu from './Menu';
+import { useCorpus } from '../contexts/CorpusContext';
 
-
-const CorpusMenu = ({ onSelectCorpus }) => {
+const CorpusMenu = () => {
   const navigate = useNavigate();
-  const [corpora, setCorpora] = useState([]);
-
-  useEffect(() => {
-    const fetchCorporaData = async () => {
-      try {
-        const data = await fetchCorpora();
-        setCorpora(data);
-      } catch (error) {
-        console.error('Error fetching corpora:', error);
-      }
-    };
-    fetchCorporaData();
-  }, []);
+  const { corpora, handleSelectCorpus } = useCorpus();
 
   const handleSelect = (corpus) => {
     console.log('Selected corpus in CorpusMenu:', corpus);
-  
-    // Ensure onSelectCorpus function can handle both corpus and corpora
-    onSelectCorpus(corpus, corpora); 
-  
+    handleSelectCorpus(corpus); // Use the context function to select the corpus
+
     // Navigate to the list of items in the selected corpus with query parameters
-    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus.name)}`);
+    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus.arabic)}`);
   };
-  
 
   return (
     <div>
-            <Menu /> {/* Add this line */}
-
-            <h2>Select a corpus...</h2> {/* Added text */}
+      <Menu />
+      <h2>Select a corpus...</h2>
       <ul>
         {corpora.map(corpus => (
           <li key={corpus.id} onClick={() => handleSelect(corpus)}>
-            {corpus.name}
+            {corpus.arabic}
           </li>
         ))}
       </ul>

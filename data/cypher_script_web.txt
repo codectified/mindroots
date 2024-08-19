@@ -39,12 +39,15 @@ MATCH (word:Word {word_id: toInteger(mappingRow.derivative_id)})
 MATCH (item:CorpusItem {item_id: toInteger(mappingRow.item_id), corpus_id: toInteger(mappingRow.corpus_id)})
 MERGE (item)-[:HAS_WORD]->(word)
 
-// Load corpora nodes
-WITH *  // Pass all variables to the next context
+// Load corpora nodes with Arabic and English names
 LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/corpora.csv' AS corpusRow
-MERGE (corpus:Corpus {corpus_id: toInteger(corpusRow.id), name: corpusRow.name})
+MERGE (corpus:Corpus {
+    corpus_id: toInteger(corpusRow.id)
+})
+SET corpus.arabic = corpusRow.arabic,
+    corpus.english = corpusRow.english
 
 // Link corpus items to Corpus nodes
-WITH *  // Pass all variables to the next context
+WITH *
 MATCH (item:CorpusItem), (corpus:Corpus {corpus_id: item.corpus_id})
 MERGE (item)-[:BELONGS_TO]->(corpus)
