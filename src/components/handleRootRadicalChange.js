@@ -1,6 +1,6 @@
 import { fetchRootsByRadicals } from '../services/apiService';
 
-const handleRootRadicalChange = async (r1, r2, r3, script, rootData, setRootData, contextFilter) => {
+const handleRootRadicalChange = async (r1, r2, r3, script, graphData, setgraphData, contextFilter) => {
   try {
     console.log('Fetching roots with radicals:', r1, r2, r3);
     const response = await fetchRootsByRadicals(r1, r2, r3, script);
@@ -17,12 +17,12 @@ const handleRootRadicalChange = async (r1, r2, r3, script, rootData, setRootData
       const newLinks = []; // Add links if necessary based on your graph structure
 
       const newData = {
-        nodes: [...rootData.nodes, ...newNodes],
-        links: [...rootData.links, ...newLinks]
+        nodes: [...graphData.nodes, ...newNodes],
+        links: [...graphData.links, ...newLinks]
       };
 
-      console.log('New rootData after fetching root radicals:', newData);
-      setRootData(newData);
+      console.log('New graphData after fetching root radicals:', newData);
+      setgraphData(newData);
     } else {
       console.log('No data received for the selected radicals');
     }

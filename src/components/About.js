@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { executeQuery } from '../services/apiService'; // Import the service function
+import Menu from './Menu';
 
 const About = () => {
   const [exampleData1, setExampleData1] = useState(null);
@@ -77,6 +78,7 @@ const About = () => {
 
   return (
     <div className="about-page">
+      <Menu />
       <h1>About MindRoots</h1>
       <p>
         MindRoots is a graphical ontological dictionary application that allows users to explore the connections between Arabic roots and their derived words.

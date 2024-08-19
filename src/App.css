@@ -245,3 +245,33 @@ li:hover {
   font-size: 24px;
   margin-bottom: 20px;
 }
+
+.menu-container {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.menu-button {
+  padding: 10px;
+  border-radius: 50%;
+  border: none;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.menu-button:hover {
+  background-color: #555;
+}
+
+.menu-button.active {
+  background-color: #4a4a4a;
+}

@@ -4,7 +4,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchCorpusItems, fetchWordsByCorpusItem } from '../services/apiService';
 import Menu from './Menu';
 
-const PrimaryList = ({ script, setScript, setRootData, setSelectedName, selectedCorpus }) => {
+const PrimaryList = ({ script, setScript, setgraphData, setselectedCorpusItem, selectedCorpus }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const [names, setNames] = useState([]);
@@ -33,7 +33,7 @@ const PrimaryList = ({ script, setScript, setRootData, setSelectedName, selected
 
   const handleNameClick = async (name) => {
     try {
-      setSelectedName(name);
+      setselectedCorpusItem(name);
       console.log('Selected name:', name);
   
       const nameId = name.item_id;
@@ -77,11 +77,11 @@ const PrimaryList = ({ script, setScript, setRootData, setSelectedName, selected
         ];
   
         const newData = { nodes, links };
-        setRootData(newData);
-        console.log('rootData updated');
+        setgraphData(newData);
+        console.log('graphData updated');
       } else {
         console.log('No data received for the selected name');
-        setRootData({ nodes: [], links: [] });
+        setgraphData({ nodes: [], links: [] });
       }
     } catch (error) {
       console.error('Error fetching words for name:', error);
