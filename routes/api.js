@@ -262,18 +262,18 @@ router.get('/list/corpora', async (req, res) => {
 // Fetch words by form ID with lexicon context (no filter)
 router.get('/form/:formId/lexicon', async (req, res) => {
   const { formId } = req.params;
-  const { script } = req.query;
+  const { L1, L2 } = req.query;
   const session = req.driver.session();
   try {
     let query = `
       MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
       RETURN word
     `;
-    const result = await session.run(query, { formId, script });
+    const result = await session.run(query, { formId });
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
     })));
   } catch (error) {
     res.status(500).send('Error fetching words by form');
@@ -282,10 +282,10 @@ router.get('/form/:formId/lexicon', async (req, res) => {
   }
 });
 
-// Fetch words by form ID with current root context
+
 router.get('/form/:formId/roots', async (req, res) => {
   const { formId } = req.params;
-  const { script, rootIds } = req.query;
+  const { L1, L2, rootIds } = req.query;
   const session = req.driver.session();
   try {
     let query = `
@@ -293,11 +293,11 @@ router.get('/form/:formId/roots', async (req, res) => {
       WHERE root.root_id IN $rootIds
       RETURN word
     `;
-    const result = await session.run(query, { formId, rootIds: rootIds.map(id => parseInt(id, 10)), script });
+    const result = await session.run(query, { formId, rootIds: rootIds.map(id => parseInt(id, 10)) });
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
     })));
   } catch (error) {
     res.status(500).send('Error fetching words by form and roots');
@@ -306,21 +306,21 @@ router.get('/form/:formId/roots', async (req, res) => {
   }
 });
 
-// Fetch words by form ID with corpus context
+
 router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
   const { formId, corpusId } = req.params;
-  const { script } = req.query;
+  const { L1, L2 } = req.query;
   const session = req.driver.session();
   try {
     let query = `
       MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word:Word)-[:HAS_FORM]->(form:Form {form_id: toInteger($formId)})
       RETURN word
     `;
-    const result = await session.run(query, { formId, corpusId, script });
+    const result = await session.run(query, { formId, corpusId });
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
     })));
   } catch (error) {
     res.status(500).send('Error fetching words by form and corpus');
@@ -328,6 +328,7 @@ router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 // Fetch words by root ID with corpus context

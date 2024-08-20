@@ -1,12 +1,24 @@
 import React, { useState, useEffect } from 'react';
 import GraphVisualization from './GraphVisualization';
-import { executeQuery } from '../services/apiService'; // Import the service function
+import { executeQuery } from '../services/apiService';
 import Menu from './Menu';
+import handleWordNodeClick from './handleWordNodeClick';
+import handleRootNodeClick from './handleRootNodeClick';
+import handleFormNodeClick from './handleFormNodeClick';
+import { useScript } from '../contexts/ScriptContext';
+import { useGraphData } from '../contexts/GraphDataContext';
+import { useContextFilter } from '../contexts/ContextFilterContext';
+import { useCorpus } from '../contexts/CorpusContext';
 
 const About = () => {
   const [exampleData1, setExampleData1] = useState(null);
   const [exampleData2, setExampleData2] = useState(null);
   const [exampleData3, setExampleData3] = useState(null);
+
+  const { L1, L2 } = useScript();
+  const { contextFilterRoot, contextFilterForm } = useContextFilter();
+  const { selectedCorpus } = useCorpus();
+  const { graphData, setGraphData } = useGraphData();
 
   const exampleQuery1 = `
     MATCH (n:Word)
@@ -16,8 +28,8 @@ const About = () => {
   `;
 
   const exampleQuery2 = `
-    MATCH (r:Root)-[:DERIVES]->(w:Word)
-    RETURN r, w
+    MATCH (r:Root)
+    RETURN r
     ORDER BY rand()
     LIMIT 1
   `;
@@ -72,8 +84,17 @@ const About = () => {
   };
   
 
-  const handleNodeClick = (node) => {
+  const handleNodeClick = async (node) => {
     console.log("Node clicked:", node);
+    const corpusId = selectedCorpus ? selectedCorpus.id : null;
+
+    if (node.type === 'word') {
+      await handleWordNodeClick(node, L1, L2, graphData, setGraphData, corpusId);
+    } else if (node.type === 'root') {
+      await handleRootNodeClick(node, L1, L2, graphData, setGraphData, contextFilterRoot, corpusId);
+    } else if (node.type === 'form') {
+      await handleFormNodeClick(node, L1, L2, graphData, setGraphData, contextFilterForm, corpusId);
+    }
   };
 
   return (
