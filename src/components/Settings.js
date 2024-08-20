@@ -24,7 +24,6 @@ const Settings = () => {
         </select>
       </div>
       <div>
-        <label>Context Filters:</label>
         <ContextShiftSelector />
       </div>
     </div>

@@ -31,17 +31,18 @@ export const fetchWordData = async (word, script) => {
   return convertIntegers(response.data);
 };
 
-export const fetchWordsByFormWithLexicon = async (formId, script) => {
+export const fetchWordsByFormWithLexicon = async (formId, L1, L2) => {
   const endpoint = `/form/${formId}/lexicon`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByFormWithCorpus = async (formId, corpusId, script) => {
+export const fetchWordsByFormWithCorpus = async (formId, corpusId, L1, L2) => {
   const endpoint = `/form/${formId}/corpus/${corpusId}`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
+
 
 export const fetchWordsByRootWithLexicon = async (rootId, L1, L2) => {
   const endpoint = `/root/${rootId}/lexicon`;
@@ -101,26 +102,24 @@ export const executeQuery = async (query) => {
   }
 };
 
-export const fetchRootByWord = async (wordId, L1) => {
+export const fetchRootByWord = async (wordId, L1, L2) => {
   try {
     const response = await api.get(`/root/${wordId}`, {
       params: { L1 }
     });
-    return response.data;
+    return convertIntegers(response.data); // Convert integers before returning the data
   } catch (error) {
     console.error('Error fetching root by word:', error);
     throw error;
   }
 };
 
-
-
-export const fetchFormsByWord = async (wordId, L1) => {
+export const fetchFormsByWord = async (wordId, L1, L2) => {
   try {
     const response = await api.get(`/forms/${wordId}`, {
       params: { L1 }
     });
-    return response.data;
+    return response.data.map(item => convertIntegers(item)); // Convert integers before returning the data
   } catch (error) {
     console.error('Error fetching forms by word:', error);
     throw error;

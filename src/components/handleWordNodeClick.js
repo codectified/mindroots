@@ -1,6 +1,6 @@
 import { fetchRootByWord, fetchFormsByWord } from '../services/apiService';
 
-const handleWordNodeClick = async (node, L1, graphData, setGraphData, corpusId) => {
+const handleWordNodeClick = async (node, L1, L2, graphData, setGraphData, corpusId) => {
   try {
     console.log('Handling word node click:', node);
 

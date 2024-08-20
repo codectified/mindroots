@@ -6,9 +6,9 @@ const handleRootNodeClick = async (node, L1, L2, graphData, setGraphData, contex
     let allNewWords = [];
 
     if (contextFilter === 'lexicon') {
-      allNewWords = await fetchWordsByRootWithLexicon(node.root_id, L1);
+      allNewWords = await fetchWordsByRootWithLexicon(node.root_id, L1, L2);
     } else if (contextFilter === corpusId) {
-      allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, L1);
+      allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, L1, L2);
     }
 
     const currentNodes = graphData.nodes || [];
