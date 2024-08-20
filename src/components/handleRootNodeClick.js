@@ -1,6 +1,6 @@
 import { fetchWordsByRootWithLexicon, fetchWordsByRootWithCorpus } from '../services/apiService';
 
-const handleRootNodeClick = async (node, L1, graphData, setGraphData, contextFilter, corpusId) => {
+const handleRootNodeClick = async (node, L1, L2, graphData, setGraphData, contextFilter, corpusId) => {
   try {
     console.log('Fetching words for root ID:', node.root_id);
     let allNewWords = [];
@@ -16,7 +16,7 @@ const handleRootNodeClick = async (node, L1, graphData, setGraphData, contextFil
 
     const newNodes = allNewWords.map(word => ({
       id: `word_${word.word_id}`,
-      label: word[L1],
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
       ...word,
       type: 'word'
     }));
