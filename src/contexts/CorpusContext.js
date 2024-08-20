@@ -7,6 +7,7 @@ export const CorpusProvider = ({ children }) => {
   const [selectedCorpus, setSelectedCorpus] = useState(null);
   const [selectedCorpusItem, setSelectedCorpusItem] = useState(null);
   const [corpora, setCorpora] = useState([]);
+  const [loading, setLoading] = useState(true); // New loading state
 
   const handleSelectCorpus = (corpus) => {
     setSelectedCorpus(corpus);
@@ -21,8 +22,10 @@ export const CorpusProvider = ({ children }) => {
       try {
         const data = await fetchCorpora();
         setCorpora(data);
+        setLoading(false); // Stop loading once data is fetched
       } catch (error) {
         console.error('Error fetching corpora:', error);
+        setLoading(false); // Stop loading even if there's an error
       }
     };
     fetchCorporaData();
@@ -36,6 +39,7 @@ export const CorpusProvider = ({ children }) => {
         selectedCorpusItem, 
         handleSelectCorpusItem,
         corpora,
+        loading, // Provide the loading state
       }}>
       {children}
     </CorpusContext.Provider>

@@ -1,32 +1,29 @@
 import { fetchWordsByRootWithLexicon, fetchWordsByRootWithCorpus } from '../services/apiService';
 
-const handleRootNodeClick = async (node, script, graphData, setGraphData, contextFilter, corpusId) => {
+const handleRootNodeClick = async (node, L1, graphData, setGraphData, contextFilter, corpusId) => {
   try {
     console.log('Fetching words for root ID:', node.root_id);
     let allNewWords = [];
 
     if (contextFilter === 'lexicon') {
-      allNewWords = await fetchWordsByRootWithLexicon(node.root_id, script);
+      allNewWords = await fetchWordsByRootWithLexicon(node.root_id, L1);
     } else if (contextFilter === corpusId) {
-      allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, script);
+      allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, L1);
     }
+
+    const currentNodes = graphData.nodes || [];
+    const currentLinks = graphData.links || [];
 
     const newNodes = allNewWords.map(word => ({
       id: `word_${word.word_id}`,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
+      label: word[L1],
       ...word,
       type: 'word'
     }));
 
     const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
 
-    const newData = {
-      nodes: [...graphData.nodes, ...newNodes],
-      links: [...graphData.links, ...newLinks]
-    };
-
-    console.log('New graphData after fetching root data:', newData);
-    setGraphData(newData);
+    setGraphData({ nodes: [...currentNodes, ...newNodes], links: [...currentLinks, ...newLinks] });
   } catch (error) {
     console.error('Error fetching data for clicked root node:', error);
   }

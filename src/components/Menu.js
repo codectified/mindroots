@@ -5,34 +5,25 @@ import ReactMarkdown from 'react-markdown';
 import aboutContent from '../content/about.md';
 import changelogContent from '../content/changelog.md';
 import Settings from './Settings';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 
-const Menu = ({ script, handleScriptChange, contextFilterRoot, contextFilterForm, handleContextFilterChange, corpora }) => {
+const Menu = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   const toggleOption = (option) => {
     setSelectedOption((prevOption) => (prevOption === option ? null : option));
   };
 
   const handleHome = () => {
-    navigate('/'); // Navigate to the root directory
+    navigate('/');
   };
 
   const renderContent = () => {
     switch (selectedOption) {
       case 'settings':
-        return (
-          <Settings
-            script={script}
-            handleScriptChange={handleScriptChange}
-            contextFilterRoot={contextFilterRoot}
-            contextFilterForm={contextFilterForm}
-            handleContextFilterChange={handleContextFilterChange}
-            corpora={corpora}
-          />
-        );
+        return <Settings />; // Render the full Settings component
       case 'about':
         return (
           <div>
@@ -93,7 +84,7 @@ const Menu = ({ script, handleScriptChange, contextFilterRoot, contextFilterForm
         </button>
       </div>
       <div>
-        {renderContent()}
+        {renderContent()} {/* Display the selected content */}
       </div>
     </div>
   );
