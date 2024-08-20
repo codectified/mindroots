@@ -436,41 +436,65 @@ router.post('/execute-query', async (req, res) => {
 });
 
 
-router.get('/api/root/:wordId', async (req, res) => {
+router.get('/root/:wordId', async (req, res) => {
   const { wordId } = req.params;
-  const { script } = req.query;
-
+  const { L1 } = req.query;
+  const session = req.driver.session();
   try {
-    const root = await neo4jSession.run(
-      `MATCH (word:Word {word_id: $wordId})-[:HAS_ROOT]->(root:Root)
-       RETURN root.{arabic: root.arabic, english: root.english, root_id: root.root_id}`,
-      { wordId: parseInt(wordId) }
-    );
+    const query = `
+      MATCH (word:Word {word_id: toInteger($wordId)})-[:HAS_ROOT]->(root:Root)
+      RETURN root
+    `;
+    const result = await session.run(query, { wordId: parseInt(wordId) });
 
-    res.json(root.records[0].get('root'));
+    if (result.records.length > 0) {
+      const root = result.records[0].get('root').properties;
+      res.json({
+        ...root,
+        label: L1 === 'both' ? `${root.arabic} / ${root.english}` : root[L1],
+        root_id: root.root_id
+      });
+    } else {
+      res.status(404).json({ error: 'Root not found' });
+    }
   } catch (error) {
     console.error('Error fetching root by word:', error);
     res.status(500).json({ error: 'Error fetching root by word' });
+  } finally {
+    await session.close();
   }
 });
 
-router.get('/api/forms/:wordId', async (req, res) => {
+
+router.get('/forms/:wordId', async (req, res) => {
   const { wordId } = req.params;
-  const { script } = req.query;
-
+  const { L1 } = req.query;
+  const session = req.driver.session();
   try {
-    const forms = await neo4jSession.run(
-      `MATCH (word:Word {word_id: $wordId})-[:HAS_FORM]->(form:Form)
-       RETURN form.{arabic: form.arabic, english: form.english, form_id: form.form_id}`,
-      { wordId: parseInt(wordId) }
-    );
+    const query = `
+      MATCH (word:Word {word_id: toInteger($wordId)})-[:HAS_FORM]->(form:Form)
+      RETURN form
+    `;
+    const result = await session.run(query, { wordId: parseInt(wordId) });
 
-    res.json(forms.records.map(record => record.get('form')));
+    if (result.records.length > 0) {
+      const forms = result.records.map(record => record.get('form').properties);
+      res.json(forms.map(form => ({
+        ...form,
+        label: L1 === 'both' ? `${form.arabic} / ${form.english}` : form[L1],
+        form_id: form.form_id
+      })));
+    } else {
+      res.status(404).json({ error: 'Forms not found' });
+    }
   } catch (error) {
     console.error('Error fetching forms by word:', error);
     res.status(500).json({ error: 'Error fetching forms by word' });
+  } finally {
+    await session.close();
   }
 });
+
 
 
 

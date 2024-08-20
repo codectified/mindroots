@@ -9,11 +9,14 @@ import { useGraphData } from '../contexts/GraphDataContext';
 import handleRootNodeClick from './handleRootNodeClick';
 import handleFormNodeClick from './handleFormNodeClick';
 import handleWordNodeClick from './handleWordNodeClick';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+
 
 const GraphScreen = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
-  const { selectedCorpus, selectedCorpusItem, loading } = useCorpus();
+  const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
   const { graphData, setGraphData } = useGraphData(); 
   const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']);
 
@@ -81,15 +84,16 @@ const GraphScreen = () => {
     console.log('Node clicked:', node);
     console.log('Context filters:', { contextFilterRoot, contextFilterForm });
     const corpusId = selectedCorpus ? selectedCorpus.id : null;
-
+  
     if (node.type === 'form') {
-      await handleFormNodeClick(node, L1, graphData, setGraphData, contextFilterForm, corpusId);
+      await handleFormNodeClick(node, L1, L2, graphData, setGraphData, contextFilterForm, corpusId);
     } else if (node.type === 'root') {
-      await handleRootNodeClick(node, L1, graphData, setGraphData, contextFilterRoot, corpusId);
+      await handleRootNodeClick(node, L1, L2, graphData, setGraphData, contextFilterRoot, corpusId);
     } else if (node.type === 'word') {
-      await handleWordNodeClick(node, L1, graphData, setGraphData, corpusId);
+      await handleWordNodeClick(node, L1, L2, graphData, setGraphData, corpusId);
     }
   };
+  
 
   if (loading) {
     return <div>Loading...</div>;
@@ -102,6 +106,14 @@ const GraphScreen = () => {
   return (
     <div>
       <Menu />
+      <div className="navigation-buttons">
+        <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </button>
+        <button className="menu-button" onClick={goToNextItem} disabled={selectedCorpusItem.index === corpusItems.length - 1}>
+          <FontAwesomeIcon icon={faArrowRight} />
+        </button>
+      </div>
       <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
     </div>
   );

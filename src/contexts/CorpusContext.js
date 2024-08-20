@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
-import { fetchCorpora } from '../services/apiService';
+import { fetchCorpora, fetchCorpusItems } from '../services/apiService';
 
 const CorpusContext = createContext();
 
@@ -7,14 +7,35 @@ export const CorpusProvider = ({ children }) => {
   const [selectedCorpus, setSelectedCorpus] = useState(null);
   const [selectedCorpusItem, setSelectedCorpusItem] = useState(null);
   const [corpora, setCorpora] = useState([]);
-  const [loading, setLoading] = useState(true); // New loading state
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const [corpusItems, setCorpusItems] = useState([]);
 
-  const handleSelectCorpus = (corpus) => {
+  const handleSelectCorpus = async (corpus) => {
     setSelectedCorpus(corpus);
+    const items = await fetchCorpusItems(corpus.id);
+    setCorpusItems(items);
+    setCurrentIndex(0); // Start with the first item
+    setSelectedCorpusItem(items[0]); // Set the first item as selected
   };
 
   const handleSelectCorpusItem = (item) => {
     setSelectedCorpusItem(item);
+  };
+
+  const goToNextItem = () => {
+    if (currentIndex !== null && currentIndex < corpusItems.length - 1) {
+      const newIndex = currentIndex + 1;
+      setCurrentIndex(newIndex);
+      setSelectedCorpusItem(corpusItems[newIndex]);
+    }
+  };
+
+  const goToPreviousItem = () => {
+    if (currentIndex !== null && currentIndex > 0) {
+      const newIndex = currentIndex - 1;
+      setCurrentIndex(newIndex);
+      setSelectedCorpusItem(corpusItems[newIndex]);
+    }
   };
 
   useEffect(() => {
@@ -22,10 +43,8 @@ export const CorpusProvider = ({ children }) => {
       try {
         const data = await fetchCorpora();
         setCorpora(data);
-        setLoading(false); // Stop loading once data is fetched
       } catch (error) {
         console.error('Error fetching corpora:', error);
-        setLoading(false); // Stop loading even if there's an error
       }
     };
     fetchCorporaData();
@@ -37,9 +56,11 @@ export const CorpusProvider = ({ children }) => {
         selectedCorpus, 
         handleSelectCorpus, 
         selectedCorpusItem, 
+        goToNextItem, 
+        goToPreviousItem,
         handleSelectCorpusItem,
         corpora,
-        loading, // Provide the loading state
+        corpusItems,
       }}>
       {children}
     </CorpusContext.Provider>

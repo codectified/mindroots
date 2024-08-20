@@ -101,27 +101,33 @@ export const executeQuery = async (query) => {
   }
 };
 
-export const fetchRootByWord = async (wordId, script) => {
+export const fetchRootByWord = async (wordId, L1) => {
   try {
-    const response = await fetch(`/api/root/${wordId}?script=${script}`);
-    const data = await response.json();
-    return data;
+    const response = await api.get(`/root/${wordId}`, {
+      params: { L1 }
+    });
+    return response.data;
   } catch (error) {
     console.error('Error fetching root by word:', error);
     throw error;
   }
 };
 
-export const fetchFormsByWord = async (wordId, script) => {
+
+
+export const fetchFormsByWord = async (wordId, L1) => {
   try {
-    const response = await fetch(`/api/forms/${wordId}?script=${script}`);
-    const data = await response.json();
-    return data;
+    const response = await api.get(`/forms/${wordId}`, {
+      params: { L1 }
+    });
+    return response.data;
   } catch (error) {
     console.error('Error fetching forms by word:', error);
     throw error;
   }
 };
+
+
 
 
 // Fetch words by radicals
