@@ -1,6 +1,6 @@
 import { fetchWordsByFormWithLexicon, fetchWordsByFormWithCorpus } from '../services/apiService';
 
-const handleFormNodeClick = async (node, script, graphData, setgraphData, contextFilter, corpusId) => {
+const handleFormNodeClick = async (node, script, graphData, setGraphData, contextFilter, corpusId) => {
   try {
     console.log('Fetching words for form ID:', node.form_id);
     let allNewWords = [];
@@ -26,7 +26,7 @@ const handleFormNodeClick = async (node, script, graphData, setgraphData, contex
     };
 
     console.log('New graphData after fetching form data:', newData);
-    setgraphData(newData);
+    setGraphData(newData);
   } catch (error) {
     console.error('Error fetching data for clicked form node:', error);
   }

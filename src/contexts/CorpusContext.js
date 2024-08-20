@@ -5,7 +5,16 @@ const CorpusContext = createContext();
 
 export const CorpusProvider = ({ children }) => {
   const [selectedCorpus, setSelectedCorpus] = useState(null);
+  const [selectedCorpusItem, setSelectedCorpusItem] = useState(null);
   const [corpora, setCorpora] = useState([]);
+
+  const handleSelectCorpus = (corpus) => {
+    setSelectedCorpus(corpus);
+  };
+
+  const handleSelectCorpusItem = (item) => {
+    setSelectedCorpusItem(item);
+  };
 
   useEffect(() => {
     const fetchCorporaData = async () => {
@@ -19,12 +28,15 @@ export const CorpusProvider = ({ children }) => {
     fetchCorporaData();
   }, []);
 
-  const handleSelectCorpus = (corpus) => {
-    setSelectedCorpus(corpus);
-  };
-
   return (
-    <CorpusContext.Provider value={{ selectedCorpus, setSelectedCorpus, corpora, setCorpora, handleSelectCorpus }}>
+    <CorpusContext.Provider 
+      value={{ 
+        selectedCorpus, 
+        handleSelectCorpus, 
+        selectedCorpusItem, 
+        handleSelectCorpusItem,
+        corpora,
+      }}>
       {children}
     </CorpusContext.Provider>
   );

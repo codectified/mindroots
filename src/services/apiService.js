@@ -66,27 +66,27 @@ export const fetchCorpusItems = async (corpusId, script) => {
 };
 
 // Fetch words, forms, and roots by corpus item ID
-export const fetchWordsByCorpusItem = async (itemId, corpusId, script) => {
-  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, script } });
+export const fetchWordsByCorpusItem = async (itemId, corpusId, L1, L2) => {
+  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, L1 } });
   const data = convertIntegers(response.data);
 
-  // Ensure all expected data is defined and available
   return {
     ...data,
     words: data.words ? data.words.map(word => ({
       ...word,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
     })) : [],
     forms: data.forms ? data.forms.map(form => ({
       ...form,
-      label: script === 'both' ? `${form.arabic} / ${form.english}` : form[script],
+      label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
     })) : [],
     roots: data.roots ? data.roots.map(root => ({
       ...root,
-      label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script],
+      label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
     })) : [],
   };
 };
+
 
 
 // Execute a Cypher query by sending it to the backend
