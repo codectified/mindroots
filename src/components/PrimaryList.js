@@ -9,6 +9,7 @@ const PrimaryList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [names, setNames] = useState([]);
+  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
   const { L1, setL1, L2, setL2 } = useScript();
   const { handleSelectCorpusItem } = useCorpus();
 
@@ -23,6 +24,15 @@ const PrimaryList = () => {
           const response = await fetchCorpusItems(corpusId, L1);
           setNames(response);
           console.log('Fetched corpus items:', response);
+
+          // Dynamically set available languages based on corpus item properties
+          if (response.length > 0) {
+            const item = response[0]; // Assuming all items in the corpus have the same language properties
+            const languages = ['arabic', 'english'];
+            if (item.transliteration) languages.push('transliteration');
+            setAvailableLanguages(languages);
+          }
+          
         } catch (error) {
           console.error('Error fetching corpus items:', error);
         }
@@ -42,21 +52,6 @@ const PrimaryList = () => {
     <div>
       <Menu />
       <h1>{corpusName}</h1>
-      <div>
-        <label>L1: </label>
-        <select value={L1} onChange={(e) => setL1(e.target.value)}>
-          <option value="arabic">Arabic</option>
-          <option value="english">English</option>
-        </select>
-      </div>
-      <div>
-        <label>L2: </label>
-        <select value={L2} onChange={(e) => setL2(e.target.value)}>
-          <option value="off">Off</option>
-          <option value="arabic">Arabic</option>
-          <option value="english">English</option>
-        </select>
-      </div>
       <ul>
         {names.map((name) => (
           <li key={name.item_id} onClick={() => handleItemClick(name)}>

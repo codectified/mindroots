@@ -3,17 +3,25 @@ import GraphVisualization from './GraphVisualization';
 import { fetchWordsByCorpusItem } from '../services/apiService';
 import Menu from './Menu';
 import { useScript } from '../contexts/ScriptContext';
+import { useContextFilter } from '../contexts/ContextFilterContext';
 import { useCorpus } from '../contexts/CorpusContext';
+import { useGraphData } from '../contexts/GraphDataContext';
+import handleRootNodeClick from './handleRootNodeClick';
+import handleFormNodeClick from './handleFormNodeClick';
+import handleWordNodeClick from './handleWordNodeClick';
 
 const GraphScreen = () => {
-  const { L1, setL1, L2, setL2 } = useScript();
-  const { selectedCorpus, selectedCorpusItem } = useCorpus();
-  const [graphData, setGraphData] = useState({ nodes: [], links: [] });
+  const { L1, L2 } = useScript();
+  const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
+  const { selectedCorpus, selectedCorpusItem, loading } = useCorpus();
+  const { graphData, setGraphData } = useGraphData(); 
+  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']);
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
       const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
       const response = await fetchWordsByCorpusItem(itemId, selectedCorpus.id, L1, L2);
+  
       if (response && response.words && response.words.length > 0) {
         const nameNode = {
           id: `${response.item?.[L1]}_name`,
@@ -21,69 +29,79 @@ const GraphScreen = () => {
           ...response.item,
           type: 'name',
         };
-
+  
         const wordNodes = response.words.map(word => ({
           id: `${word?.[L1]}_word`,
           label: L2 === 'off' ? word?.[L1] : `${word?.[L1]} / ${word?.[L2]}`,
           ...word,
           type: 'word',
         }));
-
+  
         const formNodes = response.forms.map(form => ({
           id: `${form?.[L1]}_form`,
           label: L2 === 'off' ? form?.[L1] : `${form?.[L1]} / ${form?.[L2]}`,
           ...form,
           type: 'form',
         }));
-
+  
         const rootNodes = response.roots.map(root => ({
           id: `${root?.[L1]}_root`,
           label: L2 === 'off' ? root?.[L1] : `${root?.[L1]} / ${root?.[L2]}`,
           ...root,
           type: 'root',
         }));
-
+  
         const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
+  
+        // Create links between nodes
         const links = [
-          ...response.words.map(word => ({ source: nameNode.id, target: `${word?.[L1]}_word` })),
-          ...response.forms.map(form => ({ source: wordNodes[0]?.id, target: `${form?.[L1]}_form` })),
-          ...response.roots.map(root => ({ source: wordNodes[0]?.id, target: `${root?.[L1]}_root` })),
+          ...wordNodes.map(word => ({ source: nameNode.id, target: word.id })),
+          ...formNodes.map(form => wordNodes.map(word => ({ source: word.id, target: form.id }))).flat(),
+          ...rootNodes.map(root => wordNodes.map(word => ({ source: word.id, target: root.id }))).flat(),
         ];
-
+  
         setGraphData({ nodes, links });
+  
+        const languages = ['arabic', 'english'];
+        if (response.item?.transliteration) languages.push('transliteration');
+        setAvailableLanguages(languages);
       } else {
         setGraphData({ nodes: [], links: [] });
+        setAvailableLanguages(['arabic', 'english']);
       }
     }
-  }, [selectedCorpusItem, selectedCorpus, L1, L2]);
+  }, [selectedCorpusItem, selectedCorpus, L1, L2, setGraphData]);
+  
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const handleNodeClick = (node) => {
+  const handleNodeClick = async (node) => {
     console.log('Node clicked:', node);
-    // Additional node click handling logic can be added here
+    console.log('Context filters:', { contextFilterRoot, contextFilterForm });
+    const corpusId = selectedCorpus ? selectedCorpus.id : null;
+
+    if (node.type === 'form') {
+      await handleFormNodeClick(node, L1, graphData, setGraphData, contextFilterForm, corpusId);
+    } else if (node.type === 'root') {
+      await handleRootNodeClick(node, L1, graphData, setGraphData, contextFilterRoot, corpusId);
+    } else if (node.type === 'word') {
+      await handleWordNodeClick(node, L1, graphData, setGraphData, corpusId);
+    }
   };
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!selectedCorpus || !selectedCorpusItem) {
+    return <div>Please select a corpus and an item to view the graph.</div>;
+  }
 
   return (
     <div>
       <Menu />
-      <div>
-        <label>Primary Language (L1):</label>
-        <select value={L1} onChange={(e) => setL1(e.target.value)}>
-          <option value="arabic">Arabic</option>
-          <option value="english">English</option>
-        </select>
-      </div>
-      <div>
-        <label>Secondary Language (L2):</label>
-        <select value={L2} onChange={(e) => setL2(e.target.value)}>
-          <option value="off">Off</option>
-          <option value="arabic">Arabic</option>
-          <option value="english">English</option>
-        </select>
-      </div>
       <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
     </div>
   );
