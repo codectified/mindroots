@@ -1,133 +1,89 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
-import handleRootRadicalChange from './handleRootRadicalChange';
-import handleFormNodeClick from './handleFormNodeClick';
-import handleWordNodeClick from './handleWordNodeClick';
-import handleRootNodeClick from './handleRootNodeClick';
 import { fetchWordsByCorpusItem } from '../services/apiService';
-import ScriptSelector from './ScriptSelector';
-import RootRadicalSelector from './RootRadicalSelector';
-import ContextShiftSelector from './ContextShiftSelector';
 import Menu from './Menu';
-
 import { useScript } from '../contexts/ScriptContext';
-import { useContextFilter } from '../contexts/ContextFilterContext';
 import { useCorpus } from '../contexts/CorpusContext';
 
 const GraphScreen = () => {
-  const { script, setScript } = useScript();
-  const { contextFilterRoot, contextFilterForm, setContextFilterRoot, setContextFilterForm } = useContextFilter();
-  const { selectedCorpus, corpora } = useCorpus();
-  
-  const navigate = useNavigate();
-  const [r1, setR1] = useState('');
-  const [r2, setR2] = useState('');
-  const [r3, setR3] = useState('');
+  const { L1, setL1, L2, setL2 } = useScript();
+  const { selectedCorpus, selectedCorpusItem } = useCorpus();
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
-
-  useEffect(() => {
-    if (selectedCorpusItem && selectedCorpusItem.roots && selectedCorpusItem.roots.length > 0) {
-      const root = selectedCorpusItem.roots[0]; // Assuming the first root is the default
-      setR1(root.r1 || '');
-      setR2(root.r2 || '');
-      setR3(root.r3 || '');
-    } else {
-      setR1('');
-      setR2('');
-      setR3('');
-    }
-  }, [selectedCorpusItem]);
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
-      const nameId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
-      const response = await fetchWordsByCorpusItem(nameId, script);
+      const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
+      const response = await fetchWordsByCorpusItem(itemId, selectedCorpus.id, L1, L2);
       if (response && response.words && response.words.length > 0) {
         const nameNode = {
-          id: `${response.item?.[script]}_name`,
-          label: script === 'both' ? `${response.item?.arabic} / ${response.item?.english}` : response.item?.[script],
+          id: `${response.item?.[L1]}_name`,
+          label: L2 === 'off' ? response.item?.[L1] : `${response.item?.[L1]} / ${response.item?.[L2]}`,
           ...response.item,
           type: 'name',
         };
 
         const wordNodes = response.words.map(word => ({
-          id: `${word?.[script]}_word`,
-          label: script === 'both' ? `${word?.arabic} / ${word?.english}` : word?.[script],
+          id: `${word?.[L1]}_word`,
+          label: L2 === 'off' ? word?.[L1] : `${word?.[L1]} / ${word?.[L2]}`,
           ...word,
           type: 'word',
         }));
 
         const formNodes = response.forms.map(form => ({
-          id: `${form?.[script]}_form`,
-          label: script === 'both' ? `${form?.arabic} / ${form?.english}` : form?.[script],
+          id: `${form?.[L1]}_form`,
+          label: L2 === 'off' ? form?.[L1] : `${form?.[L1]} / ${form?.[L2]}`,
           ...form,
           type: 'form',
         }));
 
         const rootNodes = response.roots.map(root => ({
-          id: `${root?.[script]}_root`,
-          label: script === 'both' ? `${root?.arabic} / ${root?.english}` : root?.[script],
+          id: `${root?.[L1]}_root`,
+          label: L2 === 'off' ? root?.[L1] : `${root?.[L1]} / ${root?.[L2]}`,
           ...root,
           type: 'root',
         }));
 
         const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
         const links = [
-          ...response.words.map(word => ({ source: nameNode.id, target: `${word?.[script]}_word` })),
-          ...response.forms.map(form => ({ source: wordNodes[0]?.id, target: `${form?.[script]}_form` })), // Assuming each word has one form for simplicity
-          ...response.roots.map(root => ({ source: wordNodes[0]?.id, target: `${root?.[script]}_root` })),  // Assuming each word has one root for simplicity
+          ...response.words.map(word => ({ source: nameNode.id, target: `${word?.[L1]}_word` })),
+          ...response.forms.map(form => ({ source: wordNodes[0]?.id, target: `${form?.[L1]}_form` })),
+          ...response.roots.map(root => ({ source: wordNodes[0]?.id, target: `${root?.[L1]}_root` })),
         ];
 
-        const newData = { nodes, links };
-        setgraphData(newData);
+        setGraphData({ nodes, links });
       } else {
-        setgraphData({ nodes: [], links: [] });
+        setGraphData({ nodes: [], links: [] });
       }
     }
-  }, [selectedCorpusItem, script, setgraphData]);
+  }, [selectedCorpusItem, selectedCorpus, L1, L2]);
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const handleBack = () => {
-    navigate(`/list?corpus_id=${selectedCorpus.id}&corpus_name=${encodeURIComponent(selectedCorpus.name)}&script=${script}`);
-  };
-  
-
-  const handleScriptChange = (event) => {
-    setScript(event.target.value);
-  };
-
-  const handleNodeClick = async (node) => {
+  const handleNodeClick = (node) => {
     console.log('Node clicked:', node);
-    console.log('Context filters:', { contextFilterRoot, contextFilterForm });
-    const corpusId = selectedCorpus ? selectedCorpus.id : null;
-  
-    if (node.type === 'form') {
-      await handleFormNodeClick(node, script, graphData, setgraphData, contextFilterForm, corpusId);
-    } else if (node.type === 'root') {
-      await handleRootNodeClick(node, script, graphData, setgraphData, contextFilterRoot, corpusId);
-    } else if (node.type === 'word') {
-      await handleWordNodeClick(node, script, graphData, setgraphData, corpusId);
-    }
+    // Additional node click handling logic can be added here
   };
-  
-  
 
   return (
     <div>
-                  <Menu /> {/* Add this line */}
-      <button onClick={handleBack}>Back</button>
-      <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
-      <ContextShiftSelector 
-        contextFilterRoot={contextFilterRoot}
-        contextFilterForm={contextFilterForm}
-        handleContextFilterChange={handleContextFilterChange}
-        corpora={corpora}
-      />
-      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setgraphData, contextFilterRoot)} />
+      <Menu />
+      <div>
+        <label>Primary Language (L1):</label>
+        <select value={L1} onChange={(e) => setL1(e.target.value)}>
+          <option value="arabic">Arabic</option>
+          <option value="english">English</option>
+        </select>
+      </div>
+      <div>
+        <label>Secondary Language (L2):</label>
+        <select value={L2} onChange={(e) => setL2(e.target.value)}>
+          <option value="off">Off</option>
+          <option value="arabic">Arabic</option>
+          <option value="english">English</option>
+        </select>
+      </div>
       <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
     </div>
   );

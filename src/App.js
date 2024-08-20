@@ -20,7 +20,7 @@ import './App.css';
 
 const App = () => {
   // const [script, setScript] = useState('arabic'); // Initialize script state
-  // const [graphData, setgraphData] = useState({ nodes: [], links: [] }); // Initialize root data state
+  // const [graphData, setGraphData] = useState({ nodes: [], links: [] }); // Initialize root data state
   // const [selectedCorpusItem, setselectedCorpusItem] = useState(null); // Initialize selected name state
   // const [contextFilterRoot, setContextFilterRoot] = useState('lexicon'); // Initialize root context filter state
   // const [contextFilterForm, setContextFilterForm] = useState('corpus'); // Initialize form context filter state

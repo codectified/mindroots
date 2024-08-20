@@ -9,7 +9,7 @@ import ScriptSelector from './ScriptSelector';
 import RootRadicalSelector from './RootRadicalSelector';
 import ContextShiftSelector from './ContextShiftSelector';
 
-const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setgraphData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus }) => {
+const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setGraphData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus }) => {
   const navigate = useNavigate();
   const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
   const [r1, setR1] = useState('');
@@ -31,8 +31,8 @@ const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setgrap
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
-      const nameId = selectedCorpusItem.name_id.low !== undefined ? selectedCorpusItem.name_id.low : selectedCorpusItem.name_id;
-      const response = await fetchWordsByCorpusItem(nameId, script);
+      const itemId = selectedCorpusItem.name_id.low !== undefined ? selectedCorpusItem.name_id.low : selectedCorpusItem.name_id;
+      const response = await fetchWordsByCorpusItem(itemId, script);
       if (response && response.words && response.words.length > 0) {
         const nameNode = {
           id: `${response.item?.[script]}_name`,
@@ -70,12 +70,12 @@ const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setgrap
         ];
 
         const newData = { nodes, links };
-        setgraphData(newData);
+        setGraphData(newData);
       } else {
-        setgraphData({ nodes: [], links: [] });
+        setGraphData({ nodes: [], links: [] });
       }
     }
-  }, [selectedCorpusItem, script, setgraphData]);
+  }, [selectedCorpusItem, script, setGraphData]);
 
   useEffect(() => {
     fetchData();
@@ -95,9 +95,9 @@ const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setgrap
     const corpusId = selectedCorpus ? selectedCorpus.id : null;
 
     if (node.type === 'form') {
-      await handleFormNodeClick(node, script, graphData, setgraphData, contextFilterForm, corpusId, [r1, r2, r3]);
+      await handleFormNodeClick(node, script, graphData, setGraphData, contextFilterForm, corpusId, [r1, r2, r3]);
     } else if (node.type === 'root') {
-      await handleRootNodeClick(node, script, graphData, setgraphData, contextFilterRoot, corpusId, [r1, r2, r3]);
+      await handleRootNodeClick(node, script, graphData, setGraphData, contextFilterRoot, corpusId, [r1, r2, r3]);
     }
   };
 
@@ -111,7 +111,7 @@ const GraphScreen = ({ selectedCorpusItem, script, setScript, graphData, setgrap
         handleContextFilterChange={handleContextFilterChange}
         corpora={corpora}
       />
-      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setgraphData, contextFilterRoot)} />
+      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setGraphData, contextFilterRoot)} />
       <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
     </div>
   );
