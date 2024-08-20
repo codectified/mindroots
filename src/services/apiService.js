@@ -43,17 +43,18 @@ export const fetchWordsByFormWithCorpus = async (formId, corpusId, script) => {
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByRootWithLexicon = async (rootId, script) => {
+export const fetchWordsByRootWithLexicon = async (rootId, L1, L2) => {
   const endpoint = `/root/${rootId}/lexicon`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByRootWithCorpus = async (rootId, corpusId, script) => {
+export const fetchWordsByRootWithCorpus = async (rootId, corpusId, L1, L2) => {
   const endpoint = `/root/${rootId}/corpus/${corpusId}`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
+
 
 // Fetch corpus items for a given corpus_id
 export const fetchCorpusItems = async (corpusId, script) => {

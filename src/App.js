@@ -12,6 +12,8 @@ import Menu from './components/Menu';
 import { ScriptProvider } from './contexts/ScriptContext';
 import { ContextFilterProvider } from './contexts/ContextFilterContext';
 import { CorpusProvider, useCorpus } from './contexts/CorpusContext';
+import { GraphDataProvider } from './contexts/GraphDataContext';
+
 
 
 
@@ -54,25 +56,29 @@ const App = () => {
 
   return (
     <ScriptProvider>
-      <ContextFilterProvider>
-        <CorpusProvider>
-          <Router basename="/mindroots">
-            <div className="overlay">
-              <Routes>
-                <Route path="/" element={<MainMenu />} />
-                <Route path="/corpus-menu" element={<CorpusMenu />} />
-                <Route path="/list" element={<PrimaryList />} />
-                <Route path="/graph" element={<GraphScreen />} />
-                <Route path="/settings" element={<Settings />} />
-                <Route path="/project-news" element={<ProjectNews />} />
-                <Route path="/about" element={<About />} />
-              </Routes>
-            </div>
-          </Router>
-        </CorpusProvider>
-      </ContextFilterProvider>
+      <CorpusProvider> {/* This should wrap ContextFilterProvider */}
+        <ContextFilterProvider>
+          <GraphDataProvider>
+            <Router basename="/mindroots">
+              <div className="overlay">
+                <Routes>
+                  <Route path="/" element={<MainMenu />} />
+                  <Route path="/corpus-menu" element={<CorpusMenu />} />
+                  <Route path="/list" element={<PrimaryList />} />
+                  <Route path="/graph" element={<GraphScreen />} />
+                  <Route path="/settings" element={<Settings />} />
+                  <Route path="/project-news" element={<ProjectNews />} />
+                  <Route path="/about" element={<About />} />
+                </Routes>
+              </div>
+            </Router>
+          </GraphDataProvider>
+        </ContextFilterProvider>
+      </CorpusProvider>
     </ScriptProvider>
   );
+  
+  
 };
 
 
