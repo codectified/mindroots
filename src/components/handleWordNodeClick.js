@@ -1,6 +1,6 @@
 import { fetchRootByWord, fetchFormsByWord } from '../services/apiService';
 
-const handleWordNodeClick = async (node, script, graphData, setgraphData, corpusId) => {
+const handleWordNodeClick = async (node, script, graphData, setGraphData, corpusId) => {
   try {
     console.log('Handling word node click:', node);
 
@@ -24,7 +24,7 @@ const handleWordNodeClick = async (node, script, graphData, setgraphData, corpus
         links: [...graphData.links, newLink]
       };
 
-      setgraphData(newData);
+      setGraphData(newData);
     } else {
       // Fetch and display the form node(s)
       const forms = await fetchFormsByWord(node.word_id, script);
@@ -42,7 +42,7 @@ const handleWordNodeClick = async (node, script, graphData, setgraphData, corpus
         links: [...graphData.links, ...newLinks]
       };
 
-      setgraphData(newData);
+      setGraphData(newData);
     }
   } catch (error) {
     console.error('Error handling word node click:', error);
