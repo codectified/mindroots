@@ -45,12 +45,14 @@ const About = () => {
         const data = await executeQuery(query);
         const formattedData = formatNeo4jData(data);
         setGraphData(formattedData); // Update graphData for visualization
+        console.log('Initial graphData:', formattedData);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
     };
     fetchData();
   }, [selectedExample, setGraphData]);
+  
 
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];

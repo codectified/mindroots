@@ -439,11 +439,11 @@ router.post('/execute-query', async (req, res) => {
 
 router.get('/rootbyword/:wordId', async (req, res) => {
   const { wordId } = req.params;
-  const { L1 } = req.query;
+  const { L1, L2 } = req.query;
   const session = req.driver.session();
   try {
     const query = `
-      MATCH (word:Word {word_id: toInteger($wordId)})-[:HAS_ROOT]->(root:Root)
+      MATCH (root:Root)-[:HAS_WORD]->(word:Word {word_id: toInteger($wordId)})
       RETURN root
     `;
     const result = await session.run(query, { wordId: parseInt(wordId) });
@@ -452,7 +452,7 @@ router.get('/rootbyword/:wordId', async (req, res) => {
       const root = result.records[0].get('root').properties;
       res.json({
         ...root,
-        label: L1 === 'both' ? `${root.arabic} / ${root.english}` : root[L1],
+        label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
         root_id: root.root_id
       });
     } else {
@@ -465,6 +465,8 @@ router.get('/rootbyword/:wordId', async (req, res) => {
     await session.close();
   }
 });
+
+
 
 router.get('/formsbyword/:wordId', async (req, res) => {
   const { wordId } = req.params;
