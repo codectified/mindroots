@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an Axios instance with the base URL for the API
 const api = axios.create({
-  baseURL: 'https://theoption.life/api',
+  baseURL: 'http://localhost:5001/api',
 });
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -31,29 +31,31 @@ export const fetchWordData = async (word, script) => {
   return convertIntegers(response.data);
 };
 
-export const fetchWordsByFormWithLexicon = async (formId, script) => {
+export const fetchWordsByFormWithLexicon = async (formId, L1, L2) => {
   const endpoint = `/form/${formId}/lexicon`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByFormWithCorpus = async (formId, corpusId, script) => {
+export const fetchWordsByFormWithCorpus = async (formId, corpusId, L1, L2) => {
   const endpoint = `/form/${formId}/corpus/${corpusId}`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByRootWithLexicon = async (rootId, script) => {
+
+export const fetchWordsByRootWithLexicon = async (rootId, L1, L2) => {
   const endpoint = `/root/${rootId}/lexicon`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByRootWithCorpus = async (rootId, corpusId, script) => {
+export const fetchWordsByRootWithCorpus = async (rootId, corpusId, L1, L2) => {
   const endpoint = `/root/${rootId}/corpus/${corpusId}`;
-  const response = await api.get(endpoint, { params: { script } });
+  const response = await api.get(endpoint, { params: { L1, L2 } });
   return response.data.map(item => convertIntegers(item));
 };
+
 
 // Fetch corpus items for a given corpus_id
 export const fetchCorpusItems = async (corpusId, script) => {
@@ -66,46 +68,65 @@ export const fetchCorpusItems = async (corpusId, script) => {
 };
 
 // Fetch words, forms, and roots by corpus item ID
-export const fetchWordsByCorpusItem = async (itemId, corpusId, script) => {
-  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, script } });
+export const fetchWordsByCorpusItem = async (itemId, corpusId, L1, L2) => {
+  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, L1 } });
   const data = convertIntegers(response.data);
 
-  // Ensure all expected data is defined and available
   return {
     ...data,
     words: data.words ? data.words.map(word => ({
       ...word,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script],
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
     })) : [],
     forms: data.forms ? data.forms.map(form => ({
       ...form,
-      label: script === 'both' ? `${form.arabic} / ${form.english}` : form[script],
+      label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
     })) : [],
     roots: data.roots ? data.roots.map(root => ({
       ...root,
-      label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script],
+      label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
     })) : [],
   };
 };
 
-// Execute example queries
 
+
+// Execute a Cypher query by sending it to the backend
 export const executeQuery = async (query) => {
   try {
-    const response = await fetch('/api/example-queries', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify({ query })
-    });
-    const data = await response.json();
-    return data;
+    const response = await api.post('/execute-query', { query });  // Axios uses the baseURL set earlier
+    return response.data;
   } catch (error) {
     console.error('Error executing query:', error);
     throw error;
   }
 };
+
+export const fetchRootByWord = async (wordId, L1, L2) => {
+  try {
+    const response = await api.get(`/rootbyword/${wordId}`, {
+      params: { L1, L2 }
+    });
+    return convertIntegers(response.data); // Convert integers before returning the data
+  } catch (error) {
+    console.error('Error fetching root by word:', error);
+    throw error;
+  }
+};
+
+export const fetchFormsByWord = async (wordId, L1, L2) => {
+  try {
+    const response = await api.get(`/formsbyword/${wordId}`, {
+      params: { L1, L2 }
+    });
+    return response.data.map(item => convertIntegers(item)); // Convert integers before returning the data
+  } catch (error) {
+    console.error('Error fetching forms by word:', error);
+    throw error;
+  }
+};
+
+
 
 
 

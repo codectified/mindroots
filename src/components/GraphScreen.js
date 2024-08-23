@@ -1,122 +1,120 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
-import handleRootRadicalChange from './handleRootRadicalChange';
-import handleFormNodeClick from './handleFormNodeClick';
-import handleRootNodeClick from './handleRootNodeClick';
 import { fetchWordsByCorpusItem } from '../services/apiService';
-import ScriptSelector from './ScriptSelector';
-import RootRadicalSelector from './RootRadicalSelector';
-import ContextShiftSelector from './ContextShiftSelector';
 import Menu from './Menu';
+import { useScript } from '../contexts/ScriptContext';
+import { useContextFilter } from '../contexts/ContextFilterContext';
+import { useCorpus } from '../contexts/CorpusContext';
+import { useGraphData } from '../contexts/GraphDataContext';
+import handleRootNodeClick from './handleRootNodeClick';
+import handleFormNodeClick from './handleFormNodeClick';
+import handleWordNodeClick from './handleWordNodeClick';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 
 
-const GraphScreen = ({ selectedName, script, setScript, rootData, setRootData, contextFilterRoot, contextFilterForm, handleContextFilterChange, selectedCorpus, corpora }) => {
-  const navigate = useNavigate();
-  const arabicAlphabet = ['ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'];
-  const [r1, setR1] = useState('');
-  const [r2, setR2] = useState('');
-  const [r3, setR3] = useState('');
-
-  useEffect(() => {
-    if (selectedName && selectedName.roots && selectedName.roots.length > 0) {
-      const root = selectedName.roots[0]; // Assuming the first root is the default
-      setR1(root.r1 || '');
-      setR2(root.r2 || '');
-      setR3(root.r3 || '');
-    } else {
-      setR1('');
-      setR2('');
-      setR3('');
-    }
-  }, [selectedName]);
+const GraphScreen = () => {
+  const { L1, L2 } = useScript();
+  const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
+  const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
+  const { graphData, setGraphData } = useGraphData(); 
+  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']);
 
   const fetchData = useCallback(async () => {
-    if (selectedName) {
-      const nameId = selectedName.item_id.low !== undefined ? selectedName.item_id.low : selectedName.item_id;
-      const response = await fetchWordsByCorpusItem(nameId, script);
+    if (selectedCorpusItem) {
+      const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
+      const response = await fetchWordsByCorpusItem(itemId, selectedCorpus.id, L1, L2);
+  
       if (response && response.words && response.words.length > 0) {
         const nameNode = {
-          id: `${response.item?.[script]}_name`,
-          label: script === 'both' ? `${response.item?.arabic} / ${response.item?.english}` : response.item?.[script],
+          id: `${response.item?.[L1]}_name`,
+          label: L2 === 'off' ? response.item?.[L1] : `${response.item?.[L1]} / ${response.item?.[L2]}`,
           ...response.item,
           type: 'name',
         };
-
+  
         const wordNodes = response.words.map(word => ({
-          id: `${word?.[script]}_word`,
-          label: script === 'both' ? `${word?.arabic} / ${word?.english}` : word?.[script],
+          id: `${word?.[L1]}_word`,
+          label: L2 === 'off' ? word?.[L1] : `${word?.[L1]} / ${word?.[L2]}`,
           ...word,
           type: 'word',
         }));
-
+  
         const formNodes = response.forms.map(form => ({
-          id: `${form?.[script]}_form`,
-          label: script === 'both' ? `${form?.arabic} / ${form?.english}` : form?.[script],
+          id: `${form?.[L1]}_form`,
+          label: L2 === 'off' ? form?.[L1] : `${form?.[L1]} / ${form?.[L2]}`,
           ...form,
           type: 'form',
         }));
-
+  
         const rootNodes = response.roots.map(root => ({
-          id: `${root?.[script]}_root`,
-          label: script === 'both' ? `${root?.arabic} / ${root?.english}` : root?.[script],
+          id: `${root?.[L1]}_root`,
+          label: L2 === 'off' ? root?.[L1] : `${root?.[L1]} / ${root?.[L2]}`,
           ...root,
           type: 'root',
         }));
-
+  
         const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
+  
+        // Create links between nodes
         const links = [
-          ...response.words.map(word => ({ source: nameNode.id, target: `${word?.[script]}_word` })),
-          ...response.forms.map(form => ({ source: wordNodes[0]?.id, target: `${form?.[script]}_form` })), // Assuming each word has one form for simplicity
-          ...response.roots.map(root => ({ source: wordNodes[0]?.id, target: `${root?.[script]}_root` })),  // Assuming each word has one root for simplicity
+          ...wordNodes.map(word => ({ source: nameNode.id, target: word.id })),
+          ...formNodes.map(form => wordNodes.map(word => ({ source: word.id, target: form.id }))).flat(),
+          ...rootNodes.map(root => wordNodes.map(word => ({ source: word.id, target: root.id }))).flat(),
         ];
-
-        const newData = { nodes, links };
-        setRootData(newData);
+  
+        setGraphData({ nodes, links });
+  
+        const languages = ['arabic', 'english'];
+        if (response.item?.transliteration) languages.push('transliteration');
+        setAvailableLanguages(languages);
       } else {
-        setRootData({ nodes: [], links: [] });
+        setGraphData({ nodes: [], links: [] });
+        setAvailableLanguages(['arabic', 'english']);
       }
     }
-  }, [selectedName, script, setRootData]);
+  }, [selectedCorpusItem, selectedCorpus, L1, L2, setGraphData]);
+  
 
   useEffect(() => {
     fetchData();
   }, [fetchData]);
 
-  const handleBack = () => {
-    navigate(`/list?corpus_id=${selectedCorpus.id}&corpus_name=${encodeURIComponent(selectedCorpus.name)}&script=${script}`);
-  };
-  
-
-  const handleScriptChange = (event) => {
-    setScript(event.target.value);
-  };
-
   const handleNodeClick = async (node) => {
     console.log('Node clicked:', node);
     console.log('Context filters:', { contextFilterRoot, contextFilterForm });
     const corpusId = selectedCorpus ? selectedCorpus.id : null;
-
+  
     if (node.type === 'form') {
-      await handleFormNodeClick(node, script, rootData, setRootData, contextFilterForm, corpusId, [r1, r2, r3]);
+      await handleFormNodeClick(node, L1, L2, graphData, setGraphData, contextFilterForm, corpusId);
     } else if (node.type === 'root') {
-      await handleRootNodeClick(node, script, rootData, setRootData, contextFilterRoot, corpusId, [r1, r2, r3]);
+      await handleRootNodeClick(node, L1, L2, graphData, setGraphData, contextFilterRoot, corpusId);
+    } else if (node.type === 'word') {
+      await handleWordNodeClick(node, L1, L2, graphData, setGraphData, corpusId);
     }
   };
+  
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!selectedCorpus || !selectedCorpusItem) {
+    return <div>Please select a corpus and an item to view the graph.</div>;
+  }
 
   return (
     <div>
-                  <Menu /> {/* Add this line */}
-      <button onClick={handleBack}>Back</button>
-      <ScriptSelector script={script} handleScriptChange={handleScriptChange} />
-      <ContextShiftSelector 
-        contextFilterRoot={contextFilterRoot}
-        contextFilterForm={contextFilterForm}
-        handleContextFilterChange={handleContextFilterChange}
-        corpora={corpora}
-      />
-      <RootRadicalSelector arabicAlphabet={arabicAlphabet} r1={r1} r2={r2} r3={r3} setR1={setR1} setR2={setR2} setR3={setR3} handleRootRadicalChange={() => handleRootRadicalChange(r1, r2, r3, script, setRootData, contextFilterRoot)} />
-      <GraphVisualization data={rootData} onNodeClick={handleNodeClick} />
+      <Menu />
+      <div className="navigation-buttons">
+        <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </button>
+        <button className="menu-button" onClick={goToNextItem} disabled={selectedCorpusItem.index === corpusItems.length - 1}>
+          <FontAwesomeIcon icon={faArrowRight} />
+        </button>
+      </div>
+      <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
     </div>
   );
 };
