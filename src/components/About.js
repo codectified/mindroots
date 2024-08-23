@@ -1,114 +1,69 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { executeQuery } from '../services/apiService';
 import GraphVisualization from './GraphVisualization';
-import { executeQuery } from '../services/apiService'; // Import the API service function
+import ReactMarkdown from 'react-markdown';
+import Menu from './Menu';
+import aboutContent from '../content/about.md'; // Import the markdown file path
 
 const About = () => {
-  const [exampleData1, setExampleData1] = useState(null);
-  const [exampleData2, setExampleData2] = useState(null);
-  const [exampleData3, setExampleData3] = useState(null);
-  const [exampleData4, setExampleData4] = useState(null);
-
-  const exampleQuery1 = `
-    // Example Query 1
-    MATCH (n:NodeType)-[:RELATION]->(m:AnotherNodeType)
-    RETURN n, m
-  `;
-
-  const exampleQuery2 = `
-    // Example Query 2
-    MATCH (n:NodeType)-[:RELATION]->(m:AnotherNodeType)
-    RETURN n, m
-  `;
-
-  const exampleQuery3 = `
-    // Example Query 3
-    MATCH (n:NodeType)-[:RELATION]->(m:AnotherNodeType)
-    RETURN n, m
-  `;
-
-  const exampleQuery4 = `
-    // Example Query 4
-    MATCH (n:NodeType)-[:RELATION]->(m:AnotherNodeType)
-    RETURN n, m
-  `;
+  const [blurb, setBlurb] = useState('');
+  const [graphData, setGraphData] = useState(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchData(exampleQuery1, setExampleData1);
-    fetchData(exampleQuery2, setExampleData2);
-    fetchData(exampleQuery3, setExampleData3);
-    fetchData(exampleQuery4, setExampleData4);
-  }, []);
+    // Fetch the markdown content
+    fetch(aboutContent)
+      .then((res) => res.text())
+      .then((text) => setBlurb(text))
+      .catch((error) => console.error('Error loading markdown:', error));
 
-  const fetchData = async (query, setData) => {
-    try {
-      const result = await executeQuery(query);
-      const formattedData = formatNeo4jData(result);
-      setData(formattedData);
-    } catch (error) {
-      console.error('Error fetching data:', error);
-    }
-  };
+    // Fetch the graph data
+    const fetchGraphData = async () => {
+      try {
+        const query = `
+          MATCH (n)-[r]->(m)
+          RETURN n, r, m
+        `;
+        const data = await executeQuery(query);
+        const formattedData = formatNeo4jData(data);
+        setGraphData(formattedData);
+        setLoading(false);
+      } catch (error) {
+        console.error('Error fetching graph data:', error);
+      }
+    };
+
+    fetchGraphData();
+  }, []);
 
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
     const links = [];
-
+  
     neo4jData.forEach(record => {
-      record._fields.forEach(field => {
+      Object.values(record).forEach(field => {
         if (field.identity && field.labels) {
-          // It's a node
+          const properties = field.properties;
           nodes.push({
-            id: field.identity.low,
-            label: field.properties.name || 'Unnamed Node',
-            type: field.labels[0].toLowerCase()
-          });
-        } else if (field.start && field.end && field.type) {
-          // It's a relationship
-          links.push({
-            source: field.start.low,
-            target: field.end.low
+            id: `${properties.name}_${field.labels[0].toLowerCase()}`,
+            label: properties.name,
+            type: field.labels[0].toLowerCase(),
+            ...properties
           });
         }
       });
     });
-
+  
     return { nodes, links };
-  };
-
-  const handleNodeClick = (node) => {
-    console.log("Node clicked:", node);
   };
 
   return (
     <div className="about-page">
-      <h1>About MindRoots</h1>
-      <p>
-        MindRoots is a graphical ontological dictionary application that allows users to explore the connections between Arabic roots and their derived words...
-      </p>
+      <Menu />
+      <ReactMarkdown>{blurb}</ReactMarkdown>
 
-      <h2>Example 1: Query Title 1</h2>
-      {exampleData1 && <GraphVisualization data={exampleData1} onNodeClick={handleNodeClick} />}
-      <p>
-        This query shows how [explanation for query 1]...
-      </p>
-
-      <h2>Example 2: Query Title 2</h2>
-      {exampleData2 && <GraphVisualization data={exampleData2} onNodeClick={handleNodeClick} />}
-      <p>
-        This query illustrates [explanation for query 2]...
-      </p>
-
-      <h2>Example 3: Query Title 3</h2>
-      {exampleData3 && <GraphVisualization data={exampleData3} onNodeClick={handleNodeClick} />}
-      <p>
-        Here, we demonstrate [explanation for query 3]...
-      </p>
-
-      <h2>Example 4: Query Title 4</h2>
-      {exampleData4 && <GraphVisualization data={exampleData4} onNodeClick={handleNodeClick} />}
-      <p>
-        Finally, this query reveals [explanation for query 4]...
-      </p>
+      <h2>Database Overview</h2>
+      {loading ? <p>Loading graph visualization...</p> : <GraphVisualization data={graphData} />}
     </div>
   );
 };
