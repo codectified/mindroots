@@ -104,8 +104,8 @@ export const executeQuery = async (query) => {
 
 export const fetchRootByWord = async (wordId, L1, L2) => {
   try {
-    const response = await api.get(`/root/${wordId}`, {
-      params: { L1 }
+    const response = await api.get(`/rootbyword/${wordId}`, {
+      params: { L1, L2 }
     });
     return convertIntegers(response.data); // Convert integers before returning the data
   } catch (error) {
@@ -116,8 +116,8 @@ export const fetchRootByWord = async (wordId, L1, L2) => {
 
 export const fetchFormsByWord = async (wordId, L1, L2) => {
   try {
-    const response = await api.get(`/forms/${wordId}`, {
-      params: { L1 }
+    const response = await api.get(`/formsbyword/${wordId}`, {
+      params: { L1, L2 }
     });
     return response.data.map(item => convertIntegers(item)); // Convert integers before returning the data
   } catch (error) {
@@ -125,6 +125,7 @@ export const fetchFormsByWord = async (wordId, L1, L2) => {
     throw error;
   }
 };
+
 
 
 

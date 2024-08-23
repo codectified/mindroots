@@ -437,7 +437,7 @@ router.post('/execute-query', async (req, res) => {
 });
 
 
-router.get('/root/:wordId', async (req, res) => {
+router.get('/rootbyword/:wordId', async (req, res) => {
   const { wordId } = req.params;
   const { L1 } = req.query;
   const session = req.driver.session();
@@ -466,8 +466,7 @@ router.get('/root/:wordId', async (req, res) => {
   }
 });
 
-
-router.get('/forms/:wordId', async (req, res) => {
+router.get('/formsbyword/:wordId', async (req, res) => {
   const { wordId } = req.params;
   const { L1 } = req.query;
   const session = req.driver.session();
@@ -495,6 +494,7 @@ router.get('/forms/:wordId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 
