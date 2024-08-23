@@ -4,29 +4,15 @@ We can only understand the mind and the self through language.
 
 If we can see language a little better, the process as a whole, we can probably see ourselves and our minds a bit better, too. 
 
-Featured here as part of the project is a morphosyntactic semantic network modeling tool for navigating a graph database of words and their interrelationships. 
+Featured here as part of this project is a morphosyntactic semantic modeling tool for navigating a graph database of words and their interrelationships. 
 
-From the main menu, select from the list of corpora to view a detailed graph of any word in the corpus.
+For an interactive tutorial on navigating this visual database, check out this article on the basic elements language: [Introduction](/mindroots/introduction)
+
+Or, dive right in and select a corpus from the library to view a detailed graph of any word in the corpus.
 
 (data is limited in the current version!)
 
-Graphs connect general ideas of a word’s sound and root and grammatical function and form.
 
-Roots are green.  Forms are blue.  Words are red.  And corpus items are yellow-gold.
-
-Click a node to show its children.  
-
-Right-click (or hold) for more information.
-
-Double click a node to remove it.
-
-If you imagine language as a tree mixing with the body of the earth, how it roots before it fruits, that’s really the whole idea.
-
-Roots and shoots and fruit slices of every language!
-
-The fruit is only the utterance in its proper context and the roots are everything up until that moment in space and time; branches are extended roots.
-
-The goal isn’t only learning a language it’s learning what a language is, how it works and moves inside us.  See below.
 
 In the first phase of this project the focus is on the arabic language with english translation of the 99 arabic names of god. More language models and translations are planned. 
 
@@ -43,27 +29,6 @@ Just as in life, linguistic relationships stem from our dimensionality.
 You can view these relationships in a graphical space.
 
 Both the root and form of a word have different dimensions, let's take a look at a few examples.
-
-#### Roots
-
-Double click the word node below to see it's root.  (try and guess first, of course)
-
-
-Word->root
-
-Now let's expand the context and see other words which have the same root:
-
-Root->words
-
-To see more dimensions of roots, take a look at this article:
-
-#### Forms
-
-This time double click the word node to see it's grammatical form.
-
-Word->form
-
-Finally, if we expand the form node we see the other words which share the grammatical form.
 
 
 

@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
+import { Link } from 'react-router-dom'; // Import Link component
 import changelogContent from '../content/changelog.md';
+import Menu from './Menu';
+
 
 const ProjectNews = () => {
   const [content, setContent] = useState('');
@@ -13,10 +16,11 @@ const ProjectNews = () => {
 
   return (
     <div className="project-news-container">
-      <h2 className="project-news-title">Project News</h2>
+            <Menu />
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );
 };
 
 export default ProjectNews;
+
