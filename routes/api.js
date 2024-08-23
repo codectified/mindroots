@@ -419,14 +419,15 @@ router.get('/root/:rootId/lexicon', async (req, res) => {
 
 // Endpoint to execute Cypher queries
 router.post('/execute-query', async (req, res) => {
-  const { query } = req.body;  // Extract the Cypher query from the request body
-  const session = req.driver.session();  // Use req.driver instead of driver
-
-  console.log('Received query:', query);  // Add a log to check the received query
+  const { query } = req.body;  
+  const session = req.driver.session();  
 
   try {
     const result = await session.run(query);
-    const records = result.records.map(record => record.toObject());
+    const records = result.records.map(record => {
+      const processedRecord = record.toObject();
+      return convertIntegers(processedRecord);  // Ensure integers are converted
+    });
     res.json(records);
   } catch (error) {
     console.error('Error executing query:', error);
@@ -470,7 +471,7 @@ router.get('/rootbyword/:wordId', async (req, res) => {
 
 router.get('/formsbyword/:wordId', async (req, res) => {
   const { wordId } = req.params;
-  const { L1 } = req.query;
+  const { L1, L2 } = req.query;
   const session = req.driver.session();
   try {
     const query = `
@@ -483,7 +484,7 @@ router.get('/formsbyword/:wordId', async (req, res) => {
       const forms = result.records.map(record => record.get('form').properties);
       res.json(forms.map(form => ({
         ...form,
-        label: L1 === 'both' ? `${form.arabic} / ${form.english}` : form[L1],
+        label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
         form_id: form.form_id
       })));
     } else {
