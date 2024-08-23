@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faInfoCircle, faHistory, faHome } from '@fortawesome/free-solid-svg-icons';
+import { faCog, faInfoCircle, faNewspaper, faHome } from '@fortawesome/free-solid-svg-icons';
 import ReactMarkdown from 'react-markdown';
 import aboutContent from '../content/about.md';
 import changelogContent from '../content/changelog.md';
@@ -34,7 +34,6 @@ const Menu = () => {
       case 'changelog':
         return (
           <div>
-            <h2>Changelog</h2>
             <ReactMarkdown>{markdownContent}</ReactMarkdown>
           </div>
         );
@@ -74,7 +73,7 @@ const Menu = () => {
           className={`menu-button ${selectedOption === 'changelog' ? 'active' : ''}`}
           onClick={() => toggleOption('changelog')}
         >
-          <FontAwesomeIcon icon={faHistory} />
+          <FontAwesomeIcon icon={faNewspaper} />
         </button>
         <button
           className="menu-button"
