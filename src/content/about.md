@@ -6,7 +6,9 @@ If we can see language a little better, the process as a whole, we can probably 
 
 Featured here as part of this project is a morphosyntactic semantic modeling tool for navigating a graph database of words and their interrelationships. 
 
-For an interactive tutorial on navigating this visual database, check out this article on the basic elements language: [Introduction](/mindroots/introduction)
+For an interactive tutorial with graphical examples navigating the database, check out this article on the basic elements language: [Introduction](/mindroots/introduction)
+
+If familiar with some of these ideas already you can jump to more advanced topics in the [Articles](/mindroots/articles) section.
 
 Or, dive right in and select a corpus from the library to view a detailed graph of any word in the corpus.
 

@@ -6,7 +6,7 @@ Graphs connect general ideas of a word’s sound and root and grammatical functi
 
 Roots are green.  Forms are blue.  Words are red.  And corpus items are yellow-gold.
 
-Each of the buttons below will generate a random node of the specified type.
+Each of the buttons below will generate a random node of the specified type with each press.
 
 Click a node to show its links.  
 
