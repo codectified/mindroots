@@ -5,7 +5,7 @@ The sounds of a single root can be shared by as many as 15 or more unique base w
 
 This number multiplies to over to one hundred times when including verbal conjugation and nominal inflection and declension.
 
-Currently the database accounts for up to nine different bases form types per root only, with some roots having more one of each type. 
+Currently, the database accounts for up to nine different bases form types per root only, with some roots having more than one of each type. 
 
 The form types included reflect the most commonly heard base noun forms in general and so, appropriately illustrate the depth and the breadth a family of meaning, or semantic field. 
 
