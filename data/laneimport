@@ -9,7 +9,7 @@ MERGE (root:Root {root_id: toInteger(rootRow.id), arabic: rootRow.`arabic`, tran
 LOAD CSV WITH HEADERS FROM 'https://theoption.life/data/filtered_sorted_roots_and_words_with_root_ids.csv' AS row
 WITH row
 // Create or match the Word node with the root_id property
-MERGE (word:Word {word_id: toInteger(row.id), arabic: row.arabic})
+MERGE (word:Word {word_id: toInteger(row.id), arabic: row.word})
 ON CREATE SET word.root_id = toInteger(row.root_id)
 WITH word, row
 // Match the corresponding Root node
