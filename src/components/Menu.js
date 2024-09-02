@@ -6,7 +6,7 @@ import aboutContent from '../content/about.md';
 import changelogContent from '../content/changelog.md';
 import LanguageSelector from './LanguageSelector';
 import ContextShiftSelector from './ContextShiftSelector';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 const Menu = () => {
   const [selectedOption, setSelectedOption] = useState(null);
@@ -24,22 +24,24 @@ const Menu = () => {
   const renderContent = () => {
     if (selectedOption === 'settings') {
       return (
-        <div>
+        <div className="content-container">
           <LanguageSelector />
           <ContextShiftSelector />
         </div>
       );
     } else if (selectedOption === 'about') {
       return (
-        <div>
-          <h2>About</h2>
-          <ReactMarkdown>{markdownContent}</ReactMarkdown>
+        <div className="content-container">
+          <ReactMarkdown>{markdownContent.slice(0, 200)}</ReactMarkdown>
+          <Link to="/about" className="read-more-link">Read More</Link>
         </div>
       );
     } else if (selectedOption === 'changelog') {
       return (
-        <div>
-          <ReactMarkdown>{markdownContent}</ReactMarkdown>
+        <div className="content-container">
+          <h2>Project News</h2>
+          <ReactMarkdown>{markdownContent.slice(0, 200)}</ReactMarkdown>
+          <Link to="/changelog" className="read-more-link">View Full Changelog</Link>
         </div>
       );
     } else {
