@@ -4,7 +4,8 @@ import { faCog, faInfoCircle, faNewspaper, faHome } from '@fortawesome/free-soli
 import ReactMarkdown from 'react-markdown';
 import aboutContent from '../content/about.md';
 import changelogContent from '../content/changelog.md';
-import Settings from './Settings';
+import LanguageSelector from './LanguageSelector';
+import ContextShiftSelector from './ContextShiftSelector';
 import { useNavigate } from 'react-router-dom';
 
 const Menu = () => {
@@ -21,24 +22,28 @@ const Menu = () => {
   };
 
   const renderContent = () => {
-    switch (selectedOption) {
-      case 'settings':
-        return <Settings />; // Render the full Settings component
-      case 'about':
-        return (
-          <div>
-            <h2>About</h2>
-            <ReactMarkdown>{markdownContent}</ReactMarkdown>
-          </div>
-        );
-      case 'changelog':
-        return (
-          <div>
-            <ReactMarkdown>{markdownContent}</ReactMarkdown>
-          </div>
-        );
-      default:
-        return null;
+    if (selectedOption === 'settings') {
+      return (
+        <div>
+          <LanguageSelector />
+          <ContextShiftSelector />
+        </div>
+      );
+    } else if (selectedOption === 'about') {
+      return (
+        <div>
+          <h2>About</h2>
+          <ReactMarkdown>{markdownContent}</ReactMarkdown>
+        </div>
+      );
+    } else if (selectedOption === 'changelog') {
+      return (
+        <div>
+          <ReactMarkdown>{markdownContent}</ReactMarkdown>
+        </div>
+      );
+    } else {
+      return null; // Render nothing if no option is selected
     }
   };
 
