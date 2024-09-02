@@ -106,15 +106,21 @@ const GraphScreen = () => {
   return (
     <div>
       <Menu />
-      <div className="navigation-buttons">
-        <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
-          <FontAwesomeIcon icon={faArrowLeft} />
-        </button>
-        <button className="menu-button" onClick={goToNextItem} disabled={selectedCorpusItem.index === corpusItems.length - 1}>
-          <FontAwesomeIcon icon={faArrowRight} />
-        </button>
-      </div>
-      <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
+      {!selectedCorpus || !selectedCorpusItem ? (
+        <div>Please select a corpus and an item to view the graph.</div>
+      ) : (
+        <>
+          <div className="navigation-buttons">
+            <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
+              <FontAwesomeIcon icon={faArrowLeft} />
+            </button>
+            <button className="menu-button" onClick={goToNextItem} disabled={selectedCorpusItem.index === corpusItems.length - 1}>
+              <FontAwesomeIcon icon={faArrowRight} />
+            </button>
+          </div>
+          <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
+        </>
+      )}
     </div>
   );
 };

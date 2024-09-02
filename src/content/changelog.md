@@ -1,35 +1,48 @@
-#### 23.08.2024
--First article published!  An interactive database navigation tutorial:  [Getting Started with Graphs](/mindroots/introduction)
+# Changelog
 
-## Timeline
+### 2.9.2024
+**Frontend overhaul**: Updated **Getting Started** and **About** articles, minor improvements.
 
-### UI/UX Improvements
+### 1.9.2024
+**Large data import**: 50k+ words and 5k+ roots from Edward William Lane's Lexicon (Arabic only).
 
-- **17.08.2024**: Main menu transformation, various updates
-- **14.08.2024**: Simplified graph display
+### 23.08.2024
+**First article published**: [Getting Started with Graphs](/mindroots/introduction).
 
-### Backend Enhancements
+### 22.08.2024
+**Major optimizations** across the backend.
 
-- **22.08.2024**: Major optimizations across the board
-- **14.08.2024**: Adjusted backend logic for improved performance
+### 17.08.2024
+**Main menu transformation** and updates.
 
-### Corpora Additions
+### 14.08.2024
+**Simplified graph display** and **backend logic improvements**.
 
-- **99 Names of God**
-  - **22.07.2024**: Completed half of the corpus
-- **Quran**
-  - **15.06.2024**: Initial import of Quran corpus data
+---
 
-## changelog:
+# Timeline
 
-#### 22.08.2024  
--major optimizations across the board
+### Features
 
+**Usage Submissions**  
 
-#### 17.08.2024  
--main menu transformation, various updates
+**Game Mode:**
+  Given a word, guess the root or form.  
 
+**Filtering:**
+  Implement form-based filtering (blocked by incomplete form data).
+  Implement root-based filtering.  
 
-#### 14.08.2024  
--simplified graph display  
--adjusted backend logic
+**Sandbox Mode:**
+  Direct access to graph screen.
+  Add functionality to add form notes via selection menu.
+  Add functionality to add root notes by specifying three letters.
+
+### Copora Additions:
+  The 99 Names of Allah - ongoing  
+  The Quran - planned
+
+# Known Issues
+
+**Duplicates:**
+  Duplicate nodes appear when expanding roots or forms.

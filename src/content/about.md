@@ -2,7 +2,7 @@
 
 MindRoots is a project that explores the intersections of cognitive science, linguistics, and philosophy.
 
-Less formally, it’s a graphical etymonic dictionary and ontological database, where **graphical** means the data is stored in a graph database. Graph databases closely mirror natural linguistic structures, allowing for an intuitive exploration of language.
+Less formally, it’s a graphical, ontological, etymonic database and dictionary, where **graphical** means the data is stored in a graph database. Graph databases closely mirror natural linguistic structures, allowing for an intuitive exploration of language.
 
 ## The Big Idea
 
