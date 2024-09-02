@@ -32,7 +32,7 @@ const Menu = () => {
     } else if (selectedOption === 'about') {
       return (
         <div className="content-container">
-          <ReactMarkdown>{markdownContent.slice(0, 200)}</ReactMarkdown>
+          <ReactMarkdown>{markdownContent.slice(0, 209)}</ReactMarkdown>
           <Link to="/about" className="read-more-link">Read More</Link>
         </div>
       );
@@ -40,8 +40,8 @@ const Menu = () => {
       return (
         <div className="content-container">
           <h2>Project News</h2>
-          <ReactMarkdown>{markdownContent.slice(0, 200)}</ReactMarkdown>
-          <Link to="/changelog" className="read-more-link">View Full Changelog</Link>
+          <ReactMarkdown>{markdownContent.slice(0, 100)}</ReactMarkdown>
+          <Link to="/project-news" className="read-more-link">View Full Changelog</Link>
         </div>
       );
     } else {

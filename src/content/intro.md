@@ -27,12 +27,14 @@ Graphs in MindRoots connect general ideas of a word’s **sound** and **root** a
 
 ---
 
-## Conceptualizing Language
+## Learning Language
 
 If you imagine language as a tree rooted deep in the earth, where it grows and branches before finally bearing fruit, this the visualized graph mirrors that structure and process.
 
 Roots are the foundation—everything that leads to a word's utterance.  Branches represent the connections and extensions of a root's context, word types.  And so we reap the fruits from our utterances in their proper context, the the movement of life.  
 
-The aim of here isn’t only to learn a language but to understand what a language is, the process, and how it moves within us. Explore, connect, and discover below!
+The aim here isn’t only to learn a language but to understand what a language is, the process, and how it moves within us. Explore, connect, and discover below!
+
+(Note that due to the recent update of about 50000 Arabic words and 5000 roots, functionality here is very limited for English.  Most word and root nodes will not display a label if your primary language is set to English.)
 
 ---
