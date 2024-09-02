@@ -14,9 +14,6 @@ const ArticlesList = () => {
           <Link to="/introduction">Introduction Tutorial</Link>
         </li>
         {/* Add more articles here */}
-        <li>
-          <Link to="/another-article">Another Article</Link>
-        </li>
       </ul>
     </div>
   );
