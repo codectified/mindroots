@@ -18,7 +18,7 @@ const GraphScreen = () => {
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
   const { graphData, setGraphData } = useGraphData(); 
-  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']);
+  const [setAvailableLanguages] = useState(['arabic', 'english']);
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
@@ -73,7 +73,7 @@ const GraphScreen = () => {
         setAvailableLanguages(['arabic', 'english']);
       }
     }
-  }, [selectedCorpusItem, selectedCorpus, L1, L2, setGraphData]);
+  }, [selectedCorpusItem, selectedCorpus, L1, L2, setGraphData, setAvailableLanguages]);
   
 
   useEffect(() => {

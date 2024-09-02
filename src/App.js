@@ -11,7 +11,7 @@ import Introduction from './components/Introduction';
 import ArticlesList from './components/ArticlesList';
 import { ScriptProvider } from './contexts/ScriptContext';
 import { ContextFilterProvider } from './contexts/ContextFilterContext';
-import { CorpusProvider, useCorpus } from './contexts/CorpusContext';
+import { CorpusProvider } from './contexts/CorpusContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
 import Games from './components/Games';
 
