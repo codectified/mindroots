@@ -18,7 +18,7 @@ const GraphScreen = () => {
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
   const { graphData, setGraphData } = useGraphData(); 
-  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']);
+  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {

@@ -143,7 +143,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     }
   }, [data, onNodeClick]);
 
-  return <svg ref={svgRef} width="800" height="600" style={{ border: '1px solid black' }}></svg>;
+  return <svg ref={svgRef} width="800" height="600" style={{ border: 'none' }}></svg>;
 };
 
 export default GraphVisualization;
