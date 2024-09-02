@@ -133,9 +133,10 @@ const Introduction = () => {
         <button onClick={() => loadMarkdownAndFetchData('forms')}>Forms</button>
       </div>
 
-      <ReactMarkdown>{markdownContent}</ReactMarkdown>
+      
 
       <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
+      <ReactMarkdown>{markdownContent}</ReactMarkdown>
     </div>
   );
 };

@@ -8,10 +8,10 @@ const ArticlesList = () => {
     <div className="articles-list">
                         <Menu />
 
-      <h1>Articles and Tutorials</h1>
+      <h1>Articles</h1>
       <ul>
         <li>
-          <Link to="/introduction">Introduction Tutorial</Link>
+          <Link to="/introduction">Getting Started with Graphs</Link>
         </li>
         {/* Add more articles here */}
       </ul>
