@@ -1,5 +1,5 @@
 #### 23.08.2024
--First article published!  An interactive database navigation tutorial:  [The Primary Elements](/mindroots/introduction)
+-First article published!  An interactive database navigation tutorial:  [Getting Started with Graphs](/mindroots/introduction)
 
 #### 22.08.2024  
 -major optimizations across the board
