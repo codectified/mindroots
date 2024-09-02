@@ -12,8 +12,9 @@ body {
 }
 
 .overlay {
-  background-color: rgba(255, 255, 255, 0.9); /* Increase opacity */
+  background-color: rgba(255, 255, 255, 0.95); /* Increase opacity */
   margin: 20px;
+  margin-top: 80px;
   padding: 20px;
   border-radius: 10px;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
@@ -65,7 +66,7 @@ li:hover {
 
 /* Menu Styles */
 .menu-container {
-  position: absolute;
+  position: fixed;
   top: 20px;
   right: 20px;
   display: flex;
@@ -298,10 +299,11 @@ li:hover {
 
 .icon-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 icons per row */
+  grid-template-columns: repeat(2, 1fr); /* Adjust this based on how many icons per row */
   gap: 20px;
   justify-content: center;
   align-items: center;
+  position: relative;
 }
 
 .icon-item {
@@ -328,6 +330,7 @@ li:hover {
   font-size: 1.2em;
   margin-top: 10px;
 }
+
 
 .responsive-image {
   max-width: 100%;
