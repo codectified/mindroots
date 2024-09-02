@@ -1,4 +1,4 @@
-# Words
+---
 Words are the final form of language after it leaves our minds and escapes our lips.  
 
 All words are made up of essential sounds and structure; a root and a form. 
