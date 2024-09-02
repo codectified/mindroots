@@ -13,6 +13,8 @@ import { ScriptProvider } from './contexts/ScriptContext';
 import { ContextFilterProvider } from './contexts/ContextFilterContext';
 import { CorpusProvider, useCorpus } from './contexts/CorpusContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
+import Games from './components/Games';
+
 
 import './App.css';
 
@@ -38,6 +40,8 @@ const App = () => {
                   <Route path="/about" element={<About />} />
                   <Route path="/introduction" element={<Introduction />} /> 
                   <Route path="/articles" element={<ArticlesList />} /> 
+                  <Route path="/games" element={<Games />} /> {/* Add this line */}
+
 
 
                 </Routes>

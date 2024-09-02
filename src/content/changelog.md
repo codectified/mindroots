@@ -1,5 +1,3 @@
-## [Articles](/mindroots/articles)
-
 #### 23.08.2024
 -First article published!  An interactive database navigation tutorial:  [The Primary Elements](/mindroots/introduction)
 
