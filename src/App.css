@@ -346,3 +346,23 @@ li:hover {
   text-align: center;
   margin: 20px 0;
 }
+
+.content-container {
+  padding: 15px;
+  border: 1px solid #ddd; /* Light border */
+  border-radius: 5px; /* Rounded corners */
+  margin-bottom: 20px; /* Space below the content */
+  background-color: #f9f9f9; /* Light background color */
+}
+
+.read-more-link {
+  display: block;
+  margin-top: 10px;
+  color: #007bff; /* Link color */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.read-more-link:hover {
+  text-decoration: underline;
+}
