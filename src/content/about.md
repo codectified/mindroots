@@ -1,16 +1,27 @@
-MindRoots is a project in cognitive science, linguistics and philosophy, at least.
+Getting Started With Graphs 
+
+
+
+
+
+Welcome in!  MindRoots is a project in cognitive science, linguistics and philosophy, at least.
+
+Less formally, it’s a graphical etymonic dictionary and ontological database.
+
+Graphical meaning the data is in a graph database.  Graph databases can more closely mirror natural structures 
+
+The big idea is life as language and language as life.  We all have the same parts, hearts, minds and bodies all 
 
 We can only understand the mind and the self through language. 
 
-If we can see language a little better, the process as a whole, we can probably see ourselves and our minds a bit better, too. 
+If we can see language a better, the process as a whole, we can see ourselves and our hearts and minds a bit better, too. 
 
-Featured here as part of this project is a morphosyntactic semantic modeling tool for navigating a graph database of words and their interrelationships. 
+You can explore the database dive right in and select a corpus from the library to view a detailed graph of any word in the corpus.
+
+Or 
 
 For an interactive tutorial with graphical examples navigating the database, check out this article on the basic elements language: [Introduction](/mindroots/introduction)
 
-If familiar with some of these ideas already you can jump to more advanced topics in the [Articles](/mindroots/articles) section.
-
-Or, dive right in and select a corpus from the library to view a detailed graph of any word in the corpus.
 
 (data is limited in the current version!)
 
