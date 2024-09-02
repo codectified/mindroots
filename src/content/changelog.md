@@ -1,7 +1,16 @@
-## [Articles](/mindroots/articles)
-
 #### 23.08.2024
 -First article published!  An interactive database navigation tutorial:  [The Primary Elements](/mindroots/introduction)
+
+## timeline:
+
+UI/UX improvements:
+
+Corpora:
+
+-99 names:
+-
+
+## changelog:
 
 #### 22.08.2024  
 -major optimizations across the board
