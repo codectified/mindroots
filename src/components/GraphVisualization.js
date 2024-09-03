@@ -18,7 +18,6 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     const width = svg.attr('width');
     const height = svg.attr('height');
 
-    // Initialize positions
     data.nodes.forEach(node => {
       node.x = width / 2;
       node.y = height / 2;
@@ -32,22 +31,18 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
         if (d.type === 'name') return width / 2;
         if (d.type === 'form') return width / 4;
         if (d.type === 'root') return (3 * width) / 4;
-        if (d.type === 'word') {
-          return width / 2;
-        }
+        if (d.type === 'word') return width / 2;
         return width / 2;
       }).strength(1))
       .force('y', d3.forceY(d => {
         if (d.type === 'name') return height / 4;
         if (d.type === 'form' || d.type === 'root') return height / 2;
-        if (d.type === 'word') {
-          return height * 0.75;
-        }
+        if (d.type === 'word') return height * 0.75;
         return height / 2;
       }).strength(1))
-      .force('collide', d3.forceCollide(50)) // Add collision force to prevent overlap
-      .alphaDecay(0.01) // Slower cooling rate
-      .velocityDecay(0.9); // Higher velocity decay for smoother motion
+      .force('collide', d3.forceCollide(50))
+      .alphaDecay(0.01)
+      .velocityDecay(0.9);
 
     const color = d3.scaleOrdinal()
       .domain(['name', 'word', 'form', 'root'])
@@ -74,9 +69,11 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
         .on('end', dragended))
       .on('click', (event, d) => onNodeClick(d))
       .on('contextmenu', (event, d) => {
-        event.preventDefault(); // Prevent the default context menu
+        event.preventDefault();
         onNodeRightClick(d, event);
-      });
+      })
+      .on('touchstart', (event, d) => handleLongPress(event, d))
+      .on('mousedown', (event, d) => handleLongPress(event, d));
 
     node.append('title')
       .text(d => d.label);
@@ -89,9 +86,6 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       .attr('x', 12)
       .attr('y', '.31em')
       .text(d => d.label);
-
-    console.log('Appended nodes:', node);
-    console.log('Appended links:', link);
 
     simulation
       .nodes(data.nodes)
@@ -114,15 +108,6 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       text
         .attr('x', d => validatePosition(d.x))
         .attr('y', d => validatePosition(d.y));
-
-      // // Log positions less frequently
-      // if (Math.random() < 0.05) {
-      //   console.log('Node positions:', node.data().map(d => ({ x: d.x, y: d.y })));
-      //   console.log('Link positions:', link.data().map(d => ({
-      //     source: { x: d.source.x, y: d.source.y },
-      //     target: { x: d.target.x, y: d.target.y }
-      //   })));
-      // }
     }
 
     function validatePosition(value) {
@@ -145,6 +130,23 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       d.fx = null;
       d.fy = null;
     }
+
+    let pressTimer;
+
+    function handleLongPress(event, d) {
+      event.preventDefault(); // Prevent default browser behavior
+      pressTimer = setTimeout(() => {
+        onNodeRightClick(d, event);
+      }, 500); // 500ms for long press
+    }
+
+    function cancelLongPress() {
+      clearTimeout(pressTimer);
+    }
+
+    // Cancel the long press if the user moves their finger/mouse away
+    svg.on('touchend', cancelLongPress);
+    svg.on('mouseup', cancelLongPress);
   }, [data, onNodeClick, onNodeRightClick]);
 
   return <svg ref={svgRef} width="800" height="600" style={{ border: 'none' }}></svg>;
