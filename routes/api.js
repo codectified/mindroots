@@ -499,7 +499,30 @@ router.get('/formsbyword/:wordId', async (req, res) => {
 });
 
 
+router.get('/definitionsbyword/:wordId', async (req, res) => {
+  const { wordId } = req.params;
+  const { L1, L2 } = req.query;
+  const session = req.driver.session();
+  try {
+    const query = `
+      MATCH (word:Word {word_id: toInteger($wordId)})
+      RETURN word.definitions AS definitions
+    `;
+    const result = await session.run(query, { wordId: parseInt(wordId) });
 
+    if (result.records.length > 0) {
+      const definitions = result.records[0].get('definitions');
+      res.json(definitions);
+    } else {
+      res.status(404).json({ error: 'Definitions not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching definitions by word:', error);
+    res.status(500).json({ error: 'Error fetching definitions by word' });
+  } finally {
+    await session.close();
+  }
+});
 
 
 module.exports = router;
