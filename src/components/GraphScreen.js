@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { fetchWordsByCorpusItem } from '../services/apiService';
 import Menu from './Menu';
+import HandleWordNodeRightClick from './handleWordNodeRightClick';
 import { useScript } from '../contexts/ScriptContext';
 import { useContextFilter } from '../contexts/ContextFilterContext';
 import { useCorpus } from '../contexts/CorpusContext';
@@ -19,6 +20,10 @@ const GraphScreen = () => {
   const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
   const { graphData, setGraphData } = useGraphData(); 
   const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
+  const [infoBubble, setInfoBubble] = useState(null); // State to manage the info bubble visibility
+  const [rightClickedNode, setRightClickedNode] = useState(null); // State to track right-clicked node
+
+
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
@@ -93,6 +98,20 @@ const GraphScreen = () => {
       await handleWordNodeClick(node, L1, L2, graphData, setGraphData, corpusId);
     }
   };
+
+  const handleNodeRightClick = (node, event) => {
+    event.preventDefault(); // Prevent the default context menu
+    console.log('Right-clicked node:', node); // Log to verify the event is triggered
+    console.log('Event:', event); // Log the event to see its details
+    setRightClickedNode({
+      node,
+      position: { x: event.clientX, y: event.clientY } // Capture and pass position
+    });
+  };
+
+  const closeInfoBubble = () => {
+    setInfoBubble(null);
+  };
   
 
   if (loading) {
@@ -118,7 +137,22 @@ const GraphScreen = () => {
               <FontAwesomeIcon icon={faArrowRight} />
             </button>
           </div>
-          <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
+          <GraphVisualization 
+            data={graphData} 
+            onNodeClick={handleNodeClick} 
+            onNodeRightClick={handleNodeRightClick} 
+          />
+{rightClickedNode && (
+  <>
+    <HandleWordNodeRightClick
+      node={rightClickedNode.node}
+      L1={L1}
+      L2={L2}
+      position={rightClickedNode.position}
+    />
+    {console.log('Rendering HandleWordNodeRightClick component')}
+  </>
+)}
         </>
       )}
     </div>

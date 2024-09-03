@@ -2,7 +2,7 @@ import axios from 'axios';
 
 // Create an Axios instance with the base URL for the API
 const api = axios.create({
-  baseURL: 'https://theoption.life/api',
+  baseURL: 'http://localhost:5001/api',
 });
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -153,4 +153,16 @@ export const fetchRootsByRadicals = async (r1, r2, r3, script) => {
 export const fetchCorpora = async () => {
   const response = await api.get('/list/corpora');
   return response.data.map(item => convertIntegers(item));
+};
+
+export const fetchDefinitionsByWord = async (wordId, L1, L2) => {
+  try {
+    const response = await api.get(`/definitionsbyword/${wordId}`, {
+      params: { L1, L2 }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching definitions by word:', error);
+    throw error;
+  }
 };

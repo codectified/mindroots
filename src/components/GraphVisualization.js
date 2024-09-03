@@ -1,7 +1,7 @@
 import React, { useEffect, useRef } from 'react';
 import * as d3 from 'd3';
 
-const GraphVisualization = ({ data, onNodeClick }) => {
+const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
   const svgRef = useRef();
 
   useEffect(() => {
@@ -72,7 +72,11 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         .on('start', dragstarted)
         .on('drag', dragged)
         .on('end', dragended))
-      .on('click', (event, d) => onNodeClick(d));
+      .on('click', (event, d) => onNodeClick(d))
+      .on('contextmenu', (event, d) => {
+        event.preventDefault(); // Prevent the default context menu
+        onNodeRightClick(d, event);
+      });
 
     node.append('title')
       .text(d => d.label);
@@ -141,7 +145,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       d.fx = null;
       d.fy = null;
     }
-  }, [data, onNodeClick]);
+  }, [data, onNodeClick, onNodeRightClick]);
 
   return <svg ref={svgRef} width="800" height="600" style={{ border: 'none' }}></svg>;
 };
