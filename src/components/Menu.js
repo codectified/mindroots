@@ -18,7 +18,7 @@ const Menu = () => {
   };
 
   const handleHome = () => {
-    navigate('/');
+    navigate('/mindroots');
   };
 
   const renderContent = () => {

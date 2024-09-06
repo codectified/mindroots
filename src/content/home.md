@@ -1,5 +1,0 @@
-You have found theoption.life
-
-a site dedicated to the only option ever worth taking while everything else would take us:  life; to connect, to grow, to stretch yourself; or accept death, stagnation and decay.  here you will find that life is as language is, unfolding from the center outwards in different patterns.  inside the body, there is the heart and the mind, and the soul collects them all together.  that is the self and all its modes of possible expression and activation.  generally, the patterns manifest as binaries which define our identity.  we like to play but we need to work and generally we find that balance is better than indulgence or frugality.  work is formal and play is unmanaged. at the highest levels of human achievement we find that language is supreme. with work we are prosaic and cite references. and when playing we like to explore new territory and be poetic.  and then sometimes we produce something from the fruits of our labor, so we can do both at the same time and so throw products, programs and projects in there somewhere, too.  of which the most recent and important can also be found here:
-
-MindRoots 
