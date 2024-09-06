@@ -13,7 +13,6 @@ const MainMenu = () => {
 
   return (
     <div className="mainmenu-container">
-      <h1 className="mainmenu-title">MindRoots</h1>
       <div className="icon-grid">
         <div className="icon-item" onClick={() => handleNavigation('/project-news')}>
           <FontAwesomeIcon icon={faNewspaper} className="icon" />

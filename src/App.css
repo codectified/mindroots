@@ -1,408 +1,409 @@
-/* General Styles */
-body {
-  background-image: url('/public/bg.png');
-  background-size: cover;
-  background-attachment: fixed;
-  font-family: 'Noto Serif', serif;
-  color: #333;
-  margin: 0;
-  padding: 0;
-  height: 100%;
-  width: 100%;
-}
-
-.overlay {
-  background-color: rgba(255, 255, 255, 0.95); /* Increase opacity */
-  margin: 80px;
-  margin-top: 80px;
-  margin-bottom: 80px;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-}
-
-.App {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  text-align: center;
-}
-
-button {
-  background-color: #333;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  margin: 10px;
-  cursor: pointer;
-  font-family: 'Noto Serif', serif;
-}
-
-button:hover {
-  background-color: #555;
-}
-
-select {
-  padding: 5px;
-  margin: 10px;
-  font-family: 'Noto Serif', serif;
-}
-
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  margin: 10px 0;
-  font-size: 24px;
-  cursor: pointer;
-}
-
-li:hover {
-  color: #007BFF;
-}
-
-/* Menu Styles */
-.menu-container {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.menu-button {
-  padding: 10px;
-  border-radius: 50%;
-  border: none;
-  background-color: #333;
-  color: #fff;
-  cursor: pointer;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-button.active {
-  background-color: #4a4a4a;
-}
-
-/* Main Menu Styles */
-.mainmenu-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: transparent; /* Remove extra overlay */
-  padding: 20px;
-}
-
-.mainmenu-title {
-  font-family: 'Cinzel', serif;
-  font-size: 48px;
-  color: #333;
-  margin-bottom: 40px;
-}
-
-.mainmenu-list {
-  list-style-type: none;
-  padding: 0;
-}
-
-.mainmenu-item {
-  font-family: 'Noto Serif', serif;
-  font-size: 24px;
-  color: #007BFF;
-  cursor: pointer;
-  margin: 20px 0;
-  text-align: center;
-}
-
-/* Media Queries for Mobile Responsiveness */
-@media (max-width: 768px) {
+/* ============================================
+   General Styles 
+   ============================================ */
+   body {
+    background-image: url('/public/bg.png');
+    background-size: cover;
+    background-attachment: fixed;
+    font-family: 'Noto Serif', serif;
+    color: #333;
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    width: 100%;
+  }
+  
   .overlay {
+    background-color: rgba(255, 255, 255, 0.95);
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+    margin: 1in auto;
+    max-width: 85%;
+    max-height: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1;
+    position: relative;
+  }
+  
+  .App {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    text-align: center;
+  }
+  
+  button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
     margin: 10px;
-    padding: 10px;
-    margin-top: 80px;
-
+    cursor: pointer;
+    font-family: 'Noto Serif', serif;
   }
-
-  button {
-    padding: 8px 16px;
-    font-size: 14px;
+  
+  button:hover {
+    background-color: #555;
   }
-
+  
   select {
-    padding: 4px;
-    font-size: 14px;
-  }
-
-  li {
-    font-size: 20px;
-  }
-
-  .menu-button {
-    padding: 8px;
-    font-size: 16px;
-  }
-
-  .mainmenu-title {
-    font-size: 36px;
-  }
-
-  .mainmenu-item {
-    font-size: 20px;
-  }
-}
-
-@media (max-width: 480px) {
-  .overlay {
-    margin: 5px;
     padding: 5px;
-    margin-top: 80px;
-
+    margin: 10px;
+    font-family: 'Noto Serif', serif;
   }
-
-  button {
-    padding: 6px 12px;
-    font-size: 12px;
+  
+  ul {
+    list-style: none;
+    padding: 0;
   }
-
-  select {
-    padding: 3px;
-    font-size: 12px;
-  }
-
+  
   li {
-    font-size: 18px;
+    margin: 10px 0;
+    font-size: 24px;
+    cursor: pointer;
   }
-
-  .menu-button {
-    padding: 6px;
-    font-size: 14px;
+  
+  li:hover {
+    color: #007BFF;
   }
-
+  
+  .menu-padding-wrapper {
+    padding-top: 55px;
+  }
+  
+  /* ============================================
+     Main Menu Styles 
+     ============================================ */
+  .mainmenu-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    background-color: transparent;
+  }
+  
   .mainmenu-title {
-    font-size: 28px;
+    font-family: 'Cinzel', serif;
+    font-size: 48px;
+    color: #333;
+    margin-bottom: 40px;
   }
-
+  
+  .mainmenu-list {
+    list-style-type: none;
+    padding: 0;
+  }
+  
   .mainmenu-item {
-    font-size: 18px;
+    font-family: 'Noto Serif', serif;
+    font-size: 24px;
+    color: #007BFF;
+    cursor: pointer;
+    margin: 20px 0;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
-}
-
-/* Main Menu Styles */
-.mainmenu-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  background-color: transparent;
-  padding: 20px;
-}
-
-.mainmenu-title {
-  font-family: 'Cinzel', serif;
-  font-size: 48px;
-  color: #333;
-  margin-bottom: 40px;
-}
-
-.mainmenu-list {
-  list-style-type: none;
-  padding: 0;
-}
-
-.mainmenu-item {
-  font-family: 'Noto Serif', serif;
-  font-size: 24px;
-  color: #007BFF;
-  cursor: pointer;
-  margin: 20px 0;
-  text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mainmenu-item .mainmenu-icon {
-  margin-right: 10px;
-  font-size: 20px;
-}
-
-/* Project News Styles */
-.project-news-container {
-  padding: 20px;
-  max-width: 800px;
-  margin: 0 auto;
-  font-family: 'Noto Serif', serif;
-  font-size: 18px;
-  color: #333;
-}
-
-.project-news-title {
-  font-size: 24px;
-  margin-bottom: 20px;
-}
-
-.menu-container {
-  position: absolute;
-  top: 20px;
-  right: 20px;
-  display: flex;
-  justify-content: flex-end;
-  gap: 10px;
-}
-
-.menu-button {
-  padding: 10px;
-  border-radius: 50%;
-  border: none;
-  background-color: #333;
-  color: #fff;
-  cursor: pointer;
-  font-size: 20px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.menu-button:hover {
-  background-color: #555;
-}
-
-.menu-button.active {
-  background-color: #4a4a4a;
-}
-
-/* Styles for the navigation buttons */
-.navigation-buttons {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  display: flex;
-  gap: 10px;
-  flex-direction: row; /* Ensure buttons are side by side */
-}
-
-.mainmenu-container {
-  text-align: center;
-  padding: 20px;
-}
-
-.mainmenu-title {
-  font-size: 2em;
-  margin-bottom: 20px;
-}
-
-.icon-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr); /* Adjust this based on how many icons per row */
-  gap: 20px;
-  justify-content: center;
-  align-items: center;
-  position: relative;
-}
-
-.icon-item {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  background-color: #f0f0f0;
-  border-radius: 15px;
-  padding: 20px;
-  transition: transform 0.2s;
-}
-
-.icon-item:hover {
-  transform: scale(1.05);
-}
-
-.icon {
-  font-size: 3em;
-  margin-bottom: 10px;
-}
-
-.icon-item span {
-  font-size: 1.2em;
-  margin-top: 10px;
-}
-
-
-.responsive-image {
-  max-width: 100%;
-  height: auto;
-  cursor: pointer;
-}
-
-.graph-image-container {
-  text-align: center;
-  margin: 20px 0;
-}
-
-.content-container {
-  padding: 15px;
-  border: 1px solid #ddd; /* Light border */
-  border-radius: 5px; /* Rounded corners */
-  margin-bottom: 20px; /* Space below the content */
-  background-color: #f9f9f9; /* Light background color */
-}
-
-.read-more-link {
-  display: block;
-  margin-top: 10px;
-  color: #007bff; /* Link color */
-  text-decoration: none;
-  font-weight: bold;
-}
-
-.read-more-link:hover {
-  text-decoration: underline;
-}
-
-.info-bubble {
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  max-width: 300px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-}
-
-.close-button {
-  position: absolute;
-  top: 5px;
-  right: 5px;
-  background: none;
-  border: none;
-  font-size: 14px;  /* Make the button smaller */
-  cursor: pointer;
-  color: #333;  /* Dark color for visibility */
-  font-weight: bold;
-  line-height: 1;  /* Ensure the X doesn't stretch vertically */
-  padding: 2px;  /* Minimal padding to avoid large button size */
-}
-
-.close-button:hover {
-  color: #e74c3c;  /* Slightly brighter color on hover */
-  background-color: transparent;  /* No background color on hover */
-  transform: scale(1.2);  /* Slightly increase the size on hover */
-}
-
-.close-button:focus {
-  outline: none;  /* Remove focus outline */
-}
-
-.info-bubble-content {
-  margin-top: 20px; /* Add some space for the close button */
-}
+  
+  .mainmenu-item .mainmenu-icon {
+    margin-right: 10px;
+    font-size: 20px;
+  }
+  
+  /* ============================================
+     Project News Styles
+     ============================================ */
+  .project-news-container {
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    font-family: 'Noto Serif', serif;
+    font-size: 18px;
+    color: #333;
+  }
+  
+  .project-news-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+  }
+  
+  /* ============================================
+     Menu and Navigation Styles 
+     ============================================ */
+  .menu-container {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+  }
+  
+  .menu-button {
+    padding: 10px;
+    border-radius: 50%;
+    border: none;
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .menu-button:hover {
+    background-color: #555;
+  }
+  
+  .menu-button.active {
+    background-color: #4a4a4a;
+  }
+  
+  .navigation-buttons {
+    position: absolute;
+    top: 20px;
+    left: 20px;
+    display: flex;
+    gap: 10px;
+    flex-direction: row;
+  }
+  
+  /* ============================================
+     Icon Grid Styles
+     ============================================ */
+  .icon-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+  }
+  
+  .icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 15px;
+    padding: 20px;
+    transition: transform 0.2s;
+  }
+  
+  .icon-item:hover {
+    transform: scale(1.05);
+  }
+  
+  .icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+  }
+  
+  .icon-item span {
+    font-size: 1.2em;
+    margin-top: 10px;
+  }
+  
+  /* ============================================
+     Image and Content Styles 
+     ============================================ */
+  .responsive-image {
+    max-width: 100%;
+    height: auto;
+    cursor: pointer;
+  }
+  
+  .graph-image-container {
+    text-align: center;
+    margin: 20px 0;
+  }
+  
+  .content-container {
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-bottom: 20px;
+    background-color: #f9f9f9;
+  }
+  
+  .read-more-link {
+    display: block;
+    margin-top: 10px;
+    color: #007bff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .read-more-link:hover {
+    text-decoration: underline;
+  }
+  
+  /* ============================================
+     Info Bubble Styles 
+     ============================================ */
+  .info-bubble {
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    padding: 10px;
+    max-width: 300px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+    z-index: 1000;
+  }
+  
+  .close-button {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    background: none;
+    border: none;
+    font-size: 14px;
+    cursor: pointer;
+    color: #333;
+    font-weight: bold;
+  }
+  
+  .close-button:hover {
+    color: #e74c3c;
+    background-color: transparent;
+    transform: scale(1.2);
+  }
+  
+  .info-bubble-content {
+    margin-top: 20px;
+  }
+  
+  /* ============================================
+     Markdown Homepage Styles 
+     ============================================ */
+  .markdown-homepage {
+    background-color: black;
+    color: white;
+    padding: 20px;
+    font-family: 'Noto Serif', serif;
+    min-height: 100vh;
+    line-height: 1.6;
+  }
+  
+  .markdown-homepage h1, .markdown-homepage h2, .markdown-homepage h3 {
+    color: #f5f5f5;
+    margin-bottom: 10px;
+    font-weight: bold;
+  }
+  
+  .markdown-homepage p {
+    margin-bottom: 15px;
+    text-align: justify;
+  }
+  
+  .markdown-homepage a {
+    color: #00bfff;
+    text-decoration: none;
+    font-weight: bold;
+  }
+  
+  .markdown-homepage a:hover {
+    text-decoration: underline;
+    color: #ff6347;
+  }
+  
+  .markdown-homepage ul, .markdown-homepage ol {
+    margin-left: 20px;
+    padding-left: 20px;
+    list-style-position: inside;
+  }
+  
+  .markdown-homepage blockquote {
+    border-left: 5px solid #ccc;
+    padding-left: 10px;
+    color: #999;
+  }
+  
+  .markdown-homepage code {
+    background-color: #333;
+    padding: 2px 4px;
+    border-radius: 4px;
+  }
+  
+  /* ============================================
+     Media Queries for Mobile Responsiveness 
+     ============================================ */
+  @media (max-width: 768px) {
+    .overlay {
+      margin: 10px;
+      padding: 10px;
+      margin-top: 80px;
+    }
+  
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+  
+    select {
+      padding: 4px;
+      font-size: 14px;
+    }
+  
+    li {
+      font-size: 20px;
+    }
+  
+    .menu-button {
+      padding: 8px;
+      font-size: 16px;
+    }
+  
+    .mainmenu-title {
+      font-size: 36px;
+    }
+  
+    .mainmenu-item {
+      font-size: 20px;
+    }
+  }
+  
+  @media (max-width: 480px) {
+    .overlay {
+      margin: 5px;
+      padding: 5px;
+      margin-top: 80px;
+    }
+  
+    button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
+  
+    select {
+      padding: 3px;
+      font-size: 12px;
+    }
+  
+    li {
+      font-size: 18px;
+    }
+  
+    .menu-button {
+      padding: 6px;
+      font-size: 14px;
+    }
+  
+    .mainmenu-title {
+      font-size: 28px;
+    }
+  
+    .mainmenu-item {
+      font-size: 18px;
+    }
+  }
