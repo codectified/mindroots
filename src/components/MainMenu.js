@@ -14,14 +14,15 @@ const MainMenu = () => {
   return (
     <div className="mainmenu-container">
       <div className="icon-grid">
+      <div className="icon-item" onClick={() => handleNavigation('/corpus-menu')}>
+          <FontAwesomeIcon icon={faBook} className="icon" />
+          <span>Library</span>
+        </div>
         <div className="icon-item" onClick={() => handleNavigation('/project-news')}>
           <FontAwesomeIcon icon={faNewspaper} className="icon" />
-          <span>Project News</span>
+          <span>News</span>
         </div>
-        <div className="icon-item" onClick={() => handleNavigation('/corpus-menu')}>
-          <FontAwesomeIcon icon={faBook} className="icon" />
-          <span>Corpus Library</span>
-        </div>
+
         <div className="icon-item" onClick={() => handleNavigation('/games')}>
           <FontAwesomeIcon icon={faGamepad} className="icon" />
           <span>Games</span>

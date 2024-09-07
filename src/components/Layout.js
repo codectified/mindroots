@@ -10,9 +10,7 @@ const Layout = ({ children }) => {
       {/* Conditionally render the overlay only on non-homepage routes */}
       {location.pathname !== "/" && (
         <div className="overlay">
-          <div className="menu-padding-wrapper"> {/* New wrapper to add top padding */}
             {children}
-          </div>
         </div>
       )}
       {location.pathname === "/" && (
