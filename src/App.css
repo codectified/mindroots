@@ -21,7 +21,6 @@ body {
 .app {
   max-width: 1200px; /* Restrict the content width for readability */
   margin: 0 auto; /* Center the content horizontally */
-  padding: 20px;
 }
 
 /* Additional styling to ensure layout consistency */
