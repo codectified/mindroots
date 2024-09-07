@@ -1,41 +1,35 @@
 /* ============================================
    General Styles 
    ============================================ */
-   body {
-    background-image: url('/public/bg.png');
-    background-size: cover;
-    background-attachment: fixed;
-    font-family: 'Noto Serif', serif;
-    color: #333;
-    margin: 0;
-    padding: 0;
-    height: 100%;
-    width: 100%;
-  }
-  
-  .overlay {
-    background-color: rgba(255, 255, 255, 0.95);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
-    margin: 1in auto;
-    max-width: 85%;
-    max-height: 80%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    z-index: 1;
-    position: relative;
-  }
-  
-  .App {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    text-align: center;
-  }
+/* General Reset */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box; /* Ensures padding/margin don't affect total width/height */
+}
+
+/* Body Styles */
+body {
+  background-color: white; /* Set the background color you want */
+  font-family: 'Noto Serif', serif;
+  margin: 0;
+  padding: 20px; /* Add some padding to keep content away from the edges */
+  min-height: 100vh; /* Ensure the body takes at least the full viewport height */
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Container for all content */
+.app {
+  max-width: 1200px; /* Restrict the content width for readability */
+  margin: 0 auto; /* Center the content horizontally */
+  padding: 20px;
+}
+
+/* Additional styling to ensure layout consistency */
+h1, h2, h3, p {
+  margin-bottom: 15px; /* Add some spacing between elements */
+  text-align: justify; /* Keep text justified for readability */
+}
   
   button {
     background-color: #333;
