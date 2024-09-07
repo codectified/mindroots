@@ -3,6 +3,7 @@ import * as d3 from 'd3';
 
 const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
   const svgRef = useRef();
+  const containerRef = useRef(); // For dynamic container sizing
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
@@ -15,18 +16,13 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove(); // Clear previous contents
 
-    const width = svg.attr('width');
-    const height = svg.attr('height');
-
-    data.nodes.forEach(node => {
-      node.x = width / 2;
-      node.y = height / 2;
-    });
+    // Dynamically get the width and height of the container
+    const { width, height } = containerRef.current.getBoundingClientRect();
 
     const simulation = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-50))
-      .force('center', d3.forceCenter(width / 2, height / 2))
+      .force('center', d3.forceCenter(width / 2, height / 4))
       .force('x', d3.forceX(d => {
         if (d.type === 'name') return width / 2;
         if (d.type === 'form') return width / 4;
@@ -147,9 +143,26 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     // Cancel the long press if the user moves their finger/mouse away
     svg.on('touchend', cancelLongPress);
     svg.on('mouseup', cancelLongPress);
+
+    // Handle resizing to adjust the graph dynamically
+    const handleResize = () => {
+      const { width, height } = containerRef.current.getBoundingClientRect();
+      svg.attr('width', width).attr('height', height);
+      simulation.force('center', d3.forceCenter(width / 2, height / 2)).alpha(0.3).restart();
+    };
+
+    window.addEventListener('resize', handleResize);
+
+    return () => {
+      window.removeEventListener('resize', handleResize);
+    };
   }, [data, onNodeClick, onNodeRightClick]);
 
-  return <svg ref={svgRef} width="800" height="600" style={{ border: 'none' }}></svg>;
+  return (
+    <div ref={containerRef} style={{ width: '100%', height: '100vh' }}>
+      <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
+    </div>
+  );
 };
 
 export default GraphVisualization;
