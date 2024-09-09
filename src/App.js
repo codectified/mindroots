@@ -16,6 +16,8 @@ import { GraphDataProvider } from './contexts/GraphDataContext';
 import Games from './components/Games';
 import MarkdownRenderer from './components/MarkdownRenderer';
 import Layout from './components/Layout'; // New component for layout
+import ProjectMap from './components/ProjectMap'; // Import your new ProjectMap component
+
 
 
 
@@ -45,6 +47,8 @@ const App = () => {
                 <Route path="/introduction" element={<Layout><Introduction /></Layout>} />
                 <Route path="/articles" element={<Layout><ArticlesList /></Layout>} />
                 <Route path="/games" element={<Layout><Games /></Layout>} />
+                <Route path="/project-map" element={<Layout><ProjectMap /></Layout>} />
+
               </Routes>
 
             </Router>
