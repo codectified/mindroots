@@ -1,13 +1,11 @@
-import { fetchRootByWord, fetchFormsByWord } from '../services/apiService';
+import { fetchRootByWord, fetchDefinitionsByWord } from '../services/apiService';
 
-const handleWordNodeClick = async (node, L1, L2, graphData, setGraphData, corpusId) => {
+const handleWordNodeClick = async (node, L1, L2, graphData, setGraphData, corpusId, position, setInfoBubble) => {
   try {
     console.log('Handling word node click:', node);
 
     // Extract wordId correctly from the node
     const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
-
-    console.log('wordId:', wordId);
 
     const currentNodes = graphData.nodes || [];
     const currentLinks = graphData.links || [];
@@ -32,21 +30,16 @@ const handleWordNodeClick = async (node, L1, L2, graphData, setGraphData, corpus
         links: [...currentLinks, newLink]
       });
     } else {
-      // Fetch and display the form node(s)
-      const forms = await fetchFormsByWord(wordId, L1, L2);
-      const newFormNodes = forms.map(form => ({
-        id: `form_${form.form_id}`,
-        label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
-        ...form,
-        type: 'form'
-      }));
+      // If the root is already displayed, fetch the definitions
+      let definitions;
+      if (node.properties && node.properties.definitions) {
+        definitions = node.properties.definitions;
+      } else {
+        definitions = await fetchDefinitionsByWord(wordId, L1, L2);
+      }
 
-      const newLinks = newFormNodes.map(form => ({ source: node.id, target: form.id }));
-
-      setGraphData({
-        nodes: [...currentNodes, ...newFormNodes],
-        links: [...currentLinks, ...newLinks]
-      });
+      // Show the info bubble with the word's definitions
+      setInfoBubble({ definition: definitions, position });
     }
   } catch (error) {
     console.error('Error handling word node click:', error);
