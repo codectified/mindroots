@@ -12,6 +12,7 @@ import handleFormNodeClick from './handleFormNodeClick';
 import handleWordNodeClick from './handleWordNodeClick';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
+import InfoBubble from './InfoBubble';
 
 
 const GraphScreen = () => {
@@ -85,17 +86,16 @@ const GraphScreen = () => {
     fetchData();
   }, [fetchData]);
 
-  const handleNodeClick = async (node) => {
+  const handleNodeClick = async (node, event) => {
     console.log('Node clicked:', node);
-    console.log('Context filters:', { contextFilterRoot, contextFilterForm });
     const corpusId = selectedCorpus ? selectedCorpus.id : null;
   
-    if (node.type === 'form') {
-      await handleFormNodeClick(node, L1, L2, graphData, setGraphData, contextFilterForm, corpusId);
-    } else if (node.type === 'root') {
+    const position = { x: event.clientX, y: event.clientY }; // Capture the click position
+  
+    if (node.type === 'root') {
       await handleRootNodeClick(node, L1, L2, graphData, setGraphData, contextFilterRoot, corpusId);
     } else if (node.type === 'word') {
-      await handleWordNodeClick(node, L1, L2, graphData, setGraphData, corpusId);
+      await handleWordNodeClick(node, L1, L2, graphData, setGraphData, corpusId, position, setInfoBubble);
     }
   };
 
@@ -125,35 +125,41 @@ const GraphScreen = () => {
   return (
     <div>
       <Menu />
-      {!selectedCorpus || !selectedCorpusItem ? (
-        <div>Please select a corpus and an item to view the graph.</div>
-      ) : (
-        <>
-          <div className="navigation-buttons">
-            <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
-              <FontAwesomeIcon icon={faArrowLeft} />
-            </button>
-            <button className="menu-button" onClick={goToNextItem} disabled={selectedCorpusItem.index === corpusItems.length - 1}>
-              <FontAwesomeIcon icon={faArrowRight} />
-            </button>
-          </div>
-          <GraphVisualization 
-            data={graphData} 
-            onNodeClick={handleNodeClick} 
-            onNodeRightClick={handleNodeRightClick} 
-          />
-{rightClickedNode && (
-  <>
-    <HandleWordNodeRightClick
-      node={rightClickedNode.node}
-      L1={L1}
-      L2={L2}
-      position={rightClickedNode.position}
-    />
-    {console.log('Rendering HandleWordNodeRightClick component')}
-  </>
-)}
-        </>
+      <div className="navigation-buttons">
+        <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
+          <FontAwesomeIcon icon={faArrowLeft} />
+        </button>
+        <button className="menu-button" onClick={goToNextItem} disabled={selectedCorpusItem.index === corpusItems.length - 1}>
+          <FontAwesomeIcon icon={faArrowRight} />
+        </button>
+      </div>
+      <GraphVisualization 
+        data={graphData} 
+        onNodeClick={handleNodeClick} 
+        onNodeRightClick={handleNodeRightClick} 
+      />
+
+      {/* Render info bubble if infoBubble state is set */}
+      {infoBubble && (
+        <InfoBubble
+          definition={infoBubble.definition}
+          onClose={closeInfoBubble}
+          style={{
+            top: `${infoBubble.position.y}px`,
+            left: `${infoBubble.position.x}px`,
+            position: 'absolute', // Ensure it's absolutely positioned in the DOM
+          }}
+        />
+      )}
+
+      {/* Right-click handling */}
+      {rightClickedNode && (
+        <HandleWordNodeRightClick
+          node={rightClickedNode.node}
+          L1={L1}
+          L2={L2}
+          position={rightClickedNode.position}
+        />
       )}
     </div>
   );
