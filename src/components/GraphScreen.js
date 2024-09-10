@@ -115,7 +115,6 @@ const GraphScreen = () => {
           style={{
             top: `${infoBubble.position.y}px`,
             left: `${infoBubble.position.x}px`,
-            position: 'absolute', // Ensure it's absolutely positioned in the DOM
           }}
         />
       )}
