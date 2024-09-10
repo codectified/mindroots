@@ -2,9 +2,6 @@ import React, { useState, useEffect } from 'react';
 import GraphVisualization from '../components/GraphVisualization';
 import { executeQuery } from '../services/apiService';
 import Menu from '../components/Menu';
-import handleWordNodeClick from '../components/handleWordNodeClick';
-import handleRootNodeClick from '../components/handleRootNodeClick';
-import handleFormNodeClick from '../components/handleFormNodeClick';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../content/words.md';
 import rootsContent from '../content/roots.md';
@@ -14,14 +11,19 @@ import { useScript } from '../contexts/ScriptContext';
 import { useGraphData } from '../contexts/GraphDataContext';
 import { useContextFilter } from '../contexts/ContextFilterContext';
 import { useCorpus } from '../contexts/CorpusContext';
+import InfoBubble from './InfoBubble';
+
 
 const Introduction = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus } = useCorpus();
-  const { graphData, setGraphData } = useGraphData();
+  const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [markdownContent, setMarkdownContent] = useState(''); // State to hold the markdown content
   const [introText, setIntroText] = useState(''); // State to hold the intro markdown content
+  const closeInfoBubble = () => {
+    setInfoBubble(null);
+  };
 
   const exampleQueries = {
     words: `
@@ -108,17 +110,7 @@ const Introduction = () => {
     return { nodes, links };
   };
 
-  const handleNodeClick = async (node) => {
-    const corpusId = selectedCorpus ? selectedCorpus.id : null;
 
-    if (node.type === 'word') {
-      await handleWordNodeClick(node, L1, L2, graphData, setGraphData, corpusId);
-    } else if (node.type === 'root') {
-      await handleRootNodeClick(node, L1, L2, graphData, setGraphData, contextFilterRoot, corpusId);
-    } else if (node.type === 'form') {
-      await handleFormNodeClick(node, L1, L2, graphData, setGraphData, contextFilterForm, corpusId);
-    }
-  };
 
   return (
     <div className="intro-tutorial">
@@ -135,7 +127,19 @@ const Introduction = () => {
 
       
 
-      <GraphVisualization data={graphData} onNodeClick={handleNodeClick} />
+      <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)} />
+            {/* Render info bubble if infoBubble state is set */}
+            {infoBubble && (
+        <InfoBubble
+          definition={infoBubble.definition}
+          onClose={closeInfoBubble}
+          style={{
+            top: `${infoBubble.position.y}px`,
+            left: `${infoBubble.position.x}px`,
+            position: 'absolute', // Ensure it's absolutely positioned in the DOM
+          }}
+        />
+      )}
       <ReactMarkdown>{markdownContent}</ReactMarkdown>
     </div>
   );

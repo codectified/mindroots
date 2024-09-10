@@ -63,8 +63,8 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
         .on('start', dragstarted)
         .on('drag', dragged)
         .on('end', dragended))
-      .on('click', (event, d) => onNodeClick(d))
-      .on('contextmenu', (event, d) => {
+        .on('click', (event, d) => onNodeClick(d, event))
+        .on('contextmenu', (event, d) => {
         event.preventDefault();
         onNodeRightClick(d, event);
       })
