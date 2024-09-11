@@ -239,19 +239,32 @@ h1, h2, h3, p {
      Info Bubble Styles 
      ============================================ */
 
-.info-bubble {
-  position: absolute;
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  padding: 10px;
-  max-width: 300px;
-  max-height: 200px; /* Set a fixed height */
-  width: 100%; /* Take full width available, but max-width will limit it */
-  overflow-y: auto; /* Enable vertical scrolling */
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  z-index: 1000;
-}
+     .info-bubble {
+      position: fixed; /* Use fixed to center relative to the viewport */
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%); /* This ensures it is centered */
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      padding: 10px;
+      max-width: 300px;
+      max-height: 200px; /* Set a fixed height */
+      width: 100%; /* Take full width available, but max-width will limit it */
+      overflow-y: auto; /* Enable vertical scrolling */
+      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+      z-index: 1000;
+      -webkit-overflow-scrolling: touch; /* Ensure smooth scrolling on iOS */
+    }
+    
+    /* Preserve smooth scrolling for touch devices */
+    .info-bubble-content {
+      margin-top: 20px;
+      padding-right: 10px; /* Add space for scroll bar */
+      max-height: 300px; /* Ensure the content can scroll */
+      overflow-y: scroll; /* Ensure scrollability */
+      -webkit-overflow-scrolling: touch; /* Ensure smooth scrolling on iOS */
+    }
 
 .close-button {
   position: absolute;
@@ -282,12 +295,7 @@ h1, h2, h3, p {
   transform: scale(1.2);
 }
 
-.info-bubble-content {
-  margin-top: 20px;
-  padding-right: 10px; /* Add space for scroll bar */
-  overflow-y: scroll; /* Ensure scrollability */
-  
-}
+
   
   /* ============================================
      Markdown Homepage Styles 
@@ -341,10 +349,11 @@ h1, h2, h3, p {
     border-radius: 4px;
   }
   
-  /* ============================================
-     Media Queries for Mobile Responsiveness 
-     ============================================ */
-  @media (max-width: 768px) {
+/* ============================================
+   Media Queries for Mobile Responsiveness 
+   ============================================ */
+   
+   @media (max-width: 768px) {
     .overlay {
       margin: 10px;
       padding: 10px;
@@ -377,19 +386,20 @@ h1, h2, h3, p {
     .mainmenu-item {
       font-size: 20px;
     }
-
+  
     .info-bubble {
-      max-width: 90%; /* Set bubble width relative to the mobile screen */
-      max-height: 40vh; /* Adjust max height on smaller screens */
-      padding: 8px;
+      max-width: 90%; /* Adjust width for smaller screens */
+      max-height: 60%; /* Adjust height for smaller screens */
     }
   
     .info-bubble-content {
-      max-height: 30vh; /* Adjust content height for better scrollability */
+      max-height: 70vh; /* Content scrolls within the bubble */
+      overflow-y: scroll; /* Ensure vertical scrolling */
+      -webkit-overflow-scrolling: touch; /* Smooth scrolling for touch devices */
     }
   
     .close-button {
-      font-size: 20px; /* Make the close button slightly larger for touch */
+      font-size: 20px; /* Larger close button for better tapability */
     }
   }
   
@@ -426,11 +436,21 @@ h1, h2, h3, p {
     .mainmenu-item {
       font-size: 18px;
     }
+  
+    .info-bubble {
+      max-width: 80%; /* Adjust width even more for very small screens */
+      max-height: 50%; /* Adjust height for smaller screens */
+      transform: translate(-55%, -50%); /* Shift it a bit more to the left */
 
-    @media (max-width: 480px) {
-      .info-bubble {
-        max-width: 200px; /* Further reduce width for mobile phones */
-        max-height: 120px; /* Further reduce height for mobile phones */
-      }
+    }
+  
+    .info-bubble-content {
+      max-height: 50vh; /* Adjust content height to fit mobile screen */
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch; /* Enable smooth scrolling */
+    }
+  
+    .close-button {
+      font-size: 18px; /* Slightly smaller for mobile */
     }
   }
