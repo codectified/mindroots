@@ -70,37 +70,45 @@ export const GraphDataProvider = ({ children }) => {
     }
   };
 
-  // Handle word node click
-  const handleWordNodeClick = async (node, L1, L2, corpusId, position) => {
-    try {
-      const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
-      const currentNodes = graphData.nodes || [];
+// Handle word node click
+const handleWordNodeClick = async (node, L1, L2, corpusId) => {
+  try {
+    const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+    const currentNodes = graphData.nodes || [];
 
-      const rootNodeDisplayed = currentNodes.some(n => n.type === 'root' && n.root_id === node.root_id);
+    const rootNodeDisplayed = currentNodes.some(n => n.type === 'root' && n.root_id === node.root_id);
 
-      if (!rootNodeDisplayed) {
-        const root = await fetchRootByWord(wordId, L1, L2);
-        const newRootNode = {
-          id: `root_${root.root_id}`,
-          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-          ...root,
-          type: 'root',
-        };
+    if (!rootNodeDisplayed) {
+      const root = await fetchRootByWord(wordId, L1, L2);
+      const newRootNode = {
+        id: `root_${root.root_id}`,
+        label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+        ...root,
+        type: 'root',
+      };
 
-        const newLink = { source: node.id, target: newRootNode.id };
+      // Fix: Wrap newLink in an array
+      const newLink = [{ source: node.id, target: newRootNode.id }];
 
-        setGraphData(prev => ({
-          nodes: [...prev.nodes, newRootNode],
-          links: [...prev.links, newLink],
-        }));
-      } else {
-        let definitions = node.properties?.definitions || await fetchDefinitionsByWord(wordId, L1, L2);
-        setInfoBubble({ definition: definitions, position });
-      }
-    } catch (error) {
-      console.error('Error handling word node click:', error);
+      setGraphData(prev => ({
+        nodes: [...prev.nodes, newRootNode],
+        links: [...prev.links, ...newLink], // newLink is now an array
+      }));
+    } else {
+      let definitions = node.properties?.definitions || await fetchDefinitionsByWord(wordId, L1, L2);
+      
+      // Set the info bubble position to the center of the screen
+      let centerPosition = {
+        x: (window.innerWidth - 200) / 2,  // Assuming bubble width is 200px
+        y: (window.innerHeight - 100) / 2  // Assuming bubble height is 100px
+      };
+
+      setInfoBubble({ definition: definitions, position: centerPosition });
     }
-  };
+  } catch (error) {
+    console.error('Error handling word node click:', error);
+  }
+};
 
   // Centralized node click handler with position handling
   const handleNodeClick = async (node, L1, L2, contextFilterRoot, contextFilterForm, corpusId, event) => {

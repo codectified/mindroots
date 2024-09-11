@@ -117,7 +117,7 @@ const Introduction = () => {
       <Menu />
       
       {/* Display the intro markdown content */}
-      <ReactMarkdown>{introText}</ReactMarkdown>
+
 
       <div>
         <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
@@ -131,6 +131,7 @@ const Introduction = () => {
             {/* Render info bubble if infoBubble state is set */}
             {infoBubble && (
         <InfoBubble
+        className="info-bubble"
           definition={infoBubble.definition}
           onClose={closeInfoBubble}
           style={{
@@ -141,6 +142,7 @@ const Introduction = () => {
         />
       )}
       <ReactMarkdown>{markdownContent}</ReactMarkdown>
+      <ReactMarkdown>{introText}</ReactMarkdown>
     </div>
   );
 };
