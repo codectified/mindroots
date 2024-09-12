@@ -108,12 +108,12 @@ const Sandbox = () => {
         </select>
 
         {/* Fetch Roots button */}
-        <button onClick={handleFetchRoots}>Fetch Roots</button>
+        <button onClick={handleFetchRoots}>Fetch Root(s)</button>
         {/* Clear Screen button */}
-        <button onClick={handleClearScreen}>Clear Screen</button>
+        <button onClick={handleClearScreen}>Reset</button>
 
         {/* Display total number of matching roots */}
-        {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25)</p>}
+        {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25 max)</p>}
       </div>
 
       {/* Graph Visualization with node-click handling */}
