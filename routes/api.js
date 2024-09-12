@@ -525,4 +525,59 @@ router.get('/definitionsbyword/:wordId', async (req, res) => {
 });
 
 
+router.get('/rootbyletters', async (req, res) => {
+  const { r1, r2, r3 } = req.query;
+  const { L1, L2 } = req.query;
+  const session = req.driver.session();
+  
+  try {
+    // Dynamically build the Cypher query based on which letters are provided
+    let query = 'MATCH (root:Root)';
+    const conditions = [];
+    const params = {};
+
+    if (r1) {
+      conditions.push('root.r1 = $r1');
+      params.r1 = r1;
+    }
+    if (r2) {
+      conditions.push('root.r2 = $r2');
+      params.r2 = r2;
+    }
+    if (r3) {
+      conditions.push('root.r3 = $r3');
+      params.r3 = r3;
+    }
+
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    // Add the hard limit of 25 nodes to the query
+    query += ' RETURN root LIMIT 25';
+
+    const result = await session.run(query, params);
+
+    if (result.records.length > 0) {
+      const roots = result.records.map(record => {
+        const root = record.get('root').properties;
+        return {
+          ...root,
+          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+          root_id: root.root_id
+        };
+      });
+      res.json(roots);
+    } else {
+      res.status(404).json({ error: 'No roots found' });
+    }
+  } catch (error) {
+    console.error('Error fetching root by letters:', error);
+    res.status(500).json({ error: 'Error fetching root by letters' });
+  } finally {
+    await session.close();
+  }
+});
+
+
 module.exports = router;
