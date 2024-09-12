@@ -119,15 +119,20 @@ const Introduction = () => {
       {/* Display the intro markdown content */}
 
 
-      <div>
-        <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
-        <button onClick={() => loadMarkdownAndFetchData('roots')}>Roots</button>
-        <button onClick={() => loadMarkdownAndFetchData('forms')}>Forms</button>
-      </div>
+      <h3>
+  Click each word to generate a random node. Scroll down for more details.
+</h3>
+
+
+  <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
+  <button onClick={() => loadMarkdownAndFetchData('roots')}>Roots</button>
+  <button onClick={() => loadMarkdownAndFetchData('forms')}>Forms</button>
 
       
 
       <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)} />
+
+
             {/* Render info bubble if infoBubble state is set */}
             {infoBubble && (
         <InfoBubble
