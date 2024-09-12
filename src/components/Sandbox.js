@@ -7,7 +7,6 @@ import InfoBubble from './InfoBubble';
 import Menu from '../components/Menu';
 import { useContextFilter } from '../contexts/ContextFilterContext';
 
-
 // Arabic letters array for the dropdowns
 const arabicLetters = [
   'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 
@@ -21,6 +20,7 @@ const Sandbox = () => {
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
+  const [totalRoots, setTotalRoots] = useState(0); // To store the total number of matching roots
 
   // Close the info bubble
   const closeInfoBubble = () => {
@@ -30,9 +30,10 @@ const Sandbox = () => {
   // Fetch roots based on the selected letters
   const handleFetchRoots = async () => {
     try {
-      const roots = await fetchRootByLetters(r1, r2, r3, L1, L2); // Fetching roots with L1 for Arabic labels
+      const { roots, total } = await fetchRootByLetters(r1, r2, r3, L1, L2); // Fetch roots and total count
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
+      setTotalRoots(total); // Update the total number of roots
     } catch (error) {
       console.error('Error fetching roots:', error);
     }
@@ -44,12 +45,12 @@ const Sandbox = () => {
       // Simulate fetching empty graph data
       const emptyData = { nodes: [], links: [] };
       setGraphData(emptyData); // Update the graph data with an empty graph
+      setTotalRoots(0); // Reset total count
     } catch (error) {
       console.error('Error clearing screen:', error);
     }
   };
 
-  
   // Format Neo4j data to match the structure needed for the graph visualization
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
@@ -110,11 +111,13 @@ const Sandbox = () => {
         <button onClick={handleFetchRoots}>Fetch Roots</button>
         {/* Clear Screen button */}
         <button onClick={handleClearScreen}>Clear Screen</button>
+
+        {/* Display total number of matching roots */}
+        {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25)</p>}
       </div>
 
       {/* Graph Visualization with node-click handling */}
       <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)} />
-
 
       {/* Info Bubble for displaying node information */}
       {infoBubble && (
