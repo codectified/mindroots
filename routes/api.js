@@ -526,10 +526,9 @@ router.get('/definitionsbyword/:wordId', async (req, res) => {
 
 
 router.get('/rootbyletters', async (req, res) => {
-  const { r1, r2, r3 } = req.query;
-  const { L1, L2 } = req.query;
+  const { r1, r2, r3, L1, L2 } = req.query; // Default L1 and L2
   const session = req.driver.session();
-  
+
   try {
     // Dynamically build the Cypher query based on which letters are provided
     let query = 'MATCH (root:Root)';
@@ -563,7 +562,7 @@ router.get('/rootbyletters', async (req, res) => {
         const root = record.get('root').properties;
         return {
           ...root,
-          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`, // Apply language setting to labels
           root_id: root.root_id
         };
       });
