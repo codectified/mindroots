@@ -7,7 +7,6 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
 
   const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 800, height: 600 };
 
-
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
       console.log('No data to render');
@@ -19,8 +18,20 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     const svg = d3.select(svgRef.current);
     svg.selectAll('*').remove(); // Clear previous contents
 
+    // Create a group that will be zoomable
+    const zoomLayer = svg.append('g');
+
     // Dynamically get the width and height of the container
     const { width, height } = containerRef.current.getBoundingClientRect();
+
+    // Set up zoom and pan behavior
+    const zoom = d3.zoom()
+      .scaleExtent([0.1, 5]) // Set zoom limits
+      .on('zoom', (event) => {
+        zoomLayer.attr('transform', event.transform); // Apply zoom and pan
+      });
+
+    svg.call(zoom); // Bind zoom behavior to the SVG element
 
     const simulation = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
@@ -47,7 +58,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       .domain(['item', 'word', 'form', 'root'])
       .range(['gold', 'red', 'blue', 'green']);
 
-    const link = svg.append('g')
+    const link = zoomLayer.append('g')
       .attr('class', 'links')
       .selectAll('line')
       .data(data.links)
@@ -55,7 +66,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       .attr('stroke-width', 2)
       .attr('stroke', '#999');
 
-    const node = svg.append('g')
+    const node = zoomLayer.append('g')
       .attr('class', 'nodes')
       .selectAll('circle')
       .data(data.nodes)
@@ -66,18 +77,16 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
         .on('start', dragstarted)
         .on('drag', dragged)
         .on('end', dragended))
-        .on('click', (event, d) => onNodeClick(d, event))
-        .on('contextmenu', (event, d) => {
+      .on('click', (event, d) => onNodeClick(d, event))
+      .on('contextmenu', (event, d) => {
         event.preventDefault();
         onNodeRightClick(d, event);
-      })
-      .on('touchstart', (event, d) => handleLongPress(event, d))
-      .on('mousedown', (event, d) => handleLongPress(event, d));
+      });
 
     node.append('title')
       .text(d => d.label);
 
-    const text = svg.append('g')
+    const text = zoomLayer.append('g')
       .attr('class', 'labels')
       .selectAll('text')
       .data(data.nodes)
@@ -143,11 +152,9 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       clearTimeout(pressTimer);
     }
 
-    // Cancel the long press if the user moves their finger/mouse away
     svg.on('touchend', cancelLongPress);
     svg.on('mouseup', cancelLongPress);
 
-    // Handle resizing to adjust the graph dynamically
     const handleResize = () => {
       const { width, height } = containerRef.current.getBoundingClientRect();
       svg.attr('viewBox', `0 0 ${width} ${height}`);
@@ -162,8 +169,9 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
   }, [data, onNodeClick, onNodeRightClick]);
 
   return (
-<div ref={containerRef} style={{ width: '100%', height: '90vh', maxHeight: '100%', maxWidth: '100%' }}>
-<svg ref={svgRef} width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" style={{ border: 'none', display: 'block' }}></svg></div>
+    <div ref={containerRef} style={{ width: '100%', height: '90vh', maxHeight: '100%', maxWidth: '100%' }}>
+      <svg ref={svgRef} width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" style={{ border: 'none', display: 'block' }}></svg>
+    </div>
   );
 };
 
