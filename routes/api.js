@@ -526,7 +526,7 @@ router.get('/definitionsbyword/:wordId', async (req, res) => {
 
 
 router.get('/rootbyletters', async (req, res) => {
-  const { r1, r2, r3, L1, L2 } = req.query; // Default L1 and L2
+  const { r1, r2, r3, L1, L2 } = req.query;
   const session = req.driver.session();
 
   try {
@@ -552,9 +552,13 @@ router.get('/rootbyletters', async (req, res) => {
       query += ' WHERE ' + conditions.join(' AND ');
     }
 
-    // Add the hard limit of 25 nodes to the query
-    query += ' RETURN root LIMIT 25';
+    // Query to count all matching roots (for total count)
+    const countQuery = query + ' RETURN COUNT(root) AS total';
+    const countResult = await session.run(countQuery, params);
+    const total = countResult.records[0].get('total').low || 0; // Total count of root nodes
 
+    // Fetch the first 25 roots
+    query += ' RETURN root LIMIT 25';
     const result = await session.run(query, params);
 
     if (result.records.length > 0) {
@@ -562,11 +566,11 @@ router.get('/rootbyletters', async (req, res) => {
         const root = record.get('root').properties;
         return {
           ...root,
-          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`, // Apply language setting to labels
+          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
           root_id: root.root_id
         };
       });
-      res.json(roots);
+      res.json({ roots, total }); // Return roots and total number of matching roots
     } else {
       res.status(404).json({ error: 'No roots found' });
     }
