@@ -5,6 +5,7 @@ import { useScript } from '../contexts/ScriptContext';
 import { useGraphData } from '../contexts/GraphDataContext';
 import InfoBubble from './InfoBubble';
 import Menu from '../components/Menu';
+import { useContextFilter } from '../contexts/ContextFilterContext';
 
 
 // Arabic letters array for the dropdowns
@@ -14,16 +15,19 @@ const arabicLetters = [
 ];
 
 const Sandbox = () => {
-  const { L1, L2 } = useScript();
-  const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
+  const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
+  const { L1, L2 } = useScript(); // Get the language context
+  const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData(); // Use graph data context
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
 
+  // Close the info bubble
   const closeInfoBubble = () => {
     setInfoBubble(null);
   };
 
+  // Fetch roots based on the selected letters
   const handleFetchRoots = async () => {
     try {
       const roots = await fetchRootByLetters(r1, r2, r3, L1, L2); // Fetching roots with L1 for Arabic labels
@@ -33,6 +37,20 @@ const Sandbox = () => {
       console.error('Error fetching roots:', error);
     }
   };
+
+  // Clear the graph data (reset the screen)
+  const handleClearScreen = async () => {
+    try {
+      // Simulate fetching empty graph data
+      const emptyData = { nodes: [], links: [] };
+      setGraphData(emptyData); // Update the graph data with an empty graph
+    } catch (error) {
+      console.error('Error clearing screen:', error);
+    }
+  };
+
+  
+  // Format Neo4j data to match the structure needed for the graph visualization
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
     const links = [];
@@ -55,8 +73,9 @@ const Sandbox = () => {
 
   return (
     <div>
-            <Menu />
+      <Menu /> {/* Add the mini-menu */}
       <div>
+        {/* Dropdowns for selecting Arabic letters */}
         <label>R1:</label>
         <select value={r1} onChange={(e) => setR1(e.target.value)}>
           <option value="">--</option> {/* Empty option for optional selection */}
@@ -87,14 +106,17 @@ const Sandbox = () => {
           ))}
         </select>
 
+        {/* Fetch Roots button */}
         <button onClick={handleFetchRoots}>Fetch Roots</button>
+        {/* Clear Screen button */}
+        <button onClick={handleClearScreen}>Clear Screen</button>
       </div>
 
-      <GraphVisualization
-        data={graphData}
-        onNodeClick={(node, event) => handleNodeClick(node, L1, null, null, null, null, event)}
-      />
-      
+      {/* Graph Visualization with node-click handling */}
+      <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)} />
+
+
+      {/* Info Bubble for displaying node information */}
       {infoBubble && (
         <InfoBubble
           className="info-bubble"
