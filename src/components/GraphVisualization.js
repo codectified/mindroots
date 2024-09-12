@@ -5,6 +5,9 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
   const svgRef = useRef();
   const containerRef = useRef(); // For dynamic container sizing
 
+  const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 800, height: 600 };
+
+
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
       console.log('No data to render');
@@ -22,7 +25,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     const simulation = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
       .force('charge', d3.forceManyBody().strength(-50))
-      .force('center', d3.forceCenter(width / 2, height / 4))
+      .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX(d => {
         if (d.type === 'name') return width / 2;
         if (d.type === 'form') return width / 4;
@@ -41,7 +44,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       .velocityDecay(0.9);
 
     const color = d3.scaleOrdinal()
-      .domain(['name', 'word', 'form', 'root'])
+      .domain(['item', 'word', 'form', 'root'])
       .range(['gold', 'red', 'blue', 'green']);
 
     const link = svg.append('g')
@@ -147,7 +150,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     // Handle resizing to adjust the graph dynamically
     const handleResize = () => {
       const { width, height } = containerRef.current.getBoundingClientRect();
-      svg.attr('width', width).attr('height', height);
+      svg.attr('viewBox', `0 0 ${width} ${height}`);
       simulation.force('center', d3.forceCenter(width / 2, height / 2)).alpha(0.3).restart();
     };
 
@@ -159,9 +162,8 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
   }, [data, onNodeClick, onNodeRightClick]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100vh' }}>
-      <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
-    </div>
+<div ref={containerRef} style={{ width: '100%', height: '90vh', maxHeight: '100%', maxWidth: '100%' }}>
+<svg ref={svgRef} width="100%" height="100%" viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="xMidYMid meet" style={{ border: 'none', display: 'block' }}></svg></div>
   );
 };
 
