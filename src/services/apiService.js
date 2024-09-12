@@ -167,14 +167,21 @@ export const fetchDefinitionsByWord = async (wordId, L1, L2) => {
   }
 };
 
-export const fetchRootByLetters = async (r1, r2, r3) => {
+export const fetchRootByLetters = async (r1, r2, r3, L1, L2) => {
   try {
     const response = await api.get('/rootbyletters', {
-      params: { r1, r2, r3 }
+      params: {
+        r1,
+        r2,
+        r3,
+        L1,
+        L2
+      }
     });
+
     return response.data;
   } catch (error) {
-    console.error('Error fetching root by letters:', error);
+    console.error('Error fetching roots by letters:', error);
     throw error;
   }
 };
