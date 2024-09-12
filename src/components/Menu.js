@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCog, faInfoCircle, faNewspaper, faHome } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faInfoCircle, faNewspaper, faHome } from '@fortawesome/free-solid-svg-icons';
 import ReactMarkdown from 'react-markdown';
 import aboutContent from '../content/about.md';
 import changelogContent from '../content/changelog.md';
@@ -68,7 +68,7 @@ const Menu = () => {
           className={`menu-button ${selectedOption === 'settings' ? 'active' : ''}`}
           onClick={() => toggleOption('settings')}
         >
-          <FontAwesomeIcon icon={faCog} />
+          <FontAwesomeIcon icon={faGlobe} />
         </button>
         <button
           className={`menu-button ${selectedOption === 'about' ? 'active' : ''}`}
