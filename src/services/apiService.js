@@ -130,24 +130,6 @@ export const fetchFormsByWord = async (wordId, L1, L2) => {
 
 
 
-// Fetch words by radicals
-export const fetchWordsByRootRadicals = async (r1, r2, r3, script) => {
-  const response = await api.get('/words_by_root_radicals', { params: { r1, r2, r3, script } });
-  return convertIntegers(response.data);
-};
-
-//Fetch roots by radicals
-export const fetchRootsByRadicals = async (r1, r2, r3, script) => {
-  try {
-    const response = await api.get('/roots_by_radicals', {
-      params: { r1, r2, r3, script }
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Error fetching roots by radicals:', error);
-    throw error;
-  }
-};
 
 // Fetch all available corpora
 export const fetchCorpora = async () => {
@@ -179,7 +161,8 @@ export const fetchRootByLetters = async (r1, r2, r3, L1, L2) => {
       }
     });
 
-    return response.data;
+    // Convert Neo4j number types to JavaScript integers before returning
+    return convertIntegers(response.data);
   } catch (error) {
     console.error('Error fetching roots by letters:', error);
     throw error;
