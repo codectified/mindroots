@@ -120,7 +120,7 @@ const Introduction = () => {
 
 
       <h3>
-  Click each word to generate a random node. Scroll down for more details.
+  Each button generates a random node. Click/tap each node to explore.  Pan and zoom to adjust view. Scroll down for more information.
 </h3>
 
 
