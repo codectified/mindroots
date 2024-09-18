@@ -6,6 +6,12 @@ Less formally, it’s a graphical, ontological database and dictionary, where **
 
 Graph databases closely mirror natural structures and allow for an intuitive exploration of language.
 
+Although due to graphical limitations we can’t view the entire database at once, we can view parts of it.
+
+Here we can see the 99 Names of God (yellow nodes) and the words (red) and roots (green) that have been linked to each name so far. We’re about halfway through.
+
+
+
 ## The Big Idea
 
 The core idea behind MindRoots is that **life and language are deeply intertwined**—just as our hearts, minds, and bodies are interconnected, so too are the words, sounds, and meanings that make up our language.
@@ -14,11 +20,7 @@ Language mirrors the structure of the self and is the key to understanding the t
 
 How?
 
-**All words are connected through form and sound**. Every word has a root and a form—just as every person has both an external form and an internal essence. And so, understanding the relationship between 
-
-Although due to graphical limitations we can't view the entire database at once, we can view parts of it.
-
-Here we can see the 99 Names of God (yellow nodes) and the words (red) and roots (green) that have been linked to each name so far. We're about halfway through.
+**All words are connected through form and sound**. Every word has a root and a form—just as every person has both an external form and an internal essence. And so, understanding the connections language helps us identify the connections within ourselves.
 
 Think of it as a way to imagine how ideas literally are life taking root in the mind—where every sound fits into our system of sound and meaning.
 
