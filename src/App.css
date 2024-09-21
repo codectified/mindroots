@@ -297,56 +297,83 @@ h1, h2, h3, p {
 
 
   
-  /* ============================================
-     Markdown Homepage Styles 
-     ============================================ */
-  .markdown-homepage {
-    background-color: black;
-    color: white;
+/* ============================================
+   Markdown Homepage Styles 
+   ============================================ */
+/* ============================================
+   Markdown Homepage Styles 
+   ============================================ */
+   .markdown-homepage {
+    background-color: #2c2c2c; /* Softer dark background */
+    color: #dcdcdc; /* Off-white text color */
     padding: 20px;
     font-family: 'Noto Serif', serif;
     min-height: 100vh;
     line-height: 1.6;
   }
   
+  /* Explicitly set font sizes for headings */
+  .markdown-homepage h1 {
+    font-size: 2.5em; /* Adjust as needed */
+  }
+  
+  .markdown-homepage h2 {
+    font-size: 2em; /* Adjust as needed */
+  }
+  
+  .markdown-homepage h3 {
+    font-size: 1.75em; /* Adjust as needed */
+  }
+  
+  /* Additional styles for headings */
   .markdown-homepage h1, .markdown-homepage h2, .markdown-homepage h3 {
-    color: #f5f5f5;
+    color: #e8e8e8; /* Slightly brighter off-white for headings */
     margin-bottom: 10px;
     font-weight: bold;
   }
   
+  /* Paragraph styling */
   .markdown-homepage p {
     margin-bottom: 15px;
     text-align: justify;
   }
   
+  /* Link styling */
   .markdown-homepage a {
-    color: #00bfff;
+    color: #66b2ff; /* Softer blue */
     text-decoration: none;
     font-weight: bold;
   }
   
   .markdown-homepage a:hover {
     text-decoration: underline;
-    color: #ff6347;
+    color: #ff8c66; /* Softer hover color */
   }
   
+  /* Adjust list styling for better readability */
   .markdown-homepage ul, .markdown-homepage ol {
     margin-left: 20px;
     padding-left: 20px;
-    list-style-position: inside;
+    list-style-position: outside; /* Changed to outside for better spacing */
   }
   
+  .markdown-homepage ul li, .markdown-homepage ol li {
+    margin-bottom: 5px; /* Add some spacing between list items */
+  }
+  
+  /* Blockquote styling */
   .markdown-homepage blockquote {
-    border-left: 5px solid #ccc;
+    border-left: 5px solid #888; /* Darker gray border for blockquote */
     padding-left: 10px;
-    color: #999;
+    color: #c0c0c0; /* Softer off-white for blockquote text */
   }
   
+  /* Code block styling */
   .markdown-homepage code {
-    background-color: #333;
+    background-color: #444; /* Slightly lighter background for code blocks */
     padding: 2px 4px;
     border-radius: 4px;
+    font-family: 'Courier New', Courier, monospace; /* Ensure code has a monospaced font */
   }
   
 /* ============================================
