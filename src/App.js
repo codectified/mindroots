@@ -37,6 +37,7 @@ const App = () => {
             <Router basename="/">
                 <Routes>
                 <Route path="/" element={<Layout><MarkdownRenderer filePath="/theoption.life/home.md" /></Layout>} />
+                <Route path="/project-overview" element={<Layout><MarkdownRenderer filePath="/mindroots/project-overview.md" /></Layout>} />
                 <Route path="/mindroots" element={<Layout><MainMenu /></Layout>} />
                 <Route path="/corpus-menu" element={<Layout><CorpusMenu /></Layout>} />
                 <Route path="/list" element={<Layout><PrimaryList /></Layout>} />
