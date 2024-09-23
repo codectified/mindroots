@@ -120,8 +120,11 @@ const Introduction = () => {
 
 
       <h3>
-  Each button generates a random node. Click/tap each node to explore.  Pan and zoom to adjust view. Scroll down for more information.
-</h3>
+      Each button generates a random node.<br />
+      Click/tap each node to explore.<br />
+      Pan and zoom to adjust view.<br />
+      Scroll down for more information.
+    </h3>
 
 
   <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
