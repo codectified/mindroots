@@ -106,8 +106,8 @@ const Start = () => {
 
 
       <h3>
-  <Link to="/getting-started">Click here</Link> to get started with instructions.<br />
-  Or click around, pan, and zoom to explore on your own.<br />
+  <Link to="/getting-started">Read the guide</Link> or click around, pan, and zoom to explore on your own.
+  <br></br>
 </h3>
 
 
