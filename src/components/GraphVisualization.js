@@ -54,17 +54,34 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       .alphaDecay(0.01)
       .velocityDecay(0.9);
 
-    const color = d3.scaleOrdinal()
-      .domain(['item', 'word', 'form', 'root'])
-      .range(['gold', 'red', 'blue', 'green']);
+    // Color function with shading logic
+    const getColor = (d) => {
+      if (d.type === 'word') {
+        switch (d.word_type) {
+          case 'phrase':
+            return '#FFCCCC'; // Lightest red
+          case 'verb':
+            return '#FF6666'; // Medium red
+          case 'noun':
+            return '#CC0000'; // Darker red
+          default:
+            return '#660000'; // Darkest red
+        }
+      }
+      const color = d3.scaleOrdinal()
+        .domain(['item', 'word', 'form', 'root'])
+        .range(['gold', 'red', 'blue', 'green']);
+      return color(d.type);
+    };
 
     const link = zoomLayer.append('g')
       .attr('class', 'links')
       .selectAll('line')
       .data(data.links)
       .enter().append('line')
-      .attr('stroke-width', 2)
-      .attr('stroke', '#999');
+      .attr('stroke-width', 1.5) // You can reduce the width if necessary
+      .attr('stroke', '#bbb') // Lighter gray for less prominence
+      .attr('opacity', 0.3); // Reduce opacity to make the lines fainter
 
     const node = zoomLayer.append('g')
       .attr('class', 'nodes')
@@ -72,7 +89,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       .data(data.nodes)
       .enter().append('circle')
       .attr('r', 12) // Node radius
-      .attr('fill', d => color(d.type))
+      .attr('fill', d => getColor(d)) // Use the getColor function
       .call(d3.drag()
         .on('start', dragstarted)
         .on('drag', dragged)
