@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
+import Menu from './Menu';
 
 const CustomListItem = ({ children }) => {
   return <li style={{ fontSize: '1em', color: 'white' }}>{children}</li>;
@@ -19,17 +20,20 @@ const MarkdownRenderer = ({ filePath }) => {
   }, [filePath]);
 
   return (
-    <div className="markdown-homepage">
-      <Markdown
-        options={{
-          overrides: {
-            li: { component: CustomListItem },
-            ul: { component: CustomList },
-          },
-        }}
-      >
-        {content}
-      </Markdown>
+    <div className="markdown-page">
+      <Menu />
+      <div className="markdown-homepage">
+        <Markdown
+          options={{
+            overrides: {
+              li: { component: CustomListItem },
+              ul: { component: CustomList },
+            },
+          }}
+        >
+          {content}
+        </Markdown>
+      </div>
     </div>
   );
 };
