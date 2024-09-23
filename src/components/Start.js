@@ -1,26 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import GraphVisualization from '../components/GraphVisualization';
+import GraphVisualization from './GraphVisualization';
 import { executeQuery } from '../services/apiService';
-import Menu from '../components/Menu';
+import Menu from './Menu';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../content/words.md';
 import rootsContent from '../content/roots.md';
 import formsContent from '../content/forms.md';
-import introContent from '../content/intro.md';
 import { useScript } from '../contexts/ScriptContext';
 import { useGraphData } from '../contexts/GraphDataContext';
 import { useContextFilter } from '../contexts/ContextFilterContext';
 import { useCorpus } from '../contexts/CorpusContext';
 import InfoBubble from './InfoBubble';
+import { Link } from 'react-router-dom';
 
 
-const Introduction = () => {
+
+const Start = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [markdownContent, setMarkdownContent] = useState(''); // State to hold the markdown content
-  const [introText, setIntroText] = useState(''); // State to hold the intro markdown content
   const closeInfoBubble = () => {
     setInfoBubble(null);
   };
@@ -46,20 +46,6 @@ const Introduction = () => {
     `,
   };
 
-  useEffect(() => {
-    // Load the introductory text
-    const loadIntroText = async () => {
-      try {
-        const response = await fetch(introContent);
-        const text = await response.text();
-        setIntroText(text);
-      } catch (error) {
-        console.error('Error loading intro markdown:', error);
-      }
-    };
-
-    loadIntroText();
-  }, []);
 
   const loadMarkdownAndFetchData = async (example) => {
     try {
@@ -113,18 +99,16 @@ const Introduction = () => {
 
 
   return (
-    <div className="intro-tutorial">
+    <div className="start">
       <Menu />
       
       {/* Display the intro markdown content */}
 
 
       <h3>
-      Each button generates a random node.<br />
-      Click/tap each node to explore.<br />
-      Pan and zoom to adjust view.<br />
-      Scroll down for more information.
-    </h3>
+  <Link to="/getting-started">Click here</Link> to get started with instructions.<br />
+  Or click around, pan, and zoom to explore on your own.<br />
+</h3>
 
 
   <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
@@ -150,9 +134,8 @@ const Introduction = () => {
         />
       )}
       <ReactMarkdown>{markdownContent}</ReactMarkdown>
-      <ReactMarkdown>{introText}</ReactMarkdown>
     </div>
   );
 };
 
-export default Introduction;
+export default Start;

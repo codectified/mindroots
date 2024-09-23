@@ -7,7 +7,7 @@ import PrimaryList from './components/PrimaryList';
 import GraphScreen from './components/GraphScreen';
 import Settings from './components/Settings';
 import About from './components/About';
-import Introduction from './components/Introduction';
+import Start from './components/Start';
 import ArticlesList from './components/ArticlesList';
 import { ScriptProvider } from './contexts/ScriptContext';
 import { ContextFilterProvider } from './contexts/ContextFilterContext';
@@ -37,7 +37,9 @@ const App = () => {
             <Router basename="/">
                 <Routes>
                 <Route path="/" element={<Layout><MarkdownRenderer filePath="/theoption.life/home.md" /></Layout>} />
+                <Route path="/getting-started" element={<Layout><MarkdownRenderer filePath="/mindroots/getting-started.md" /></Layout>} />
                 <Route path="/project-overview" element={<Layout><MarkdownRenderer filePath="/mindroots/project-overview.md" /></Layout>} />
+                <Route path="/elements" element={<Layout><MarkdownRenderer filePath="/mindroots/elements.md" /></Layout>} />
                 <Route path="/mindroots" element={<Layout><MainMenu /></Layout>} />
                 <Route path="/corpus-menu" element={<Layout><CorpusMenu /></Layout>} />
                 <Route path="/list" element={<Layout><PrimaryList /></Layout>} />
@@ -45,7 +47,7 @@ const App = () => {
                 <Route path="/settings" element={<Layout><Settings /></Layout>} />
                 <Route path="/project-news" element={<Layout><ProjectNews /></Layout>} />
                 <Route path="/about" element={<Layout><About /></Layout>} />
-                <Route path="/introduction" element={<Layout><Introduction /></Layout>} />
+                <Route path="/start" element={<Layout><Start /></Layout>} />
                 <Route path="/articles" element={<Layout><ArticlesList /></Layout>} />
                 <Route path="/games" element={<Layout><Games /></Layout>} />
                 <Route path="/project-map" element={<Layout><ProjectMap /></Layout>} />

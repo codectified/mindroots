@@ -20,7 +20,7 @@ const MainMenu = () => {
           <span>News</span>
         </div>
 
-      <div className="icon-item" onClick={() => handleNavigation('/introduction')}>
+      <div className="icon-item" onClick={() => handleNavigation('/start')}>
           <FontAwesomeIcon icon={faFileAlt} className="icon" />
           <span>Start Here</span>
         </div>
