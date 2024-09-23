@@ -1,9 +1,9 @@
 # Getting Started with Graphs
 
-**MindRoots** is a graphical ontological database and dictionary application that allows users to explore the process of language, the manipu
+MindRoots is a graphical ontological database and dictionary application that allows users to explore the process of language.
 ---
 
-## The Basics of Graphs
+## Why Graphs?
 
 A unique feature of this tool is its use of a graph database to organize and represent language.  Graphs databases differ from traditional databases in that they more directly mirror natural structures, especially those involving many relationships and “end-to-end” connections, like a tree or a nervous system or an electron cloud.
 
@@ -11,10 +11,12 @@ The idea is to isolate a word’s essential **sound** and **root** and all it’
 
 These three components are color-coded throughout out this application:
 
-- **Roots**: ![#008000](https://via.placeholder.com/15/008000/000000?text=+) Green
-- **Forms**: ![#0000FF](https://via.placeholder.com/15/0000FF/000000?text=+) Blue
-- **Words**: ![#FF0000](https://via.placeholder.com/15/FF0000/000000?text=+) Red
-- **Corpus Items**: ![#FFD700](https://via.placeholder.com/15/FFD700/000000?text=+) Yellow-Gold
++ <span style="color:green;">Roots are green</span>
++ <span style="color:blue;">Forms are blue</span>
++ <span style="color:red;">Words are red</span>
++ <span style="color:gold;">And corpus items are gold</span>
+
+For more information about the color choices here checkout this normalized electromagnetic spectrum reference sheet:  ["Through the Days and the Waves"](/elements)
 
 
 
