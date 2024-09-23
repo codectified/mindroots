@@ -1,4 +1,4 @@
-# Project Task Organization
+# Project Overview and Status
 
 ## Table of Contents
 + [Overview](#overview)
