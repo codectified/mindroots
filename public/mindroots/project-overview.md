@@ -2,6 +2,7 @@
 
 ## Table of Contents
 + [Overview](#overview)
++ [Data Ingestion](#data-ingestion)
 + [General Graph Screen Functionality](#general-graph-screen-functionality)
 + [GraphDB Expansion](#graphdb-expansion)
 + [Embedded Graph Screens](#embedded-graph-screens)
@@ -12,7 +13,7 @@
 + [Bugs and Issues](#bugs-and-issues)
 + [Graph Visualization Improvements](#graph-visualization-improvements)
 + [Contributions](#contributions)
-+ [Data Ingestion](#data-ingestion)
+
 
 ---
 
@@ -21,8 +22,13 @@ This document outlines the current status of the Mindroots project, highlighting
 
 ---
 
-## Data Ingestion
+## Data Ingestion and Querying 
 Tasks associated with ingesting data and programmatically linking words to the lexicon in the graph database.
+
+
++ <span style=“color:red;”>Node Filtering</span>
++ <span style=“color:red;”>Context shifting</span>
++ <span style=“color:red;”>Root combinating</span>
 + <span style="color:red;">Ingest new corpus data</span>
 + <span style="color:orange;">Automate linking words to lexicon entries</span> 
 + <span style="color:red;">Develop manual data verification process</span> 
@@ -47,6 +53,8 @@ Core functionalities related to the graph screen experience.
 
 ### **GraphDB Expansion**
 Tasks related to data processing and language integration.
+
++ <span style=“color:red;”>Import qsynonyms</span>
 + <span style="color:green;">Import corpus.quran data using Java API</span>
 + <span style="color:orange;">Upload from transliterations Lane database</span> (pending evaluation)
 + <span style="color:orange;">Implement a programmatic transliteration scheme</span> 
@@ -82,6 +90,7 @@ Interactive features to engage users with the graph content.
 ### **Bugs and Issues**
 + <span style="color:orange;">Corpus Context Issue</span> (needs to be tied to corpus item selection)
 + <span style="color:orange;">Duplicates Issue</span> (duplicate nodes or data showing up incorrectly)
++ <span style=“color:orange;”>Root context not working</span> (no nodes returned)
 
 ---
 
