@@ -9,12 +9,12 @@ A unique feature of this tool is its use of a graph database to organize and rep
 
 The idea is to isolate a word’s essential **sound** and **root** and all it’s various **forms** and **grammatical functions**. 
 
-These three components are color-coded throughout out this application:
+These components are color-coded using the three primary colors throughout out this application:
 
 + <span style="color:green;">Roots are green</span>
 + <span style="color:blue;">Forms are blue</span>
 + <span style="color:red;">Words are red</span>
-+ <span style="color:gold;">And corpus items are gold</span>
++ <span style="color:gold;">And corpus items are gold</span> because they are the choice examples of speech and expression. 
 
 For more information about the color choices here checkout this normalized electromagnetic spectrum reference sheet:  ["Through the Days and the Waves"](/elements)
 

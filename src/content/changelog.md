@@ -4,8 +4,16 @@ For more details visit the project overview below or the github repository: http
 
 ### [Project Development and Status](/project-overview)
 
+### 23.9.2024
+Added ‘type’ property for phrases, verbs, nouns and ‘other’ along with word node shading. 
+
+Added some fun stuff to the [Getting Started](/getting-started) article. 
+
 ### 22.9.2024
-Updated values for english property label for all word nodes. 
+Updated english labels for all word nodes. 
+
+### 3.9.2024
+All Lane entries imported successfully!
 
 ### 2.9.2024
 Frontend overhaul: Updated Getting Started and About articles, minor improvements.
