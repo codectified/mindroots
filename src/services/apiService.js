@@ -5,6 +5,11 @@ const api = axios.create({
   baseURL: 'https://theoption.life/api',
 });
 
+// // Create an Axios instance with the base URL for the API
+// const api = axios.create({
+//   baseURL: 'http://localhost:5001/api',
+// });
+
 // Helper function to convert Neo4j integers to regular numbers
 const convertIntegers = (obj) => {
   if (typeof obj === 'object' && obj !== null) {
@@ -165,6 +170,16 @@ export const fetchRootByLetters = async (r1, r2, r3, L1, L2) => {
     return convertIntegers(response.data);
   } catch (error) {
     console.error('Error fetching roots by letters:', error);
+    throw error;
+  }
+};
+
+export const fetchMarkdownFiles = async () => {
+  try {
+    const response = await api.get('/list-markdown-files');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching markdown files:', error);
     throw error;
   }
 };

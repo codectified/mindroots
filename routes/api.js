@@ -583,4 +583,24 @@ router.get('/rootbyletters', async (req, res) => {
 });
 
 
+const fs = require('fs');
+const path = require('path');
+
+// Endpoint to list all Markdown files in a directory
+router.get('/list-markdown-files', (req, res) => {
+  const directoryPath = path.join(__dirname, '../public/theoption.life'); // Adjust path if needed
+
+  fs.readdir(directoryPath, (err, files) => {
+    if (err) {
+      console.error('Unable to scan directory:', err);
+      return res.status(500).send('Unable to scan directory');
+    }
+
+    // Filter only .md files and return their names
+    const markdownFiles = files.filter(file => file.endsWith('.md'));
+    res.json(markdownFiles);
+  });
+});
+
+
 module.exports = router;
