@@ -15,6 +15,7 @@ import { CorpusProvider } from './contexts/CorpusContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
 import Games from './components/Games';
 import MarkdownRenderer from './components/MarkdownRenderer';
+import DynamicMarkdownRenderer from './components/DynamicMarkdownRenderer';
 import Layout from './components/Layout'; // New component for layout
 import ProjectMap from './components/ProjectMap'; // Import your new ProjectMap component
 import Sandbox from './components/Sandbox';
@@ -36,7 +37,7 @@ const App = () => {
           <GraphDataProvider>
             <Router basename="/">
                 <Routes>
-                <Route path="/" element={<Layout><MarkdownRenderer filePath="/theoption.life/home.md" /></Layout>} />
+                <Route path="/" element={<Layout><DynamicMarkdownRenderer baseFolder="/theoption.life" /></Layout>} />
                 <Route path="/getting-started" element={<Layout><MarkdownRenderer filePath="/mindroots/getting-started.md" /></Layout>} />
                 <Route path="/project-overview" element={<Layout><MarkdownRenderer filePath="/mindroots/project-overview.md" /></Layout>} />
                 <Route path="/elements" element={<Layout><MarkdownRenderer filePath="/mindroots/elements.md" /></Layout>} />
