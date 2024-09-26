@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 
 const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
   const svgRef = useRef();
-  const containerRef = useRef(); // For dynamic container sizing
+  const containerRef = useRef();
 
   const { width, height } = containerRef.current?.getBoundingClientRect() || { width: 800, height: 600 };
 
@@ -16,80 +16,83 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     console.log('Rendering data:', data);
 
     const svg = d3.select(svgRef.current);
-    svg.selectAll('*').remove(); // Clear previous contents
+    svg.selectAll('*').remove();
 
-    // Create a group that will be zoomable
     const zoomLayer = svg.append('g');
-
-    // Dynamically get the width and height of the container
     const { width, height } = containerRef.current.getBoundingClientRect();
 
-    // Set up zoom and pan behavior
     const zoom = d3.zoom()
-      .scaleExtent([0.1, 5]) // Set zoom limits
+      .scaleExtent([0.1, 5])
       .on('zoom', (event) => {
-        zoomLayer.attr('transform', event.transform); // Apply zoom and pan
+        zoomLayer.attr('transform', event.transform);
       });
 
-    svg.call(zoom); // Bind zoom behavior to the SVG element
+    svg.call(zoom);
 
-    const simulation = d3.forceSimulation(data.nodes)
-      .force('link', d3.forceLink(data.links).id(d => d.id).distance(100))
-      .force('charge', d3.forceManyBody().strength(-50))
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('x', d3.forceX(d => {
-        if (d.type === 'name') return width / 2;
-        if (d.type === 'form') return width / 4;
-        if (d.type === 'root') return (3 * width) / 4;
-        if (d.type === 'word') return width / 2;
-        return width / 2;
-      }).strength(1))
-      .force('y', d3.forceY(d => {
-        if (d.type === 'name') return height / 4;
-        if (d.type === 'form' || d.type === 'root') return height / 2;
-        if (d.type === 'word') return height * 0.75;
-        return height / 2;
-      }).strength(1))
-      .force('collide', d3.forceCollide(50))
-      .alphaDecay(0.01)
-      .velocityDecay(0.9);
-
-    // Color function with shading logic
-    const getColor = (d) => {
-      if (d.type === 'word') {
-        switch (d.word_type) {
-          case 'phrase':
-            return '#FFCCCC'; // Lightest red
-          case 'verb':
-            return '#FF6666'; // Medium red
-          case 'noun':
-            return '#CC0000'; // Darker red
-          default:
-            return '#660000'; // Darkest red
-        }
+    const simulation = d3.forceSimulation(data.nodes) // PHYSICS
+    .force('link', d3.forceLink(data.links).id(d => d.id).distance(link => {
+      if (link.source.node_type === 'Word' || link.target.node_type === 'Word') {
+        return 150; // Longer distance for word nodes
       }
-      const color = d3.scaleOrdinal()
-        .domain(['item', 'word', 'form', 'root'])
-        .range(['gold', 'red', 'blue', 'green']);
-      return color(d.type);
-    };
+      return 100; // Default distance
+    }))
+    .force('charge', d3.forceManyBody().strength(node => {
+      if (node.node_type === 'Word') {
+        return -80; // Stronger repulsion for word nodes
+      }
+      return -50; // Default repulsion
+    }))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collide', d3.forceCollide(50))
+    .alphaDecay(0.01)
+    .velocityDecay(0.9);
+
+// Color function based on node_type property
+const getColor = (d) => {
+  if (d.node_type === 'menu') {
+    return d.color || 'gray'; // If node_type is Menu, use the color property or default to gray
+  }
+
+  // Handle other node types
+  switch (d.node_type) {
+    case 'Word':
+      switch (d.word_type) {
+        case 'phrase':
+          return '#FFCCCC'; // Lightest red
+        case 'verb':
+          return '#FF6666'; // Medium red
+        case 'noun':
+          return '#CC0000'; // Darker red
+        default:
+          return '#660000'; // Darkest red
+      }
+    case 'Root':
+      return 'green';
+    case 'Form':
+      return 'blue';
+    case 'CorpusItem':
+      return 'gold';
+    default:
+      return '#ccc';
+  }
+};
 
     const link = zoomLayer.append('g')
       .attr('class', 'links')
       .selectAll('line')
       .data(data.links)
       .enter().append('line')
-      .attr('stroke-width', 1.5) // You can reduce the width if necessary
-      .attr('stroke', '#bbb') // Lighter gray for less prominence
-      .attr('opacity', 0.3); // Reduce opacity to make the lines fainter
+      .attr('stroke-width', 1.5)
+      .attr('stroke', '#bbb')
+      .attr('opacity', 0.3);
 
     const node = zoomLayer.append('g')
       .attr('class', 'nodes')
       .selectAll('circle')
       .data(data.nodes)
       .enter().append('circle')
-      .attr('r', 12) // Node radius
-      .attr('fill', d => getColor(d)) // Use the getColor function
+      .attr('r', 12)
+      .attr('fill', d => getColor(d))
       .call(d3.drag()
         .on('start', dragstarted)
         .on('drag', dragged)
@@ -155,22 +158,6 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       d.fx = null;
       d.fy = null;
     }
-
-    let pressTimer;
-
-    function handleLongPress(event, d) {
-      event.preventDefault(); // Prevent default browser behavior
-      pressTimer = setTimeout(() => {
-        onNodeRightClick(d, event);
-      }, 500); // 500ms for long press
-    }
-
-    function cancelLongPress() {
-      clearTimeout(pressTimer);
-    }
-
-    svg.on('touchend', cancelLongPress);
-    svg.on('mouseup', cancelLongPress);
 
     const handleResize = () => {
       const { width, height } = containerRef.current.getBoundingClientRect();

@@ -1,4 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   fetchWordsByRootWithLexicon, 
   fetchWordsByRootWithCorpus, 
@@ -13,6 +14,8 @@ const GraphDataContext = createContext();
 export const GraphDataProvider = ({ children }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
+  const navigate = useNavigate(); // Use navigate for routing
+
 
   // Handle root node click
   const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
@@ -110,6 +113,12 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
   }
 };
 
+const handleMenuNodeClick = (node) => {
+  if (node.route) {
+    navigate(node.route);
+  }
+};
+
   // Centralized node click handler with position handling
   const handleNodeClick = async (node, L1, L2, contextFilterRoot, contextFilterForm, corpusId, event) => {
     const position = {
@@ -117,7 +126,9 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
       y: event.clientY,
     };
 
-    if (node.type === 'form') {
+    if (node.node_type === 'Menu') {
+      handleMenuNodeClick(node);
+    } else if (node.type === 'form') {
       await handleFormNodeClick(node, L1, L2, contextFilterForm, corpusId);
     } else if (node.type === 'root') {
       await handleRootNodeClick(node, L1, L2, contextFilterRoot, corpusId);
@@ -130,10 +141,11 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
     <GraphDataContext.Provider value={{
       graphData,
       setGraphData,
-      handleNodeClick, // expose handleNodeClick
+      handleNodeClick,
       handleRootNodeClick,
       handleFormNodeClick,
       handleWordNodeClick,
+      handleMenuNodeClick, // expose handleMenuNodeClick
       infoBubble,
       setInfoBubble
     }}>

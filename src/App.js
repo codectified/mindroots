@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './components/MainMenu';
 import CorpusMenu from './components/CorpusMenu';
 import ProjectNews from './components/ProjectNews';
@@ -15,27 +15,21 @@ import { CorpusProvider } from './contexts/CorpusContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
 import Games from './components/Games';
 import MarkdownRenderer from './components/MarkdownRenderer';
-import Layout from './components/Layout'; // New component for layout
-import ProjectMap from './components/ProjectMap'; // Import your new ProjectMap component
+import Layout from './components/Layout'; 
+import ProjectMap from './components/ProjectMap'; 
+import SiteMap from './components/SiteMap'; 
 import Sandbox from './components/Sandbox';
-
-
-
 
 import './App.css';
 
-
-
 const App = () => {
-
-
   return (
-    <ScriptProvider>
-      <CorpusProvider> {/* This should wrap ContextFilterProvider */}
-        <ContextFilterProvider>
-          <GraphDataProvider>
-            <Router basename="/">
-                <Routes>
+    <Router basename="/">
+      <ScriptProvider>
+        <CorpusProvider>
+          <ContextFilterProvider>
+            <GraphDataProvider>
+              <Routes>
                 <Route path="/" element={<Layout><MarkdownRenderer filePath="/theoption.life/home.md" /></Layout>} />
                 <Route path="/getting-started" element={<Layout><MarkdownRenderer filePath="/mindroots/getting-started.md" /></Layout>} />
                 <Route path="/project-overview" element={<Layout><MarkdownRenderer filePath="/mindroots/project-overview.md" /></Layout>} />
@@ -52,18 +46,14 @@ const App = () => {
                 <Route path="/games" element={<Layout><Games /></Layout>} />
                 <Route path="/project-map" element={<Layout><ProjectMap /></Layout>} />
                 <Route path="/sandbox" element={<Layout><Sandbox /></Layout>} />
-
+                <Route path="/site-map" element={<Layout><SiteMap /></Layout>} />
               </Routes>
-
-            </Router>
-          </GraphDataProvider>
-        </ContextFilterProvider>
-      </CorpusProvider>
-    </ScriptProvider>
+            </GraphDataProvider>
+          </ContextFilterProvider>
+        </CorpusProvider>
+      </ScriptProvider>
+    </Router>
   );
-  
-  
 };
-
 
 export default App;
