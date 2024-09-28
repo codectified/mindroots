@@ -12,6 +12,8 @@ Inside the body, the heart and the mind turn, and the soul is their union and ac
 
 With every human enterprise we find that language is supreme. With work, we are prosaic and cite references. And when playing, we like to explore new ideas and be poetic. Sometimes, can we do both at the same time and produce something from the fruits of our labor, so throw products, programs, and projects in there, too. The most recent of which can also be found here: [MindRoots](/mindroots)
 
+---
+
 ~ARABIC~
 ### لقد وجدت theoption.life
 
@@ -20,3 +22,5 @@ With every human enterprise we find that language is supreme. With work, we are 
 داخل الجسد، يدور القلب والعقل، والروح هي اتحادهما وحسابهما. هذه هي الذات وكل طرق التعبير عنها وتفعيلها. وهكذا نجد هنا أن الحياة مثل اللغة، تتكشف في أنماط مختلفة، وتستمر في التوسع. بشكل عام، تظهر هذه الأنماط كثنائيات تحدد هويتنا. نحن نجوع لذلك نجد طرقًا للأكل. نحب اللعب لكن في مرحلة ما نحتاج إلى العمل. يجب أن نبني روابط للبقاء ونتطور جميعًا فقط عندما تكون الروابط قوية وكثيرة. في النهاية، نجد أن التوازن في الحياة أفضل من الانغماس أو التقتير - اللغة ليست مختلفة.
 
 مع كل مشروع إنساني نجد أن اللغة هي العليا. مع العمل، نكون [نثريين] ونقتبس [المراجع]. وعند اللعب، نحب [استكشاف الأفكار الجديدة] و[أن نكون شعريين]. أحيانًا، يمكننا أن نفعل كلاهما في نفس الوقت وننتج شيئًا من ثمار عملنا، لذلك نرمي المنتجات، البرامج، والمشاريع هناك أيضًا. يمكن العثور على أحدثها هنا: [MindRoots](/mindroots)
+
+---
