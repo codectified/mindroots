@@ -106,7 +106,7 @@ const Start = () => {
 
 
       <h3>
-      Click, pan, zoom and adjust global settings. <Link to="/getting-started">Read is a guide.</Link> 
+      Click, pan, zoom or adjust global settings. <Link to="/getting-started">Here is a guide.</Link> 
   <br></br>
 </h3>
 
