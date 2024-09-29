@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
-import { Link } from 'react-router-dom'; // Import Link component
 import changelogContent from '../content/changelog.md';
 import Menu from './Menu';
 
