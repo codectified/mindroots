@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import GraphVisualization from '../components/GraphVisualization'; // Visualization component
 import { executeQuery } from '../services/apiService'; // API service for executing Cypher queries
 import Menu from '../components/Menu'; // Optional menu component

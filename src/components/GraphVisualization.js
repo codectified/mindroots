@@ -158,13 +158,6 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
 
     let pressTimer;
 
-    function handleLongPress(event, d) {
-      event.preventDefault(); // Prevent default browser behavior
-      pressTimer = setTimeout(() => {
-        onNodeRightClick(d, event);
-      }, 500); // 500ms for long press
-    }
-
     function cancelLongPress() {
       clearTimeout(pressTimer);
     }
