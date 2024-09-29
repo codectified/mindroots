@@ -10,7 +10,7 @@ const NodeLimitSlider = () => {
 
   return (
     <div>
-      <label htmlFor="nodeLimit">Node Limit: {limit}</label>
+      <label htmlFor="nodeLimit">Node Limit (only working for forms currently): {limit}</label>
       <input
         id="nodeLimit"
         type="range"
