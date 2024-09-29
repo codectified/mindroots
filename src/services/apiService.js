@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 // Create an Axios instance with the base URL for the API
-// const api = axios.create({
-//   baseURL: 'https://theoption.life/api',
-// });
-
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api',
+  baseURL: 'https://theoption.life/api',
 });
+
+// const api = axios.create({
+//   baseURL: 'http://localhost:5001/api',
+// });
 
 // // Create an Axios instance with the base URL for the API
 // const api = axios.create({
