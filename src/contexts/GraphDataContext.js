@@ -7,12 +7,16 @@ import {
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus 
 } from '../services/apiService';
+import { useNodeLimit } from './NodeLimitContext'; 
+
 
 const GraphDataContext = createContext();
 
 export const GraphDataProvider = ({ children }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
+
+  const { limit } = useNodeLimit();
 
   // Handle root node click
   const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
@@ -47,9 +51,9 @@ export const GraphDataProvider = ({ children }) => {
     try {
       let allNewWords = [];
       if (contextFilter === 'lexicon') {
-        allNewWords = await fetchWordsByFormWithLexicon(node.form_id, L1, L2);
+        allNewWords = await fetchWordsByFormWithLexicon(node.form_id, L1, L2, limit);
       } else if (contextFilter === corpusId) {
-        allNewWords = await fetchWordsByFormWithCorpus(node.form_id, corpusId, L1, L2);
+        allNewWords = await fetchWordsByFormWithCorpus(node.form_id, corpusId, L1, L2, limit);
       }
 
       const newNodes = allNewWords.map(word => ({

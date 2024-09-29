@@ -7,6 +7,8 @@ import changelogContent from '../content/changelog.md';
 import LanguageSelector from './LanguageSelector';
 import ContextShiftSelector from './ContextShiftSelector';
 import { useNavigate, Link } from 'react-router-dom';
+import NodeLimitSlider from './NodeLimitSlider'; // Import the new component
+
 
 const Menu = () => {
   const [selectedOption, setSelectedOption] = useState(null);
@@ -27,6 +29,7 @@ const Menu = () => {
         <div className="content-container">
           <LanguageSelector />
           <ContextShiftSelector />
+          <NodeLimitSlider /> 
         </div>
       );
     } else if (selectedOption === 'about') {
