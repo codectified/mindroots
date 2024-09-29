@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { executeQuery } from '../services/apiService';
 import Menu from './Menu';
@@ -106,7 +106,7 @@ const Start = () => {
 
 
       <h3>
-      Click around, pan, and zoom to explore on your own, or <Link to="/getting-started">read the guide.</Link>
+      Click, pan, zoom and adjust global settings. <Link to="/getting-started">Read is a guide.</Link> 
   <br></br>
 </h3>
 
