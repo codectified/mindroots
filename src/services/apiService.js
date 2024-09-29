@@ -1,8 +1,12 @@
 import axios from 'axios';
 
 // Create an Axios instance with the base URL for the API
+// const api = axios.create({
+//   baseURL: 'https://theoption.life/api',
+// });
+
 const api = axios.create({
-  baseURL: 'https://theoption.life/api',
+  baseURL: 'http://localhost:5001/api',
 });
 
 // // Create an Axios instance with the base URL for the API
@@ -36,15 +40,15 @@ export const fetchWordData = async (word, script) => {
   return convertIntegers(response.data);
 };
 
-export const fetchWordsByFormWithLexicon = async (formId, L1, L2) => {
+export const fetchWordsByFormWithLexicon = async (formId, L1, L2, limit = 100) => {
   const endpoint = `/form/${formId}/lexicon`;
-  const response = await api.get(endpoint, { params: { L1, L2 } });
+  const response = await api.get(endpoint, { params: { L1, L2, limit } });
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordsByFormWithCorpus = async (formId, corpusId, L1, L2) => {
+export const fetchWordsByFormWithCorpus = async (formId, corpusId, L1, L2, limit = 100) => {
   const endpoint = `/form/${formId}/corpus/${corpusId}`;
-  const response = await api.get(endpoint, { params: { L1, L2 } });
+  const response = await api.get(endpoint, { params: { L1, L2, limit } });
   return response.data.map(item => convertIntegers(item));
 };
 

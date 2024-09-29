@@ -262,14 +262,15 @@ router.get('/list/corpora', async (req, res) => {
 // Fetch words by form ID with lexicon context (no filter)
 router.get('/form/:formId/lexicon', async (req, res) => {
   const { formId } = req.params;
-  const { L1, L2 } = req.query;
+  const { L1, L2, limit = 25 } = req.query; // Default limit to 100 if not provided
   const session = req.driver.session();
   try {
     let query = `
       MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
       RETURN word
+      LIMIT toInteger($limit)
     `;
-    const result = await session.run(query, { formId });
+    const result = await session.run(query, { formId, limit });
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
@@ -277,6 +278,30 @@ router.get('/form/:formId/lexicon', async (req, res) => {
     })));
   } catch (error) {
     res.status(500).send('Error fetching words by form');
+  } finally {
+    await session.close();
+  }
+});
+
+// Fetch words by form and corpus filter
+router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
+  const { formId, corpusId } = req.params;
+  const { L1, L2, limit = 25 } = req.query; // Default limit to 100 if not provided
+  const session = req.driver.session();
+  try {
+    let query = `
+      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word:Word)-[:HAS_FORM]->(form:Form {form_id: toInteger($formId)})
+      RETURN word
+      LIMIT toInteger($limit)
+    `;
+    const result = await session.run(query, { formId, corpusId, limit });
+    const words = result.records.map(record => convertIntegers(record.get('word').properties));
+    res.json(words.map(word => ({
+      ...word,
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
+    })));
+  } catch (error) {
+    res.status(500).send('Error fetching words by form and corpus');
   } finally {
     await session.close();
   }
@@ -306,28 +331,6 @@ router.get('/form/:formId/roots', async (req, res) => {
   }
 });
 
-
-router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
-  const { formId, corpusId } = req.params;
-  const { L1, L2 } = req.query;
-  const session = req.driver.session();
-  try {
-    let query = `
-      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word:Word)-[:HAS_FORM]->(form:Form {form_id: toInteger($formId)})
-      RETURN word
-    `;
-    const result = await session.run(query, { formId, corpusId });
-    const words = result.records.map(record => convertIntegers(record.get('word').properties));
-    res.json(words.map(word => ({
-      ...word,
-      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
-    })));
-  } catch (error) {
-    res.status(500).send('Error fetching words by form and corpus');
-  } finally {
-    await session.close();
-  }
-});
 
 
 
