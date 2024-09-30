@@ -101,16 +101,6 @@ const Start = () => {
   return (
     <div className="start">
       <Menu />
-      
-      {/* Display the intro markdown content */}
-
-
-      <h3>
-      Click/tap to explore. 
-      <br></br>
-  <br></br>
-</h3>
-
 
   <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
   <button onClick={() => loadMarkdownAndFetchData('roots')}>Roots</button>

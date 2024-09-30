@@ -13,14 +13,14 @@ Pan the graph by clicking or tapping and dragging.  Pinch fingers or scroll to z
 Graphs are displayed when:
 
 - clicking on a word from the library
-- clicking a button on the start page
+- pressing a word, root or form button on the explore page
 - searching for specific root(s) 
 
 Currently, the library only features the 99 names of Allah.
 
-Each of the buttons on the start page generate random nodes of the specified type.
+Each of the buttons on the start page generate random nodes of the specified type.  This is a good place to preview the data and features.
 
-The sandbox allows searching for roots by their letters.  You can specify one, two or three letters to see all matching roots.
+The sandbox allows searching for roots by their letters.  This is most useful if you're looking for something specific.  Currently you can only search by root, but you can specify one, two or three letters to see all matching roots.
 
 
 

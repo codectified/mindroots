@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faPlay, faSearch } from '@fortawesome/free-solid-svg-icons'; // Added tree and home icons
+import { faBook, faPlay, faSearch, faMapMarked } from '@fortawesome/free-solid-svg-icons'; // Added tree and home icons
 import '../App.css'; // Make sure this points to your CSS file
 
 const MainMenu = () => {
@@ -28,7 +28,7 @@ const MainMenu = () => {
         </div>
         
         <div className="icon-item" onClick={() => handleNavigation('/start')}>
-  <FontAwesomeIcon icon={faPlay} className="icon" />
+  <FontAwesomeIcon icon={faMapMarked} className="icon" />
   <span>Explore</span>
 </div>
 
