@@ -6,14 +6,22 @@ import aboutContent from '../content/about.md';
 import changelogContent from '../content/changelog.md';
 import LanguageSelector from './LanguageSelector';
 import ContextShiftSelector from './ContextShiftSelector';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link, useLocation } from 'react-router-dom'; // Added useLocation
 import NodeLimitSlider from './NodeLimitSlider'; // Import the new component
 
-
 const Menu = () => {
+  const location = useLocation(); // Get the current route
+  const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
-  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (location.pathname === '/start' || location.pathname === '/sandbox' || location.pathname === '/list') {
+      setSelectedOption('settings'); // Toggle settings on for specific routes
+    } else {
+      setSelectedOption(null); // Toggle off for other routes
+    }
+  }, [location.pathname]);
 
   const toggleOption = (option) => {
     setSelectedOption((prevOption) => (prevOption === option ? null : option));
@@ -27,9 +35,19 @@ const Menu = () => {
     if (selectedOption === 'settings') {
       return (
         <div className="content-container">
+
+          Click the globe to toggle settings.
+
+          Click <Link to="/getting-started">here</Link>  for more information. 
+          <br></br>
           <LanguageSelector />
-          <ContextShiftSelector />
-          <NodeLimitSlider /> 
+          {/* <ContextShiftSelector /> */}
+          <NodeLimitSlider />
+
+
+
+
+
         </div>
       );
     } else if (selectedOption === 'about') {
@@ -42,8 +60,7 @@ const Menu = () => {
     } else if (selectedOption === 'changelog') {
       return (
         <div className="content-container">
-          <h2>Project News</h2>
-          <ReactMarkdown>{markdownContent.slice(0, 100)}</ReactMarkdown>
+          <ReactMarkdown>{markdownContent.slice(0, 127)}</ReactMarkdown>
           <Link to="/project-news" className="read-more-link">View Full Changelog</Link>
         </div>
       );

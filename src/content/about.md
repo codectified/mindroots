@@ -16,7 +16,7 @@ Here we can see the 99 Names of God (yellow nodes) and the words (red) and roots
 
 The core idea behind MindRoots is that **life and language are deeply intertwined**—just as our hearts, minds, and bodies are interconnected, so too are the words, sounds, and meanings that make up our language.
 
-Language mirrors the structure of the self and is the key to understanding the the heart, mind and body. 
+Language mirrors the structure of the self and is the key to understanding the heart, mind and body. 
 
 How?
 

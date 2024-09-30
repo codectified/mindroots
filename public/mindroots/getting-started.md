@@ -1,9 +1,32 @@
-# Getting Started with Graphs
+## Getting Started with Graphs
 
-MindRoots is a graphical ontological database and dictionary application that allows users to explore the process of language.
+MindRoots is a graphical ontological database and dictionary currently featuring ~50k words and 5k roots imported from primarily from Lane's Lexicon and supplemented with additional translations and linguistic information.
+
 ---
 
-## Why Graphs?
+#### Interacting with the data
+
+Click a node to reveal its links and click it again to see additional information (only available for word nodes currently). 
+
+Pan the graph by clicking or tapping and dragging.  Pinch fingers or scroll to zoom.
+
+Graphs are displayed when:
+
+- clicking on a word from the library
+- clicking a button on the start page
+- searching for specific root(s) 
+
+Currently, the library only features the 99 names of Allah.
+
+Each of the buttons on the start page generate random nodes of the specified type.
+
+The sandbox allows searching for roots by their letters.  You can specify one, two or three letters to see all matching roots.
+
+
+
+---
+
+#### Why Graphs?
 
 A unique feature of this tool is its use of a graph database to organize and represent language.  Graphs databases differ from traditional databases in that they more directly mirror natural structures, especially those involving many relationships and “end-to-end” connections, like a tree or a nervous system or an electron cloud.
 
@@ -22,23 +45,8 @@ For more information about the color choices here checkout this normalized elect
 
 ---
 
-## Interacting with the Graph
+#### Learning Language
 
-Graphs are displayed when clicking on a word from the library, here in this getting started page, and in the sandbox mode.
-
-The sandbox allows searching for roots by their radical letters.  You can specify one, two or three letters to see all matching roots.
-
-Click a node to reveal its links and click it again to see additional information. 
-  
-
----
-
-## Learning Language
-
-The aim here isn’t only to learn a language but to understand what a language is, the process, and how it moves within us. Explore, connect, and discover below!
-
-If you imagine language as a tree rooted deep in the earth, where it grows and branches before finally bearing fruit, this the visualized graph mirrors that structure and process.
-
-(Note that due to the recent update of about 50000 Arabic words and 5000 roots, functionality here is very limited for English.  Most word nodes will not display a label if your primary language is set to English.)
+The aim here isn’t only to learn a language but to understand language, the process, and how it moves within us. 
 
 ---
