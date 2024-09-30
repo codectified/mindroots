@@ -24,17 +24,17 @@ const MainMenu = () => {
 
         <div className="icon-item" onClick={() => handleNavigation('/corpus-menu')}>
           <FontAwesomeIcon icon={faBook} className="icon" />
-          <span>Read</span>
+          <span>Library</span>
         </div>
         
         <div className="icon-item" onClick={() => handleNavigation('/start')}>
   <FontAwesomeIcon icon={faPlay} className="icon" />
-  <span>Play</span>
+  <span>Start</span>
 </div>
 
         <div className="icon-item" onClick={() => handleNavigation('/sandbox')}>
           <FontAwesomeIcon icon={faSearch} className="icon" />
-          <span>Find</span>
+          <span>Search</span>
         </div>
 
 
