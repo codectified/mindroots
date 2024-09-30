@@ -1,8 +1,8 @@
 ## Changelog milestones
 
-For more details visit the project overview below or the github repository: https://github.com/mindroots
+[Github repository](https://github.com/mindroots)
 
-### [Project Development and Status](/project-overview)
+[Project Development and Status](/project-overview)
 
 ### 23.9.2024
 Added ‘type’ property for phrases, verbs, nouns and ‘other’ along with word node shading. 

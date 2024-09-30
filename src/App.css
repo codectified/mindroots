@@ -2,32 +2,32 @@
    General Styles 
    ============================================ */
 /* General Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* Ensures padding/margin don't affect total width/height */
-}
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box; /* Ensures padding/margin don't affect total width/height */
+  }
 
-/* Body Styles */
-body {
-  background-color: white; /* Set the background color you want */
-  font-family: 'Noto Serif', serif;
-  margin: 0;
-  min-height: 100vh; /* Ensure the body takes at least the full viewport height */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
-}
+  /* Body Styles */
+  body {
+    background-color: white; /* Set the background color you want */
+    font-family: 'Noto Serif', serif;
+    margin: 0;
+    min-height: 100vh; /* Ensure the body takes at least the full viewport height */
+    overflow-x: hidden; /* Prevent horizontal scrolling */
+  }
 
-/* Container for all content */
-.app {
-  max-width: 1200px; /* Restrict the content width for readability */
-  margin: 0 auto; /* Center the content horizontally */
-}
+  /* Container for all content */
+  .app {
+    max-width: 1200px; /* Restrict the content width for readability */
+    margin: 0 auto; /* Center the content horizontally */
+  }
 
-/* Additional styling to ensure layout consistency */
-h1, h2, h3, p {
-  margin-bottom: 15px; /* Add some spacing between elements */
-  text-align: justify; /* Keep text justified for readability */
-}
+  /* Additional styling to ensure layout consistency */
+  h1, h2, h3, p {
+    margin-bottom: 15px; /* Add some spacing between elements */
+    text-align: justify; /* Keep text justified for readability */
+  }
   
   button {
     background-color: #333;
@@ -64,9 +64,51 @@ h1, h2, h3, p {
     color: #007BFF;
   }
   
+/* ============================================
+   Icon Grid Styles (Flexbox instead of Grid)
+   ============================================ */
+   .icon-grid {
+    display: flex; /* Use flexbox to align items in a row */
+    justify-content: center; /* Centers the icons horizontally */
+    align-items: center; /* Aligns the icons vertically */
+    gap: 20px; /* Adds space between the icons */
+  }
+  
+  .icon-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background-color: #f0f0f0;
+    border-radius: 15px;
+    padding: 20px;
+    transition: transform 0.2s;
+  }
+  
+  .icon-item:hover {
+    transform: scale(1.05);
+  }
+  
+  .icon {
+    font-size: 3em;
+    margin-bottom: 10px;
+  }
+  
+  .icon-item span {
+    font-size: 1.2em;
+    margin-top: 10px;
+  }
+
   /* ============================================
      Main Menu Styles 
      ============================================ */
+
+     .custom-icon {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+    }
+
   .mainmenu-container {
     display: flex;
     flex-direction: column;
@@ -164,42 +206,6 @@ h1, h2, h3, p {
     flex-direction: row;
   }
   
-  /* ============================================
-     Icon Grid Styles
-     ============================================ */
-  .icon-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 20px;
-    justify-content: center;
-    align-items: center;
-    position: relative;
-  }
-  
-  .icon-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    background-color: #f0f0f0;
-    border-radius: 15px;
-    padding: 20px;
-    transition: transform 0.2s;
-  }
-  
-  .icon-item:hover {
-    transform: scale(1.05);
-  }
-  
-  .icon {
-    font-size: 3em;
-    margin-bottom: 10px;
-  }
-  
-  .icon-item span {
-    font-size: 1.2em;
-    margin-top: 10px;
-  }
   
   /* ============================================
      Image and Content Styles 
@@ -326,14 +332,29 @@ h1, h2, h3, p {
 }
 
 /* Headings should not be justified */
-.markdown-homepage h1,
-.markdown-homepage h2,
-.markdown-homepage h3 {
-  font-size: 2.5em; /* Adjust as needed */
-  color: #e8e8e8; /* Slightly brighter off-white for headings */
+/* Headings should not be justified */
+.markdown-homepage h1 {
+  font-size: 2.5em; /* Largest for H1 */
+  color: #e8e8e8; 
   margin-bottom: 10px;
   font-weight: bold;
-  text-align: left; /* Ensure headings are left-aligned */
+  text-align: left;
+}
+
+.markdown-homepage h2 {
+  font-size: 2em; /* Slightly smaller for H2 */
+  color: #e8e8e8;
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.markdown-homepage h3 {
+  font-size: 1.75em; /* Smaller for H3 */
+  color: #e8e8e8;
+  margin-bottom: 10px;
+  font-weight: bold;
+  text-align: left;
 }
 
 /* Paragraph styling */
