@@ -29,7 +29,7 @@ const MainMenu = () => {
         
         <div className="icon-item" onClick={() => handleNavigation('/start')}>
   <FontAwesomeIcon icon={faPlay} className="icon" />
-  <span>Start</span>
+  <span>Explore</span>
 </div>
 
         <div className="icon-item" onClick={() => handleNavigation('/sandbox')}>
