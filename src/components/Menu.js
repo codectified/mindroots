@@ -41,7 +41,7 @@ const Menu = () => {
           Click <Link to="/getting-started">here</Link>  for more information. 
           <br></br>
           <LanguageSelector />
-          {/* <ContextShiftSelector /> */}
+          <ContextShiftSelector />
           <NodeLimitSlider />
 
 
