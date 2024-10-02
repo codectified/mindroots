@@ -3,18 +3,60 @@ import {
   fetchWordsByRootWithLexicon, 
   fetchWordsByRootWithCorpus, 
   fetchRootByWord, 
+  fetchFormsByWord, 
   fetchDefinitionsByWord, 
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus 
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
 
-
+// Create Context
 const GraphDataContext = createContext();
 
+// Context Menu Component
+const ContextMenu = ({ position, node, onOptionSelect }) => {
+  const handleOptionClick = (option) => {
+    onOptionSelect(option);
+  };
+
+  // Define options based on node type
+  let options = [];
+  if (node.type === 'root') {
+    options = ['Fetch related words (Root)'];
+  } else if (node.type === 'form') {
+    options = ['Fetch related words (Form)'];
+  } else if (node.type === 'word') {
+    options = [
+      'Fetch Root Using Word',
+      'Fetch Form Using Word',
+      'Fetch Word Definitions'
+    ];
+  }
+
+  return (
+    <div style={{
+      position: 'absolute',
+      top: position.y,
+      left: position.x,
+      background: '#fff',
+      border: '1px solid #ccc',
+      padding: '10px',
+      zIndex: 1000
+    }}>
+      {options.map(option => (
+        <div key={option} onClick={() => handleOptionClick(option)}>
+          {option}
+        </div>
+      ))}
+    </div>
+  );
+};
+
+// Graph Data Provider
 export const GraphDataProvider = ({ children }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
+  const [contextMenu, setContextMenu] = useState(null); // State for context menu
 
   const { limit } = useNodeLimit();
 
@@ -74,59 +116,91 @@ export const GraphDataProvider = ({ children }) => {
     }
   };
 
-// Handle word node click
-const handleWordNodeClick = async (node, L1, L2, corpusId) => {
-  try {
-    const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
-    const currentNodes = graphData.nodes || [];
+  // Handle word node click
+  const handleWordNodeClick = async (option, node, L1, L2, corpusId) => {
+    try {
+      const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
 
-    const rootNodeDisplayed = currentNodes.some(n => n.type === 'root' && n.root_id === node.root_id);
+      switch (option) {
+        case 'Fetch Root Using Word':
+          // Fetch root by word
+          const root = await fetchRootByWord(wordId, L1, L2);
+          const newRootNode = {
+            id: `root_${root.root_id}`,
+            label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+            ...root,
+            type: 'root',
+          };
 
-    if (!rootNodeDisplayed) {
-      const root = await fetchRootByWord(wordId, L1, L2);
-      const newRootNode = {
-        id: `root_${root.root_id}`,
-        label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-        ...root,
-        type: 'root',
-      };
+          const newRootLink = [{ source: node.id, target: newRootNode.id }];
 
-      // Fix: Wrap newLink in an array
-      const newLink = [{ source: node.id, target: newRootNode.id }];
+          setGraphData(prev => ({
+            nodes: [...prev.nodes, newRootNode],
+            links: [...prev.links, ...newRootLink],
+          }));
+          break;
 
-      setGraphData(prev => ({
-        nodes: [...prev.nodes, newRootNode],
-        links: [...prev.links, ...newLink], // newLink is now an array
-      }));
-    } else {
-      let definitions = node.properties?.definitions || await fetchDefinitionsByWord(wordId, L1, L2);
-      
-      // Set the info bubble position to the center of the screen
-      let centerPosition = {
-        x: (window.innerWidth - 200) / 2,  // Assuming bubble width is 200px
-        y: (window.innerHeight - 100) / 2  // Assuming bubble height is 100px
-      };
+        case 'Fetch Word Definitions':
+          // Fetch word definitions
+          let definitions = node.properties?.definitions || await fetchDefinitionsByWord(wordId, L1, L2);
+          let centerPosition = {
+            x: (window.innerWidth - 200) / 2,  // Center of screen
+            y: (window.innerHeight - 100) / 2
+          };
 
-      setInfoBubble({ definition: definitions, position: centerPosition });
+          setInfoBubble({ definition: definitions, position: centerPosition });
+          break;
+
+        case 'Fetch Form Using Word':
+          // Fetch forms by word
+          const forms = await fetchFormsByWord(wordId, L1, L2);
+          const newFormNodes = forms.map(form => ({
+            id: `form_${form.form_id}`,
+            label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
+            ...form,
+            type: 'form',
+          }));
+
+          const newFormLinks = newFormNodes.map(form => ({ source: node.id, target: form.id }));
+
+          setGraphData(prev => ({
+            nodes: [...prev.nodes, ...newFormNodes],
+            links: [...prev.links, ...newFormLinks],
+          }));
+          break;
+
+        default:
+          console.error('Unknown option selected:', option);
+          break;
+      }
+    } catch (error) {
+      console.error('Error handling word node click:', error);
     }
-  } catch (error) {
-    console.error('Error handling word node click:', error);
-  }
-};
+  };
 
-  // Centralized node click handler with position handling
-  const handleNodeClick = async (node, L1, L2, contextFilterRoot, contextFilterForm, corpusId, event) => {
+  // Centralized node click handler
+  const handleNodeClick = (node, L1, L2, contextFilterRoot, contextFilterForm, corpusId, event) => {
     const position = {
       x: event.clientX,
       y: event.clientY,
     };
 
-    if (node.type === 'form') {
-      await handleFormNodeClick(node, L1, L2, contextFilterForm, corpusId);
-    } else if (node.type === 'root') {
+    // Show context menu for word, root, and form nodes
+    if (node.type === 'root' || node.type === 'form' || node.type === 'word') {
+      setContextMenu({ position, node, L1, L2, contextFilterRoot, contextFilterForm, corpusId });
+    }
+  };
+
+  // Handle context menu selection
+  const handleContextMenuSelect = async (option, node, L1, L2, contextFilterRoot, contextFilterForm, corpusId) => {
+    setContextMenu(null); // Hide the menu
+
+    if (node.type === 'root' && option === 'Fetch related words (Root)') {
       await handleRootNodeClick(node, L1, L2, contextFilterRoot, corpusId);
+    } else if (node.type === 'form' && option === 'Fetch related words (Form)') {
+      await handleFormNodeClick(node, L1, L2, contextFilterForm, corpusId);
     } else if (node.type === 'word') {
-      await handleWordNodeClick(node, L1, L2, corpusId, position);
+      await handleWordNodeClick(option, node, L1, L2, corpusId);
     }
   };
 
@@ -134,7 +208,7 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
     <GraphDataContext.Provider value={{
       graphData,
       setGraphData,
-      handleNodeClick, // expose handleNodeClick
+      handleNodeClick,
       handleRootNodeClick,
       handleFormNodeClick,
       handleWordNodeClick,
@@ -142,8 +216,19 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
       setInfoBubble
     }}>
       {children}
+
+      {contextMenu && (
+        <ContextMenu 
+          position={contextMenu.position}
+          node={contextMenu.node}
+          onOptionSelect={(option) =>
+            handleContextMenuSelect(option, contextMenu.node, contextMenu.L1, contextMenu.L2, contextMenu.contextFilterRoot, contextMenu.contextFilterForm, contextMenu.corpusId)
+          }
+        />
+      )}
     </GraphDataContext.Provider>
   );
 };
 
+// Hook to use GraphDataContext
 export const useGraphData = () => useContext(GraphDataContext);
