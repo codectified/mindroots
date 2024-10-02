@@ -1,8 +1,8 @@
 import React, { useEffect } from 'react';
-import GraphVisualization from '../components/GraphVisualization'; // Visualization component
-import { executeQuery } from '../services/apiService'; // API service for executing Cypher queries
-import Menu from '../components/Menu'; // Optional menu component
-import { useGraphData } from '../contexts/GraphDataContext'; // Context to store graph data
+import GraphVisualization from '../graph/GraphVisualization'; // Visualization component
+import { executeQuery } from '../../services/apiService'; // API service for executing Cypher queries
+import Menu from '../navigation/Menu'; // Optional menu component
+import { useGraphData } from '../../contexts/GraphDataContext'; // Context to store graph data
 
 const ProjectMap = () => {
   const { graphData, setGraphData } = useGraphData(); // Using context to store graph data

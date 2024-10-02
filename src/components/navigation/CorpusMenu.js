@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { fetchCorpora } from '../services/apiService';
+import { fetchCorpora } from '../../services/apiService';
 import Menu from './Menu';
-import { useCorpus } from '../contexts/CorpusContext';
-import { useScript } from '../contexts/ScriptContext';
+import { useCorpus } from '../../contexts/CorpusContext';
+import { useScript } from '../../contexts/ScriptContext';
 
 const CorpusMenu = () => {
   const navigate = useNavigate();

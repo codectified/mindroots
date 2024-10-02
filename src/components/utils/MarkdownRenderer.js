@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import Menu from './Menu';
+import Menu from '../navigation/Menu';
 
 const CustomListItem = ({ children }) => {
   return <li style={{ fontSize: '1em', color: 'white' }}>{children}</li>;

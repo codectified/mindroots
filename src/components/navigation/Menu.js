@@ -2,12 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGlobe, faInfoCircle, faNewspaper, faHome } from '@fortawesome/free-solid-svg-icons';
 import ReactMarkdown from 'react-markdown';
-import aboutContent from '../content/about.md';
-import changelogContent from '../content/changelog.md';
-import LanguageSelector from './LanguageSelector';
-import ContextShiftSelector from './ContextShiftSelector';
+import aboutContent from '../../content/about.md';
+import changelogContent from '../../content/changelog.md';
+import LanguageSelector from '../selectors/LanguageSelector';
+import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import { useNavigate, Link, useLocation } from 'react-router-dom'; // Added useLocation
-import NodeLimitSlider from './NodeLimitSlider'; // Import the new component
+import NodeLimitSlider from '../selectors/NodeLimitSlider';
 
 const Menu = () => {
   const location = useLocation(); // Get the current route
