@@ -1,14 +1,14 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import GraphVisualization from './GraphVisualization';
-import { fetchWordsByCorpusItem } from '../services/apiService';
-import Menu from './Menu';
-import { useScript } from '../contexts/ScriptContext';
-import { useContextFilter } from '../contexts/ContextFilterContext';
-import { useCorpus } from '../contexts/CorpusContext';
-import { useGraphData } from '../contexts/GraphDataContext';
+import GraphVisualization from '../graph/GraphVisualization';
+import { fetchWordsByCorpusItem } from '../../services/apiService';
+import Menu from '../navigation/Menu';
+import { useScript } from '../../contexts/ScriptContext';
+import { useContextFilter } from '../../contexts/ContextFilterContext';
+import { useCorpus } from '../../contexts/CorpusContext';
+import { useGraphData } from '../../contexts/GraphDataContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
-import InfoBubble from './InfoBubble';
+import InfoBubble from '../layout/InfoBubble';
 
 
 const GraphScreen = () => {

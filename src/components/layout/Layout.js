@@ -1,7 +1,6 @@
 import React from 'react';
 import { useLocation } from 'react-router-dom';
-import '../App.css'; // Ensure the updated CSS is applied
-
+import '../../App.css';
 const Layout = ({ children }) => {
   const location = useLocation();
 

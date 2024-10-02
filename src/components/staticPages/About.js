@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import Menu from './Menu';
-import aboutContent from '../content/about.md'; // Import the markdown file path
+import Menu from '../navigation/Menu';
+import aboutContent from '../../content/about.md';
 
 const About = () => {
   const [beforeLine12, setBeforeLine12] = useState('');
