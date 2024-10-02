@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { fetchCorpusItems } from '../services/apiService';
-import Menu from './Menu';
-import { useScript } from '../contexts/ScriptContext';
-import { useCorpus } from '../contexts/CorpusContext';
+import { fetchCorpusItems } from '../../services/apiService';
+import Menu from '../navigation/Menu';
+import { useScript } from '../../contexts/ScriptContext';
+import { useCorpus } from '../../contexts/CorpusContext';
 
 const PrimaryList = () => {
   const navigate = useNavigate();

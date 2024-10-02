@@ -1,119 +1,102 @@
 # Project Overview and Status
 
-## Table of Contents
-+ [Overview](#overview)
-+ [Data Ingestion](#data-ingestion)
-+ [General Graph Screen Functionality](#general-graph-screen-functionality)
-+ [GraphDB Expansion](#graphdb-expansion)
-+ [Embedded Graph Screens](#embedded-graph-screens)
-+ [Library Expansion](#library-expansion)
-+ [Games Development](#games-development)
-+ [Interface Enhancements](#interface-enhancements)
-+ [Monitoring & Analytics](#monitoring--analytics)
-+ [Bugs and Issues](#bugs-and-issues)
-+ [Graph Visualization Improvements](#graph-visualization-improvements)
-+ [Contributions](#contributions)
 
++ <span style="color:green;">[Graph Visualization Improvements](#graph-visualization-improvements)</span> (October 1, 2024)
++ <span style="color:orange;">[Data Ingestion and Content](#data-ingestion-and-content)</span> (September 26, 2024)
++ <span style="color:orange;">[UI/UX Enhancements](#uiux-enhancements)</span> (October 2, 2024)
++ <span style="color:red;">[Bugs and Issues](#bugs-and-issues)</span> (October 2, 2024)
++ <span style="color:orange;">[Server Management](#server-management)</span> (August 22, 2024)
 
 ---
 
-## Overview
-This document outlines the current status of the Mindroots project, highlighting ongoing tasks, backlog items, and known issues. Contributions are welcome, with areas of expertise required highlighted in the Contributions section.
+### Graph Visualization Improvements
+
+- <span style="color:green;">October 1, 2024</span> — Graph tweaks implemented, including:
+  + <span style="color:green;">Slow node movement</span>
+  + <span style="color:green;">Fix alignment</span>
+  + <span style="color:green;">Stop unnecessary movements</span>
+  + <span style="color:green;">Resize graph screen</span>
+- <span style="color:green;">September 29, 2024</span> — Node limit slider added.
+- <span style="color:green;">September 11, 2024</span> — Infobubble scroll functionality added.
+- <span style="color:green;">September 2, 2024</span> — Right-click to view entry working.
+- <span style="color:green;">July 23, 2024</span> — Fixed duplicate word nodes, backend adjustments for scripts, graph redesign.
+- <span style="color:green;">July 22, 2024</span> — Graph symmetry achieved, graph and button updates.
+- <span style="color:green;">July 21, 2024</span> — API logging added.
 
 ---
 
-## Data Ingestion and Querying 
-Tasks associated with ingesting data and programmatically linking words to the lexicon in the graph database.
+### Data Ingestion and Content
 
-
-+ <span style=“color:red;”>Node Filtering</span>
-+ <span style=“color:red;”>Context shifting</span>
-+ <span style=“color:red;”>Root combinating</span>
++ <span style="color:red;">Node Filtering</span>
++ <span style="color:orange;">Context shifting</span>
++ <span style="color:red;">Root combination</span>
 + <span style="color:red;">Ingest new corpus data</span>
-+ <span style="color:orange;">Automate linking words to lexicon entries</span> 
-+ <span style="color:red;">Develop manual data verification process</span> 
++ <span style="color:red;">Automate linking words to lexicon entries</span>
++ <span style="color:red;">Develop manual data verification process</span>
 
-### **General Graph Screen Functionality**
-Core functionalities related to the graph screen experience.
-+ <span style="color:red;">Clear screen</span>
-+ <span style="color:red;">Isolate node/clear all but</span>
-+ <span style="color:red;">Scroll results when over limit</span>
-+ <span style="color:red;">Node limit control</span>
-+ <span style="color:red;">Deleting Nodes</span>
-+ <span style="color:orange;">Secondary action for nodes; implemented for words</span> 
-+ <span style="color:red;">Subcontext menu</span> 
-+ <span style="color:green;">Node shades</span>
-+ <span style="color:red;">User-submitted usage examples</span>
+- <span style="color:green;">September 26, 2024</span> — Blog functionality update.
+- <span style="color:green;">September 28, 2024</span> — First blog post published.
+- <span style="color:green;">September 1, 2024</span> — Large data import: 50k+ words and 5k+ roots from Edward William Lane's Lexicon.
+- <span style="color:green;">August 31, 2024</span> — Lane Lexicon Arabic text successfully imported.
+- <span style="color:green;">July 5, 2024</span> — Initial Cypher script adjustments.
 
-### **Graph Visualization Improvements**
-+ <span style="color:orange;">Slow node movement</span> 
-+ <span style="color:orange;">Fix alignment</span> 
-+ <span style="color:orange;">Stop unnecessary movements</span> 
-+ <span style="color:orange;">Resize graph screen</span> 
+---
 
-### **GraphDB Expansion**
-Tasks related to data processing and language integration.
+### UI/UX Enhancements
 
-+ <span style=“color:red;”>Import qsynonyms</span>
-+ <span style="color:green;">Import corpus.quran data using Java API</span>
-+ <span style="color:orange;">Upload from transliterations Lane database</span> (pending evaluation)
-+ <span style="color:orange;">Implement a programmatic transliteration scheme</span> 
-+ <span style="color:green;">English node labels</span> 
-+ <span style="color:orange;">Urdu node labels</span> 
-+ <span style="color:orange;">Form analysis</span> 
-+ <span style="color:green;">Create a data pipeline for handling 50,000 words with LLM</span> 
-
-### **Embedded Graph Screens**
-Static page-related features and improvements.
-+ <span style="color:orange;">Rendering markdown and graphs on static pages</span> (needs redesign)
-
-### **Library Expansion**
-Tasks associated with expanding the content library and linking resources.
-+ <span style="color:red;">Add Quran and Hadith and link to lexicon</span>
-+ <span style="color:red;">Graph layers overview articles</span>
-+ <span style="color:red;">Add graph database statistics articles</span>
-+ <span style="color:red;">Tweak buttons and placement of the graph screen and buttons</span>
-
-### **Games Development**
-Interactive features to engage users with the graph content.
-+ <span style="color:red;">Guess the Root</span>
-+ <span style="color:red;">Guess the Form</span>
-
-### **Interface Enhancements**
 + <span style="color:red;">Main Menu Transformation</span>
 + <span style="color:red;">Add a button to return to the main site and exit the application</span>
++ <span style="color:orange;">Context menu</span>
 
-### **Monitoring & Analytics**
-+ <span style="color:orange;">Install Fail2Ban</span> (security setup needed)
-+ <span style="color:orange;">Explore tools for first-click analysis</span> 
-
-### **Bugs and Issues**
-+ <span style="color:orange;">Corpus Context Issue</span> (needs to be tied to corpus item selection)
-+ <span style="color:orange;">Duplicates Issue</span> (duplicate nodes or data showing up incorrectly)
-+ <span style=“color:orange;”>Root context not working</span> (no nodes returned)
+- <span style="color:green;">October 2, 2024</span> — FindDOMNode depreciation handled.
+- <span style="color:green;">September 2, 2024</span> — Frontend overhaul: Updated Getting Started and About articles, added infobubble scroll functionality, and right-click to view entry.
+- <span style="color:green;">August 22, 2024</span> — Node-clicking logic operational across the board.
+- <span style="color:green;">August 19, 2024</span> — Replaced local state with React Context API.
+- <span style="color:green;">August 17, 2024</span> — Main menu transformation (v1).
 
 ---
 
-## Contributions
+### Bugs and Issues
+
++ <span style="color:red;">Corpus Context Issue</span> (needs to be tied to corpus item selection)
++ <span style="color:red;">Duplicates Issue</span> (duplicate nodes or data showing up incorrectly)
++ <span style="color:red;">Root context not working</span> (no nodes returned)
+
+- <span style="color:green;">October 2, 2024</span> — FindDOMNode depreciation handled.
+- <span style="color:green;">July 28, 2024</span> — Major backend update.
+
+---
+
+### Server Management
+
++ <span style="color:red;">Install Fail2Ban</span>
++ <span style="color:red;">Explore tools for first-click analysis</span>
+
+- <span style="color:green;">August 22, 2024</span> — Major backend optimizations.
+- <span style="color:green;">August 19, 2024</span> — Backend service updates and optimizations.
+
+---
+
+### Contributions
 
 We welcome contributions from developers and researchers interested in enhancing the Mindroots project. Below are the areas of expertise required for incomplete tasks:
 
-### **General Graph Screen Functionality**
+#### **General Graph Screen Functionality**
 + **Expertise Required**: JavaScript, D3.js, UX/UI Design.
 
-### **GraphDB Transliterations and Translations**
+#### **GraphDB Transliterations and Translations**
 + **Expertise Required**: Python, Natural Language Processing, API Integration.
 
-### **Library Expansion**
+#### **Library Expansion**
 + **Expertise Required**: Neo4j, Content Management, Lexicography.
 
-### **Games Development**
+#### **Games Development**
 + **Expertise Required**: Game Design, JavaScript, Educational Tools.
 
-### **Monitoring & Analytics**
+#### **Monitoring & Analytics**
 + **Expertise Required**: DevOps, Security, Monitoring Tools (Prometheus, Grafana).
 
-### **General UI/UX Improvements**
+#### **General UI/UX Improvements**
 + **Expertise Required**: UI/UX Design, Frontend Development, User Testing.
 
 ---

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
-import GraphVisualization from '../components/GraphVisualization';
-import { fetchRootByLetters } from '../services/apiService'; // Your service function to fetch roots
-import { useScript } from '../contexts/ScriptContext';
-import { useGraphData } from '../contexts/GraphDataContext';
-import InfoBubble from './InfoBubble';
-import Menu from '../components/Menu';
-import { useContextFilter } from '../contexts/ContextFilterContext';
+import GraphVisualization from '../graph/GraphVisualization';
+import { fetchRootByLetters } from '../../services/apiService'; // Your service function to fetch roots
+import { useScript } from '../../contexts/ScriptContext';
+import { useGraphData } from '../../contexts/GraphDataContext';
+import InfoBubble from '../layout/InfoBubble';
+import Menu from '../navigation/Menu';
+import { useContextFilter } from '../../contexts/ContextFilterContext';
 
 // Arabic letters array for the dropdowns
 const arabicLetters = [
