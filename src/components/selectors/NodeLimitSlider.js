@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNodeLimit } from '../contexts/NodeLimitContext';
+import { useNodeLimit } from '../../contexts/NodeLimitContext';
 
 const NodeLimitSlider = () => {
   const { limit, setLimit } = useNodeLimit();

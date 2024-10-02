@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { useScript } from '../contexts/ScriptContext';
+import { useScript } from '../../contexts/ScriptContext';
 
 const LanguageSelector = () => {
   const { L1, setL1, L2, setL2 } = useScript();

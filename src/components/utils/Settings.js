@@ -1,8 +1,8 @@
 import React from 'react';
-import LanguageSelector from './LanguageSelector';
-import ContextShiftSelector from './ContextShiftSelector';
-import NodeLimitSlider from './NodeLimitSlider'; 
-import Menu from './Menu';
+import LanguageSelector from '../selectors/LanguageSelector';
+import ContextShiftSelector from '../selectors/ContextShiftSelector';
+import NodeLimitSlider from '../selectors/NodeLimitSlider'; 
+import Menu from '../navigation/Menu';
 
 const Settings = () => {
   return (

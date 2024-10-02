@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
-import { useContextFilter } from '../contexts/ContextFilterContext';
-import { useCorpus } from '../contexts/CorpusContext';
-import { useScript } from '../contexts/ScriptContext';
+import { useContextFilter } from '../../contexts/ContextFilterContext';
+import { useCorpus } from '../../contexts/CorpusContext';
+import { useScript } from '../../contexts/ScriptContext';
 
 const ContextShiftSelector = () => {
   const { contextFilterRoot, setContextFilterRoot, contextFilterForm, setContextFilterForm } = useContextFilter();

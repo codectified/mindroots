@@ -1,40 +1,35 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import MainMenu from './components/MainMenu';
-import CorpusMenu from './components/CorpusMenu';
-import ProjectNews from './components/ProjectNews';
-import PrimaryList from './components/PrimaryList';
-import GraphScreen from './components/GraphScreen';
-import Settings from './components/Settings';
-import About from './components/About';
-import Start from './components/Start';
-import ArticlesList from './components/ArticlesList';
+import MainMenu from './components/navigation/MainMenu';
+import CorpusMenu from './components/navigation/CorpusMenu';
+import ProjectNews from './components/staticPages/ProjectNews';
+import PrimaryList from './components/staticPages/PrimaryList';
+import GraphScreen from './components/staticPages/GraphScreen';
+import Settings from './components/utils/Settings';
+import About from './components/staticPages/About';
+import Start from './components/staticPages/Start';
+import ArticlesList from './components/staticPages/ArticlesList';
+import Games from './components/staticPages/Games';
+import ProjectMap from './components/staticPages/ProjectMap';
+import Sandbox from './components/staticPages/Sandbox';
+
+import MarkdownRenderer from './components/utils/MarkdownRenderer';
+import DynamicMarkdownRenderer from './components/utils/DynamicMarkdownRenderer';
+import Layout from './components/layout/Layout';
+
 import { ScriptProvider } from './contexts/ScriptContext';
 import { ContextFilterProvider } from './contexts/ContextFilterContext';
 import { CorpusProvider } from './contexts/CorpusContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
-import Games from './components/Games';
-import MarkdownRenderer from './components/MarkdownRenderer';
-import DynamicMarkdownRenderer from './components/DynamicMarkdownRenderer';
-import Layout from './components/Layout'; // New component for layout
-import ProjectMap from './components/ProjectMap'; // Import your new ProjectMap component
-import Sandbox from './components/Sandbox';
 import { NodeLimitProvider } from './contexts/NodeLimitContext';
-
-
-
 
 import './App.css';
 
-
-
 const App = () => {
-
-
   return (
     <ScriptProvider>
-      <NodeLimitProvider> {/* New provider added here */}
-        <CorpusProvider> {/* This should wrap ContextFilterProvider */}
+      <NodeLimitProvider>
+        <CorpusProvider>
           <ContextFilterProvider>
             <GraphDataProvider>
               <Router basename="/">
@@ -60,12 +55,9 @@ const App = () => {
             </GraphDataProvider>
           </ContextFilterProvider>
         </CorpusProvider>
-      </NodeLimitProvider> {/* This new provider wraps the others */}
+      </NodeLimitProvider>
     </ScriptProvider>
   );
-  
-  
 };
-
 
 export default App;
