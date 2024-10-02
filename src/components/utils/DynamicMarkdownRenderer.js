@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import Menu from './Menu';
-import { useScript } from '../contexts/ScriptContext';
-import { fetchMarkdownFiles } from '../services/apiService'; // Assumes you have an API service to fetch the list of files
+import Menu from '../navigation/Menu';
+import { useScript } from '../../contexts/ScriptContext';
+import { fetchMarkdownFiles } from '../../services/apiService'; // Assumes you have an API service to fetch the list of files
 
 const DynamicMarkdownRenderer = ({ baseFolder }) => {
   const [contents, setContents] = useState([]);
