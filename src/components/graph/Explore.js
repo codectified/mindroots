@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
-import GraphVisualization from '../graph/GraphVisualization';
+import GraphVisualization from './GraphVisualization';
 import { executeQuery } from '../../services/apiService';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
@@ -14,7 +14,7 @@ import InfoBubble from '../layout/InfoBubble';
 
 
 
-const Start = () => {
+const Explore = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus } = useCorpus();
@@ -99,7 +99,7 @@ const Start = () => {
 
   return (
     <div className="start">
-      <Menu />
+      <MiniMenu />
 
   <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
   <button onClick={() => loadMarkdownAndFetchData('roots')}>Roots</button>
@@ -128,4 +128,4 @@ const Start = () => {
   );
 };
 
-export default Start;
+export default Explore;

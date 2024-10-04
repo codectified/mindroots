@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import ReactMarkdown from 'react-markdown';
 import changelogContent from '../../content/changelog.md';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 
 
 const ProjectNews = () => {
@@ -15,7 +15,7 @@ const ProjectNews = () => {
 
   return (
     <div className="project-news-container">
-            <Menu />
+            <MiniMenu />
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );

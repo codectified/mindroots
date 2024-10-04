@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import GraphVisualization from '../graph/GraphVisualization';
+import GraphVisualization from './GraphVisualization';
 import { fetchWordsByCorpusItem } from '../../services/apiService';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
@@ -11,7 +11,7 @@ import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import InfoBubble from '../layout/InfoBubble';
 
 
-const GraphScreen = () => {
+const CorpusGraphScreen = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
@@ -95,7 +95,7 @@ const GraphScreen = () => {
 
   return (
     <div>
-      <Menu />
+      <MiniMenu />
       <div className="navigation-buttons">
         <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
           <FontAwesomeIcon icon={faArrowLeft} />
@@ -122,4 +122,4 @@ const GraphScreen = () => {
   );
 };
 
-export default GraphScreen;
+export default CorpusGraphScreen;
