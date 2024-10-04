@@ -1,31 +1,16 @@
-# Project Overview and Status
+#### Project Overview and Status
 
 
-+ <span style="color:green;">[Graph Visualization Improvements](#graph-visualization-improvements)</span> (October 1, 2024)
-+ <span style="color:orange;">[Data Ingestion and Content](#data-ingestion-and-content)</span> (September 26, 2024)
-+ <span style="color:orange;">[UI/UX Enhancements](#uiux-enhancements)</span> (October 2, 2024)
-+ <span style="color:red;">[Bugs and Issues](#bugs-and-issues)</span> (October 2, 2024)
-+ <span style="color:orange;">[Server Management](#server-management)</span> (August 22, 2024)
 
----
-
-### Graph Visualization Improvements
-
-- <span style="color:green;">October 1, 2024</span> — Graph tweaks implemented, including:
-  + <span style="color:green;">Slow node movement</span>
-  + <span style="color:green;">Fix alignment</span>
-  + <span style="color:green;">Stop unnecessary movements</span>
-  + <span style="color:green;">Resize graph screen</span>
-- <span style="color:green;">September 29, 2024</span> — Node limit slider added.
-- <span style="color:green;">September 11, 2024</span> — Infobubble scroll functionality added.
-- <span style="color:green;">September 2, 2024</span> — Right-click to view entry working.
-- <span style="color:green;">July 23, 2024</span> — Fixed duplicate word nodes, backend adjustments for scripts, graph redesign.
-- <span style="color:green;">July 22, 2024</span> — Graph symmetry achieved, graph and button updates.
-- <span style="color:green;">July 21, 2024</span> — API logging added.
++ [Data Ingestion and Content](#data-ingestion-and-content) (September 26, 2024)
++ [Graph Visualization Improvements](#graph-visualization-improvements) (October 1, 2024)
++ [UI/UX Enhancements](#uiux-enhancements) (October 2, 2024)
++ [Bugs and Issues](#bugs-and-issues) (October 2, 2024)
++ [Server Management](#server-management) (August 22, 2024)
 
 ---
 
-### Data Ingestion and Content
+#### Data Ingestion and Content
 
 + <span style="color:red;">Node Filtering</span>
 + <span style="color:orange;">Context shifting</span>
@@ -39,6 +24,22 @@
 - <span style="color:green;">September 1, 2024</span> — Large data import: 50k+ words and 5k+ roots from Edward William Lane's Lexicon.
 - <span style="color:green;">August 31, 2024</span> — Lane Lexicon Arabic text successfully imported.
 - <span style="color:green;">July 5, 2024</span> — Initial Cypher script adjustments.
+
+---
+
+#### Graph Visualization Improvements
+
+- <span style="color:green;">October 1, 2024</span> — Graph tweaks implemented, including:
+  + <span style="color:green;">Slow node movement</span>
+  + <span style="color:green;">Fix alignment</span>
+  + <span style="color:green;">Stop unnecessary movements</span>
+  + <span style="color:green;">Resize graph screen</span>
+- <span style="color:green;">September 29, 2024</span> — Node limit slider added.
+- <span style="color:green;">September 11, 2024</span> — Infobubble scroll functionality added.
+- <span style="color:green;">September 2, 2024</span> — Right-click to view entry working.
+- <span style="color:green;">July 23, 2024</span> — Fixed duplicate word nodes, backend adjustments for scripts, graph redesign.
+- <span style="color:green;">July 22, 2024</span> — Graph symmetry achieved, graph and button updates.
+- <span style="color:green;">July 21, 2024</span> — API logging added.
 
 ---
 
@@ -56,7 +57,7 @@
 
 ---
 
-### Bugs and Issues
+#### Bugs and Issues
 
 + <span style="color:red;">Corpus Context Issue</span> (needs to be tied to corpus item selection)
 + <span style="color:red;">Duplicates Issue</span> (duplicate nodes or data showing up incorrectly)
@@ -67,7 +68,7 @@
 
 ---
 
-### Server Management
+#### Server Management
 
 + <span style="color:red;">Install Fail2Ban</span>
 + <span style="color:red;">Explore tools for first-click analysis</span>
@@ -77,7 +78,7 @@
 
 ---
 
-### Contributions
+#### Contributions
 
 We welcome contributions from developers and researchers interested in enhancing the Mindroots project. Below are the areas of expertise required for incomplete tasks:
 

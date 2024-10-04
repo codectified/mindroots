@@ -1,14 +1,13 @@
 import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './components/navigation/MainMenu';
-import CorpusMenu from './components/navigation/CorpusMenu';
+import Library from './components/navigation/Library';
 import ProjectNews from './components/staticPages/ProjectNews';
 import PrimaryList from './components/navigation/PrimaryList';
 import CorpusGraphScreen from './components/graph/CorpusGraphScreen';
 import Settings from './components/staticPages/Settings';
 import About from './components/staticPages/About';
 import Explore from './components/graph/Explore';
-import ArticlesList from './components/navigation/ArticlesList';
 import Games from './components/staticPages/Games';
 import ProjectMap from './components/staticPages/ProjectMap';
 import Search from './components/graph/Search';
@@ -40,14 +39,13 @@ const App = () => {
                   <Route path="/elements" element={<Layout><MarkdownRenderer filePath="/mindroots/elements.md" /></Layout>} />
                   <Route path="/about_" element={<Layout><MarkdownRenderer filePath="/mindroots/about.md" /></Layout>} />
                   <Route path="/mindroots" element={<Layout><MainMenu /></Layout>} />
-                  <Route path="/corpus-menu" element={<Layout><CorpusMenu /></Layout>} />
+                  <Route path="/corpus-menu" element={<Layout><Library /></Layout>} />
                   <Route path="/list" element={<Layout><PrimaryList /></Layout>} />
                   <Route path="/graph" element={<Layout><CorpusGraphScreen /></Layout>} />
                   <Route path="/settings" element={<Layout><Settings /></Layout>} />
                   <Route path="/project-news" element={<Layout><ProjectNews /></Layout>} />
                   <Route path="/about" element={<Layout><About /></Layout>} />
                   <Route path="/start" element={<Layout><Explore /></Layout>} />
-                  <Route path="/articles" element={<Layout><ArticlesList /></Layout>} />
                   <Route path="/games" element={<Layout><Games /></Layout>} />
                   <Route path="/project-map" element={<Layout><ProjectMap /></Layout>} />
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />

@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchCorpusItems } from '../../services/apiService';
-import Menu from '../navigation/Menu';
+import MiniMenu from './MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 
@@ -50,7 +50,7 @@ const PrimaryList = () => {
 
   return (
     <div>
-      <Menu />
+      <MiniMenu />
       <h1>{corpusName}</h1>
       <ul>
         {names.map((name) => (

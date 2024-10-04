@@ -9,14 +9,14 @@ import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import { useNavigate, Link, useLocation } from 'react-router-dom'; // Added useLocation
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
 
-const Menu = () => {
+const MiniMenu = () => {
   const location = useLocation(); // Get the current route
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
 
   useEffect(() => {
-    if (location.pathname === '/start' || location.pathname === '/sandbox' || location.pathname === '/list') {
+    if (location.pathname === '/start' || location.pathname === '/sandbox' || location.pathname === '/corpus-menu') {
       setSelectedOption('settings'); // Toggle settings on for specific routes
     } else {
       setSelectedOption(null); // Toggle off for other routes
@@ -53,7 +53,7 @@ const Menu = () => {
     } else if (selectedOption === 'about') {
       return (
         <div className="content-container">
-          <ReactMarkdown>{markdownContent.slice(0, 209)}</ReactMarkdown>
+          <ReactMarkdown>{markdownContent.slice(23, 209)}</ReactMarkdown>
           <Link to="/about" className="read-more-link">Read More</Link>
         </div>
       );
@@ -61,7 +61,7 @@ const Menu = () => {
       return (
         <div className="content-container">
           <ReactMarkdown>{markdownContent.slice(0, 127)}</ReactMarkdown>
-          <Link to="/project-news" className="read-more-link">View Full Changelog</Link>
+          <Link to="/project-overview" className="read-more-link">Project Overview and Status</Link>
         </div>
       );
     } else {
@@ -116,4 +116,5 @@ const Menu = () => {
   );
 };
 
-export default Menu;
+export default MiniMenu;
+
