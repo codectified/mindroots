@@ -4,7 +4,7 @@
 
 + [Data Ingestion and Content](#data-ingestion-and-content) (September 26, 2024)
 + [Graph Visualization Improvements](#graph-visualization-improvements) (October 1, 2024)
-+ [UI/UX Enhancements](#uiux-enhancements) (October 2, 2024)
++ [UI/UX Enhancements](#uiux-enhancements) (October 3, 2024)
 + [Bugs and Issues](#bugs-and-issues) (October 2, 2024)
 + [Server Management](#server-management) (August 22, 2024)
 
@@ -48,8 +48,8 @@
 + <span style="color:red;">Main Menu Transformation</span>
 + <span style="color:red;">Add a button to return to the main site and exit the application</span>
 + <span style="color:orange;">Context menu</span>
+- <span style="color:green;">October 3, 2024</span> — Library/articles navigation update
 
-- <span style="color:green;">October 2, 2024</span> — FindDOMNode depreciation handled.
 - <span style="color:green;">September 2, 2024</span> — Frontend overhaul: Updated Getting Started and About articles, added infobubble scroll functionality, and right-click to view entry.
 - <span style="color:green;">August 22, 2024</span> — Node-clicking logic operational across the board.
 - <span style="color:green;">August 19, 2024</span> — Replaced local state with React Context API.
