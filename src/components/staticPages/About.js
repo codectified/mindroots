@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 import aboutContent from '../../content/about.md';
 
 const About = () => {
@@ -23,7 +23,7 @@ const About = () => {
 
   return (
     <div className="about-page">
-      <Menu />
+      <MiniMenu />
       
       {/* Render the content before line 12 */}
       <ReactMarkdown>{beforeLine12}</ReactMarkdown>

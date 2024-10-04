@@ -1,26 +1,25 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { fetchCorpora } from '../../services/apiService';
-import Menu from './Menu';
+import MiniMenu from './MiniMenu';
 import { useCorpus } from '../../contexts/CorpusContext';
 import { useScript } from '../../contexts/ScriptContext';
 
-const CorpusMenu = () => {
+const ArticlesAndReferences = () => {
   const navigate = useNavigate();
   const { handleSelectCorpus } = useCorpus(); // Use context to store the selected corpus
-  const { L1, setL1, L2, setL2 } = useScript(); // Get L1 and L2 from context
-  const [corpora, setCorpora] = useState([]); // Manage corpora locally
+  const { L1, L2 } = useScript(); // Get L1 and L2 from context
+  const [corpora, setCorpora] = useState([]);
   const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
 
   useEffect(() => {
     const fetchCorporaData = async () => {
       try {
         const data = await fetchCorpora();
-        setCorpora(data); // Fetch and store corpora locally
+        setCorpora(data);
 
-        // Determine available languages based on corpus properties
         if (data.length > 0) {
-          const sampleCorpus = data[0]; // Assuming all corpora have the same language properties
+          const sampleCorpus = data[0];
           const languages = ['arabic', 'english'];
           if (sampleCorpus.transliteration) languages.push('transliteration');
           setAvailableLanguages(languages);
@@ -33,28 +32,54 @@ const CorpusMenu = () => {
   }, []);
 
   const handleSelect = (corpus) => {
-    console.log('Selected corpus in CorpusMenu:', corpus);
-    handleSelectCorpus(corpus); // Store only the selected corpus in context
-
-    // Navigate to the list of items in the selected corpus with query parameters
+    console.log('Selected corpus in ArticlesAndReferences:', corpus);
+    handleSelectCorpus(corpus);
     navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english)}`);
   };
 
   return (
     <div>
-      <Menu />
-      <h2>Select a corpus...</h2>
+      <MiniMenu />
+
+            {/* Render corpus list */}
+            <h2>Corpus Library</h2>
       <ul>
-        {corpora.map(corpus => (
+        {corpora.map((corpus) => (
           <li key={corpus.id} onClick={() => handleSelect(corpus)}>
-            {L2 === 'off' 
-              ? corpus[L1] 
-              : `${corpus[L1]} / ${corpus[L2]}`}
+            {L2 === 'off' ? corpus[L1] : `${corpus[L1]} / ${corpus[L2]}`}
           </li>
         ))}
       </ul>
+
+
+      <br></br>
+      <br></br>      <br></br>
+      <br></br>      <br></br>
+
+      <h4>Articles and References</h4>
+
+
+
+      {/* Render Markdown articles */}
+
+      <ul>
+        <li>
+          <Link to="/getting-started">Getting Started</Link>
+        </li>
+        <li>
+          <Link to="/about_">About</Link>
+        </li>
+        {/* <li>
+          <Link to="/elements">Elements</Link>
+        </li> */}
+        <li>
+          <Link to="/project-overview">Project Overview</Link>
+        </li>
+      </ul>
+
+
     </div>
   );
 };
 
-export default CorpusMenu;
+export default ArticlesAndReferences;

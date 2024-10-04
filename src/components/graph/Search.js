@@ -4,7 +4,7 @@ import { fetchRootByLetters } from '../../services/apiService'; // Your service 
 import { useScript } from '../../contexts/ScriptContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 
 // Arabic letters array for the dropdowns
@@ -74,7 +74,7 @@ const Search = () => {
 
   return (
     <div>
-      <Menu /> {/* Add the mini-menu */}
+      <MiniMenu /> {/* Add the mini-menu */}
       <div>
         {/* Dropdowns for selecting Arabic letters */}
         <label>R1:</label>

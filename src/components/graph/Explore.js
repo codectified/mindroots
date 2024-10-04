@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { executeQuery } from '../../services/apiService';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
@@ -99,7 +99,7 @@ const Explore = () => {
 
   return (
     <div className="start">
-      <Menu />
+      <MiniMenu />
 
   <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
   <button onClick={() => loadMarkdownAndFetchData('roots')}>Roots</button>

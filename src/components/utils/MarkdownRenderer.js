@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 
 const CustomListItem = ({ children }) => {
   return <li style={{ fontSize: '1em', color: 'white' }}>{children}</li>;
@@ -21,7 +21,7 @@ const MarkdownRenderer = ({ filePath }) => {
 
   return (
     <div className="markdown-page">
-      <Menu />
+      <MiniMenu />
       <div className="markdown-homepage">
         <Markdown
           options={{
