@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
-import GraphVisualization from '../graph/GraphVisualization';
+import GraphVisualization from './GraphVisualization';
 import { fetchRootByLetters } from '../../services/apiService'; // Your service function to fetch roots
 import { useScript } from '../../contexts/ScriptContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 
 // Arabic letters array for the dropdowns
@@ -13,7 +13,7 @@ const arabicLetters = [
   'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
 ];
 
-const Sandbox = () => {
+const Search = () => {
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { L1, L2 } = useScript(); // Get the language context
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData(); // Use graph data context
@@ -74,7 +74,7 @@ const Sandbox = () => {
 
   return (
     <div>
-      <Menu /> {/* Add the mini-menu */}
+      <MiniMenu /> {/* Add the mini-menu */}
       <div>
         {/* Dropdowns for selecting Arabic letters */}
         <label>R1:</label>
@@ -136,4 +136,4 @@ const Sandbox = () => {
   );
 };
 
-export default Sandbox;
+export default Search;
