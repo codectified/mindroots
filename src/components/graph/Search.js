@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GraphVisualization from '../graph/GraphVisualization';
+import GraphVisualization from './GraphVisualization';
 import { fetchRootByLetters } from '../../services/apiService'; // Your service function to fetch roots
 import { useScript } from '../../contexts/ScriptContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
@@ -13,7 +13,7 @@ const arabicLetters = [
   'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
 ];
 
-const Sandbox = () => {
+const Search = () => {
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { L1, L2 } = useScript(); // Get the language context
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData(); // Use graph data context
@@ -136,4 +136,4 @@ const Sandbox = () => {
   );
 };
 
-export default Sandbox;
+export default Search;

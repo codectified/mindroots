@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from 'react';
-import GraphVisualization from '../graph/GraphVisualization';
+import GraphVisualization from './GraphVisualization';
 import { fetchWordsByCorpusItem } from '../../services/apiService';
 import Menu from '../navigation/Menu';
 import { useScript } from '../../contexts/ScriptContext';
@@ -11,7 +11,7 @@ import { faArrowLeft, faArrowRight } from '@fortawesome/free-solid-svg-icons';
 import InfoBubble from '../layout/InfoBubble';
 
 
-const GraphScreen = () => {
+const CorpusGraphScreen = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
@@ -122,4 +122,4 @@ const GraphScreen = () => {
   );
 };
 
-export default GraphScreen;
+export default CorpusGraphScreen;
