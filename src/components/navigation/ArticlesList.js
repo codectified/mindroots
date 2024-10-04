@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import Menu from '../navigation/Menu';
+import Menu from './Menu';
 
 
 const ArticlesList = () => {

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import GraphVisualization from '../graph/GraphVisualization';
+import GraphVisualization from './GraphVisualization';
 import { executeQuery } from '../../services/apiService';
 import Menu from '../navigation/Menu';
 import ReactMarkdown from 'react-markdown';
@@ -14,7 +14,7 @@ import InfoBubble from '../layout/InfoBubble';
 
 
 
-const Start = () => {
+const Explore = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus } = useCorpus();
@@ -128,4 +128,4 @@ const Start = () => {
   );
 };
 
-export default Start;
+export default Explore;
