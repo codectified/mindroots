@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import GraphVisualization from '../graph/GraphVisualization'; // Visualization component
 import { executeQuery } from '../../services/apiService'; // API service for executing Cypher queries
-import Menu from '../navigation/Menu'; // Optional menu component
+import MiniMenu from '../navigation/MiniMenu'; // Optional menu component
 import { useGraphData } from '../../contexts/GraphDataContext'; // Context to store graph data
 
 const ProjectMap = () => {
@@ -95,7 +95,7 @@ const ProjectMap = () => {
 
   return (
     <div className="project-map">
-      <Menu /> {/* Optional Menu */}
+      <MiniMenu /> {/* Optional Menu */}
 
       {/* Render the graph visualization */}
       <GraphVisualization data={graphData} />

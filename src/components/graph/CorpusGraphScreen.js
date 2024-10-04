@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { fetchWordsByCorpusItem } from '../../services/apiService';
-import Menu from '../navigation/Menu';
+import MiniMenu from '../navigation/MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
@@ -95,7 +95,7 @@ const CorpusGraphScreen = () => {
 
   return (
     <div>
-      <Menu />
+      <MiniMenu />
       <div className="navigation-buttons">
         <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
           <FontAwesomeIcon icon={faArrowLeft} />
