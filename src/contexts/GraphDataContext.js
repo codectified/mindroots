@@ -3,7 +3,7 @@ import {
   fetchWordsByRootWithLexicon, 
   fetchWordsByRootWithCorpus, 
   fetchRootByWord, 
-  fetchDefinitionsByWord, 
+  fetchLaneEntry, 
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus 
 } from '../services/apiService';
@@ -99,7 +99,7 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
         links: [...prev.links, ...newLink], // newLink is now an array
       }));
     } else {
-      let definitions = node.properties?.definitions || await fetchDefinitionsByWord(wordId, L1, L2);
+      let definitions = node.properties?.definitions || await fetchLaneEntry(wordId, L1, L2);
       
       // Set the info bubble position to the center of the screen
       let centerPosition = {
