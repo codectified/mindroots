@@ -2,10 +2,9 @@ import React, { createContext, useState, useContext } from 'react';
 import { 
   fetchWordsByRootWithLexicon, 
   fetchWordsByRootWithCorpus, 
-  fetchRootByWord,
-  fetchFormsByWord,
-  fetchLaneEntry,
-  fetchHansWehrEntry, 
+  fetchRootByWord, 
+  fetchFormsByWord, 
+  fetchLaneEntry, 
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus 
 } from '../services/apiService';
@@ -135,18 +134,19 @@ export const GraphDataProvider = ({ children }) => {
 
           const newRootLink = [{ source: node.id, target: newRootNode.id }];
 
-      setGraphData(prev => ({
-        nodes: [...prev.nodes, newRootNode],
-        links: [...prev.links, ...newLink], // newLink is now an array
-      }));
-    } else {
-      let definitions = node.properties?.definitions || await fetchLaneEntry(wordId, L1, L2);
-      
-      // Set the info bubble position to the center of the screen
-      let centerPosition = {
-        x: (window.innerWidth - 200) / 2,  // Assuming bubble width is 200px
-        y: (window.innerHeight - 100) / 2  // Assuming bubble height is 100px
-      };
+          setGraphData(prev => ({
+            nodes: [...prev.nodes, newRootNode],
+            links: [...prev.links, ...newRootLink],
+          }));
+          break;
+
+        case 'Fetch Word Definitions':
+          // Fetch word definitions
+          let definitions = node.properties?.definitions || await fetchLaneEntry(wordId);
+          let centerPosition = {
+            x: (window.innerWidth - 200) / 2,  // Center of screen
+            y: (window.innerHeight - 100) / 2
+          };
 
           setInfoBubble({ definition: definitions, position: centerPosition });
           break;
