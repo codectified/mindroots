@@ -9,10 +9,6 @@ const api = axios.create({
 //   baseURL: 'http://localhost:5001/api',
 // });
 
-// // Create an Axios instance with the base URL for the API
-// const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
-// });
 
 // Helper function to convert Neo4j integers to regular numbers
 const convertIntegers = (obj) => {
@@ -146,14 +142,22 @@ export const fetchCorpora = async () => {
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchDefinitionsByWord = async (wordId, L1, L2) => {
+export const fetchLaneEntry = async (wordId) => {
   try {
-    const response = await api.get(`/definitionsbyword/${wordId}`, {
-      params: { L1, L2 }
-    });
+    const response = await api.get(`/laneentry/${wordId}`);
     return response.data;
   } catch (error) {
-    console.error('Error fetching definitions by word:', error);
+    console.error('Error fetching Lane entry by word:', error);
+    throw error;
+  }
+};
+
+export const fetchHansWehrEntry = async (wordId) => {
+  try {
+    const response = await api.get(`/hanswehrentry/${wordId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching Hans Wehr entry by word:', error);
     throw error;
   }
 };

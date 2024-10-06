@@ -502,10 +502,10 @@ router.get('/formsbyword/:wordId', async (req, res) => {
 });
 
 
-router.get('/definitionsbyword/:wordId', async (req, res) => {
+router.get('/laneentry/:wordId', async (req, res) => {
   const { wordId } = req.params;
-  const { L1, L2 } = req.query;
   const session = req.driver.session();
+  
   try {
     const query = `
       MATCH (word:Word {word_id: toInteger($wordId)})
@@ -517,11 +517,36 @@ router.get('/definitionsbyword/:wordId', async (req, res) => {
       const definitions = result.records[0].get('definitions');
       res.json(definitions);
     } else {
-      res.status(404).json({ error: 'Definitions not found' });
+      res.status(404).json({ error: 'Lane entry not found' });
     }
   } catch (error) {
-    console.error('Error fetching definitions by word:', error);
-    res.status(500).json({ error: 'Error fetching definitions by word' });
+    console.error('Error fetching Lane entry by word:', error);
+    res.status(500).json({ error: 'Error fetching Lane entry by word' });
+  } finally {
+    await session.close();
+  }
+});
+
+router.get('/hanswehrentry/:wordId', async (req, res) => {
+  const { wordId } = req.params;
+  const session = req.driver.session();
+  
+  try {
+    const query = `
+      MATCH (word:Word {word_id: toInteger($wordId)})
+      RETURN word.hanswehr_entry AS hanswehrEntry
+    `;
+    const result = await session.run(query, { wordId: parseInt(wordId) });
+
+    if (result.records.length > 0) {
+      const hanswehrEntry = result.records[0].get('hanswehrEntry');
+      res.json(hanswehrEntry);
+    } else {
+      res.status(404).json({ error: 'Hans Wehr entry not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching Hans Wehr entry by word:', error);
+    res.status(500).json({ error: 'Error fetching Hans Wehr entry by word' });
   } finally {
     await session.close();
   }
