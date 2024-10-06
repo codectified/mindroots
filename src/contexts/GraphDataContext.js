@@ -3,8 +3,7 @@ import {
   fetchWordsByRootWithLexicon, 
   fetchWordsByRootWithCorpus, 
   fetchRootByWord, 
-  fetchFormsByWord, 
-  fetchDefinitionsByWord, 
+  fetchLaneEntry, 
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus 
 } from '../services/apiService';
