@@ -43,7 +43,7 @@ const ContextShiftSelector = () => {
           </option>
         ))}
       </select>
-
+<br></br>
       <label>Root Context:</label>
       <select name="root" value={contextFilterRoot} onChange={handleContextFilterChange}>
         <option value="lexicon">Lexicon</option>
