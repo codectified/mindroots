@@ -54,15 +54,30 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       return color(d.type);
     };
 
-    // Force simulation setup
+    // Calculate min and max dataSize values for Word nodes only
+    const wordNodes = data.nodes.filter(d => d.type === 'word');
+    const minSize = d3.min(wordNodes, d => d.dataSize);
+    const maxSize = d3.max(wordNodes, d => d.dataSize);
+
+    // Create a scale function for node radius based on dataSize for Word nodes
+    const sizeScale = d3.scaleLinear()
+      .domain([minSize, maxSize])
+      .range([6, 12]); // Word nodes will have a minimum radius of 6 and a maximum of 12
+
+    // Set up the force simulation with adjusted charge and link forces
     const newSimulation = d3.forceSimulation(data.nodes)
-      .force('link', d3.forceLink(data.links).id(d => d.id).distance(10))
-      .force('charge', d3.forceManyBody().strength(-25))
+      .force('link', d3.forceLink(data.links)
+        .id(d => d.id)
+        .distance(50) // Adjusted to spread nodes farther apart
+      )
+      .force('charge', d3.forceManyBody()
+      .strength(d => d.type === 'word' ? -350 * sizeScale(d.dataSize) : -100)
+    )
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX(d => {
         if (d.type === 'name') return width / 2;
         if (d.type === 'form') return width / 4;
-        if (d.type === 'root') return (3 * width) / 4;
+        if (d.type === 'root') return (3 * width) / 4;;
         if (d.type === 'word') return width / 2;
         return width / 2;
       }).strength(1))
@@ -72,9 +87,10 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
         if (d.type === 'word') return height / 2; // Shift up
         return height / 3; // Default to a higher position
       }).strength(1))
-      .force('collide', d3.forceCollide(50))
-      .alphaDecay(0.01)
-      .velocityDecay(.992);
+      .force('collide', d3.forceCollide(d => d.type === 'word' ? sizeScale(d.dataSize) + 15 : 50)) // Sets collision radius: 'word' nodes vary based on size; others have fixed radius (10).
+
+      .alphaDecay(0.02) // Alpha decay for stability
+      .velocityDecay(0.992); // Adjusted velocity decay
 
     // Append links
     const link = zoomLayer.append('g')
@@ -86,13 +102,13 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       .attr('stroke', '#bbb')
       .attr('opacity', 0.3);
 
-    // Append nodes with custom color logic
+    // Append nodes with custom color logic and size based on dataSize only for Word nodes
     const node = zoomLayer.append('g')
       .attr('class', 'nodes')
       .selectAll('circle')
       .data(data.nodes)
       .enter().append('circle')
-      .attr('r', 12)
+      .attr('r', d => d.type === 'word' ? sizeScale(d.dataSize) : 10) // Only scale Word node sizes
       .attr('fill', d => getColor(d)) // Use the getColor function
       .call(d3.drag()
         .on('start', dragstarted)
@@ -121,7 +137,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       const minY = d3.min(data.nodes, d => d.y);
 
       // Shift all nodes upwards by the difference between minY and a desired top position
-      const topOffset = height / 7  // A small offset from the top of the screen
+      const topOffset = height / 7;  // A small offset from the top of the screen
       const shiftY = topOffset - minY;
 
       // Apply the shift
@@ -142,7 +158,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     setSimulation(newSimulation);
 
     function dragstarted(event, d) {
-      if (!event.active) newSimulation.alphaTarget(0.3).restart();
+      if (!event.active) newSimulation.alphaTarget(0.3).restart(); // Restart simulation on drag
       d.fx = d.x;
       d.fy = d.y;
     }
@@ -153,7 +169,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
     }
 
     function dragended(event, d) {
-      if (!event.active) newSimulation.alphaTarget(0);
+      if (!event.active) newSimulation.alphaTarget(0); // Restore alpha after dragging
       d.fx = null;
       d.fy = null;
     }
