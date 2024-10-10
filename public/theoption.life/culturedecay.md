@@ -8,39 +8,56 @@ date: "2024-10-09"
 
 This essay was inspired by two videos describing a serious problem in two academic fields surrounding the critical questions of what is considered knowledge and what is considered valuable effort towards expanding knowledge, which in effect highlights the very human nature to cling to familiar ideas and structures out of fear and animal instinct to preserve oneself over others.
 
-What’s being described here is tribalism and arrogance that values ignorance over knowledge if status and renown are gained.
+What’s being described in these videos is tribalism and arrogance that values ignorance over knowledge if status and renown are gained.
 
 One video deals with the issue in theoretical physics, and the other deals with psychology, both in popular culture and academia. In both spaces and in many other places in academia and in popular culture, there is rampant oversimplification of critical issues and an echo chamber of ideas where the only solutions offered are for problems or enemies designed by those offering the solutions in the first place.
 
-This can easily become a long discussion on why I don’t think my ideas on theoretical physics are of much use yet. But when I saw the thumbnail of the second video, I was just about to tell my sister how I’ve started to abandon the terms NPD/BPD actually and lean more towards “cruelty” and “empathy” because that’s all it is at the end of the day. There’s no need to psychoanalyze—if someone tells you you’re being cruel and unsympathetic, there’s no argument. You will either empathize, or you won’t, or you can’t.
+The decay of culture is identical to the decay of man, his idea of himself and it begins the same, with the misuse and abuse of language. 
+
+With physics and many academic fields the misuse is so rampant and wound up in layers of politics that it takes an enormous amount of energy to combat and or conduct proper research that has no political favor, but its affect is obvious to those inside the respective fields as soon as they try to offer their own opinions or theories. It’s very similar to how news media misuses and abuses language to lessen the disfavor of certain privileged criminals and undermine the voices of innocents. It’s propaganda plain abs simple, but with deadly consequences and incredible rates of corruption. But this is only what happens at the highest levels of power and influence. 
+
+At lower levels of influence we only get the big bits and pieces of the ideas those in power are working with. It turns people into drones, npcs, zombies, stuck in groupthink as Orwell put it or my favorite, turned into political animals (Boudrillard).  It’s become an internet trope that as soon as some people get therapy and learn some mental health terminology they begin to diagnose everyone around them and decide they’ve got it figured out. It’s a misuse of language. 
+
+It’s not to say that academic theories and terminology have no place in the every day—it’s to warn each other about the dangers of psychological dogmas—of the silly human habbit to put people in labeled boxes and decide their fate. This again is misuse  of language. 
+
+When I saw the thumbnail of the second video, I was just about to tell my sister how I’ve started to abandon the terms NPD/BPD actually and lean more towards “cruelty” and “empathy” because that’s all it is at the end of the day. There’s no need to psychoanalyze—if someone tells you you’re being cruel and unsympathetic, there’s no argument. You will either empathize, or you won’t, or you can’t.
 
 On the flip side, either you articulate your needs and pain properly, or you’re being cruel to yourself. If you don’t know your needs, your pain, your nature, your strengths, and weaknesses, then you are not blameless and have a clear path forward.
 
 In either case, the pathology is nothing more than a fantasy of one’s self-worth, whether that be in too high estimation or too low, as you can find the loudest and most proud-seeming often the most critical and unfair to themselves; and so the opposite is true as well.
 
-If you are cruel to others or yourself and unaware, that’s pathological because you should be able to regulate your internal systems enough to coordinate with others and contribute. That’s the baseline.
+If you are cruel to others or yourself and unaware of how it hurts others, this pathological because a lack of knowledge preventing regulation of internal systems enough to coordinate with others and contribute to collective good. 
 
-If you are cruel to others or yourself, and you don’t think there’s anything wrong with it, then you are just an asshole or an evil person. May Allah protect us.
+If you are cruel to others or yourself, and you don’t think there’s anything wrong with how it hurts them, or you enjoy it, then you are just an asshole or an evil person because nothing is preventing from changing your behavior.  May Allah protect us.
 
 It’s a fine line between being unaware and being apathetic, but it’s there, and most people probably fall into the first category before the second.
 
 All of this is further complicated when you understand that these behaviors—having empathy or being cruel—exist on a spectrum. You can be empathetic in one context and cruel in another, or you can show up when it counts in some areas but not in others. It’s not black and white, and there are layers of lack of knowledge or ignorance which precede any kind of cruelty. The same is true with knowledge, love, and empathy. Most people will behave one way or the other eventually for one reason or another, but it’s which way they lean overall that defines them. But we really don’t need to go around defining anyone in any new and fashionable way. We don’t need a paradigm any more complicated than strong and weak.
 
-Because for me, the solution is shifting perspective. You are strong when and where you were loved, and you are weak where and when you are not loved, valued, and seen. It’s the things about you that no one ever appreciated that make you weak, and it’s the things about you that were celebrated that gave you strength. This oversimplification of the self is useful to emphasize the point that the greatest value on earth is human connection.
+Because for me, the solution is shifting perspective. It’s not about explaining and manipulating behavior (literally psychological begaviorism) it’s about understanding how people learn and take in information differently (cognitive science).  
 
-Understanding the complexity of the self is useful when you want to help others and give them space. But before that, you need to learn how to help yourself and give yourself space. To do that, the first step is to admit you are weak. You are strong, but you are also weak, and you need to understand how before you can help others because otherwise, you have no reason to become stronger.
+Let’s keep it simple. You are strong when and where you were loved, and you are weak where and when you are not loved, valued, and seen. It’s the things about you that no one ever appreciated that make you weak, and it’s the things about you that were celebrated that gave you strength. This oversimplification of the self is useful to emphasize the point that the greatest value on earth is human connection.
 
-The problem isn’t in defining or describing bad behavior; it’s in defining what counts as good behavior: coordinating and contributing with others. This is what it means to understand your strengths and your weaknesses.
+Understanding the complexity of the self is useful when you want to help others and give them space. But before that, you need to learn how to help yourself and give yourself space. To do that, the first step is to admit you are weak. You are strong, but you are also weak, and you need to understand how before you can help others because otherwise you have no reason to become stronger.
+
+The problem isn’t in defining or describing bad behavior—that’s often trivial; it’s in defining what counts as good behavior: coordinating and contributing with others effectively and meaningfully. This is what it means to understand your strengths and your weaknesses.
 
 People get stuck in a circular routine and think that as long as they cling to that role and its definition, they are good. As long as they keep doing their job, then there is no way they can do anything wrong, and so there’s no need for any accountability or reflection. That’s not how growth works. That’s not how family or community works, and that’s not how a society should work. That’s how a machine works, and so we have to ask ourselves who designed this machine and its specifications and why, if that’s where you’re stuck. Every structure can become a prison if we don’t ask questions.
 
-Either way, you always have to ask yourself, what do you want your life to mean?
+One beautiful measure for a man I recently came across is how far his voice could carry; in a room filled with people, how many could you reach?
 
-For most people, children are all their lives ever mean, and this can bring them great joy and great frustration. Children are often the best mirrors and force us to look at our own behavior until these children grow up and have ideas of their own. With adults and ideas, we are more hesitant to look at ourselves because the context is much larger and involves much more than just a single event or incident; it relates to the vast context of our entire lives and the decisions we’ve made and our largest influences. But you can only fight nature for so long, as it will eventually catch up to you. Life is ups and downs for sure, but we can be much more prepared for the downs and have much more appreciation of the ups when we have certainty in our knowledge of ourselves and those around us. When we know, with certainty, our strengths and the combined strengths.
+Either way, you always have to ask yourself, what do you want your life to mean?
+  
+
+For many people, children is as many as they’ll ever reach and all their lives will ever mean, and this could mean great honor and joy or as much shame frustration; history has all our stories.  Children are often the best mirrors and force us to look at our own behavior until of course, the same children grow up and have ideas of their own.  That’s life’s challenge. With adults and their ideas, we are more hesitant to look at ourselves because the context is much larger and involves much more than managing a single event or incident; it relates to the vast context of our entire lives and the decisions we’ve made and our largest influences. It’s impossible to be part of a family or have any meaningful relationships and not face any sort of conflict rooted in a past unresolved conflict, or trauma or wound or whatever we want to call it.
+
+You can only fight nature for so long; it will eventually catch up to you in the form of unsustainable relationships and the body itself will refuse to sustain unsustainable practices.  Life is ups and downs for sure, but we can be much better prepared for the downs and have much more appreciation of the ups when we have certainty in our knowledge of ourselves and those around us. When we know, with certainty, our strengths and our combined strengths.
 
 I think as I’ve gotten older, the pattern has kinda tightened up a bit surprisingly, though you’d expect it to widen or flatten.
 
-I mean, like, the peaks and valleys are closer together somehow. I find joy and sadness are like my companions on this journey of life.
+I mean, like, the peaks and valleys are closer together somehow. I find joy and sadness throughout my day like companions on my journey.
+
+
 
 ~ARABIC~
 
