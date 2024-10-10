@@ -319,10 +319,19 @@
   line-height: 1.6;
 }
 
-/* Styling for Arabic text */
+
+/* Arabic Text Styling */
 .markdown-homepage.rtl {
-  direction: rtl; /* Set text direction to right-to-left */
+  direction: rtl; /* Ensure text flows from right to left */
   text-align: right; /* Align text to the right */
+  unicode-bidi: bidi-override; /* Override the bidirectional algorithm */
+}
+
+/* Override heading alignment for RTL */
+.markdown-homepage.rtl h1,
+.markdown-homepage.rtl h2,
+.markdown-homepage.rtl h3 {
+  text-align: right; /* Align headers to the right */
 }
 
 /* Styling for English text */

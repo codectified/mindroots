@@ -54,15 +54,20 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       return color(d.type);
     };
 
-    // Calculate min and max dataSize values for Word nodes only
-    const wordNodes = data.nodes.filter(d => d.type === 'word');
-    const minSize = d3.min(wordNodes, d => d.dataSize);
-    const maxSize = d3.max(wordNodes, d => d.dataSize);
+// Calculate actual min and max dataSize values for Word nodes
+const wordNodes = data.nodes.filter(d => d.type === 'word');
+const actualMinSize = d3.min(wordNodes, d => d.dataSize);
+const actualMaxSize = d3.max(wordNodes, d => d.dataSize);
 
-    // Create a scale function for node radius based on dataSize for Word nodes
-    const sizeScale = d3.scaleLinear()
-      .domain([minSize, maxSize])
-      .range([6, 12]); // Word nodes will have a minimum radius of 6 and a maximum of 12
+// Set the thresholds for the size scaling
+const minThreshold = 50;
+const maxThreshold = 500;
+
+// Create a scale function for node radius based on dataSize for Word nodes
+const sizeScale = d3.scaleLinear()
+  .domain([Math.max(actualMinSize, minThreshold), Math.min(actualMaxSize, maxThreshold)])
+  .range([4, 12]) // Nodes will have a minimum radius of 4 and a maximum of 12
+  .clamp(true); // Ensures the size stays within this range even if outside thresholds
 
     // Set up the force simulation with adjusted charge and link forces
     const newSimulation = d3.forceSimulation(data.nodes)
@@ -82,7 +87,7 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
         return width / 2;
       }).strength(1))
       .force('y', d3.forceY(d => {
-        if (d.type === 'name') return height / 6; // Shift up
+        if (d.type === 'name') return height / 9; // Shift up
         if (d.type === 'form' || d.type === 'root') return height / 3; // Shift up
         if (d.type === 'word') return height / 2; // Shift up
         return height / 3; // Default to a higher position

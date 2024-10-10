@@ -60,7 +60,7 @@ const MiniMenu = () => {
     } else if (selectedOption === 'changelog') {
       return (
         <div className="content-container">
-          <ReactMarkdown>{markdownContent.slice(0, 127)}</ReactMarkdown>
+          <ReactMarkdown>{markdownContent.slice(0, 1270)}</ReactMarkdown>
           <Link to="/project-overview" className="read-more-link">Project Overview and Status</Link>
         </div>
       );
