@@ -4,7 +4,7 @@ date: "2024-09-25"
 ---
 ~ENGLISH~
 
-## Motivations - 28/09/2024
+Motivations - 28/09/2024
 
 
 You know what, let me start like this. If you ever wondered why I am somebody who is more introverted, introspective, in my head, you know, more than most people—even though I don’t think I was like this in my very young age, I think it started in my adolescence. And I think that’s because I discovered that although there’s great joy and love and warmth and peace in the people around us and in the events around us, there’s also a lot of darkness and ignorance and refusal to look beneath the surface. Whatever the reason, most people didn’t ask questions and did as they were told.
@@ -34,7 +34,7 @@ The truth is clear, is it not? Our internal struggles are always more valuable, 
 
 
 ~ARABIC~
-## أهدافي - ٢٥‏/٩‏/٢٠٢٤
+أهدافي - ٢٥‏/٩‏/٢٠٢٤
 
 
 أنت عارف إيه؟ خليني أبدأ كده. لو عمرك فكرت ليه أنا شخص أكتر انطوائي، متأمل، وعايش جوا دماغي، زي ما بتقول، أكتر من معظم الناس—مع إني مش فاكر إني كنت كده في صغري، أعتقد إن ده بدأ في مرحلة المراهقة. وأعتقد إن السبب هو إني اكتشفت إنه بالرغم من وجود فرحة وحب ودفء وسلام كتير حوالينا وفي الأحداث اللي بتحصل حوالينا، فيه كمان كتير من الظلام والجهل ورفض النظر تحت السطح. ولأي سبب كان، معظم الناس ما بيسألوش أسئلة وبيعملوا زي ما اتقال لهم.
