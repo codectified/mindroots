@@ -38,6 +38,11 @@ const MainMenu = () => {
 
 
       </div>
+      <div className="main-site-link">
+        <a href="https://theoption.life" target="_blank" rel="noopener noreferrer">
+          theoption.life
+        </a>
+      </div>
     </div>
   );
 };

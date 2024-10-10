@@ -70,12 +70,17 @@ const DynamicMarkdownRenderer = ({ baseFolder }) => {
 
   return (
     <div>
-<div className="language-toggle" onClick={toggleLanguage}>
-  <div className={`toggle-slider ${L1 === 'arabic' ? 'active-ar' : 'active-en'}`}>
-    <span className={L1 === 'arabic' ? 'selected' : 'unselected'}>AR</span>
-    <span className={L1 === 'english' ? 'selected' : 'unselected'}>EN</span>
-  </div>
-</div>
+      <div className="language-toggle">
+        <div className={`toggle-slider ${L1 === 'arabic' ? 'active-ar' : 'active-en'}`} onClick={toggleLanguage}>
+          <span className={L1 === 'arabic' ? 'selected' : 'unselected'}>AR</span>
+          <span className={L1 === 'english' ? 'selected' : 'unselected'}>EN</span>
+        </div>
+      </div>
+  
+      <a href="/mindroots" className="mindroots-button">
+        <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="Mindroots" className="button-icon" />
+      </a>
+  <br></br>
       <div className={`markdown-page ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
         {contents.map((content, index) => (
           <div key={index} className={`markdown-homepage ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>

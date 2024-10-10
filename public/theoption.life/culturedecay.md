@@ -4,7 +4,7 @@ date: "2024-10-09"
 ---
 ~ENGLISH~
 
-Knowledge vs Labels - 2024-10-09
+#### Knowledge vs Labels - 2024-10-09
 
 The Misuse of Language: A Catalyst for Cultural and Self-Decay
 
@@ -66,14 +66,9 @@ I think as I’ve gotten older, the pattern has kinda tightened up a bit surpris
 
 I mean, like, the peaks and valleys are closer together somehow. I find joy and sadness throughout my day like companions on my journey.
 
-This version condenses the essay into three meaningful sections, aligning with the themes you’ve emphasized while maintaining clarity and structure. Let me know if any further adjustments are needed!
-
-
-
 ~ARABIC~
 
-المعرفة مقابل التصنيفات - ٢٠٢٤-١٠-٠٩
-
+ #### المعرفة مقابل التصنيفات - ٢٠٢٤-١٠-٠٩
 
 استُلهمت هذه المقالة من مقطعين فيديو يصفان مشكلة خطيرة في مجالين أكاديميين يتعلقان بالأسئلة الحاسمة حول ما يُعتبر معرفة وما يُعتبر جهدًا قيمًا نحو توسيع المعرفة، مما يُبرز بشكل فعلي الطبيعة البشرية المتمسكة بالأفكار والهياكل المألوفة بدافع الخوف وغريزة الحفاظ على الذات على حساب الآخرين.
 

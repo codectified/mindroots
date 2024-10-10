@@ -4,7 +4,7 @@ date: "3024-09-25"
 ---
 
 ~ENGLISH~
-You have found theoption.life
+#### You have found theoption.life
 
 A site dedicated to the only option ever worth taking while everything else takes from us: life; to live, to connect, to grow, to continuously grow and stretch your self outwards into the world; or, accept death, stagnation, and decay.
 
@@ -15,7 +15,7 @@ With every human enterprise we find that language is supreme. With work, we are 
 ---
 
 ~ARABIC~
-لقد وجدت theoption.life
+#### لقد وجدت theoption.life
 
 موقع مخصص للخيار الوحيد الذي يستحق الأخذ بينما يأخذ كل شيء آخر منا: الحياة؛ أن تعيش، أن تتواصل، أن تنمو، أن تستمر في النمو وتمتد ذاتك إلى الخارج في العالم؛ أو تقبل الموت، الركود، والانحلال.
 
