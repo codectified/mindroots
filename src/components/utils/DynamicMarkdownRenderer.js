@@ -2,11 +2,11 @@ import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
 import MiniMenu from '../navigation/MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
-import { fetchMarkdownFiles } from '../../services/apiService'; // Assumes you have an API service to fetch the list of files
+import { fetchMarkdownFiles } from '../../services/apiService';
 
 const DynamicMarkdownRenderer = ({ baseFolder }) => {
   const [contents, setContents] = useState([]);
-  const { L1 } = useScript();
+  const { L1, setL1 } = useScript();
 
   useEffect(() => {
     const fetchAllFilesContent = async () => {
@@ -19,18 +19,35 @@ const DynamicMarkdownRenderer = ({ baseFolder }) => {
           const response = await fetch(`${baseFolder}/${file}`);
           const text = await response.text();
 
-          // Extract content without front matter
+          // Extract front matter and content
           const frontMatterMatch = text.match(/---\n([\s\S]+?)\n---/);
           let contentWithoutFrontMatter = text;
+          let date = null;
 
           if (frontMatterMatch) {
+            const frontMatter = frontMatterMatch[1];
             contentWithoutFrontMatter = text.replace(frontMatterMatch[0], '').trim();
+            const dateMatch = frontMatter.match(/date:\s*"([\d-]+)"/);
+            date = dateMatch ? new Date(dateMatch[1]) : null;
           }
 
-          return contentWithoutFrontMatter;
+          return { content: contentWithoutFrontMatter, date, file };
         }));
 
-        setContents(fetchedContents);
+        // Separate home.md from other contents
+        const homeContent = fetchedContents.find((item) => item.file === 'home.md');
+        const otherContents = fetchedContents.filter((item) => item.file !== 'home.md');
+
+        // Sort other contents by date (newest first)
+        const sortedOtherContents = otherContents.sort((a, b) => {
+          if (a.date && b.date) {
+            return b.date - a.date;
+          }
+          return 0;
+        });
+
+        // Assemble final contents array with home.md first
+        setContents(homeContent ? [homeContent, ...sortedOtherContents] : sortedOtherContents);
       } catch (error) {
         console.error('Error loading markdown files:', error);
       }
@@ -47,23 +64,29 @@ const DynamicMarkdownRenderer = ({ baseFolder }) => {
     return match ? match[0].replace(languageTag, '').trim() : text.trim();
   };
 
-  return (
-    <div className={`markdown-page ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
-      <div className={`markdown-homepage ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
-        <MiniMenu />
-        <br></br>
-        <br></br>
+  const toggleLanguage = () => {
+    setL1((prevL1) => (prevL1 === 'arabic' ? 'english' : 'arabic'));
+  };
 
+  return (
+    <div>
+<div className="language-toggle" onClick={toggleLanguage}>
+  <div className={`toggle-slider ${L1 === 'arabic' ? 'active-ar' : 'active-en'}`}>
+    <span className={L1 === 'arabic' ? 'selected' : 'unselected'}>AR</span>
+    <span className={L1 === 'english' ? 'selected' : 'unselected'}>EN</span>
+  </div>
+</div>
+      <div className={`markdown-page ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
         {contents.map((content, index) => (
-          <Markdown key={index} options={{ forceBlock: true }}>
-            {filterContentByLanguage(content)}
-          </Markdown>
+          <div key={index} className={`markdown-homepage ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
+            <Markdown options={{ forceBlock: true }}>
+              {filterContentByLanguage(content.content)}
+            </Markdown>
+          </div>
         ))}
       </div>
     </div>
   );
 };
-
-
 
 export default DynamicMarkdownRenderer;
