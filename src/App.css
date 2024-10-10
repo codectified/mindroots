@@ -304,19 +304,9 @@
 
   
 /* ============================================
-   Simple Toggle
+   Simple Toggles/Buttons
    ============================================ */
-   .language-toggle {
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 80px; /* Reduced width */
-    background-color: #444;
-    border-radius: 20px;
-    padding: 5px;
-    margin-bottom: 20px;
-  }
+
   
   .toggle-slider {
     display: flex;
@@ -334,18 +324,77 @@
     color: #999;
   }
 
+  .language-toggle-container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px;
+  }
+  
+  .language-toggle {
+    position: fixed; /* Makes the toggle follow the scroll */
+    top: 24px; /* Distance from the top of the viewport */
+    left: 20px; /* Distance from the left of the viewport */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 80px;
+    background-color: #444;
+    border-radius: 20px;
+    padding: 5px;
+    z-index: 1000; /* Ensure it appears above other elements */
+  }
+  
+  .mindroots-button {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px; /* Ensure width and height are the same for a perfect circle */
+    height:40px;
+    border-radius: 50%; /* Makes the button circular */
+    background-color: #444;
+    cursor: pointer;
+    z-index: 1000; /* Ensure it's above other elements */
+    overflow: hidden; /* Ensures image stays within the circle */
+  }
+  
+  .button-icon {
+    width: 100%;
+    height: 100%;
+    object-fit: cover; /* Ensures the image scales properly within the circle */
+  }
+
+  .main-site-link {
+    margin-top: 20px;
+    text-align: center;
+  }
+  
+  .main-site-link a {
+    text-decoration: none;
+    color: #333; /* Adjust color as needed */
+    font-size: .7em; /* Adjust size as needed */
+  }
+  
+  .main-site-link a:hover {
+    text-decoration: underline;
+  }
+
 /* ============================================
    Markdown Homepage Styles 
    ============================================ */
   /* General styling for the markdown container */
-.markdown-homepage {
-  background-color: #2c2c2c; /* Softer dark background */
-  color: #dcdcdc; /* Off-white text color */
-  padding: 20px;
-  font-family: 'Noto Serif', serif;
-  min-height: 100vh;
-  line-height: 1.6;
-}
+  .markdown-homepage {
+    background-color: #2c2c2c;
+    color: #dcdcdc;
+    padding: 20px;
+    font-family: 'Noto Serif', serif;
+    line-height: 1.6;
+    min-height: auto; /* Remove the fixed minimum height */
+    margin-bottom: 20px; /* Add some consistent spacing between articles */
+  }
 
 
 /* Arabic Text Styling */
@@ -373,7 +422,7 @@
 .markdown-homepage h1 {
   font-size: 2.5em; /* Largest for H1 */
   color: #e8e8e8; 
-  margin-bottom: 10px;
+  margin-bottom: 0px;
   font-weight: bold;
   text-align: left;
 }
@@ -381,7 +430,7 @@
 .markdown-homepage h2 {
   font-size: 2em; /* Slightly smaller for H2 */
   color: #e8e8e8;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
   font-weight: bold;
   text-align: left;
 }
@@ -389,7 +438,7 @@
 .markdown-homepage h3 {
   font-size: 1.75em; /* Smaller for H3 */
   color: #e8e8e8;
-  margin-bottom: 10px;
+  margin-bottom: 0px;
   font-weight: bold;
   text-align: left;
 }
