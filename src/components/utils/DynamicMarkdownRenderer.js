@@ -49,10 +49,13 @@ const DynamicMarkdownRenderer = ({ baseFolder }) => {
 
   return (
     <div className={`markdown-page ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
-      <div className="markdown-homepage">
+      <div className={`markdown-homepage ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
         <MiniMenu />
+        <br></br>
+        <br></br>
+
         {contents.map((content, index) => (
-          <Markdown key={index}>
+          <Markdown key={index} options={{ forceBlock: true }}>
             {filterContentByLanguage(content)}
           </Markdown>
         ))}
@@ -60,5 +63,7 @@ const DynamicMarkdownRenderer = ({ baseFolder }) => {
     </div>
   );
 };
+
+
 
 export default DynamicMarkdownRenderer;
