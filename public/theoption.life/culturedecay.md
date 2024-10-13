@@ -4,7 +4,7 @@ date: "2024-10-09"
 ---
 ~ENGLISH~
 
-#### Knowledge vs Labels - 2024-10-09
+#### Knowledge vs Information - 2024-10-09
 
 The Misuse of Language: A Catalyst for Cultural and Self-Decay
 
@@ -18,39 +18,39 @@ The decay of culture is identical to the decay of man, his idea of himself, and 
 
 The Consequences of Hyperintellectualism
 
-With physics and many academic fields, the misuse is so rampant and wound up in layers of politics that it takes an enormous amount of energy to combat and/or conduct proper research that has no political favor. This misuse is obvious to those inside the respective fields as soon as they try to offer their own opinions or theories. It’s very similar to how news media or political figureheads misuse and abuse language to distract the public, lessen the disfavor of certain privileged criminals while undermining the voices of innocents. It’s propaganda and corruption, plain and simple, but with deadly consequences. This is only what happens at the highest levels of power and influence.
+With physics and many academic fields, the misuse is so rampant and wound up in layers of politics that it takes an enormous amount of energy to combat and/or conduct any research that doesn't have political favor. This misuse is obvious to those inside the respective fields as soon as they try to offer their own opinions or theories. The mechanism is very similar to how news media or political figureheads misuse and abuse language to distract the public, lessen the disfavor of certain privileged criminals while undermining the voices of innocents. It’s propaganda and corruption, plain and simple, but with deadly consequences. This is what happens at the highest levels of power and influence.
 
-At lower levels of influence, we only get the big bits and pieces of the larger ideas those in power are working with. This kind of power structure turns people into drones, NPCs, zombies, stuck in groupthink as Orwell put it, or my favorite, turned into political animals (Baudrillard). It’s become an internet trope that as soon as some people get therapy and learn some mental health terminology, they begin to diagnose everyone around them and decide they’ve got it figured out. It’s a misuse of language.
+At lower levels of influence, we only get the bits and pieces of the larger ideas those in power are working with and disseminate to the masses. This kind of power structure turns people into drones, NPCs, zombies, stuck in groupthink as Orwell put it, or turned into what Baudrillard aptly described as "political animals". It’s become an internet trope that as soon as some people get therapy and learn some mental health terminology, they begin to diagnose everyone around them and decide they’ve got it figured out. It’s a misuse of language.
 
 It’s not to say that academic theories and terminology have no place in the everyday—it’s to warn each other about the dangers of psychological dogmas—of the silly human habit to put people in labeled boxes and decide their fate. This is abuse of language.
 
-When I saw the thumbnail of the second video, I was just about to tell my sister how I’ve started to abandon the terms NPD/BPD and lean more towards “cruelty” and “empathy” because that’s all it is at the end of the day. And it doesn’t even matter if you don’t know what those letters mean because that’s the whole point. It’s over-intellectualization and extreme intolerance of differences in perspective that literally nail our bodies to a cross in sacrifice for the sake of ideas not our own.
+When I saw the thumbnail of the second video, I was just about to tell my sister how I’ve started to abandon the terms NPD/BPD and lean more towards “cruelty” and “empathy” because that’s all it is at the end of the day. And it doesn’t even matter if you don’t know what those letters mean because that’s the whole point. It’s over-intellectualization and extreme intolerance of differences in perspective that literally (in the literature) nail our minds to a cross in subtle sacrifice for the sake of ideas not our own.  If it just sounds scientific, we don't seem to question it.
 
-There’s no need to over-analyze or psychoanalyze—if someone tells you you’re being cruel and unsympathetic, there is no argument. You will either empathize, or you won’t, or you can’t.
+But there’s no need to over-analyze or psychoanalyze—if someone tells you you’re being cruel and unsympathetic, there is no argument. You will either empathize, or you won’t, or you can’t.
 
 A Call for Perspective Shift: Understanding the Self
 
-On the flip side, either you articulate your needs and pain properly, or you are cruel to yourself. If you don’t know your needs, your pain, your nature, your strengths, and weaknesses, then you are not blameless and have a clear path forward.
+On the flip side, either you articulate your needs and pain properly, or you are cruel to yourself.  And again there is no other argument. If you don’t know your needs, your pain, your nature, your strengths, and weaknesses, then you are not blameless despite your pains and have a clear path forward.
 
-In either case, the pathology is nothing more than a fantasy concerning one’s self-worth, whether that be in too high estimation or too low, as you can find the loudest and most proud-seeming often the most critical and unfair to themselves; and so the opposite is true as well.
+In either case, the pathology is nothing more than a fantasy concerning one’s self-worth, whether that be in too high estimation or too low, as you can find the loudest and most proud-seeming often the most critical and unfair to themselves; and of course the opposite is true as well.
 
-If you are cruel to others or yourself and unaware of how it hurts others, this is pathological because a lack of knowledge prevents the regulation of internal systems enough to coordinate with others and contribute to collective good.
+If you are cruel to others or yourself and unaware of how it hurts others, this is pathological because a lack of knowledge prevents the regulation of internal systems enough to coordinate with others and contribute to collective good.  This means you need help from others more than you can help yourself.  So the most important thing for you to do is listen.
 
-If you are cruel to others or yourself, and you don’t think there’s anything wrong with how it hurts them, or you enjoy it, then you are just an asshole or an evil person because nothing is preventing you from changing your behavior. May Allah protect us.
+If you are cruel to others or yourself, and you don’t think there’s anything wrong with how it hurts them, or you enjoy it, then you are just an asshole or an evil person because nothing is preventing you from changing your behavior. In this case, no one can help until you look at yourself first.  May Allah protect us.
 
-It’s a fine line between being unaware and being apathetic, but it’s there, and most people probably fall into the first category before the second.
+It’s a fine line between being unaware and being apathetic, but it’s there, and most people probably fall into the first category before the second, and that should be warning enough for all of us to reflect and remember what makes us human.
 
-All of this is further complicated when you understand that these behaviors—having empathy or being cruel—exist on a spectrum. You can be empathetic in one context and cruel in another, or you can show up when it counts in some areas but not in others. It’s not black and white, and there are layers of lack of knowledge or ignorance which precede any kind of cruelty. The same is true with knowledge, love, and empathy. Most people will behave one way or the other eventually for one reason or another, but it’s which way they lean overall that defines them. But we really don’t need to go around defining anyone in any new and fashionable way. We don’t need a paradigm any more complicated than strong and weak.
+All of this is further complicated when you understand that these behaviors—having empathy or being cruel—exist on a spectrum. You can be empathetic in one context and cruel in another, or you can show up when it counts in some areas but not in others. It’s not black and white, and there are layers ignorance which precede any kind of cruelty. The same is true with knowledge, love, and empathy. We all behave one way or the other eventually for one reason or another, but it’s which way they lean overall that defines us. This doesn't mean we need to go around defining anyone in any new and fashionable way. We don’t need a paradigm any more complicated than strong and weak.
 
-Because for me, the solution is shifting perspective. It’s not about explaining and manipulating behavior (literally psychological behaviorism); it’s about understanding how people learn and take in information differently (cognitive science).
+Because for me, the solution is shifting perspective. It’s not about explaining and controlling bad behaviors (literally psychological behaviorism); it’s about understanding how people learn and take in information differently (cognitive science).
 
 Let’s keep it simple. You are strong when and where you were loved, and you are weak where and when you are not loved, valued, and seen. It’s the things about you that no one ever appreciated that make you weak, and it’s the things about you that were celebrated that gave you strength. This oversimplification of the self is useful to emphasize the point that the greatest value on earth is human connection.
 
-Understanding the complexity of the self is useful when you want to help others and give them space. But before that, you need to learn how to help yourself and give yourself space. To do that, the first step is to admit you are weak. You are strong, but you are also weak, and you need to understand how before you can help others because otherwise, you have no reason to become stronger.
+Understanding the complexity of the self is useful when you want to help others and give them space. But before that, you need to learn how to help yourself and give yourself space. The first step is to admit you are weak. You are strong, but you are also weak, and you need to understand how before you can help others.  Otherwise, you have no reason to become stronger.
 
 The problem isn’t in defining or describing bad behavior—that’s often trivial; it’s in defining what counts as good behavior: coordinating and contributing with others effectively and meaningfully. This is what it means to understand your strengths and your weaknesses.
 
-People get stuck in a circular routine and think that as long as they cling to that role and its definition, they are good. As long as they keep doing their job, then there is no way they can do anything wrong, and so there’s no need for any accountability or reflection. That’s not how growth works. That’s not how family or community works, and that’s not how a society should work. That’s how a machine works, and so we have to ask ourselves who designed this machine and its specifications and why, if that’s where you’re stuck. Every structure can become a prison if we don’t ask questions.
+People get stuck in a mechanical routines and think that as long as they cling to that role and its definition, they are good people. As long as they keep doing their job, then there is no way they can do anything wrong, and so there’s no need for any accountability or reflection.--that’s not how growth works. That’s not how family or community works, and that’s not how a society should work. That’s how a machine works, and so we have to ask ourselves who designed this machine and its specifications and why, if that’s where you’re stuck. Every structure can become a prison if we don’t ask questions.
 
 One beautiful measure for a man I recently came across is how far his voice could carry; in a room filled with people, how many could you reach?
 
@@ -58,7 +58,9 @@ Either way, you always have to ask yourself, what do you want your life to mean?
 
 Breaking the Cycle
 
-For many people, children are as many as they’ll ever reach and all their lives will ever mean, and this could mean great honor and joy or as much shame and frustration; history has all our stories. Children are often the best mirrors and force us to look at our own behavior until, of course, the same children grow up and have ideas of their own. That’s life’s challenge. With adults and their ideas, we are more hesitant to look at ourselves because the context is much larger and involves much more than managing a single event or incident; it relates to the vast context of our entire lives and the decisions we’ve made and our largest influences. It’s impossible to be part of a family or have any meaningful relationships and not face any sort of conflict rooted in a past unresolved conflict, trauma, or wound, or whatever we want to call it.
+For many people, children are as many as they’ll ever reach and all their lives will ever mean, and this could mean great honor and joy or just as much shame and frustration; history has all our stories. Children are often the best mirrors and force us to look at our own behavior until, of course, the same children grow up and have ideas of their own. That’s life’s challenge, facing the old and the new together. 
+
+With adults and their ideas, we are more hesitant to look at ourselves because the context is much larger and involves much more than managing a single event or incident; it relates to the vast context of our entire lives and the decisions we’ve made and our largest influences. It’s impossible to be part of a family or have any meaningful relationships and not face any sort of conflict rooted in a previous, unresolved conflict, trauma, or wound, or which ever term.
 
 You can only fight nature for so long; it will eventually catch up to you in the form of unsustainable relationships, and the body itself will refuse to sustain unsustainable practices. Life is ups and downs for sure, but we can be much better prepared for the downs and have much more appreciation of the ups when we have certainty in our knowledge of ourselves and those around us. When we know, with certainty, our strengths and our combined strengths.
 
@@ -68,7 +70,7 @@ I mean, like, the peaks and valleys are closer together somehow. I find joy and 
 
 ~ARABIC~
 
- #### المعرفة مقابل التصنيفات - ٢٠٢٤-١٠-٠٩
+ #### الفرق بين العلم والمعلومات - ٢٠٢٤-١٠-٠٩
 
 سوء استخدام اللغة: محفز لانهيار الثقافة والذات
 
