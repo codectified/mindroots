@@ -52,11 +52,16 @@ router.get('/list/quran_items', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id), sura_index: toInteger($sura_index)})
-      RETURN item.arabic AS arabic, item.transliteration AS transliteration, item.item_id AS item_id, item.english AS english, item.aya_index AS aya_index
+      RETURN 
+        item.arabic AS arabic, 
+        item.transliteration AS transliteration, 
+        toInteger(item.item_id) AS item_id,   /* Convert item_id */
+        toInteger(item.aya_index) AS aya_index, /* Convert aya_index */
+        item.english AS english
       ORDER BY item.aya_index
     `, { corpus_id, sura_index });
 
-    const quranItems = formatSimpleData(result.records);
+    const quranItems = result.records.map(record => record.toObject());
     res.json(quranItems);
   } catch (error) {
     console.error('Error fetching Quran items:', error);
