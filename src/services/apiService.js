@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-// Create an Axios instance with the base URL for the API
-const api = axios.create({
-  baseURL: 'https://theoption.life/api',
-});
-
+// // Create an Axios instance with the base URL for the API
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: 'https://theoption.life/api',
 // });
+
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -23,6 +23,58 @@ const convertIntegers = (obj) => {
     }
   }
   return obj;
+};
+
+export const fetchQuranItems = async (corpusId, surahIndex) => {
+  try {
+    const response = await api.get('/list/quran_items', {
+      params: { corpus_id: corpusId, sura_index: surahIndex },
+    });
+    return response.data.map(item => convertIntegers(item)); // Ensure integers are handled correctly
+  } catch (error) {
+    console.error('Error fetching Quran items:', error);
+    throw error;
+  }
+};
+
+// Fetches aya count for a given surah
+export const fetchAyaCount = async (surahIndex) => {
+  try {
+    const response = await api.get('/list/surah_aya_count', {
+      params: { sura_index: surahIndex },
+    });
+    return response.data.aya_count; // Assuming aya_count is returned
+  } catch (error) {
+    console.error('Error fetching Aya count:', error);
+    throw error;
+  }
+};
+
+
+// Fetch Poetry Items by corpus_type
+export const fetchPoetryItems = async (corpusType) => {
+  try {
+    const response = await api.get(`/api/list/poetry_items`, {
+      params: { corpus_type: corpusType }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching poetry items:', error);
+    throw error;
+  }
+};
+
+// Fetch Prose Items by corpus_type
+export const fetchProseItems = async (corpusType) => {
+  try {
+    const response = await api.get(`/api/list/prose_items`, {
+      params: { corpus_type: corpusType }
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching prose items:', error);
+    throw error;
+  }
 };
 
 // Updated fetch functions to handle Neo4j integers
