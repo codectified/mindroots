@@ -51,12 +51,9 @@ const ArticlesAndReferences = () => {
         ))}
       </ul>
 
-
-      <br></br>
-      <br></br>      <br></br>
       <br></br>      <br></br>
 
-      <h4>Articles and References</h4>
+      <h3>Articles</h3>
 
 
 
@@ -67,7 +64,7 @@ const ArticlesAndReferences = () => {
           <Link to="/getting-started">Getting Started</Link>
         </li>
         <li>
-          <Link to="/about_">About</Link>
+          <Link to="/about">About</Link>
         </li>
         {/* <li>
           <Link to="/elements">Elements</Link>
