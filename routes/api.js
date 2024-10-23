@@ -42,6 +42,35 @@ const formatSimpleData = (records) => {
   }));
 };
 
+router.get('/list/quran_items', async (req, res) => {
+  const { corpus_id, sura_index } = req.query;
+  if (!corpus_id || !sura_index) {
+    return res.status(400).send('Missing parameters');
+  }
+
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id), sura_index: toInteger($sura_index)})
+      RETURN 
+        item.arabic AS arabic, 
+        item.transliteration AS transliteration, 
+        toInteger(item.item_id) AS item_id,   /* Convert item_id */
+        toInteger(item.aya_index) AS aya_index, /* Convert aya_index */
+        item.english AS english
+      ORDER BY item.aya_index
+    `, { corpus_id, sura_index });
+
+    const quranItems = result.records.map(record => record.toObject());
+    res.json(quranItems);
+  } catch (error) {
+    console.error('Error fetching Quran items:', error);
+    res.status(500).send('Error fetching Quran items');
+  } finally {
+    await session.close();
+  }
+});
+
 
 // Endpoint to list all corpus items by corpus_id
 router.get('/list/corpus_items', async (req, res) => {
@@ -69,6 +98,30 @@ router.get('/list/corpus_items', async (req, res) => {
   }
 });
 
+// Endpoint to get the aya count for a specific surah
+router.get('/list/surah_aya_count', async (req, res) => {
+  const { sura_index } = req.query;
+  if (!sura_index) {
+    return res.status(400).send('Missing sura_index parameter');
+  }
+
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (item:CorpusItem {sura_index: toInteger($sura_index)})
+      WITH DISTINCT item.aya_index AS aya
+      RETURN count(aya) AS aya_count
+    `, { sura_index });
+
+    const ayaCount = result.records[0].get('aya_count').toInt(); // Get the aya count
+    res.json({ aya_count: ayaCount });
+  } catch (error) {
+    console.error('Error fetching aya count:', error);
+    res.status(500).send('Error fetching aya count');
+  } finally {
+    await session.close();
+  }
+});
 
 
 // corpus item graph

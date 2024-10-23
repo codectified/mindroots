@@ -1,50 +1,81 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { fetchCorpusItems } from '../../services/apiService';
+import { fetchQuranItems, fetchAyaCount, fetchCorpusItems, fetchPoetryItems, fetchProseItems } from '../../services/apiService';
 import MiniMenu from './MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useCorpus } from '../../contexts/CorpusContext';
+import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated rendering component
 
 const PrimaryList = () => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [names, setNames] = useState([]);
-  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
-  const { L1, setL1, L2, setL2 } = useScript();
+  const [items, setItems] = useState([]);
+  const [surah, setSurah] = useState(1); // Default to Surah 1 for Quran
+  const [aya, setAya] = useState(0); // Default to Aya 0 (all Ayas)
+  const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
+  const { L1, L2 } = useScript();
   const { handleSelectCorpusItem } = useCorpus();
 
   const queryParams = new URLSearchParams(location.search);
   const corpusId = queryParams.get('corpus_id');
   const corpusName = queryParams.get('corpus_name');
+  const corpusType = queryParams.get('corpus_type'); // Use corpus_type for poetry and prose
 
+  // Fetch the correct data based on corpus type
   useEffect(() => {
     const fetchData = async () => {
-      if (corpusId) {
+      if (corpusId === '2') { // Quran
         try {
-          const response = await fetchCorpusItems(corpusId, L1);
-          setNames(response);
-          console.log('Fetched corpus items:', response);
-
-          // Dynamically set available languages based on corpus item properties
-          if (response.length > 0) {
-            const item = response[0]; // Assuming all items in the corpus have the same language properties
-            const languages = ['arabic', 'english'];
-            if (item.transliteration) languages.push('transliteration');
-            setAvailableLanguages(languages);
-          }
-          
+          const quranData = await fetchQuranItems(corpusId, surah);
+          const filteredData = aya === 0 ? quranData : quranData.filter(item => item.aya_index === aya);
+          setItems(filteredData);
+        } catch (error) {
+          console.error('Error fetching Quran items:', error);
+        }
+      } else if (corpusId === '1') { // 99 Names (Simple List)
+        try {
+          const listData = await fetchCorpusItems(corpusId, L1);
+          setItems(listData);
         } catch (error) {
           console.error('Error fetching corpus items:', error);
         }
-      } else {
-        console.error('Corpus ID is missing in query parameters');
+      } else if (corpusType === 'poetry') { // Poetry (by Poem and Line)
+        try {
+          const poetryData = await fetchPoetryItems(corpusType);
+          setItems(poetryData);
+        } catch (error) {
+          console.error('Error fetching poetry items:', error);
+        }
+      } else if (corpusType === 'prose') { // Prose (without Ayah markers)
+        try {
+          const proseData = await fetchProseItems(corpusType);
+          setItems(proseData);
+        } catch (error) {
+          console.error('Error fetching prose items:', error);
+        }
       }
     };
-    fetchData();
-  }, [corpusId, L1]);
 
-  const handleItemClick = (name) => {
-    handleSelectCorpusItem(name);
+    fetchData();
+  }, [corpusId, surah, aya, L1, corpusType]);
+
+  useEffect(() => {
+    if (corpusId === '2') { // Fetch Aya count when Surah changes (for Quran)
+      const fetchAyaData = async () => {
+        try {
+          const ayaCountData = await fetchAyaCount(surah);
+          setAyaCount(ayaCountData);
+          setAya(0); // Reset to show all Ayas when Surah changes
+        } catch (error) {
+          console.error('Error fetching Aya count:', error);
+        }
+      };
+      fetchAyaData();
+    }
+  }, [surah, corpusId]);
+
+  const handleItemClick = (item) => {
+    handleSelectCorpusItem(item);
     navigate('/graph');
   };
 
@@ -52,15 +83,21 @@ const PrimaryList = () => {
     <div>
       <MiniMenu />
       <h1>{corpusName}</h1>
-      <ul>
-        {names.map((name) => (
-          <li key={name.item_id} onClick={() => handleItemClick(name)}>
-            {L2 === 'off' 
-              ? name[L1] 
-              : `${name[L1]} / ${name[L2]}`}
-          </li>
-        ))}
-      </ul>
+
+      {/* Use CorpusRenderer to handle rendering based on corpus type */}
+      <CorpusRenderer
+        corpusId={corpusId}
+        corpusType={corpusType}
+        items={items}
+        surah={surah}
+        aya={aya}
+        setSurah={setSurah}
+        setAya={setAya}
+        ayaCount={ayaCount}
+        L1={L1}
+        L2={L2}
+        handleSelectCorpusItem={handleItemClick} // Pass the click handler function here
+      />
     </div>
   );
 };
