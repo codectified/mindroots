@@ -8,6 +8,8 @@ import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import { useNavigate, Link, useLocation } from 'react-router-dom'; // Added useLocation
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
+import HighlightController from '../selectors/HighlightController';
+
 
 const MiniMenu = () => {
   const location = useLocation(); // Get the current route
@@ -43,6 +45,8 @@ const MiniMenu = () => {
           <LanguageSelector />
           <ContextShiftSelector />
           <NodeLimitSlider />
+          <HighlightController />
+
 
 
 

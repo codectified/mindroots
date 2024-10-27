@@ -57,7 +57,8 @@ router.get('/list/quran_items', async (req, res) => {
         item.transliteration AS transliteration, 
         toInteger(item.item_id) AS item_id,   /* Convert item_id */
         toInteger(item.aya_index) AS aya_index, /* Convert aya_index */
-        item.english AS english
+        item.english AS english,
+        item.gender AS gender
       ORDER BY item.aya_index
     `, { corpus_id, sura_index });
 

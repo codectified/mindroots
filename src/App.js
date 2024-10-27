@@ -23,9 +23,11 @@ import { GraphDataProvider } from './contexts/GraphDataContext';
 import { NodeLimitProvider } from './contexts/NodeLimitContext';
 
 import './App.css';
+import { HighlightProvider } from './contexts/HighlightContext';
 
 const App = () => {
   return (
+    <HighlightProvider>
     <ScriptProvider>
       <NodeLimitProvider>
         <CorpusProvider>
@@ -56,6 +58,7 @@ const App = () => {
         </CorpusProvider>
       </NodeLimitProvider>
     </ScriptProvider>
+    </HighlightProvider>
   );
 };
 
