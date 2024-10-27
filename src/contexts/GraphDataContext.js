@@ -18,61 +18,66 @@ export const GraphDataProvider = ({ children }) => {
 
   const { limit } = useNodeLimit();
 
-  // Handle root node click
-  const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
-    try {
-      let allNewWords = [];
-      if (contextFilter === 'lexicon') {
-        allNewWords = await fetchWordsByRootWithLexicon(node.root_id, L1, L2);
-      } else if (contextFilter === corpusId) {
-        allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, L1, L2);
-      }
+// Updated functions to prevent duplicates based on `word_id`
+const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
+  try {
+    let allNewWords = [];
+    if (contextFilter === 'lexicon') {
+      allNewWords = await fetchWordsByRootWithLexicon(node.root_id, L1, L2);
+    } else if (contextFilter === corpusId) {
+      allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, L1, L2);
+    }
 
-      const newNodes = allNewWords.map(word => ({
+    const currentWordIds = new Set(graphData.nodes.map(n => n.word_id)); // Existing `word_id`s
+    const newNodes = allNewWords
+      .filter(word => !currentWordIds.has(word.word_id)) // Filter out duplicates
+      .map(word => ({
         id: `word_${word.word_id}`,
         label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
         ...word,
         type: 'word',
       }));
 
-      const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
+    const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
 
-      setGraphData(prev => ({
-        nodes: [...prev.nodes, ...newNodes],
-        links: [...prev.links, ...newLinks],
-      }));
-    } catch (error) {
-      console.error('Error fetching data for clicked root node:', error);
+    setGraphData(prev => ({
+      nodes: [...prev.nodes, ...newNodes],
+      links: [...prev.links, ...newLinks],
+    }));
+  } catch (error) {
+    console.error('Error fetching data for clicked root node:', error);
+  }
+};
+
+const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
+  try {
+    let allNewWords = [];
+    if (contextFilter === 'lexicon') {
+      allNewWords = await fetchWordsByFormWithLexicon(node.form_id, L1, L2, limit);
+    } else if (contextFilter === corpusId) {
+      allNewWords = await fetchWordsByFormWithCorpus(node.form_id, corpusId, L1, L2, limit);
     }
-  };
 
-  // Handle form node click
-  const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
-    try {
-      let allNewWords = [];
-      if (contextFilter === 'lexicon') {
-        allNewWords = await fetchWordsByFormWithLexicon(node.form_id, L1, L2, limit);
-      } else if (contextFilter === corpusId) {
-        allNewWords = await fetchWordsByFormWithCorpus(node.form_id, corpusId, L1, L2, limit);
-      }
-
-      const newNodes = allNewWords.map(word => ({
+    const currentWordIds = new Set(graphData.nodes.map(n => n.word_id));
+    const newNodes = allNewWords
+      .filter(word => !currentWordIds.has(word.word_id))
+      .map(word => ({
         id: `word_${word.word_id}`,
         label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
         ...word,
         type: 'word',
       }));
 
-      const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
+    const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
 
-      setGraphData(prev => ({
-        nodes: [...prev.nodes, ...newNodes],
-        links: [...prev.links, ...newLinks],
-      }));
-    } catch (error) {
-      console.error('Error fetching data for clicked form node:', error);
-    }
-  };
+    setGraphData(prev => ({
+      nodes: [...prev.nodes, ...newNodes],
+      links: [...prev.links, ...newLinks],
+    }));
+  } catch (error) {
+    console.error('Error fetching data for clicked form node:', error);
+  }
+};
 
 // Handle word node click
 const handleWordNodeClick = async (node, L1, L2, corpusId) => {

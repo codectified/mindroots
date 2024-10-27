@@ -64,13 +64,16 @@ const minThreshold = 50;
 const maxThreshold = 500;
 
 // Create a scale function for node radius based on dataSize for Word nodes
-const sizeScale = d3.scaleLinear()
-  .domain([Math.max(actualMinSize, minThreshold), Math.min(actualMaxSize, maxThreshold)])
-  .range([4, 12]) // Nodes will have a minimum radius of 4 and a maximum of 12
-  .clamp(true); // Ensures the size stays within this range even if outside thresholds
+// Create a scale function for node radius based on dataSize for Word nodes using log scale
+const sizeScale = d3.scaleLog()
+  .domain([1, 27521]) // Log scale works better when we avoid 0, so start from 1
+  .range([4, 12]) // Small nodes start at 4px, largest ones capped at 12px
+  .clamp(true); // Ensure that sizes stay within the range
 
     // Set up the force simulation with adjusted charge and link forces
     const newSimulation = d3.forceSimulation(data.nodes)
+      
+    
       .force('link', d3.forceLink(data.links)
         .id(d => d.id)
         .distance(50) // Adjusted to spread nodes farther apart
@@ -113,7 +116,14 @@ const sizeScale = d3.scaleLinear()
       .selectAll('circle')
       .data(data.nodes)
       .enter().append('circle')
-      .attr('r', d => d.type === 'word' ? sizeScale(d.dataSize) : 10) // Only scale Word node sizes
+    // Adjust node radius based on dataSize, only for Word nodes
+    .attr('r', d => {
+      if (d.type === 'word') {
+        if (d.dataSize === 0) return 1; // Very small size for zero data size
+        return sizeScale(d.dataSize);    // Use log scale for Word nodes
+      }
+      return 10; // Default size for non-Word nodes
+    })
       .attr('fill', d => getColor(d)) // Use the getColor function
       .call(d3.drag()
         .on('start', dragstarted)
