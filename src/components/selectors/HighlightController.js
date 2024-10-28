@@ -1,19 +1,23 @@
+// ../components/selectors/HighlightController.js
 import React from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 
 const HighlightController = () => {
-  const { highlightGender, setHighlightGender } = useHighlight();
+  const { highlightGender, setHighlightGender, highlightVerb, setHighlightVerb, highlightParticle, setHighlightParticle } = useHighlight();
 
   const handleToggle = (property) => {
     if (property === 'gender') {
       setHighlightGender(highlightGender ? null : 'feminine'); // Toggle highlighting for feminine gender
+    } else if (property === 'verb') {
+      setHighlightVerb(!highlightVerb); // Toggle highlighting for verbs
+    } else if (property === 'particle') {
+      setHighlightParticle(!highlightParticle); // Toggle highlighting for particles
     }
-    // Additional properties can be handled here as needed
   };
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', flexWrap: 'wrap', padding: '10px 0' }}>
-            <label>Highlight:</label> {/* Simple label with a colon */}
+      <label>Highlight:</label> {/* Simple label with a colon */}
 
       <label>
         <input
@@ -21,27 +25,26 @@ const HighlightController = () => {
           checked={highlightGender === 'feminine'}
           onChange={() => handleToggle('gender')}
         />
-        Gender (F.)
-      </label>
-
-
-      {/* <label>
-        <input
-          type="checkbox"
-          onChange={() => handleToggle('property1')}
-        />
-        Property 1
+        Feminine nouns
       </label>
 
       <label>
         <input
           type="checkbox"
-          onChange={() => handleToggle('property2')}
+          checked={highlightVerb}
+          onChange={() => handleToggle('verb')}
         />
-        Property 2
-      </label> */}
+        Verbs
+      </label>
 
-      
+      <label>
+        <input
+          type="checkbox"
+          checked={highlightParticle}
+          onChange={() => handleToggle('particle')}
+        />
+        Particles
+      </label>
     </div>
   );
 };
