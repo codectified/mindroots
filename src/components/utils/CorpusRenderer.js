@@ -2,19 +2,29 @@ import React from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 
 const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, setAya, ayaCount, L1, L2, handleSelectCorpusItem }) => {
-  const { highlightGender } = useHighlight();
+  const { highlightGender, highlightVerb, highlightParticle } = useHighlight();
 
   const getWordStyle = (item) => {
+    // Highlight feminine gender
     if (highlightGender && item.gender === highlightGender) {
-      return { color: highlightGender === 'feminine' ? 'pink' : 'lightblue', fontWeight: 'bold' };
+      return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue', fontWeight: 'bold' };
     }
-    return {}; // Default style
+    // Highlight verbs
+    if (highlightVerb && item.pos === 'verb') {
+      return { color: 'green', fontWeight: 'bold' };
+    }
+    // Highlight any non-noun, non-verb items
+    if (highlightParticle && item.pos !== 'noun' && item.pos !== 'verb') {
+      return { color: 'blue', fontStyle: 'bold' };
+    }
+    // Default style
+    return {};
   };
 
   const renderQuran = () => {
     const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
   
-    // Attempt to parse `surah` as a number, or fall back to `sura_index` from `items`
+    // Parse `surah` as a number or fall back to `sura_index` from `items`
     const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index.low) : null);
   
     return (
@@ -26,16 +36,9 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
             <option key={sura} value={sura}>{sura}</option>
           ))}
         </select>
-        {/* <label htmlFor="aya-select">Select Aya: </label>
-        <select id="aya-select" value={aya} onChange={(e) => setAya(e.target.value)}>
-          <option value={0}>All Ayas</option>
-          {Array.from({ length: ayaCount }, (_, i) => i + 1).map(a => (
-            <option key={a} value={a}>Aya {a}</option>
-          ))}
-        </select> */}
   
         <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
-          {/* Display Basmala only if this isn't Surah 9 */}
+          {/* Display Basmala unless it's Surah 9 */}
           {surahNumber !== 9 && (
             <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
           )}
@@ -61,7 +64,7 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
     );
   };
 
-  // Render List items with gender highlighting
+  // Render List items with gender and part-of-speech highlighting
   const renderList = () => (
     <ul>
       {items.map(item => (
@@ -72,7 +75,7 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
     </ul>
   );
 
-  // Render Poetry items with gender highlighting
+  // Render Poetry items with gender and part-of-speech highlighting
   const renderPoetry = () => (
     <div>
       <h2>Poetry</h2>
@@ -84,7 +87,7 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
     </div>
   );
 
-  // Render Prose items with gender highlighting
+  // Render Prose items with gender and part-of-speech highlighting
   const renderProse = () => (
     <div>
       <h2>Prose</h2>
