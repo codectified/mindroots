@@ -21,12 +21,15 @@ import { ContextFilterProvider } from './contexts/ContextFilterContext';
 import { CorpusProvider } from './contexts/CorpusContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
 import { NodeLimitProvider } from './contexts/NodeLimitContext';
+import { TextLayoutProvider } from './contexts/TextLayoutContext';
+import { HighlightProvider } from './contexts/HighlightContext';
+
 
 import './App.css';
-import { HighlightProvider } from './contexts/HighlightContext';
 
 const App = () => {
   return (
+    <TextLayoutProvider>
     <HighlightProvider>
     <ScriptProvider>
       <NodeLimitProvider>
@@ -59,6 +62,8 @@ const App = () => {
       </NodeLimitProvider>
     </ScriptProvider>
     </HighlightProvider>
+    </TextLayoutProvider>
+
   );
 };
 
