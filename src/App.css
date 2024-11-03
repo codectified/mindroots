@@ -240,6 +240,45 @@
     top: 0;
     left: 0;
   }
+
+/* Container for settings text on left and buttons on right */
+.settings-top-section {
+  display: flex;
+  align-items: flex-start;
+}
+
+/* Text section remains on the left */
+.settings-text {
+  flex: 1;
+}
+
+/* Button container on the right, aligned fully right */
+.settings-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px; /* Space between stacked buttons */
+  margin-left: auto; /* Pushes the buttons fully to the right */
+  align-items: flex-end;
+}
+
+/* Styling for small, circular buttons */
+.small-icon-button {
+  width: 35px;
+  height: 35px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background-color: #333;
+  color: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  border: none;
+}
+
+.small-icon-button:hover {
+  background-color: #555;
+}
   
   
   /* ============================================

@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faInfoCircle, faNewspaper, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faChevronDown, faChevronUp, faBook, faMapMarked, faSearch, faInfoCircle, faNewspaper } from '@fortawesome/free-solid-svg-icons';
 import ReactMarkdown from 'react-markdown';
 import aboutContent from '../../content/about.md';
 import changelogContent from '../../content/changelog.md';
@@ -14,14 +14,15 @@ import { useNavigate, Link, useLocation } from 'react-router-dom';
 const MiniMenu = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const [selectedOption, setSelectedOption] = useState(null); // Start with null by default
+  const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
   const [showAdditionalSettings, setShowAdditionalSettings] = useState(false);
-  const [isMenuExpanded, setIsMenuExpanded] = useState(false); // New state for expanding/collapsing menu
+  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const holdTimeout = useRef(null);
 
   useEffect(() => {
     if (location.pathname === '/start' || location.pathname === '/sandbox' || location.pathname === '/corpus-menu') {
-      setSelectedOption(null); // Do not open settings by default
+      setSelectedOption(null);
     }
   }, [location.pathname]);
 
@@ -29,32 +30,46 @@ const MiniMenu = () => {
     setSelectedOption((prevOption) => (prevOption === option ? null : option));
   };
 
-  const handleHome = () => {
-    navigate('/mindroots');
+  const handleNavigation = (path) => {
+    navigate(path);
+  };
+
+  const handleMindrootsClick = () => {
+    setIsMenuExpanded(prev => !prev);
+  };
+
+  const handleMouseDown = () => {
+    holdTimeout.current = setTimeout(() => {
+      navigate('/mindroots');
+    }, 1000);
+  };
+
+  const handleMouseUp = () => {
+    clearTimeout(holdTimeout.current);
   };
 
   const renderContent = () => {
     if (selectedOption === 'settings') {
       return (
         <div className="content-container">
-          Click the globe to toggle settings.
-          <br />
-
-          Click <Link to="/getting-started">here</Link> for more information.
-          <br />
-          <br />
-
-          <LanguageSelector />
-          <br />
-
-
-          {/* Additional Settings Toggle */}
-          <div className="additional-settings-toggle" onClick={() => setShowAdditionalSettings(prev => !prev)}>
+          <div className="settings-top-section">
+            <div className="settings-text">
+              <LanguageSelector />
+            </div>
+            <div className="settings-links">
+              <button className="small-icon-button" onClick={() => toggleOption('about')}>
+                <FontAwesomeIcon icon={faInfoCircle} />
+              </button>
+              <button className="small-icon-button" onClick={() => toggleOption('changelog')}>
+                <FontAwesomeIcon icon={faNewspaper} />
+              </button>
+            </div>
+          </div>
+          
+          <div className="additional-settings-toggle" onClick={() => setShowAdditionalSettings((prev) => !prev)}>
             Additional Settings
             <FontAwesomeIcon icon={showAdditionalSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
-
-          {/* Conditionally render additional settings */}
           {showAdditionalSettings && (
             <>
               <br />
@@ -88,35 +103,47 @@ const MiniMenu = () => {
   useEffect(() => {
     if (selectedOption === 'about') {
       fetch(aboutContent)
-        .then(res => res.text())
-        .then(text => setMarkdownContent(text));
+        .then((res) => res.text())
+        .then((text) => setMarkdownContent(text));
     } else if (selectedOption === 'changelog') {
       fetch(changelogContent)
-        .then(res => res.text())
-        .then(text => setMarkdownContent(text));
+        .then((res) => res.text())
+        .then((text) => setMarkdownContent(text));
     }
   }, [selectedOption]);
 
   return (
     <div>
       <div className="menu-container">
-        {/* Only show additional buttons if the menu is expanded */}
         {isMenuExpanded && (
           <>
             <button className={`menu-button ${selectedOption === 'settings' ? 'active' : ''}`} onClick={() => toggleOption('settings')}>
               <FontAwesomeIcon icon={faGlobe} />
             </button>
-            <button className={`menu-button ${selectedOption === 'about' ? 'active' : ''}`} onClick={() => toggleOption('about')}>
-              <FontAwesomeIcon icon={faInfoCircle} />
+            <button className="menu-button" onClick={() => handleNavigation('/corpus-menu')}>
+              <FontAwesomeIcon icon={faBook} />
             </button>
-            <button className={`menu-button ${selectedOption === 'changelog' ? 'active' : ''}`} onClick={() => toggleOption('changelog')}>
-              <FontAwesomeIcon icon={faNewspaper} />
+            <button className="menu-button" onClick={() => handleNavigation('/start')}>
+              <FontAwesomeIcon icon={faMapMarked} />
+            </button>
+            <button className="menu-button" onClick={() => handleNavigation('/sandbox')}>
+              <FontAwesomeIcon icon={faSearch} />
             </button>
           </>
         )}
 
-        {/* Mindroots button that toggles menu expansion */}
-        <a href="/mindroots" className="mindroots-button" onClick={(e) => { e.preventDefault(); setIsMenuExpanded(prev => !prev); }}>
+        {/* Mindroots button with hold-to-navigate and click-to-toggle functionality */}
+        <a
+          href="/mindroots"
+          className="mindroots-button"
+          onClick={(e) => {
+            e.preventDefault();
+            handleMindrootsClick();
+          }}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+        >
           <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="Mindroots" className="button-icon" />
           <FontAwesomeIcon icon={isMenuExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
         </a>
