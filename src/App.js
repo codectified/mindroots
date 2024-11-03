@@ -23,12 +23,13 @@ import { GraphDataProvider } from './contexts/GraphDataContext';
 import { NodeLimitProvider } from './contexts/NodeLimitContext';
 import { TextLayoutProvider } from './contexts/TextLayoutContext';
 import { HighlightProvider } from './contexts/HighlightContext';
-
+import { SettingsProvider } from './contexts/SettingsContext';
 
 import './App.css';
 
 const App = () => {
   return (
+    <SettingsProvider>
     <TextLayoutProvider>
     <HighlightProvider>
     <ScriptProvider>
@@ -63,6 +64,8 @@ const App = () => {
     </ScriptProvider>
     </HighlightProvider>
     </TextLayoutProvider>
+    </SettingsProvider>
+
 
   );
 };
