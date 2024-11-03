@@ -33,26 +33,30 @@ const ContextShiftSelector = () => {
   };
 
   return (
-    <div>
-      <label>Form Context:</label>
-      <select name="form" value={contextFilterForm} onChange={handleContextFilterChange}>
-        <option value="lexicon">Lexicon</option>
-        {corpora.map(corpus => (
-          <option key={corpus.id} value={corpus.id}>
-            {getCorpusName(corpus.id)}
-          </option>
-        ))}
-      </select>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', alignItems: 'center', rowGap: '2px', columnGap: '15px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}>
+        <label>Form Context:</label>
+        <select name="form" value={contextFilterForm} onChange={handleContextFilterChange} style={{ margin: 0 }}>
+          <option value="lexicon">Lexicon</option>
+          {corpora.map(corpus => (
+            <option key={corpus.id} value={corpus.id}>
+              {getCorpusName(corpus.id)}
+            </option>
+          ))}
+        </select>
+      </div>
 
-      <label>Root Context:</label>
-      <select name="root" value={contextFilterRoot} onChange={handleContextFilterChange}>
-        <option value="lexicon">Lexicon</option>
-        {corpora.map(corpus => (
-          <option key={corpus.id} value={corpus.id}>
-            {getCorpusName(corpus.id)}
-          </option>
-        ))}
-      </select>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}>
+        <label>Root Context:</label>
+        <select name="root" value={contextFilterRoot} onChange={handleContextFilterChange} style={{ margin: 0 }}>
+          <option value="lexicon">Lexicon</option>
+          {corpora.map(corpus => (
+            <option key={corpus.id} value={corpus.id}>
+              {getCorpusName(corpus.id)}
+            </option>
+          ))}
+        </select>
+      </div>
     </div>
   );
 };
