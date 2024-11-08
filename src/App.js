@@ -9,7 +9,6 @@ import Settings from './components/staticPages/Settings';
 import About from './components/staticPages/About';
 import Explore from './components/graph/Explore';
 import Games from './components/staticPages/Games';
-import ProjectMap from './components/staticPages/ProjectMap';
 import Search from './components/graph/Search';
 
 import MarkdownRenderer from './components/utils/MarkdownRenderer';
@@ -53,7 +52,6 @@ const App = () => {
                   <Route path="/about" element={<Layout><About /></Layout>} />
                   <Route path="/start" element={<Layout><Explore /></Layout>} />
                   <Route path="/games" element={<Layout><Games /></Layout>} />
-                  <Route path="/project-map" element={<Layout><ProjectMap /></Layout>} />
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />
                 </Routes>
               </Router>
