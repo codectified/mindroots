@@ -184,13 +184,13 @@
    Menu and Navigation Styles 
    ============================================ */
    .menu-container {
-    position: fixed;
+    position: absolute; /* Changed to absolute to stop persistence on scroll */
     right: 20px;
     top: 20px;
     display: flex;
     flex-direction: row;
-    align-items: center; /* Center-aligns all buttons horizontally */
-    gap: 15px; /* Adjusted gap for consistent spacing */
+    align-items: center;
+    gap: 10px; /* Reduced gap between icons */
     height: 60px;
     z-index: 1000;
   }
@@ -207,7 +207,6 @@
     cursor: pointer;
     font-size: 20px;
     border: none;
-
   }
   
   .menu-button:hover {
@@ -225,11 +224,11 @@
     align-items: center;
     justify-content: center;
     border-radius: 50%;
-    background-color: transparent; /* Remove background to avoid border */
+    background-color: transparent;
     cursor: pointer;
     overflow: hidden;
     position: relative;
-    border: none; /* Ensure no border is applied */
+    border: none;
   }
   
   .mindroots-button .button-icon {
@@ -240,45 +239,42 @@
     top: 0;
     left: 0;
   }
-
-/* Container for settings text on left and buttons on right */
-.settings-top-section {
-  display: flex;
-  align-items: flex-start;
-}
-
-/* Text section remains on the left */
-.settings-text {
-  flex: 1;
-}
-
-/* Button container on the right, aligned fully right */
-.settings-links {
-  display: flex;
-  flex-direction: column;
-  gap: 10px; /* Space between stacked buttons */
-  margin-left: auto; /* Pushes the buttons fully to the right */
-  align-items: flex-end;
-}
-
-/* Styling for small, circular buttons */
-.small-icon-button {
-  width: 35px;
-  height: 35px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 50%;
-  background-color: #333;
-  color: #fff;
-  cursor: pointer;
-  font-size: 16px;
-  border: none;
-}
-
-.small-icon-button:hover {
-  background-color: #555;
-}
+  
+  /* Container for settings text on left and buttons on right */
+  .settings-top-section {
+    display: flex;
+    align-items: flex-start;
+  }
+  
+  .settings-text {
+    flex: 1;
+  }
+  
+  .settings-links {
+    display: flex;
+    flex-direction: column;
+    gap: 8px; /* Adjusted spacing */
+    margin-left: auto;
+    align-items: flex-end;
+  }
+  
+  .small-icon-button {
+    width: 35px;
+    height: 35px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    background-color: #333;
+    color: #fff;
+    cursor: pointer;
+    font-size: 16px;
+    border: none;
+  }
+  
+  .small-icon-button:hover {
+    background-color: #555;
+  }
   
   
   /* ============================================

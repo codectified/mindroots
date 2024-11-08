@@ -54,14 +54,14 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       return color(d.type);
     };
 
-// Calculate actual min and max dataSize values for Word nodes
-const wordNodes = data.nodes.filter(d => d.type === 'word');
-const actualMinSize = d3.min(wordNodes, d => d.dataSize);
-const actualMaxSize = d3.max(wordNodes, d => d.dataSize);
+// // Calculate actual min and max dataSize values for Word nodes
+// const wordNodes = data.nodes.filter(d => d.type === 'word');
+// const actualMinSize = d3.min(wordNodes, d => d.dataSize);
+// const actualMaxSize = d3.max(wordNodes, d => d.dataSize);
 
-// Set the thresholds for the size scaling
-const minThreshold = 50;
-const maxThreshold = 500;
+// // Set the thresholds for the size scaling
+// const minThreshold = 50;
+// const maxThreshold = 500;
 
 // Create a scale function for node radius based on dataSize for Word nodes
 // Create a scale function for node radius based on dataSize for Word nodes using log scale

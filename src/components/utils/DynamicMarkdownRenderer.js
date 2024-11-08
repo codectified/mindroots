@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import MiniMenu from '../navigation/MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { fetchMarkdownFiles } from '../../services/apiService';
 
@@ -77,9 +76,9 @@ const DynamicMarkdownRenderer = ({ baseFolder }) => {
         </div>
       </div>
   
-      <a href="/mindroots" className="mindroots-button">
+      {/* <a href="/mindroots" className="mindroots-button">
         <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="Mindroots" className="button-icon" />
-      </a>
+      </a> */}
   <br></br>
       <div className={`markdown-page ${L1 === 'arabic' ? 'rtl' : 'ltr'}`}>
         {contents.map((content, index) => (

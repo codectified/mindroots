@@ -117,17 +117,17 @@ const MiniMenu = () => {
       <div className="menu-container">
         {isMenuExpanded && (
           <>
-            <button className={`menu-button ${selectedOption === 'settings' ? 'active' : ''}`} onClick={() => toggleOption('settings')}>
-              <FontAwesomeIcon icon={faGlobe} />
-            </button>
-            <button className="menu-button" onClick={() => handleNavigation('/corpus-menu')}>
-              <FontAwesomeIcon icon={faBook} />
+                      <button className="menu-button" onClick={() => handleNavigation('/sandbox')}>
+              <FontAwesomeIcon icon={faSearch} />
             </button>
             <button className="menu-button" onClick={() => handleNavigation('/start')}>
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
-            <button className="menu-button" onClick={() => handleNavigation('/sandbox')}>
-              <FontAwesomeIcon icon={faSearch} />
+            <button className="menu-button" onClick={() => handleNavigation('/corpus-menu')}>
+              <FontAwesomeIcon icon={faBook} />
+            </button>
+            <button className={`menu-button ${selectedOption === 'settings' ? 'active' : ''}`} onClick={() => toggleOption('settings')}>
+              <FontAwesomeIcon icon={faGlobe} />
             </button>
           </>
         )}
