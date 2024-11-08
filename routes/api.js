@@ -138,7 +138,8 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
       MATCH (item:CorpusItem {item_id: toInteger($itemId), corpus_id: toInteger($corpusId)})
       OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
       OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
-      RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots
+      OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
+      RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms
     `;
 
     const result = await session.run(query, { itemId, corpusId });
@@ -147,7 +148,8 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
       const item = records.get('item').properties;
       const words = records.get('words').map(record => convertIntegers(record.properties));
       const roots = records.get('roots').map(record => convertIntegers(record.properties));
-      res.json({ item, words, roots });
+      const forms = records.get('forms').map(record => convertIntegers(record.properties));
+      res.json({ item, words, roots, forms });
     } else {
       res.json({});
     }
