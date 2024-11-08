@@ -1,10 +1,13 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 
-const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
+const GraphVisualization = ({ data, onNodeClick }) => {
   const svgRef = useRef();
   const containerRef = useRef();
   const [simulation, setSimulation] = useState(null);
+
+  // Wrap onNodeClick in useCallback to prevent it from changing on every render
+  const handleNodeClick = useCallback((event, d) => onNodeClick(d, event), [onNodeClick]);
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
@@ -54,33 +57,20 @@ const GraphVisualization = ({ data, onNodeClick, onNodeRightClick }) => {
       return color(d.type);
     };
 
-// // Calculate actual min and max dataSize values for Word nodes
-// const wordNodes = data.nodes.filter(d => d.type === 'word');
-// const actualMinSize = d3.min(wordNodes, d => d.dataSize);
-// const actualMaxSize = d3.max(wordNodes, d => d.dataSize);
-
-// // Set the thresholds for the size scaling
-// const minThreshold = 50;
-// const maxThreshold = 500;
-
-// Create a scale function for node radius based on dataSize for Word nodes
-// Create a scale function for node radius based on dataSize for Word nodes using log scale
-const sizeScale = d3.scaleLog()
-  .domain([1, 27521]) // Log scale works better when we avoid 0, so start from 1
-  .range([4, 12]) // Small nodes start at 4px, largest ones capped at 12px
-  .clamp(true); // Ensure that sizes stay within the range
+    const sizeScale = d3.scaleLog()
+      .domain([1, 27521]) // Log scale works better when we avoid 0, so start from 1
+      .range([4, 12]) // Small nodes start at 4px, largest ones capped at 12px
+      .clamp(true); // Ensure that sizes stay within the range
 
     // Set up the force simulation with adjusted charge and link forces
     const newSimulation = d3.forceSimulation(data.nodes)
-      
-    
       .force('link', d3.forceLink(data.links)
         .id(d => d.id)
         .distance(50) // Adjusted to spread nodes farther apart
       )
       .force('charge', d3.forceManyBody()
-      .strength(d => d.type === 'word' ? -350 * sizeScale(d.dataSize) : -100)
-    )
+        .strength(d => d.type === 'word' ? -350 * sizeScale(d.dataSize) : -100)
+      )
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX(d => {
         if (d.type === 'name') return width / 2;
@@ -96,7 +86,6 @@ const sizeScale = d3.scaleLog()
         return height / 3; // Default to a higher position
       }).strength(1))
       .force('collide', d3.forceCollide(d => d.type === 'word' ? sizeScale(d.dataSize) + 15 : 50)) // Sets collision radius: 'word' nodes vary based on size; others have fixed radius (10).
-
       .alphaDecay(0.02) // Alpha decay for stability
       .velocityDecay(0.992); // Adjusted velocity decay
 
@@ -116,24 +105,20 @@ const sizeScale = d3.scaleLog()
       .selectAll('circle')
       .data(data.nodes)
       .enter().append('circle')
-    // Adjust node radius based on dataSize, only for Word nodes
-    .attr('r', d => {
-      if (d.type === 'word') {
-        if (d.dataSize === 0) return 1; // Very small size for zero data size
-        return sizeScale(d.dataSize);    // Use log scale for Word nodes
-      }
-      return 10; // Default size for non-Word nodes
-    })
+      // Adjust node radius based on dataSize, only for Word nodes
+      .attr('r', d => {
+        if (d.type === 'word') {
+          if (d.dataSize === 0) return 1; // Very small size for zero data size
+          return sizeScale(d.dataSize);    // Use log scale for Word nodes
+        }
+        return 10; // Default size for non-Word nodes
+      })
       .attr('fill', d => getColor(d)) // Use the getColor function
       .call(d3.drag()
         .on('start', dragstarted)
         .on('drag', dragged)
         .on('end', dragended))
-      .on('click', (event, d) => onNodeClick(d, event))
-      .on('contextmenu', (event, d) => {
-        event.preventDefault();
-        onNodeRightClick(d, event);
-      });
+      .on('click', handleNodeClick);
 
     // Add node labels
     node.append('title').text(d => d.label);
@@ -201,7 +186,7 @@ const sizeScale = d3.scaleLog()
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data]);
+  }, [data, handleNodeClick]);
 
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%' }}>
