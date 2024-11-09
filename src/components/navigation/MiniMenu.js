@@ -77,6 +77,7 @@ const MiniMenu = () => {
               <TextLayoutToggle />
               <HighlightController />
               <ContextShiftSelector />
+              <br></br>
               <NodeLimitSlider />
               <FilterController />
             </>

@@ -4,8 +4,8 @@ import React, { createContext, useState, useContext } from 'react';
 const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
-  // Ensure filterWordTypes defaults to an empty array
-  const [filterWordTypes, setFilterWordTypes] = useState([]); // e.g., ['noun', 'verb']
+  const [filterWordTypes, setFilterWordTypes] = useState([]); // Multi-select filter for word types
+  const [hideFormNodes, setHideFormNodes] = useState(false); // New state to hide form nodes
 
   const toggleWordType = (type) => {
     setFilterWordTypes((prevTypes) => 
@@ -15,8 +15,10 @@ export const FilterProvider = ({ children }) => {
     );
   };
 
+  const toggleHideFormNodes = () => setHideFormNodes(prev => !prev); // Toggle form node visibility
+
   return (
-    <FilterContext.Provider value={{ filterWordTypes, toggleWordType }}>
+    <FilterContext.Provider value={{ filterWordTypes, toggleWordType, hideFormNodes, toggleHideFormNodes }}>
       {children}
     </FilterContext.Provider>
   );
