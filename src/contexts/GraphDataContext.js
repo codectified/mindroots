@@ -8,6 +8,8 @@ import {
   fetchWordsByFormWithCorpus 
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
+import { useFilter } from './FilterContext'; // Import the filter context
+
 
 
 const GraphDataContext = createContext();
@@ -17,6 +19,39 @@ export const GraphDataProvider = ({ children }) => {
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
 
   const { limit } = useNodeLimit();
+
+  const { filterWordTypes } = useFilter(); // Access filterWordType
+
+  // Function to filter Word nodes and remove associated links
+  const applyFilter = (nodes, links) => {
+    if (filterWordTypes.length === 0) return { nodes, links }; // No filter applied if no types are selected
+  
+    // Step 1: Filter nodes to keep only Word nodes that match any of the selected filterWordTypes, or keep all non-Word nodes
+    const filteredNodes = nodes.filter(node => 
+      node.node_type !== 'Word' || filterWordTypes.includes(node.word_type)
+    );
+  
+    // Step 2: Create a Set of IDs for nodes that remain after filtering
+    const remainingNodeIds = new Set(filteredNodes.map(node => node.id));
+  
+    // Step 3: Filter links to include only those that connect two nodes that remain
+    const filteredLinks = links.filter(link => {
+      // Check if link's source and target are objects, if so, access their IDs
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+  
+      return remainingNodeIds.has(sourceId) && remainingNodeIds.has(targetId);
+    });
+  
+    return { nodes: filteredNodes, links: filteredLinks };
+  };
+
+  const { nodes: filteredNodes, links: filteredLinks } = applyFilter(graphData.nodes, graphData.links);
+
+  const filteredGraphData = {
+    nodes: filteredNodes,
+    links: filteredLinks,
+  };
 
 // Updated functions to prevent duplicates based on `word_id`
 const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
@@ -137,7 +172,7 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
 
   return (
     <GraphDataContext.Provider value={{
-      graphData,
+      graphData: filteredGraphData,
       setGraphData,
       handleNodeClick, // expose handleNodeClick
       handleRootNodeClick,

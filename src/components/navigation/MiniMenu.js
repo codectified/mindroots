@@ -9,6 +9,7 @@ import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
 import HighlightController from '../selectors/HighlightController';
 import TextLayoutToggle from '../selectors/TextLayoutSelector';
+import FilterController from '../selectors/FilterController';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const MiniMenu = () => {
@@ -77,6 +78,7 @@ const MiniMenu = () => {
               <HighlightController />
               <ContextShiftSelector />
               <NodeLimitSlider />
+              <FilterController />
             </>
           )}
         </div>
