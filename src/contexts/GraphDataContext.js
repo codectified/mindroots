@@ -8,6 +8,8 @@ import {
   fetchWordsByFormWithCorpus 
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
+import { useFilter } from './FilterContext'; // Import the filter context
+
 
 
 const GraphDataContext = createContext();
@@ -17,6 +19,53 @@ export const GraphDataProvider = ({ children }) => {
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
 
   const { limit } = useNodeLimit();
+
+  const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
+
+  // Function to filter Word nodes, Form nodes, and remove associated links
+  const applyFilter = (nodes, links) => {
+    console.log("Filter word types:", filterWordTypes);
+    console.log("Hide form nodes:", hideFormNodes);
+  
+    const filteredNodes = nodes.filter(node => {
+      const isWordNode = node.node_type === 'Word';
+      const isFormNode = node.node_type === 'Form';
+  
+      // Determine if the node should be included based on the filters
+      const includeNode =
+        (!isWordNode || filterWordTypes.length === 0 || filterWordTypes.includes(node.word_type)) &&
+        (!isFormNode || !hideFormNodes); // Hide only Form nodes if hideFormNodes is true
+  
+      console.log(`Node ${node.id} (${node.node_type}) included: ${includeNode}`);
+      return includeNode;
+    });
+  
+    // Step 2: Create a Set of IDs for nodes that remain after filtering
+    const remainingNodeIds = new Set(filteredNodes.map(node => node.id));
+    console.log("Remaining Node IDs after filtering:", Array.from(remainingNodeIds));
+  
+    // Step 3: Filter links to include only those that connect two nodes that remain
+    const filteredLinks = links.filter(link => {
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+  
+      const keepLink = remainingNodeIds.has(sourceId) && remainingNodeIds.has(targetId);
+      console.log(`Link ${sourceId} -> ${targetId} kept: ${keepLink}`);
+      return keepLink;
+    });
+    
+    console.log("Final filtered nodes:", filteredNodes);
+    console.log("Final filtered links:", filteredLinks);
+  
+    return { nodes: filteredNodes, links: filteredLinks };
+  };
+
+  const { nodes: filteredNodes, links: filteredLinks } = applyFilter(graphData.nodes, graphData.links);
+
+  const filteredGraphData = {
+    nodes: filteredNodes,
+    links: filteredLinks,
+  };
 
 // Updated functions to prevent duplicates based on `word_id`
 const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
@@ -137,7 +186,7 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
 
   return (
     <GraphDataContext.Provider value={{
-      graphData,
+      graphData: filteredGraphData,
       setGraphData,
       handleNodeClick, // expose handleNodeClick
       handleRootNodeClick,
