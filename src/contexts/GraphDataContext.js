@@ -20,28 +20,42 @@ export const GraphDataProvider = ({ children }) => {
 
   const { limit } = useNodeLimit();
 
-  const { filterWordTypes } = useFilter(); // Access filterWordType
+  const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
 
-  // Function to filter Word nodes and remove associated links
+  // Function to filter Word nodes, Form nodes, and remove associated links
   const applyFilter = (nodes, links) => {
-    if (filterWordTypes.length === 0) return { nodes, links }; // No filter applied if no types are selected
+    console.log("Filter word types:", filterWordTypes);
+    console.log("Hide form nodes:", hideFormNodes);
   
-    // Step 1: Filter nodes to keep only Word nodes that match any of the selected filterWordTypes, or keep all non-Word nodes
-    const filteredNodes = nodes.filter(node => 
-      node.node_type !== 'Word' || filterWordTypes.includes(node.word_type)
-    );
+    const filteredNodes = nodes.filter(node => {
+      const isWordNode = node.node_type === 'Word';
+      const isFormNode = node.node_type === 'Form';
+  
+      // Determine if the node should be included based on the filters
+      const includeNode =
+        (!isWordNode || filterWordTypes.length === 0 || filterWordTypes.includes(node.word_type)) &&
+        (!isFormNode || !hideFormNodes); // Hide only Form nodes if hideFormNodes is true
+  
+      console.log(`Node ${node.id} (${node.node_type}) included: ${includeNode}`);
+      return includeNode;
+    });
   
     // Step 2: Create a Set of IDs for nodes that remain after filtering
     const remainingNodeIds = new Set(filteredNodes.map(node => node.id));
+    console.log("Remaining Node IDs after filtering:", Array.from(remainingNodeIds));
   
     // Step 3: Filter links to include only those that connect two nodes that remain
     const filteredLinks = links.filter(link => {
-      // Check if link's source and target are objects, if so, access their IDs
       const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
       const targetId = typeof link.target === 'object' ? link.target.id : link.target;
   
-      return remainingNodeIds.has(sourceId) && remainingNodeIds.has(targetId);
+      const keepLink = remainingNodeIds.has(sourceId) && remainingNodeIds.has(targetId);
+      console.log(`Link ${sourceId} -> ${targetId} kept: ${keepLink}`);
+      return keepLink;
     });
+    
+    console.log("Final filtered nodes:", filteredNodes);
+    console.log("Final filtered links:", filteredLinks);
   
     return { nodes: filteredNodes, links: filteredLinks };
   };
