@@ -18,11 +18,13 @@ import Layout from './components/layout/Layout';
 import { ScriptProvider } from './contexts/ScriptContext';
 import { ContextFilterProvider } from './contexts/ContextFilterContext';
 import { CorpusProvider } from './contexts/CorpusContext';
+import { FilterProvider } from './contexts/FilterContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
 import { NodeLimitProvider } from './contexts/NodeLimitContext';
 import { TextLayoutProvider } from './contexts/TextLayoutContext';
 import { HighlightProvider } from './contexts/HighlightContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+
 
 import './App.css';
 
@@ -32,6 +34,7 @@ const App = () => {
     <TextLayoutProvider>
     <HighlightProvider>
     <ScriptProvider>
+    <FilterProvider>
       <NodeLimitProvider>
         <CorpusProvider>
           <ContextFilterProvider>
@@ -59,6 +62,7 @@ const App = () => {
           </ContextFilterProvider>
         </CorpusProvider>
       </NodeLimitProvider>
+      </FilterProvider>
     </ScriptProvider>
     </HighlightProvider>
     </TextLayoutProvider>
