@@ -51,11 +51,11 @@ export const fetchAyaCount = async (surahIndex) => {
 };
 
 
-// Fetch Poetry Items by corpus_type
-export const fetchPoetryItems = async (corpusType) => {
+// Fetch Poetry Items by corpus_id
+export const fetchPoetryItems = async (corpusId) => {
   try {
-    const response = await api.get(`/api/list/poetry_items`, {
-      params: { corpus_type: corpusType }
+    const response = await api.get('/list/poetry_items', {
+      params: { corpus_id: corpusId }
     });
     return response.data;
   } catch (error) {
@@ -67,7 +67,7 @@ export const fetchPoetryItems = async (corpusType) => {
 // Fetch Prose Items by corpus_type
 export const fetchProseItems = async (corpusType) => {
   try {
-    const response = await api.get(`/api/list/prose_items`, {
+    const response = await api.get(`/list/prose_items`, {
       params: { corpus_type: corpusType }
     });
     return response.data;
