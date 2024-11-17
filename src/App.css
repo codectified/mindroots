@@ -24,9 +24,14 @@
   }
 
   /* Additional styling to ensure layout consistency */
-  h1, h2, h3, p {
-    margin-bottom: 15px; /* Add some spacing between elements */
-    text-align: justify; /* Keep text justified for readability */
+  h1 {
+    margin-bottom: 15px; /* Add spacing below the heading */
+    text-align: center; /* Center-align only <h1> */
+  }
+  
+  h2, h3, p {
+    margin-bottom: 15px; /* Add spacing below the elements */
+    text-align: left; /* Align <h2>, <h3>, and <p> to the left */
   }
 
   .social-links {
@@ -274,6 +279,14 @@
   
   .small-icon-button:hover {
     background-color: #555;
+  }
+
+  .navigation-buttons {
+    display: flex;
+    flex-direction: row; /* Ensures buttons are arranged horizontally */
+    justify-content: left; /* Centers buttons within the container */
+    align-items: left; /* Aligns buttons vertically */
+    gap: 10px; /* Adds space between buttons */
   }
   
   

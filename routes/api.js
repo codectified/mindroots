@@ -73,6 +73,45 @@ router.get('/list/quran_items', async (req, res) => {
   }
 });
 
+// Endpoint to fetch poetry items by corpus_id
+router.get('/list/poetry_items', async (req, res) => {
+  const { corpus_id } = req.query;
+
+  if (!corpus_id) {
+    return res.status(400).send('Missing corpus_id parameter');
+  }
+
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
+      RETURN 
+        item.arabic AS arabic,
+        item.transliteration AS transliteration,
+        toInteger(item.item_id) AS item_id,  /* Convert item_id */
+        item.lemma AS lemma,
+        item.wazn AS wazn,
+        item.part_of_speech AS pos,
+        item.gender AS gender,
+        item.number AS number,
+        item.case AS case,
+        item.prefix AS prefix,
+        item.suffix AS suffix,
+        toInteger(item.line_number) AS line_number,
+        toInteger(item.word_position) AS word_position
+      ORDER BY item.line_number, item.word_position
+    `, { corpus_id });
+
+    const poetryItems = result.records.map(record => record.toObject());
+    res.json(poetryItems);
+  } catch (error) {
+    console.error('Error fetching poetry items:', error);
+    res.status(500).send('Error fetching poetry items');
+  } finally {
+    await session.close();
+  }
+});
+
 
 // Endpoint to list all corpus items by corpus_id
 router.get('/list/corpus_items', async (req, res) => {
@@ -298,13 +337,14 @@ router.get('/list/corpora', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (corpus:Corpus)
-      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english
+      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english, corpus.corpusType AS corpusType
     `);
 
     const corpora = result.records.map(record => ({
       id: convertIntegers(record.get('id')),
       arabic: record.get('arabic'),
-      english: record.get('english')
+      english: record.get('english'),
+      corpusType: record.get('corpusType')
     }));
 
     res.json(corpora);

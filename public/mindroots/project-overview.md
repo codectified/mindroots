@@ -12,11 +12,11 @@
 
 #### Data Ingestion and Content
 
-+ <span style="color:red;">Node Filtering</span>
++ <span style="color:green;">Node Filtering</span>
 + <span style="color:orange;">Context shifting</span>
 + <span style="color:red;">Root combination</span>
 + <span style="color:red;">Ingest new corpus data</span>
-+ <span style="color:red;">Automate linking words to lexicon entries</span>
++ <span style="color:orange;">Automate linking words to lexicon entries</span>
 + <span style="color:red;">Develop manual data verification process</span>
 
 - <span style="color:green;">September 26, 2024</span> — Blog functionality update.

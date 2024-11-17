@@ -21,43 +21,43 @@ const PrimaryList = () => {
   const corpusName = queryParams.get('corpus_name');
   const corpusType = queryParams.get('corpus_type'); // Use corpus_type for poetry and prose
 
-  // Fetch the correct data based on corpus type
+
   useEffect(() => {
     const fetchData = async () => {
+      console.log('Fetching data for corpus ID:', corpusId);
+  
       if (corpusId === '2') { // Quran
         try {
+          console.log('Fetching Quran items...');
           const quranData = await fetchQuranItems(corpusId, surah);
           const filteredData = aya === 0 ? quranData : quranData.filter(item => item.aya_index === aya);
           setItems(filteredData);
         } catch (error) {
           console.error('Error fetching Quran items:', error);
         }
-      } else if (corpusId === '1') { // 99 Names (Simple List)
+      } else if (corpusId === '1') { // 99 Names
         try {
+          console.log('Fetching corpus items for 99 Names...');
           const listData = await fetchCorpusItems(corpusId, L1);
           setItems(listData);
         } catch (error) {
           console.error('Error fetching corpus items:', error);
         }
-      } else if (corpusType === 'poetry') { // Poetry (by Poem and Line)
+      } else if (corpusId === '3') { // Poetry
         try {
-          const poetryData = await fetchPoetryItems(corpusType);
+          console.log('Fetching poetry items for corpus ID 3...');
+          const poetryData = await fetchPoetryItems(corpusId); // Use the poetry fetch function
           setItems(poetryData);
         } catch (error) {
           console.error('Error fetching poetry items:', error);
         }
-      } else if (corpusType === 'prose') { // Prose (without Ayah markers)
-        try {
-          const proseData = await fetchProseItems(corpusType);
-          setItems(proseData);
-        } catch (error) {
-          console.error('Error fetching prose items:', error);
-        }
+      } else {
+        console.error('Unrecognized corpus ID:', corpusId);
       }
     };
-
+  
     fetchData();
-  }, [corpusId, surah, aya, L1, corpusType]);
+  }, [corpusId, surah, aya, L1]);
 
   useEffect(() => {
     if (corpusId === '2') { // Fetch Aya count when Surah changes (for Quran)

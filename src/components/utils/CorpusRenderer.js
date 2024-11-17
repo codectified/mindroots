@@ -3,6 +3,8 @@ import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 
 const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, setAya, ayaCount, L1, L2, handleSelectCorpusItem }) => {
+
+  
   const { highlightGender, highlightVerb, highlightParticle } = useHighlight();
   const { layout } = useTextLayout(); // Access the text layout setting
 
@@ -78,16 +80,51 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
     </ul>
   );
 
-  const renderPoetry = () => (
-    <div>
-      <h2>Poetry</h2>
-      {items.map((item) => (
-        <p key={item.item_id} style={getWordStyle(item)}>
-          {layout === 'line-by-line' ? `${item.line_number}. ${item.line_text}` : item.line_text}
-        </p>
-      ))}
-    </div>
-  );
+  const renderPoetry = () => {
+    // Group items by line_number
+    const lines = items.reduce((acc, item) => {
+      const lineNumber = item.line_number.low; // Use the `low` property directly
+      if (!acc[lineNumber]) {
+        acc[lineNumber] = [];
+      }
+      acc[lineNumber].push(item);
+      return acc;
+    }, {});
+  
+    // Sort lines by line_number
+    const sortedLines = Object.entries(lines).sort(
+      ([lineA], [lineB]) => Number(lineA) - Number(lineB)
+    );
+  
+    return (
+      <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
+        {sortedLines.map(([lineNumber, lineItems]) => (
+          <p 
+            key={lineNumber} 
+            style={{
+              display: 'inline-block', // Ensures lines are centered
+              textAlign: 'center', 
+              width: '100%' // Allows full width for proper centering
+            }}
+          >
+            {lineItems
+              .sort((a, b) => a.word_position.low - b.word_position.low) // Sort words within each line
+              .map((item, index) => (
+                <React.Fragment key={item.item_id.low}>
+                  <span
+                    onClick={() => handleSelectCorpusItem(item)}
+                    style={{ cursor: 'pointer', ...getWordStyle(item) }}
+                  >
+                    {item.arabic}
+                  </span>
+                  {index < lineItems.length - 1 && " "} {/* Add space between words */}
+                </React.Fragment>
+              ))}
+          </p>
+        ))}
+      </div>
+    );
+  };
 
   const renderProse = () => (
     <div>
@@ -104,9 +141,8 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
     <div>
       {corpusId === '2' ? renderQuran() :
        corpusId === '1' ? renderList() :
-       corpusType === 'poetry' ? renderPoetry() :
-       corpusType === 'prose' ? renderProse() :
-       <div>No corpus selected</div>}
+       corpusId === '3' ? renderPoetry() : // Fallback for testing corpus ID 3
+       <div>No valid corpus found. Please check the corpus configuration.</div>}
     </div>
   );
 };
