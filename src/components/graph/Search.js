@@ -66,8 +66,38 @@ const Search = () => {
   };
 
   const handleCombinate = async () => {
-    const combinations = generateCombinations();
-    await handleFetchRoots(combinations);
+    const combinations = generateCombinations(); // Generate all combinations
+    try {
+      // Fetch roots for all combinations concurrently, handling failures gracefully
+      const responses = await Promise.allSettled(
+        combinations.map(async (combo) => {
+          try {
+            const { roots } = await fetchRootByLetters(combo[0], combo[1] || '', combo[2] || '', L1, L2);
+            return roots; // Return only the roots for this combination
+          } catch (error) {
+            console.warn(`No roots found for combination: ${combo.join('-')}`);
+            return []; // Return an empty array for failed requests
+          }
+        })
+      );
+  
+      // Extract results from successful responses and ignore failed ones
+      const allRoots = responses
+        .filter((result) => result.status === 'fulfilled') // Only take fulfilled results
+        .map((result) => result.value) // Extract the roots from the result
+        .flat(); // Flatten the array
+  
+      if (allRoots.length > 0) {
+        const formattedData = formatNeo4jData(allRoots);
+        setGraphData(formattedData);
+        setTotalRoots(allRoots.length);
+      } else {
+        setGraphData({ nodes: [], links: [] });
+        setTotalRoots(0);
+      }
+    } catch (error) {
+      console.error('Error fetching combinations:', error);
+    }
   };
 
   const handleClearScreen = () => {
