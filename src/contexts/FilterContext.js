@@ -5,7 +5,7 @@ const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
   const [filterWordTypes, setFilterWordTypes] = useState([]); // Multi-select filter for word types
-  const [hideFormNodes, setHideFormNodes] = useState(false); // New state to hide form nodes
+  const [hideFormNodes, setHideFormNodes] = useState(true); // New state to hide form nodes
 
   const toggleWordType = (type) => {
     setFilterWordTypes((prevTypes) => 
