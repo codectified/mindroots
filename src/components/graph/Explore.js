@@ -12,14 +12,13 @@ import { useContextFilter } from '../../contexts/ContextFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import InfoBubble from '../layout/InfoBubble';
 
-
-
 const Explore = () => {
   const { L1, L2 } = useScript();
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
-  const [markdownContent, setMarkdownContent] = useState(''); // State to hold the markdown content
+  const [markdownContent, setMarkdownContent] = useState('');
+  const [selectedOption, setSelectedOption] = useState(''); // Default is empty for "Select Node Type"
   const closeInfoBubble = () => {
     setInfoBubble(null);
   };
@@ -27,6 +26,76 @@ const Explore = () => {
   const exampleQueries = {
     words: `
       MATCH (n:Word)
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Concrete Word': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Concrete'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Concrete Word;MAA': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Concrete' AND n.subclass = 'MAA'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Concrete Word;HAB': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Concrete' AND n.subclass = 'HAB'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Concrete Word;HGN': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Concrete' AND n.subclass = 'HGN'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Concrete Word;AI': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Concrete' AND n.subclass = 'AI'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Abstract Word': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Abstract'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Abstract Word;MS': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Abstract' AND n.subclass = 'MS'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Abstract Word;MP': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Abstract' AND n.subclass = 'MP'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Abstract Word;SOC': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Abstract' AND n.subclass = 'SOC'
+      RETURN n
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Abstract Word;LS': `
+      MATCH (n:Word)
+      WHERE n.classification = 'Abstract' AND n.subclass = 'LS'
       RETURN n
       ORDER BY rand()
       LIMIT 1
@@ -45,23 +114,31 @@ const Explore = () => {
     `,
   };
 
+  const loadMarkdownAndFetchData = async () => {
+    if (!selectedOption) {
+      alert('Please select a node type.');
+      return;
+    }
 
-  const loadMarkdownAndFetchData = async (example) => {
     try {
       let content;
-      if (example === 'words') {
+      if (selectedOption === 'words') {
         content = wordsContent;
-      } else if (example === 'roots') {
+      } else if (selectedOption === 'roots') {
         content = rootsContent;
-      } else if (example === 'forms') {
+      } else if (selectedOption === 'forms') {
         content = formsContent;
       }
 
-      const response = await fetch(content);
-      const text = await response.text();
-      setMarkdownContent(text);
+      if (content) {
+        const response = await fetch(content);
+        const text = await response.text();
+        setMarkdownContent(text);
+      } else {
+        setMarkdownContent('');
+      }
 
-      const query = exampleQueries[example];
+      const query = exampleQueries[selectedOption];
       const data = await executeQuery(query);
       const formattedData = formatNeo4jData(data);
       setGraphData(formattedData); // Update graphData for visualization
@@ -95,34 +172,48 @@ const Explore = () => {
     return { nodes, links };
   };
 
-
-
   return (
     <div className="start">
       <MiniMenu />
 
-  <button onClick={() => loadMarkdownAndFetchData('words')}>Words</button>
-  <button onClick={() => loadMarkdownAndFetchData('roots')}>Roots</button>
-  <button onClick={() => loadMarkdownAndFetchData('forms')}>Forms</button>
+      <div>
+        <select value={selectedOption} onChange={(e) => setSelectedOption(e.target.value)}>
+          <option value="">Select Node Type</option>
+          <option value="words">Word</option>
+          <option value="Concrete Word">Concrete Word</option>
+          <option value="Concrete Word;MAA"> Movement and Action</option>
+          <option value="Concrete Word;HAB"> Human-Animal-Body</option>
+          <option value="Concrete Word;HGN"> Hunting-Gathering-Nature</option>
+          <option value="Concrete Word;AI"> Agriculture-Industry</option>
+          <option value="Abstract Word">Abstract Word</option>
+          <option value="Abstract Word;MS"> Mental States</option>
+          <option value="Abstract Word;MP"> Metaphysical</option>
+          <option value="Abstract Word;SOC"> Social</option>
+          <option value="Abstract Word;LS"> Linguistic and Symbolic</option>
+          <option value="roots">Root</option>
+          <option value="forms">Form</option>
+        </select>
+        <button onClick={loadMarkdownAndFetchData}>Fetch Node</button>
+      </div>
 
-      
+      <GraphVisualization 
+        data={graphData} 
+        onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)} 
+      />
 
-      <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)} />
-
-
-            {/* Render info bubble if infoBubble state is set */}
-            {infoBubble && (
+      {infoBubble && (
         <InfoBubble
-        className="info-bubble"
+          className="info-bubble"
           definition={infoBubble.definition}
           onClose={closeInfoBubble}
           style={{
             top: `${infoBubble.position.y}px`,
             left: `${infoBubble.position.x}px`,
-            position: 'absolute', // Ensure it's absolutely positioned in the DOM
+            position: 'absolute',
           }}
         />
       )}
+
       <ReactMarkdown>{markdownContent}</ReactMarkdown>
     </div>
   );
