@@ -18,7 +18,7 @@ const MiniMenu = () => {
   const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
   const [showAdditionalSettings, setShowAdditionalSettings] = useState(false);
-  const [isMenuExpanded, setIsMenuExpanded] = useState(false);
+  const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const holdTimeout = useRef(null);
 
   useEffect(() => {
