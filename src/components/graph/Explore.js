@@ -112,6 +112,101 @@ const Explore = () => {
       ORDER BY rand()
       LIMIT 1
     `,
+    'Form: infinitive': `
+      MATCH (f:Form)
+      WHERE f.form_id = 1
+      RETURN f
+    `,
+    'Form: active_participle': `
+      MATCH (f:Form)
+      WHERE f.form_id = 2
+      RETURN f
+    `,
+    'Form: passive_participle': `
+      MATCH (f:Form)
+      WHERE f.form_id = 3
+      RETURN f
+    `,
+    'Form: noun_of_place': `
+      MATCH (f:Form)
+      WHERE f.form_id = 4
+      RETURN f
+    `,
+    'Form: noun_of_state': `
+      MATCH (f:Form)
+      WHERE f.form_id = 5
+      RETURN f
+    `,
+    'Form: noun_of_instrument': `
+      MATCH (f:Form)
+      WHERE f.form_id = 6
+      RETURN f
+    `,
+    'Form: noun_of_essence': `
+      MATCH (f:Form)
+      WHERE f.form_id = 7
+      RETURN f
+    `,
+    'Form: noun_of_hyperbole': `
+      MATCH (f:Form)
+      WHERE f.form_id = 8
+      RETURN f
+    `,
+    'Form: noun_of_defect': `
+      MATCH (f:Form)
+      WHERE f.form_id = 9
+      RETURN f
+    `,
+    'Form: Concrete': `
+      MATCH (f:Form)
+      WHERE f.form_id = 10
+      RETURN f
+    `,
+    'Form: Abstract': `
+      MATCH (f:Form)
+      WHERE f.form_id = 11
+      RETURN f
+    `,
+    'Form: Movement and Action': `
+      MATCH (f:Form)
+      WHERE f.form_id = 12
+      RETURN f
+    `,
+    'Form: Human-Animal-Body': `
+      MATCH (f:Form)
+      WHERE f.form_id = 13
+      RETURN f
+    `,
+    'Form: Hunting-Gathering-Nature': `
+      MATCH (f:Form)
+      WHERE f.form_id = 14
+      RETURN f
+    `,
+    'Form: Agriculture-Industry': `
+      MATCH (f:Form)
+      WHERE f.form_id = 15
+      RETURN f
+    `,
+    'Form: Mental States': `
+      MATCH (f:Form)
+      WHERE f.form_id = 16
+      RETURN f
+    `,
+    'Form: Metaphysical': `
+      MATCH (f:Form)
+      WHERE f.form_id = 17
+      RETURN f
+    `,
+    'Form: Social': `
+      MATCH (f:Form)
+      WHERE f.form_id = 18
+      RETURN f
+    `,
+    'Form: Linguistic and Symbolic': `
+      MATCH (f:Form)
+      WHERE f.form_id = 19
+      RETURN f
+    `,
   };
 
   const loadMarkdownAndFetchData = async () => {
@@ -192,6 +287,29 @@ const Explore = () => {
           <option value="Abstract Word;LS"> Linguistic and Symbolic</option>
           <option value="roots">Root</option>
           <option value="forms">Form</option>
+          <optgroup label="Grammatical Forms">
+            <option value="Form: infinitive"> Infinitive</option>
+            <option value="Form: active_participle"> Active Participle</option>
+            <option value="Form: passive_participle"> Passive Participle</option>
+            <option value="Form: noun_of_place"> Noun of Place</option>
+            <option value="Form: noun_of_state"> Noun of State</option>
+            <option value="Form: noun_of_instrument"> Noun of Instrument</option>
+            <option value="Form: noun_of_essence"> Noun of Essence</option>
+            <option value="Form: noun_of_hyperbole"> Noun of Hyperbole</option>
+            <option value="Form: noun_of_defect"> Noun of Defect</option>
+          </optgroup>
+          <optgroup label="Ontological Forms">
+            <option value="Form: Concrete"> Concrete</option>
+            <option value="Form: Abstract"> Abstract</option>
+            <option value="Form: Movement and Action"> Movement and Action</option>
+            <option value="Form: Human-Animal-Body"> Human-Animal-Body</option>
+            <option value="Form: Hunting-Gathering-Nature"> Hunting-Gathering-Nature</option>
+            <option value="Form: Agriculture-Industry"> Agriculture-Industry</option>
+            <option value="Form: Mental States"> Mental States</option>
+            <option value="Form: Metaphysical"> Metaphysical</option>
+            <option value="Form: Social"> Social</option>
+            <option value="Form: Linguistic and Symbolic"> Linguistic and Symbolic</option>
+          </optgroup>
         </select>
         <button onClick={loadMarkdownAndFetchData}>Fetch Node</button>
       </div>
