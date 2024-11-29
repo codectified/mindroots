@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { useWordShade } from '../../contexts/WordShadeContext';
 import * as d3 from 'd3';
 
 const GraphVisualization = ({ data, onNodeClick }) => {
@@ -8,6 +9,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
 
   // Wrap onNodeClick in useCallback to prevent it from changing on every render
   const handleNodeClick = useCallback((event, d) => onNodeClick(d, event), [onNodeClick]);
+
+  const { wordShadeMode } = useWordShade();
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
@@ -38,24 +41,32 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     svg.call(zoom); // Bind zoom behavior to the SVG element
 
     // Custom node color function based on type and word_type
+
     const getColor = (d) => {
       if (d.type === 'word') {
-        switch (d.word_type) {
-          case 'phrase':
-            return '#FFCCCC'; // Lightest red
-          case 'verb':
-            return '#FF6666'; // Medium red
-          case 'noun':
-            return '#CC0000'; // Darker red
-          default:
-            return '#660000'; // Darkest red
+        if (wordShadeMode === 'grammatical') {
+          // Grammatical color logic
+          switch (d.word_type) {
+            case 'phrase': return '#FFCCCC';
+            case 'verb': return '#FF6666';
+            case 'noun': return '#CC0000';
+            default: return '#660000';
+          }
+        } else if (wordShadeMode === 'ontological') {
+          // Ontological color logic
+          switch (d.classification) {
+            case 'Concrete': return '#CC0000'; // Light Blue
+            case 'Abstract': return '#FFCCCC'; // Medium Blue
+            default: return '#660000'; // Darker Blue
+          }
         }
       }
-      const color = d3.scaleOrdinal()
+      // Default for non-word nodes
+      return d3.scaleOrdinal()
         .domain(['name', 'word', 'form', 'root'])
-        .range(['gold', 'red', 'blue', 'green']);
-      return color(d.type);
+        .range(['gold', 'red', 'blue', 'green'])(d.type);
     };
+
 
     const sizeScale = d3.scaleLog()
       .domain([1, 27521]) // Log scale works better when we avoid 0, so start from 1

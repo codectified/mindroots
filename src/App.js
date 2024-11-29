@@ -24,6 +24,8 @@ import { NodeLimitProvider } from './contexts/NodeLimitContext';
 import { TextLayoutProvider } from './contexts/TextLayoutContext';
 import { HighlightProvider } from './contexts/HighlightContext';
 import { SettingsProvider } from './contexts/SettingsContext';
+import { WordShadeProvider } from './contexts/WordShadeContext';
+
 
 
 import './App.css';
@@ -34,6 +36,8 @@ const App = () => {
     <TextLayoutProvider>
     <HighlightProvider>
     <ScriptProvider>
+    <WordShadeProvider>
+
     <FilterProvider>
       <NodeLimitProvider>
         <CorpusProvider>
@@ -63,6 +67,8 @@ const App = () => {
         </CorpusProvider>
       </NodeLimitProvider>
       </FilterProvider>
+      </WordShadeProvider>
+
     </ScriptProvider>
     </HighlightProvider>
     </TextLayoutProvider>
