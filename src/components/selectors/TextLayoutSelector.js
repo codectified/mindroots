@@ -1,33 +1,37 @@
-// components/TextLayoutToggle.js
+// ../components/TextLayoutToggle.js
 import React from 'react';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 
 const TextLayoutToggle = () => {
   const { layout, setLayout } = useTextLayout();
 
-  const handleChange = (newLayout) => {
-    setLayout(newLayout); // Update layout based on selection
+  const handleChange = (event) => {
+    setLayout(event.target.value); // Update layout based on selection
   };
 
   return (
-    <div>
-      <label style={{ marginRight: '10px' }}>Text Layout:</label>
-      <label>
-        <input
-          type="checkbox"
-          checked={layout === 'prose'}
-          onChange={() => handleChange('prose')}
-        />
-        Prose
-      </label>
-      <label style={{ marginLeft: '10px' }}>
-        <input
-          type="checkbox"
-          checked={layout === 'line-by-line'}
-          onChange={() => handleChange('line-by-line')}
-        />
-        Line-by-Line
-      </label>
+    <div style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '10px 0' }}>
+      <label>Text Layout:</label>
+      <div style={{ display: 'flex', gap: '15px' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <input
+            type="radio"
+            value="prose"
+            checked={layout === 'prose'}
+            onChange={handleChange}
+          />
+          Prose
+        </label>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <input
+            type="radio"
+            value="line-by-line"
+            checked={layout === 'line-by-line'}
+            onChange={handleChange}
+          />
+          Line By Line
+        </label>
+      </div>
     </div>
   );
 };

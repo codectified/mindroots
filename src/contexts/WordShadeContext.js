@@ -1,17 +1,13 @@
 // ../contexts/WordShadeContext.js
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useContext, useState } from 'react';
 
 const WordShadeContext = createContext();
 
 export const WordShadeProvider = ({ children }) => {
-  const [wordShadeMode, setWordShadeMode] = useState('grammatical'); // Default mode
-
-  const toggleWordShadeMode = () => {
-    setWordShadeMode((prevMode) => (prevMode === 'grammatical' ? 'ontological' : 'grammatical'));
-  };
+  const [wordShadeMode, setWordShadeMode] = useState('ontological'); // Default to 'ontological'
 
   return (
-    <WordShadeContext.Provider value={{ wordShadeMode, toggleWordShadeMode }}>
+    <WordShadeContext.Provider value={{ wordShadeMode, setWordShadeMode }}>
       {children}
     </WordShadeContext.Provider>
   );
