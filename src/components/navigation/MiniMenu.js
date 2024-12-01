@@ -18,7 +18,8 @@ const MiniMenu = () => {
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
-  const [showAdditionalSettings, setShowAdditionalSettings] = useState(false);
+  const [showCorporaSettings, setShowCorporaSettings] = useState(false);
+  const [showGraphSettings, setShowGraphSettings] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const holdTimeout = useRef(null);
 
@@ -67,22 +68,38 @@ const MiniMenu = () => {
               </button>
             </div>
           </div>
-          
-          <div className="additional-settings-toggle" onClick={() => setShowAdditionalSettings((prev) => !prev)}>
-            Additional Settings
-            <FontAwesomeIcon icon={showAdditionalSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+
+          {/* Corpora Settings */}
+          <div
+            className="collapsible-section"
+            onClick={() => setShowCorporaSettings((prev) => !prev)}
+            style={{ cursor: 'pointer', marginBottom: '10px' }}
+          >
+            Corpora Settings
+            <FontAwesomeIcon icon={showCorporaSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
-          {showAdditionalSettings && (
+          {showCorporaSettings && (
             <>
-              <br />
               <TextLayoutToggle />
               <HighlightController />
+            </>
+          )}
+
+          {/* Graph Settings */}
+          <div
+            className="collapsible-section"
+            onClick={() => setShowGraphSettings((prev) => !prev)}
+            style={{ cursor: 'pointer', marginBottom: '10px' }}
+          >
+            Graph Settings
+            <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+          </div>
+          {showGraphSettings && (
+            <>
               <ContextShiftSelector />
-              <br></br>
               <NodeLimitSlider />
               <FilterController />
               <WordShadeSelector />
-
             </>
           )}
         </div>
@@ -123,7 +140,7 @@ const MiniMenu = () => {
       <div className="menu-container">
         {isMenuExpanded && (
           <>
-                      <button className="menu-button" onClick={() => handleNavigation('/sandbox')}>
+            <button className="menu-button" onClick={() => handleNavigation('/sandbox')}>
               <FontAwesomeIcon icon={faSearch} />
             </button>
             <button className="menu-button" onClick={() => handleNavigation('/start')}>
