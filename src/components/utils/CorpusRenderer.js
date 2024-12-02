@@ -67,13 +67,49 @@ const CorpusRenderer = ({
     const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
     const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index.low) : null);
   
+    // Group items by AYA index
+    const groupedByAya = items.reduce((acc, item) => {
+      if (!acc[item.aya_index]) acc[item.aya_index] = [];
+      acc[item.aya_index].push(item);
+      return acc;
+    }, {});
+  
+    const isAyaHighlighted = (ayaIndex) => 
+      groupedByAya[ayaIndex].every((item) => item.isFreeformHighlighted);
+  
+    const getWordStyle = (item) => {
+      // Apply freeform highlight styles if in freeform mode
+      if (item.isFreeformHighlighted) {
+        return {
+          backgroundColor: item.highlightColor || highlightColor,
+          borderRadius: '5px',
+          padding: '2px',
+        };
+      }
+  
+      // Apply noun, verb, or particle highlight styles
+      if (highlightGender && item.gender === highlightGender) {
+        return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue', fontWeight: 'bold' };
+      }
+      if (highlightVerb && item.pos === 'verb') {
+        return { color: 'green', fontWeight: 'bold' };
+      }
+      if (highlightParticle && item.pos !== 'noun' && item.pos !== 'verb') {
+        return { color: 'blue', fontStyle: 'italic' };
+      }
+  
+      return {};
+    };
+  
     return (
       <div>
         <h2>Surah {surah}</h2>
         <label htmlFor="surah-select">Select Surah: </label>
         <select id="surah-select" value={surah} onChange={(e) => setSurah(e.target.value)}>
-          {Array.from({ length: 114 }, (_, i) => i + 1).map(sura => (
-            <option key={sura} value={sura}>{sura}</option>
+          {Array.from({ length: 114 }, (_, i) => i + 1).map((sura) => (
+            <option key={sura} value={sura}>
+              {sura}
+            </option>
           ))}
         </select>
   
@@ -81,32 +117,55 @@ const CorpusRenderer = ({
           {surahNumber !== 9 && (
             <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
           )}
-          
-          {items.map((item, index) => {
-            const isEndOfAya = index === items.length - 1 || items[index + 1].aya_index !== item.aya_index;
+  
+          {Object.entries(groupedByAya).map(([ayaIndex, ayaItems]) => {
+            const isHighlighted = isAyaHighlighted(ayaIndex);
   
             return (
-              <React.Fragment key={item.item_id.low}>
+              <React.Fragment key={ayaIndex}>
+                {/* Wrap AYA in a single span when marker is clicked */}
                 <span
-                  onClick={() => freeformMode ? handleFreeformHighlight(item) : handleSelectCorpusItem(item)}
-                  style={{ cursor: 'pointer', ...getWordStyle(item) }}
+                  style={{
+                    display: 'inline-block',
+                    backgroundColor: isHighlighted ? highlightColor : 'transparent',
+                    borderRadius: '5px',
+                    padding: '2px',
+                  }}
                 >
-                  {item.arabic}
+                  {ayaItems.map((item, index) => (
+                    <React.Fragment key={item.item_id.low}>
+                      <span
+                        onClick={() =>
+                          freeformMode
+                            ? handleFreeformHighlight(item)
+                            : handleSelectCorpusItem(item)
+                        }
+                        style={{
+                          cursor: 'pointer',
+                          ...getWordStyle(item),
+                        }}
+                      >
+                        {item.arabic}
+                      </span>
+                      {index < ayaItems.length - 1 && ' '} {/* Add space between words */}
+                    </React.Fragment>
+                  ))}
                 </span>
-                
-                {" "} {/* Add space between words */}
-                
-                {isEndOfAya && (
-                  <>
-                    <span
-                      onClick={() => handleFreeformAyaHighlight(item.aya_index)}
-                      style={{ cursor: freeformMode ? 'pointer' : 'default', color: 'gray', fontWeight: 'bold' }}
-                    >
-                      ﴿{item.aya_index.low}﴾
-                    </span>
-                    {layout === 'line-by-line' && <br />}
-                  </>
-                )}
+  
+                {/* AYA Marker */}
+                <span
+                  onClick={() => freeformMode && handleFreeformAyaHighlight(parseInt(ayaIndex, 10))}
+                  style={{
+                    cursor: freeformMode ? 'pointer' : 'default',
+                    color: 'gray',
+                    fontWeight: 'bold',
+                    marginLeft: '5px',
+                  }}
+                >
+                  ﴿{ayaIndex}﴾
+                </span>
+  
+                {layout === 'line-by-line' && <br />}
               </React.Fragment>
             );
           })}
