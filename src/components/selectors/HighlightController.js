@@ -1,32 +1,48 @@
-// ../components/selectors/HighlightController.js
 import React from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 
 const HighlightController = () => {
-  const { highlightGender, setHighlightGender, highlightVerb, setHighlightVerb, highlightParticle, setHighlightParticle } = useHighlight();
+  const {
+    highlightGender,
+    setHighlightGender,
+    highlightVerb,
+    setHighlightVerb,
+    highlightParticle,
+    setHighlightParticle,
+    freeformMode,
+    setFreeformMode,
+    highlightColor,
+    setHighlightColor, // Add highlight color state
+  } = useHighlight();
 
-  // Define highlight options with relevant context values
   const highlightOptions = [
     {
       label: 'Nouns (f.)',
       value: 'feminine',
       active: highlightGender === 'feminine',
       setState: () => setHighlightGender(highlightGender === 'feminine' ? null : 'feminine'),
-      color: '#FFD700', // Gold
+      color: '#FFD700',
     },
     {
       label: 'Verbs',
       value: 'verb',
       active: highlightVerb,
       setState: () => setHighlightVerb(!highlightVerb),
-      color: '#32CD32', // Green
+      color: '#32CD32',
     },
     {
       label: 'Particles',
       value: 'particle',
       active: highlightParticle,
       setState: () => setHighlightParticle(!highlightParticle),
-      color: '#007bff', // Blue
+      color: '#007bff',
+    },
+    {
+      label: 'Freeform Mode',
+      value: 'freeform',
+      active: freeformMode,
+      setState: () => setFreeformMode(!freeformMode),
+      color: '#FF4500',
     },
   ];
 
@@ -37,7 +53,7 @@ const HighlightController = () => {
         {highlightOptions.map((option) => (
           <label key={option.value} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <input
-              type="radio"
+              type="checkbox"
               value={option.value}
               checked={option.active}
               onChange={option.setState}
@@ -55,6 +71,22 @@ const HighlightController = () => {
           </label>
         ))}
       </div>
+      {freeformMode && (
+        <div>
+          <label htmlFor="highlight-color">Highlight Color: </label>
+          <select
+            id="highlight-color"
+            value={highlightColor}
+            onChange={(e) => setHighlightColor(e.target.value)}
+          >
+            <option value="#FF4500">Orange</option>
+            <option value="#FFD700">Gold</option>
+            <option value="#32CD32">Green</option>
+            <option value="#007bff">Blue</option>
+            <option value="#800080">Purple</option>
+          </select>
+        </div>
+      )}
     </div>
   );
 };

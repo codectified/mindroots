@@ -89,6 +89,7 @@ const PrimaryList = () => {
         corpusId={corpusId}
         corpusType={corpusType}
         items={items}
+        setItems={setItems} // Pass setItems as a prop
         surah={surah}
         aya={aya}
         setSurah={setSurah}
@@ -96,7 +97,7 @@ const PrimaryList = () => {
         ayaCount={ayaCount}
         L1={L1}
         L2={L2}
-        handleSelectCorpusItem={handleItemClick} // Pass the click handler function here
+        handleSelectCorpusItem={handleItemClick}
       />
     </div>
   );

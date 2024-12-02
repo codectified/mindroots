@@ -2,14 +2,54 @@ import React from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 
-const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, setAya, ayaCount, L1, L2, handleSelectCorpusItem }) => {
-
-  
-  const { highlightGender, highlightVerb, highlightParticle } = useHighlight();
+const CorpusRenderer = ({
+  corpusId,
+  corpusType,
+  items,
+  setItems,
+  surah,
+  aya,
+  setSurah,
+  setAya,
+  ayaCount,
+  L1,
+  L2,
+  handleSelectCorpusItem,
+}) => {
+  const {
+    highlightGender,
+    highlightVerb,
+    highlightParticle,
+    freeformMode,
+    highlightColor, // Access the selected highlight color
+  } = useHighlight();
   const { layout } = useTextLayout(); // Access the text layout setting
 
+  
+
+  // Toggles freeform highlight state for an item
+  const handleFreeformHighlight = (item) => {
+    if (!freeformMode) return; // Only allow highlighting in Freeform Mode
+    item.isFreeformHighlighted = !item.isFreeformHighlighted;
+    // Simulate state update for re-render (items are assumed to be in parent state)
+    setItems([...items]);
+  };
+
+  const handleFreeformAyaHighlight = (ayaIndex) => {
+    if (!freeformMode) return;
+    const updatedItems = items.map((item) =>
+      item.aya_index === ayaIndex
+        ? { ...item, isFreeformHighlighted: true, highlightColor }
+        : item
+    );
+    setItems(updatedItems);
+  };
+
+  // Adjust styles based on highlight settings and Freeform Mode
   const getWordStyle = (item) => {
-    // Highlighting logic for gender, verbs, and particles
+    if (item.isFreeformHighlighted) {
+      return { backgroundColor: item.highlightColor || '#FF4500', borderRadius: '5px', padding: '2px' };
+    }
     if (highlightGender && item.gender === highlightGender) {
       return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue', fontWeight: 'bold' };
     }
@@ -17,15 +57,16 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
       return { color: 'green', fontWeight: 'bold' };
     }
     if (highlightParticle && item.pos !== 'noun' && item.pos !== 'verb') {
-      return { color: 'blue', fontStyle: 'bold' };
+      return { color: 'blue', fontStyle: 'italic' };
     }
     return {};
   };
 
+
   const renderQuran = () => {
     const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
     const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index.low) : null);
-
+  
     return (
       <div>
         <h2>Surah {surah}</h2>
@@ -35,7 +76,7 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
             <option key={sura} value={sura}>{sura}</option>
           ))}
         </select>
-
+  
         <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
           {surahNumber !== 9 && (
             <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
@@ -43,11 +84,11 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
           
           {items.map((item, index) => {
             const isEndOfAya = index === items.length - 1 || items[index + 1].aya_index !== item.aya_index;
-
+  
             return (
               <React.Fragment key={item.item_id.low}>
                 <span
-                  onClick={() => handleSelectCorpusItem(item)}
+                  onClick={() => freeformMode ? handleFreeformHighlight(item) : handleSelectCorpusItem(item)}
                   style={{ cursor: 'pointer', ...getWordStyle(item) }}
                 >
                   {item.arabic}
@@ -55,11 +96,15 @@ const CorpusRenderer = ({ corpusId, corpusType, items, surah, aya, setSurah, set
                 
                 {" "} {/* Add space between words */}
                 
-                {/* Add Ayah marker and/or line break conditionally */}
                 {isEndOfAya && (
                   <>
-                    <span> ﴿{item.aya_index.low}﴾ </span> {/* Ayah marker */}
-                    {layout === 'line-by-line' && <br />} {/* Line break if line-by-line layout */}
+                    <span
+                      onClick={() => handleFreeformAyaHighlight(item.aya_index)}
+                      style={{ cursor: freeformMode ? 'pointer' : 'default', color: 'gray', fontWeight: 'bold' }}
+                    >
+                      ﴿{item.aya_index.low}﴾
+                    </span>
+                    {layout === 'line-by-line' && <br />}
                   </>
                 )}
               </React.Fragment>
