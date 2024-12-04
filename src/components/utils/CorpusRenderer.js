@@ -186,10 +186,14 @@ const handleFreeformLineHighlight = (lineNumber) => {
     );
   };
 
-  const renderList = () => (
-    <ul>
-      {items.map(item => (
-        <li key={item.item_id} onClick={() => handleSelectCorpusItem(item)} style={getWordStyle(item)}>
+  const renderList = (customClass = '') => (
+    <ul className={`corpus-renderer-list ${customClass}`}>
+      {items.map((item) => (
+        <li
+          key={item.item_id}
+          onClick={() => handleSelectCorpusItem(item)}
+          style={getWordStyle(item)}
+        >
           {L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`}
         </li>
       ))}

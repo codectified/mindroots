@@ -1,7 +1,7 @@
 ### Project Updates
 
-- New corpus added!
-- More UI/UX cleaning..
+- Holy Quran and first classical poem added!  (Arabic only)
+- DB Stats added
 - Context menu still in the works..
 
 

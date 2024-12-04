@@ -40,41 +40,29 @@ const ArticlesAndReferences = () => {
   return (
     <div>
       <MiniMenu />
-
-            {/* Render corpus list */}
-            <h2>Corpus Library</h2>
-      <ul>
+  
+      {/* Render corpus list */}
+      <h2>Corpus Library</h2>
+      <ul className="corpus-library-list">
         {corpora.map((corpus) => (
           <li key={corpus.id} onClick={() => handleSelect(corpus)}>
             {L2 === 'off' ? corpus[L1] : `${corpus[L1]} / ${corpus[L2]}`}
           </li>
         ))}
       </ul>
-
-      <br></br>      <br></br>
-
+  
       <h3>Articles</h3>
-
-
-
-      {/* Render Markdown articles */}
-
-      <ul>
+      <ul className="articles-list">
         <li>
           <Link to="/getting-started">Getting Started</Link>
         </li>
         <li>
           <Link to="/about">About</Link>
         </li>
-        {/* <li>
-          <Link to="/elements">Elements</Link>
-        </li> */}
         <li>
           <Link to="/project-overview">Project Overview</Link>
         </li>
       </ul>
-
-
     </div>
   );
 };

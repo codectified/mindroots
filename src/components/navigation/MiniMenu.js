@@ -59,16 +59,18 @@ const MiniMenu = () => {
             <div className="settings-text">
               <LanguageSelector />
             </div>
-            <div className="settings-links">
-              <button className="small-icon-button" onClick={() => toggleOption('about')}>
-                <FontAwesomeIcon icon={faInfoCircle} />
-              </button>
-              <button className="small-icon-button" onClick={() => toggleOption('changelog')}>
-                <FontAwesomeIcon icon={faNewspaper} />
-              </button>
-            </div>
           </div>
-
+  
+          {/* Links Section in Row */}
+          <div className="settings-links">
+            <button className="small-icon-button" onClick={() => toggleOption('about')}>
+              <FontAwesomeIcon icon={faInfoCircle} />
+            </button>
+            <button className="small-icon-button" onClick={() => toggleOption('changelog')}>
+              <FontAwesomeIcon icon={faNewspaper} />
+            </button>
+          </div>
+  
           {/* Corpora Settings */}
           <div
             className="collapsible-section"
@@ -84,7 +86,7 @@ const MiniMenu = () => {
               <HighlightController />
             </>
           )}
-
+  
           {/* Graph Settings */}
           <div
             className="collapsible-section"
