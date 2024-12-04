@@ -84,6 +84,41 @@
   li:hover {
     color: #007BFF;
   }
+
+  .statistics-list li {
+    font-size: 14px; /* Smaller font size for statistics */
+    cursor: default; /* Remove pointer cursor */
+    color: inherit; /* Use the default text color */
+  }
+  
+  .statistics-list li:hover {
+    color: inherit; /* Remove hover effect */
+  }
+
+  .statistics-section {
+    margin: 20px 0;
+    text-align: center;
+  }
+  
+  .statistics-section h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    font-weight: bold;
+  }
+  
+  .statistics-list {
+    list-style-type: none;
+    padding: 0;
+    font-size: 0.9rem; /* Small text */
+    line-height: 1.5;
+    color: #555; /* Muted color for stats */
+  }
+  
+  .contact-info {
+    margin-top: auto;
+    text-align: center;
+    padding: 10px 0;
+  }
   
 /* ============================================
    Icon Grid Styles (Flexbox instead of Grid)

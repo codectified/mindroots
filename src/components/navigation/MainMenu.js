@@ -28,18 +28,36 @@ const MainMenu = () => {
           <span>Search</span>
         </div>
       </div>
-      <div className="main-site-link">
-        <a href="https://theoption.life" target="_blank" rel="noopener noreferrer">
-          theoption.life
-        </a>
+
+      {/* Statistics Section */}
+      <div className="statistics-section">
+        <h4>Neo4j Database Statistics</h4>
+        <ul className="statistics-list">
+          <li>Total Nodes: 131,564</li>
+          <li>Total Relationships: 335,693</li>
+          <li>Corpus Nodes: 3</li>
+          <li>Corpus Item Nodes: 78,568</li>
+          <li>Form Nodes: 19</li>
+          <li>Root Nodes: 5,049</li>
+          <li>Word Nodes: 47,922</li>
+        </ul>
       </div>
-      <div className="social-links">
-        <a href="https://www.instagram.com/mindroots_/" target="_blank" rel="noopener noreferrer" className="social-icon">
-          <FontAwesomeIcon icon={faInstagram} />
-        </a>
-        <a href="https://www.linkedin.com/in/ibomar/" target="_blank" rel="noopener noreferrer" className="social-icon">
-          <FontAwesomeIcon icon={faLinkedin} />
-        </a>
+
+      {/* Main Site and Social Links */}
+      <div className="contact-info">
+        {/* <div className="main-site-link">
+          <a href="https://theoption.life" target="_blank" rel="noopener noreferrer">
+            theoption.life
+          </a>
+        </div> */}
+        <div className="social-links">
+          <a href="https://www.instagram.com/mindroots_/" target="_blank" rel="noopener noreferrer" className="social-icon">
+            <FontAwesomeIcon icon={faInstagram} />
+          </a>
+          <a href="https://www.linkedin.com/in/ibomar/" target="_blank" rel="noopener noreferrer" className="social-icon">
+            <FontAwesomeIcon icon={faLinkedin} />
+          </a>
+        </div>
       </div>
     </div>
   );

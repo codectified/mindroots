@@ -84,6 +84,11 @@ const HighlightController = () => {
             <option value="#32CD32">Green</option>
             <option value="#007bff">Blue</option>
             <option value="#800080">Purple</option>
+            <option value="#FF69B4">Pink</option> {/* New */}
+            <option value="#DC143C">Crimson</option> {/* New */}
+            <option value="#00CED1">Turquoise</option> {/* New */}
+            <option value="#8B4513">SaddleBrown</option> {/* New */}
+            <option value="#000000">Black</option> {/* New */}
           </select>
         </div>
       )}

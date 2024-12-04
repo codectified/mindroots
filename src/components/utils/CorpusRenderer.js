@@ -29,21 +29,61 @@ const CorpusRenderer = ({
 
   // Toggles freeform highlight state for an item
   const handleFreeformHighlight = (item) => {
-    if (!freeformMode) return; // Only allow highlighting in Freeform Mode
-    item.isFreeformHighlighted = !item.isFreeformHighlighted;
-    // Simulate state update for re-render (items are assumed to be in parent state)
-    setItems([...items]);
+    if (!freeformMode) return;
+  
+    const updatedItems = items.map((currentItem) =>
+      currentItem.item_id.low === item.item_id.low
+        ? {
+            ...currentItem,
+            isFreeformHighlighted: !currentItem.isFreeformHighlighted, // Toggle highlight
+            highlightColor: !currentItem.isFreeformHighlighted ? highlightColor : currentItem.highlightColor, // Preserve color
+          }
+        : currentItem // Leave other items unchanged
+    );
+  
+    setItems(updatedItems);
   };
 
   const handleFreeformAyaHighlight = (ayaIndex) => {
     if (!freeformMode) return;
+  
+    const isAyaCurrentlyHighlighted = items
+      .filter((item) => item.aya_index === ayaIndex)
+      .every((item) => item.isFreeformHighlighted);
+  
     const updatedItems = items.map((item) =>
       item.aya_index === ayaIndex
-        ? { ...item, isFreeformHighlighted: true, highlightColor }
-        : item
+        ? {
+            ...item,
+            isFreeformHighlighted: !isAyaCurrentlyHighlighted, // Toggle highlight
+            highlightColor: !isAyaCurrentlyHighlighted ? highlightColor : null, // Set or clear color
+          }
+        : item // Leave other items unchanged
     );
+  
     setItems(updatedItems);
   };
+
+  // Toggles freeform highlight state for a poetry line
+const handleFreeformLineHighlight = (lineNumber) => {
+  if (!freeformMode) return;
+
+  const isLineCurrentlyHighlighted = items
+    .filter((item) => item.line_number.low === lineNumber)
+    .every((item) => item.isFreeformHighlighted);
+
+  const updatedItems = items.map((item) =>
+    item.line_number.low === lineNumber
+      ? {
+          ...item,
+          isFreeformHighlighted: !isLineCurrentlyHighlighted, // Toggle highlight
+          highlightColor: !isLineCurrentlyHighlighted ? highlightColor : null, // Set or clear color
+        }
+      : item // Leave other items unchanged
+  );
+
+  setItems(updatedItems);
+};
 
   // Adjust styles based on highlight settings and Freeform Mode
   const getWordStyle = (item) => {
@@ -51,13 +91,13 @@ const CorpusRenderer = ({
       return { backgroundColor: item.highlightColor || '#FF4500', borderRadius: '5px', padding: '2px' };
     }
     if (highlightGender && item.gender === highlightGender) {
-      return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue', fontWeight: 'bold' };
+      return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue'};
     }
     if (highlightVerb && item.pos === 'verb') {
-      return { color: 'green', fontWeight: 'bold' };
+      return { color: 'green'};
     }
     if (highlightParticle && item.pos !== 'noun' && item.pos !== 'verb') {
-      return { color: 'blue', fontStyle: 'italic' };
+      return { color: 'blue'};
     }
     return {};
   };
@@ -73,33 +113,6 @@ const CorpusRenderer = ({
       acc[item.aya_index].push(item);
       return acc;
     }, {});
-  
-    const isAyaHighlighted = (ayaIndex) => 
-      groupedByAya[ayaIndex].every((item) => item.isFreeformHighlighted);
-  
-    const getWordStyle = (item) => {
-      // Apply freeform highlight styles if in freeform mode
-      if (item.isFreeformHighlighted) {
-        return {
-          backgroundColor: item.highlightColor || highlightColor,
-          borderRadius: '5px',
-          padding: '2px',
-        };
-      }
-  
-      // Apply noun, verb, or particle highlight styles
-      if (highlightGender && item.gender === highlightGender) {
-        return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue', fontWeight: 'bold' };
-      }
-      if (highlightVerb && item.pos === 'verb') {
-        return { color: 'green', fontWeight: 'bold' };
-      }
-      if (highlightParticle && item.pos !== 'noun' && item.pos !== 'verb') {
-        return { color: 'blue', fontStyle: 'italic' };
-      }
-  
-      return {};
-    };
   
     return (
       <div>
@@ -119,15 +132,15 @@ const CorpusRenderer = ({
           )}
   
           {Object.entries(groupedByAya).map(([ayaIndex, ayaItems]) => {
-            const isHighlighted = isAyaHighlighted(ayaIndex);
+            const isAyaHighlighted = ayaItems.every((item) => item.isFreeformHighlighted);
   
             return (
               <React.Fragment key={ayaIndex}>
-                {/* Wrap AYA in a single span when marker is clicked */}
+                {/* Words within the AYA */}
                 <span
                   style={{
                     display: 'inline-block',
-                    backgroundColor: isHighlighted ? highlightColor : 'transparent',
+                    backgroundColor: isAyaHighlighted ? ayaItems[0].highlightColor : 'transparent',
                     borderRadius: '5px',
                     padding: '2px',
                   }}
@@ -135,11 +148,7 @@ const CorpusRenderer = ({
                   {ayaItems.map((item, index) => (
                     <React.Fragment key={item.item_id.low}>
                       <span
-                        onClick={() =>
-                          freeformMode
-                            ? handleFreeformHighlight(item)
-                            : handleSelectCorpusItem(item)
-                        }
+                        onClick={() => handleSelectCorpusItem(item)} // Render graph visualization
                         style={{
                           cursor: 'pointer',
                           ...getWordStyle(item),
@@ -154,7 +163,10 @@ const CorpusRenderer = ({
   
                 {/* AYA Marker */}
                 <span
-                  onClick={() => freeformMode && handleFreeformAyaHighlight(parseInt(ayaIndex, 10))}
+                  onClick={(e) => {
+                    e.stopPropagation(); // Prevent word-level logic
+                    freeformMode && handleFreeformAyaHighlight(parseInt(ayaIndex, 10));
+                  }}
                   style={{
                     cursor: freeformMode ? 'pointer' : 'default',
                     color: 'gray',
@@ -202,30 +214,58 @@ const CorpusRenderer = ({
   
     return (
       <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
-        {sortedLines.map(([lineNumber, lineItems]) => (
-          <p 
-            key={lineNumber} 
-            style={{
-              display: 'inline-block', // Ensures lines are centered
-              textAlign: 'center', 
-              width: '100%' // Allows full width for proper centering
-            }}
-          >
-            {lineItems
-              .sort((a, b) => a.word_position.low - b.word_position.low) // Sort words within each line
-              .map((item, index) => (
-                <React.Fragment key={item.item_id.low}>
-                  <span
-                    onClick={() => handleSelectCorpusItem(item)}
-                    style={{ cursor: 'pointer', ...getWordStyle(item) }}
-                  >
-                    {item.arabic}
-                  </span>
-                  {index < lineItems.length - 1 && " "} {/* Add space between words */}
-                </React.Fragment>
-              ))}
-          </p>
-        ))}
+        {sortedLines.map(([lineNumber, lineItems]) => {
+          const isLineHighlighted = lineItems.every((item) => item.isFreeformHighlighted);
+  
+          return (
+            <React.Fragment key={lineNumber}>
+              {/* Poetry line */}
+              <span
+                style={{
+                  display: 'inline-block',
+                  backgroundColor: isLineHighlighted ? lineItems[0].highlightColor : 'transparent',
+                  borderRadius: '5px',
+                  padding: '2px',
+                }}
+              >
+                {lineItems
+                  .sort((a, b) => a.word_position.low - b.word_position.low) // Sort words within each line
+                  .map((item, index) => (
+                    <React.Fragment key={item.item_id.low}>
+                      <span
+                        onClick={() => handleSelectCorpusItem(item)} // Render graph visualization
+                        style={{
+                          cursor: 'pointer',
+                          ...getWordStyle(item),
+                        }}
+                      >
+                        {item.arabic}
+                      </span>
+                      {index < lineItems.length - 1 && " "} {/* Add space between words */}
+                    </React.Fragment>
+                  ))}
+              </span>
+  
+              {/* Line marker */}
+              <span
+                onClick={(e) => {
+                  e.stopPropagation(); // Prevent word-level logic
+                  freeformMode && handleFreeformLineHighlight(Number(lineNumber));
+                }}
+                style={{
+                  cursor: freeformMode ? 'pointer' : 'default',
+                  color: 'gray',
+                  fontWeight: 'bold',
+                  marginLeft: '5px',
+                }}
+              >
+                ** {lineNumber} **
+              </span>
+  
+              {layout === 'line-by-line' && <br />}
+            </React.Fragment>
+          );
+        })}
       </div>
     );
   };
