@@ -51,18 +51,7 @@ const ArticlesAndReferences = () => {
         ))}
       </ul>
   
-      <h3>Articles</h3>
-      <ul className="articles-list">
-        <li>
-          <Link to="/getting-started">Getting Started</Link>
-        </li>
-        <li>
-          <Link to="/about">About</Link>
-        </li>
-        <li>
-          <Link to="/project-overview">Project Overview</Link>
-        </li>
-      </ul>
+
     </div>
   );
 };

@@ -1,0 +1,223 @@
+2024-12-04 11:48:54 -0600 : font tweaks
+2024-12-04 11:10:01 -0600 : highlighting and mainmenu tweaks
+2024-12-02 00:24:25 -0600 : free form highlighting update
+2024-12-01 18:12:39 -0600 : free form highlighting mode
+2024-12-01 15:03:50 -0600 : minimenu consolidation
+2024-12-01 14:30:08 -0600 : filter and shades settings tweaks
+2024-11-29 17:44:58 -0600 : ontological shades!
+2024-11-26 03:32:29 -0600 : menu expansion defaulted
+2024-11-25 00:25:12 -0600 : default script and filter change
+2024-11-17 19:13:04 -0600 : combinate fix
+2024-11-17 02:42:34 -0600 : combinate!
+2024-11-17 01:12:17 -0600 : render poetry functionality
+2024-11-09 11:11:07 -0600 : Merge pull request #19 from codectified/node-filter
+2024-11-09 11:10:28 -0600 : hide form nodes functional
+2024-11-09 10:19:34 -0600 : node filters functional
+2024-11-08 20:32:22 -0600 : Update README.md
+2024-11-08 00:56:23 -0600 : service change
+2024-11-08 00:55:15 -0600 : graph visualization clean up
+2024-11-08 00:52:38 -0600 : minimenu changes
+2024-11-03 14:48:19 -0600 : menu collapse
+2024-11-03 14:20:10 -0600 : UI tweaks
+2024-10-28 18:58:18 -0500 : text layout option added
+2024-10-28 01:34:05 -0500 : service change
+2024-10-28 01:32:19 -0500 : additional highlighting
+2024-10-27 04:38:56 -0500 : ui tweak
+2024-10-27 04:09:40 -0500 : 99namesbackup
+2024-10-27 04:09:18 -0500 : graph fixes
+2024-10-27 01:51:36 -0500 : service change
+2024-10-27 01:50:15 -0500 : working gender highlighting and basmala
+2024-10-23 18:53:55 -0500 : service change
+2024-10-23 18:52:33 -0500 : Merge pull request #18 from codectified/qimport
+2024-10-23 18:51:45 -0500 : ayah numbers working
+2024-10-23 17:38:05 -0500 : working quran import and render
+2024-10-12 19:12:17 -0500 : revision
+2024-10-12 00:20:58 -0500 : corpusitem backend limit
+2024-10-10 18:59:08 -0500 : quick tweak
+2024-10-10 18:55:44 -0500 : main site tweaks
+2024-10-10 14:43:40 -0500 : main site tweaks
+2024-10-10 13:04:48 -0500 : cultureselfdecay
+2024-10-09 19:34:57 -0500 : graph tweaks and new article
+2024-10-08 05:20:25 -0500 : dynamic node sizes!
+2024-10-06 12:51:41 -0500 : backend update for hanswehr entries
+2024-10-03 20:39:35 -0500 : status updates
+2024-10-03 20:33:22 -0500 : Merge pull request #17 from codectified/library-menu
+2024-10-03 20:32:53 -0500 : cleanup and menu updates
+2024-10-03 19:14:39 -0500 : reorg
+2024-10-02 17:49:45 -0500 : major cleanup
+2024-10-02 11:13:09 -0500 : findDOMNode depreciation
+2024-10-01 13:25:44 -0500 : learning language
+2024-10-01 12:05:39 -0500 : graph tweaks!
+2024-09-30 16:13:15 -0500 : tweaks
+2024-09-30 16:01:56 -0500 : titile change
+2024-09-30 09:58:58 -0500 : menu tweak
+2024-09-30 00:27:11 -0500 : UI fun
+2024-09-29 18:47:58 -0500 : forgot to save
+2024-09-29 18:45:50 -0500 : minor changes
+2024-09-29 18:39:30 -0500 : Merge pull request #16 from codectified/node-limiter
+2024-09-29 18:38:27 -0500 : service change
+2024-09-29 17:17:07 -0500 : Merge pull request #15 from codectified/node-limiter
+2024-09-29 17:00:48 -0500 : node limit slider
+2024-09-28 12:20:44 -0500 : post revisions
+2024-09-28 11:46:31 -0500 : first post
+2024-09-26 14:13:12 -0500 : blog functionality update
+2024-09-25 15:01:03 -0500 : content revisions
+2024-09-23 18:33:12 -0500 : minor revision
+2024-09-23 18:30:34 -0500 : markdown rendering adjustment
+2024-09-23 18:27:43 -0500 : minor edit
+2024-09-23 18:20:17 -0500 : minor content changes
+2024-09-22 20:41:05 -0500 : Merge pull request #14 from codectified/shades
+2024-09-22 20:40:17 -0500 : nodes shades implemented for nouns verbs phrases and other needs manual revision
+2024-09-21 14:56:06 -0500 : Merge pull request #13 from codectified/project-overview
+2024-09-21 14:55:34 -0500 : project-overview render
+2024-09-21 13:53:23 -0500 : overview markdown
+2024-09-20 16:29:12 -0500 : readme project plan update
+2024-09-18 07:40:53 -0500 : about adjustment
+2024-09-18 07:29:41 -0500 : about and intro updates
+2024-09-13 12:36:03 -0700 : fixed start
+2024-09-12 03:03:33 -0700 : sandbox ui tweak
+2024-09-12 02:41:58 -0700 : minor tweaks
+2024-09-12 02:12:53 -0700 : service change
+2024-09-12 01:59:59 -0700 : menu tweaks
+2024-09-12 01:35:30 -0700 : show root totals
+2024-09-12 01:26:58 -0700 : fixed node clicking
+2024-09-12 00:40:54 -0700 : L1/L2 fix
+2024-09-12 00:06:31 -0700 : working sandbox no labels
+2024-09-11 23:02:03 -0700 : infobubblescroll
+2024-09-11 22:49:56 -0700 : zoom and pan updates
+2024-09-11 22:44:34 -0700 : graph repositioning
+2024-09-11 15:55:05 -0700 : infobubble position adjustment
+2024-09-10 20:56:37 -0700 : style tweaks
+2024-09-10 17:38:04 -0500 : Merge pull request #12 from codectified/secondarynodeaction
+2024-09-10 15:35:57 -0700 : cleanup
+2024-09-10 15:21:44 -0700 : infobubble styling update
+2024-09-10 14:56:05 -0700 : secondary action functional across the board with modularized logic
+2024-09-10 13:58:10 -0700 : working info bubble for corpus library
+2024-09-09 17:04:39 -0700 : cleanup project map update
+2024-09-08 17:34:53 -0700 : cleanup + /project-map
+2024-09-07 04:17:34 -0700 : Merge branch 'master' of https://codectified@github.com/codectified/mindroots
+2024-09-07 04:17:16 -0700 : home revisions
+2024-09-07 03:10:36 -0500 : Merge pull request #11 from codectified/graphscreen-adjustments
+2024-09-07 01:10:00 -0700 : graph alignment
+2024-09-07 00:05:46 -0700 : padding fix
+2024-09-06 23:29:02 -0700 : padding removal
+2024-09-06 23:05:34 -0700 : UI minimization
+2024-09-06 02:58:03 -0700 : home tweaks
+2024-09-05 17:18:01 -0700 : application root expansion and ui tweaks
+2024-09-05 01:19:05 -0700 : homepage
+2024-09-02 22:06:08 -0700 : backend switch
+2024-09-02 21:52:57 -0700 : press functionality
+2024-09-02 21:49:18 -0700 : right-click to view entry working!
+2024-09-02 04:30:45 -0700 : minor tweaks
+2024-09-02 03:51:54 -0700 : stylin
+2024-09-02 03:49:06 -0700 : mini menu clean up
+2024-09-02 03:36:30 -0700 : about tweaks
+2024-09-02 02:33:04 -0700 : Merge branch 'master' of https://codectified@github.com/codectified/mindroots
+2024-09-02 02:29:51 -0700 : various changes
+2024-09-02 01:59:07 -0700 : articles cleanup
+2024-09-02 01:13:02 -0700 : @media adjustment
+2024-09-02 02:18:02 -0500 : Merge pull request #10 from codectified/homescreenrevamp
+2024-09-02 00:16:28 -0700 : minor adjustments
+2024-09-02 02:08:52 -0500 : Merge pull request #9 from codectified/homescreenrevamp
+2024-09-02 00:07:02 -0700 : minor frontend adjustments and games preview
+2024-09-01 22:45:13 -0700 : mainmenu revamp, settings fix, about fix
+2024-08-31 23:45:08 -0700 : recommit
+2024-08-31 23:44:24 -0700 : lane import arabic text only
+2024-08-31 17:20:07 -0500 : Update laneimport
+2024-08-31 17:14:47 -0500 : Create laneimport
+2024-08-23 20:02:47 -0700 : minor prod push changes
+2024-08-23 19:45:23 -0700 : minor content updates
+2024-08-23 18:16:09 -0500 : Merge pull request #8 from codectified/introtutorial
+2024-08-23 16:15:30 -0700 : minor content adjustments
+2024-08-22 23:21:53 -0700 : all node clicking logic operational globally
+2024-08-22 22:36:38 -0700 : word node clicks partially working
+2024-08-22 21:49:05 -0700 : examples working with scripts
+2024-08-20 16:10:57 -0700 : all node clicking logic working with contexts
+2024-08-20 02:30:19 -0700 : root and form nodes working with contexts
+2024-08-19 22:17:50 -0700 : major optimizations across the board
+2024-08-19 18:57:40 -0700 : Replaced local state and prop drilling with React Context API for managing script and corpus state globally
+2024-08-19 15:24:19 -0700 : switched to context management and updated corpus properties
+2024-08-19 01:51:48 -0700 : silence console
+2024-08-19 01:50:03 -0700 : home button and minor cleanup
+2024-08-19 01:17:04 -0700 : working backend for query and node display
+2024-08-18 21:22:29 -0700 : working backend
+2024-08-17 04:50:22 -0500 : Merge pull request #7 from codectified/menu
+2024-08-17 02:49:22 -0700 : v1 one ready maybe with api clean up
+2024-08-17 02:04:45 -0700 : working main menu transformation
+2024-08-16 16:07:14 -0700 : about updates
+2024-08-16 14:46:33 -0700 : about updates
+2024-08-14 22:19:53 -0500 : Merge pull request #6 from codectified/menu
+2024-08-14 20:18:50 -0700 : prod push
+2024-08-14 20:16:53 -0700 : aboutupdate
+2024-08-14 20:12:21 -0700 : Merge branch 'master' into menu
+2024-08-14 20:11:32 -0700 : menus now toggle
+2024-08-14 18:56:39 -0700 : menusystem
+2024-08-14 18:12:59 -0700 : about
+2024-08-14 17:37:52 -0700 : index.html update
+2024-08-14 13:46:26 -0500 : Merge pull request #5 from codectified/graphforce
+2024-08-14 03:47:00 -0700 : backend simplification
+2024-08-13 05:05:40 -0500 : Merge pull request #4 from codectified/graphforce
+2024-08-13 03:04:02 -0700 : corpusitem backend fix
+2024-08-11 21:45:23 -0700 : styling update
+2024-08-11 21:41:18 -0700 : minor edit
+2024-08-11 21:27:54 -0700 : prod push
+2024-08-11 21:25:35 -0700 : last clean up for prod
+2024-08-11 20:41:29 -0700 : cleanup
+2024-08-11 19:43:23 -0700 : cleanup
+2024-08-11 18:21:17 -0700 : updated corpus items logic
+2024-08-09 03:44:10 -0700 : apiService update
+2024-08-09 02:50:54 -0700 : working creds
+2024-08-08 18:45:22 -0700 : CORS update
+2024-08-08 02:33:49 -0700 : basename prop for subdirectory
+2024-08-08 01:43:47 -0700 : homepage update
+2024-08-07 15:57:16 -0700 : aura connection string update
+2024-08-06 22:55:12 -0700 : yet another cypher update
+2024-08-06 22:50:40 -0700 : cypher update again
+2024-08-06 22:46:43 -0700 : cypher update
+2024-08-06 16:29:34 -0700 : cypher update and corpus addition
+2024-08-05 20:22:12 -0500 : Update README.md
+2024-08-05 16:51:56 -0500 : Merge pull request #3 from codectified/ux-design
+2024-08-05 04:02:53 -0700 : readme update
+2024-07-30 20:59:37 -0700 : working default context filters
+2024-07-30 15:32:41 -0700 : paritally working context filters
+2024-07-28 06:12:09 -0700 : big backend update
+2024-07-27 00:43:41 -0700 : db redesign for multiple corpora
+2024-07-26 23:00:06 -0700 : dbredesign
+2024-07-26 16:48:32 -0700 : ui cleanup
+2024-07-26 00:41:16 -0700 : fixed for rootNodeClick
+2024-07-26 00:28:18 -0700 : modularized node clicks
+2024-07-25 16:22:12 -0700 : form endpoint response adjustment
+2024-07-24 02:50:21 -0700 : nameselector and modularization
+2024-07-24 02:24:41 -0700 : partially working context filter
+2024-07-23 20:23:29 -0700 : rootbyradicalsapi
+2024-07-23 19:23:00 -0700 : mindrootsv1
+2024-07-23 18:35:47 -0500 : Merge pull request #2 from codectified/graph-redesign
+2024-07-23 16:31:29 -0700 : packagelockupdate
+2024-07-23 18:17:42 -0500 : Merge pull request #1 from codectified/graph-redesign
+2024-07-23 16:15:40 -0700 : backend adjustment for both scripts
+2024-07-23 16:00:29 -0700 : fixed duplicate word nodes
+2024-07-23 15:50:54 -0700 : biggraphpush
+2024-07-22 21:47:03 -0700 : graph symmetry w roots no forms
+2024-07-22 20:36:57 -0700 : graph symmetry acheived
+2024-07-22 20:25:39 -0700 : cypher update
+2024-07-22 19:33:41 -0700 : working graph and button and colors
+2024-07-22 19:08:29 -0700 : working graph and button
+2024-07-22 18:45:00 -0700 : Big Commit
+2024-07-22 08:45:35 -0700 : cypher update
+2024-07-21 02:59:26 -0700 : api logging
+2024-07-21 02:53:40 -0700 : major visual update
+2024-07-21 02:12:37 -0700 : pre-backend update
+2024-07-21 01:42:41 -0700 : working root graph
+2024-07-21 01:31:31 -0700 : api updates
+2024-07-21 01:18:47 -0700 : catchup
+2024-07-11 11:32:31 -0600 : front end simplification
+2024-07-10 01:45:02 -0600 : all lists functional
+2024-07-08 17:39:15 -0700 : all lists working and drill down for roots & words
+2024-07-08 00:11:33 -0700 : added all roots and word forms to parent concept node then linked words to both
+2024-07-07 00:58:23 -0700 : lists for roots and word types with drill-down for roots
+2024-07-06 19:28:57 -0700 : minor adjustments
+2024-07-06 19:16:17 -0700 : front end working with roots and 2 types
+2024-07-06 01:24:49 -0700 : cypher fix
+2024-07-05 02:48:27 -0700 : cypher script adjustment
+2024-07-05 02:23:54 -0700 : init commit
+2024-06-29 00:58:38 -0700 : Initialize project using Create React App

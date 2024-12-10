@@ -3,7 +3,8 @@ import Markdown from 'markdown-to-jsx';
 import MiniMenu from '../navigation/MiniMenu';
 
 const CustomListItem = ({ children }) => {
-  return <li style={{ fontSize: '1em', color: 'white' }}>{children}</li>;
+  // Removed the 'color' property to allow inherited or global styling.
+  return <li style={{ fontSize: '1em' }}>{children}</li>;
 };
 
 const CustomList = ({ children }) => {
@@ -22,7 +23,7 @@ const MarkdownRenderer = ({ filePath }) => {
   return (
     <div className="markdown-page">
       <MiniMenu />
-      <div className="markdown-homepage">
+      <div className="markdown-mindroots">
         <Markdown
           options={{
             overrides: {

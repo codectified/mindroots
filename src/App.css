@@ -661,6 +661,12 @@
   border-radius: 4px;
   font-family: 'Courier New', Courier, monospace; /* Ensure code has a monospaced font */
 }
+
+.markdown-page,
+.markdown-mindroots {
+  background: white;
+  color: black;
+}
   
 /* ============================================
    Media Queries for Mobile Responsiveness 

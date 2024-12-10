@@ -1,104 +1,73 @@
-#### Project Overview and Status
+# Project Overview
 
-
-
-+ [Data Ingestion and Content](#data-ingestion-and-content) (September 26, 2024)
-+ [Graph Visualization Improvements](#graph-visualization-improvements) (October 1, 2024)
-+ [UI/UX Enhancements](#uiux-enhancements) (October 3, 2024)
-+ [Bugs and Issues](#bugs-and-issues) (October 2, 2024)
-+ [Server Management](#server-management) (August 22, 2024)
-
----
-
-#### Data Ingestion and Content
-
-+ <span style="color:green;">Node Filtering</span>
-+ <span style="color:orange;">Context shifting</span>
-+ <span style="color:red;">Root combination</span>
-+ <span style="color:red;">Ingest new corpus data</span>
-+ <span style="color:orange;">Automate linking words to lexicon entries</span>
-+ <span style="color:red;">Develop manual data verification process</span>
-
-- <span style="color:green;">September 26, 2024</span> — Blog functionality update.
-- <span style="color:green;">September 28, 2024</span> — First blog post published.
-- <span style="color:green;">September 1, 2024</span> — Large data import: 50k+ words and 5k+ roots from Edward William Lane's Lexicon.
-- <span style="color:green;">August 31, 2024</span> — Lane Lexicon Arabic text successfully imported.
-- <span style="color:green;">July 5, 2024</span> — Initial Cypher script adjustments.
+**Functional Areas:**
+- Data Engineering / Backend
+- Frontend / UX
+- Content & Documentation
+- Infrastructure & Operations
+- Bugs & Issues (Cross-functional)
 
 ---
 
-#### Graph Visualization Improvements
+## Data Engineering / Backend
 
-- <span style="color:green;">October 1, 2024</span> — Graph tweaks implemented, including:
-  + <span style="color:green;">Slow node movement</span>
-  + <span style="color:green;">Fix alignment</span>
-  + <span style="color:green;">Stop unnecessary movements</span>
-  + <span style="color:green;">Resize graph screen</span>
-- <span style="color:green;">September 29, 2024</span> — Node limit slider added.
-- <span style="color:green;">September 11, 2024</span> — Infobubble scroll functionality added.
-- <span style="color:green;">September 2, 2024</span> — Right-click to view entry working.
-- <span style="color:green;">July 23, 2024</span> — Fixed duplicate word nodes, backend adjustments for scripts, graph redesign.
-- <span style="color:green;">July 22, 2024</span> — Graph symmetry achieved, graph and button updates.
-- <span style="color:green;">July 21, 2024</span> — API logging added.
+- Maintain current Mindroots instance (In Progress)
+- Create “Arabic/Aura on Roots” instance (In Progress)
+- Classify roots (Geminate, Triliteral, Extended) (Not Started)
+- Handle >3-letter roots; exclude extended roots (Not Started)
+- Import Shakespeare’s sonnets (Not Started)
+- Front screen database stats (Partially Done)
 
----
-
-### UI/UX Enhancements
-
-+ <span style="color:red;">Main Menu Transformation</span>
-+ <span style="color:red;">Add a button to return to the main site and exit the application</span>
-+ <span style="color:orange;">Context menu</span>
-- <span style="color:green;">October 3, 2024</span> — Library/articles navigation update
-
-- <span style="color:green;">September 2, 2024</span> — Frontend overhaul: Updated Getting Started and About articles, added infobubble scroll functionality, and right-click to view entry.
-- <span style="color:green;">August 22, 2024</span> — Node-clicking logic operational across the board.
-- <span style="color:green;">August 19, 2024</span> — Replaced local state with React Context API.
-- <span style="color:green;">August 17, 2024</span> — Main menu transformation (v1).
+- 2024-10-23: Quran import & render
+- 2024-09-26: Enhanced blog data handling
+- 2024-08-31: Lane Lexicon Arabic text import
+- 2024-07-27/28: Database redesign for multiple corpora
+- 2024-07-23: root search and multi-script support
 
 ---
 
-#### Bugs and Issues
+## Frontend / UX
 
-+ <span style="color:red;">Corpus Context Issue</span> (needs to be tied to corpus item selection)
-+ <span style="color:red;">Duplicates Issue</span> (duplicate nodes or data showing up incorrectly)
-+ <span style="color:red;">Root context not working</span> (no nodes returned)
-
-- <span style="color:green;">October 2, 2024</span> — FindDOMNode depreciation handled.
-- <span style="color:green;">July 28, 2024</span> — Major backend update.
-
----
-
-#### Server Management
-
-+ <span style="color:red;">Install Fail2Ban</span>
-+ <span style="color:red;">Explore tools for first-click analysis</span>
-
-- <span style="color:green;">August 22, 2024</span> — Major backend optimizations.
-- <span style="color:green;">August 19, 2024</span> — Backend service updates and optimizations.
+- Corpus rendering controls (In Progress)
+- 2024-12-02: Free form highlighting
+- 2024-11-29: Ontological shades
+- 2024-10-28: Text layout option
+- 2024-10-08: Dynamic node sizes
+- 2024-09-29: Node limit slider
+- 2024-09-22: Node shading for nouns/verbs/phrases
+- 2024-09-02: Right-click entry view
+- 2024-09-07: Graph screen adjustments
+- 2024-08-19: React Context API adoption
 
 ---
 
-#### Contributions
+## Content & Documentation
 
-We welcome contributions from developers and researchers interested in enhancing the Mindroots project. Below are the areas of expertise required for incomplete tasks:
+- Finish article on universality of the infective (In Progress)
+- Translate and record Al-Shanfara’s poem (In Progress)
+- Explore Instagram cross-posting (In Progress)
+- Edit videos for YouTube/TikTok (In Progress)
+- Clean up guides/articles (Not Started)
+- Create user stories and videos (Not Started)
+- Blog layout adjustment (Not Started)
 
-#### **General Graph Screen Functionality**
-+ **Expertise Required**: JavaScript, D3.js, UX/UI Design.
-
-#### **GraphDB Transliterations and Translations**
-+ **Expertise Required**: Python, Natural Language Processing, API Integration.
-
-#### **Library Expansion**
-+ **Expertise Required**: Neo4j, Content Management, Lexicography.
-
-#### **Games Development**
-+ **Expertise Required**: Game Design, JavaScript, Educational Tools.
-
-#### **Monitoring & Analytics**
-+ **Expertise Required**: DevOps, Security, Monitoring Tools (Prometheus, Grafana).
-
-#### **General UI/UX Improvements**
-+ **Expertise Required**: UI/UX Design, Frontend Development, User Testing.
+- 2024-09-28: First post published
+- 2024-09-26: Blog functionality update
+- 2024-09-23: Markdown rendering adjustment
+- 2024-09-21: Project overview documentation
 
 ---
 
+## Infrastructure & Operations
+
+- Adjust Nginx and React URLs for distinct routes (`option.life/quranroots` vs `mindroots/mindroots`)  
+- Install Fail2Ban or similar security tools
+- Explore tools for first-click analysis/user engagement
+- 2024-08-08: CORS and basename configuration
+
+---
+
+## Bugs & Issues (Cross-functional)
+
+- Fix corpus context issues tied to corpus item selection
+- Address root context issues (no nodes returned)

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBook, faSearch, faMapMarked } from '@fortawesome/free-solid-svg-icons';
 import { faInstagram, faLinkedin } from '@fortawesome/free-brands-svg-icons'; // Import from brands package
@@ -41,6 +41,18 @@ const MainMenu = () => {
           <li>Root Nodes: 5,049</li>
           <li>Word Nodes: 47,922</li>
         </ul>
+
+      <ul className="articles-list">
+      <li>
+          <Link to="/about">About</Link>
+        </li>
+        <li>
+          <Link to="/getting-started">Getting Started</Link>
+        </li>
+        <li>
+          <Link to="/project-overview">Project Overview</Link>
+        </li>
+      </ul>
       </div>
 
       {/* Main Site and Social Links */}
