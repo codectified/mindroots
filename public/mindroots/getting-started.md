@@ -23,7 +23,7 @@ To explore the graph, click a node to reveal its links, and click it again to vi
 
 A unique feature of this tool is its use of a graph database to organize and represent language.  Graphs databases differ from traditional databases in that they more directly mirror natural structures, especially those involving many relationships and “end-to-end” connections, like a tree or a nervous system or an electron cloud.
 
-The idea is to isolate a word’s essential **sound** and **root** and all it’s various **forms** and **grammatical functions**. 
+The idea is to isolate a word’s essential **sounds** or **root** and all it’s various **forms** and **grammatical functions**. 
 
 These components are color-coded using the three primary colors throughout out this application:
 
