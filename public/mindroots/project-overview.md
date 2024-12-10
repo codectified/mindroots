@@ -58,7 +58,7 @@
 
 ---
 
-## Bugs & Issues (Cross-functional)
+## Bugs & Issues 
 
 - Fix corpus context issues tied to corpus item selection
 - Address root context issues (no nodes returned)
