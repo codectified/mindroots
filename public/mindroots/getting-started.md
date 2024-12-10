@@ -8,7 +8,7 @@ MindRoots is a graphical ontological database and dictionary currently featuring
 
 Each of the three main pages—**Library**, **Explore**, and **Search**—allows you to interact with and visualize the underlying graph database in different ways:
 
-- **Library:** View texts or corpora, and access the graph by clicking individual words. Currently, the library features the 99 names of Allah. Clicking a word from these corpora displays it as a node, allowing you to explore its links and related information.
+- **Library:** View texts or corpora, and access the graph by clicking individual words. Clicking a word from from any corpus displays the selected word in the database and related information.
 
 - **Explore:** Generate random nodes from different categories within the database. 
 
