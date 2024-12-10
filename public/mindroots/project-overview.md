@@ -13,7 +13,7 @@
 - 2024-10-23: Quran import & render
 - 2024-09-26: Enhanced blog data handling
 - 2024-08-31: Lane Lexicon Arabic text import
-- 2024-07-27/28: Database redesign for multiple corpora
+- 2024-07-28: Database redesign for multiple corpora
 - 2024-07-23: root search and multi-script support
 
 ---
@@ -36,7 +36,7 @@
 ## Content & Documentation
 
 - Finish article on universality of the infective (In Progress)
-- Translate and record Al-Shanfara’s poem (In Progress)
+- Translate and import translation of Al-Shanfara’s poem (In Progress)
 - Explore Instagram cross-posting (In Progress)
 - Create/edit user stories/videos for YouTube/TikTok (In Progress)
 - Improve guides/articles (In Progress)
