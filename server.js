@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load environment variables
+
 const express = require('express');
 const neo4j = require('neo4j-driver');
 const cors = require('cors');
@@ -7,19 +9,12 @@ const app = express();
 const port = 5001;
 
 app.use(cors());
-
 app.use(express.json());
 
-// // // Neo4j driver setup
-// const driver = neo4j.driver(
-//   'bolt://localhost', 
-//   neo4j.auth.basic('neo4j', 'raymond-guide-monarch-change-reward-8670') // 
-// );
-
-// Neo4j Aura driver setup
+// Neo4j driver setup using environment variables
 const driver = neo4j.driver(
-  'neo4j+s://***REDACTED_URI***', // Neo4j Aura connection URI
-  neo4j.auth.basic('neo4j', '***REDACTED_PASSWORD***') 
+  process.env.NEO4J_URI, 
+  neo4j.auth.basic(process.env.NEO4J_USERNAME, process.env.NEO4J_PASSWORD)
 );
 
 // Middleware to make the Neo4j driver available to all routes
