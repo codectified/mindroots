@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import GraphVisualization from './GraphVisualization';
-import { fetchRootByLetters } from '../../services/apiService'; // Your service function to fetch roots
+import { fetchGeminateRoots, fetchTriliteralRoots, fetchExtendedRoots } from '../../services/apiService'; // Updated service functions
 import { useScript } from '../../contexts/ScriptContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
@@ -8,7 +8,7 @@ import MiniMenu from '../navigation/MiniMenu';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 
 const arabicLetters = [
-  'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض', 
+  'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض',
   'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
 ];
 
@@ -23,28 +23,65 @@ const Search = () => {
 
   const closeInfoBubble = () => setInfoBubble(null);
 
-  const handleFetchRoots = async (combinations = []) => {
+  const handleFetchRoots = async (searchType = 'Triliteral') => {
     try {
       let roots = [];
       let total = 0;
 
-      // Fetch roots for combinations or single input
-      if (combinations.length > 0) {
-        for (const combo of combinations) {
-          const { roots: comboRoots } = await fetchRootByLetters(combo[0], combo[1] || '', combo[2] || '', L1, L2);
-          roots = [...roots, ...comboRoots];
-        }
+      // Select appropriate service function based on searchType
+      if (searchType === 'Geminate') {
+        const { roots: geminateRoots, total: geminateTotal } = await fetchGeminateRoots(r1, r2, L1, L2);
+        roots = geminateRoots;
+        total = geminateTotal;
+      } else if (searchType === 'Extended') {
+        const { roots: extendedRoots, total: extendedTotal } = await fetchExtendedRoots(r1, r2, r3, L1, L2);
+        roots = extendedRoots;
+        total = extendedTotal;
       } else {
-        const { roots: singleRoots, total: singleTotal } = await fetchRootByLetters(r1, r2, r3, L1, L2);
-        roots = singleRoots;
-        total = singleTotal;
+        const { roots: triliteralRoots, total: triliteralTotal } = await fetchTriliteralRoots(r1, r2, r3, L1, L2);
+        roots = triliteralRoots;
+        total = triliteralTotal;
       }
 
+      // Format and set graph data
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
     } catch (error) {
       console.error('Error fetching roots:', error);
+    }
+  };
+
+  const handleCombinate = async () => {
+    const combinations = generateCombinations(); // Generate all combinations
+    try {
+      const responses = await Promise.allSettled(
+        combinations.map(async (combo) => {
+          try {
+            const { roots } = await fetchTriliteralRoots(combo[0], combo[1] || '', combo[2] || '', L1, L2);
+            return roots; // Return only the roots for this combination
+          } catch (error) {
+            console.warn(`No roots found for combination: ${combo.join('-')}`);
+            return []; // Return an empty array for failed requests
+          }
+        })
+      );
+
+      const allRoots = responses
+        .filter((result) => result.status === 'fulfilled') // Only take fulfilled results
+        .map((result) => result.value) // Extract the roots from the result
+        .flat(); // Flatten the array
+
+      if (allRoots.length > 0) {
+        const formattedData = formatNeo4jData(allRoots);
+        setGraphData(formattedData);
+        setTotalRoots(allRoots.length);
+      } else {
+        setGraphData({ nodes: [], links: [] });
+        setTotalRoots(0);
+      }
+    } catch (error) {
+      console.error('Error fetching combinations:', error);
     }
   };
 
@@ -63,46 +100,6 @@ const Search = () => {
 
     permute(letters);
     return combos;
-  };
-
-  const handleCombinate = async () => {
-    const combinations = generateCombinations(); // Generate all combinations
-    try {
-      // Fetch roots for all combinations concurrently, handling failures gracefully
-      const responses = await Promise.allSettled(
-        combinations.map(async (combo) => {
-          try {
-            const { roots } = await fetchRootByLetters(combo[0], combo[1] || '', combo[2] || '', L1, L2);
-            return roots; // Return only the roots for this combination
-          } catch (error) {
-            console.warn(`No roots found for combination: ${combo.join('-')}`);
-            return []; // Return an empty array for failed requests
-          }
-        })
-      );
-  
-      // Extract results from successful responses and ignore failed ones
-      const allRoots = responses
-        .filter((result) => result.status === 'fulfilled') // Only take fulfilled results
-        .map((result) => result.value) // Extract the roots from the result
-        .flat(); // Flatten the array
-  
-      if (allRoots.length > 0) {
-        const formattedData = formatNeo4jData(allRoots);
-        setGraphData(formattedData);
-        setTotalRoots(allRoots.length);
-      } else {
-        setGraphData({ nodes: [], links: [] });
-        setTotalRoots(0);
-      }
-    } catch (error) {
-      console.error('Error fetching combinations:', error);
-    }
-  };
-
-  const handleClearScreen = () => {
-    setGraphData({ nodes: [], links: [] });
-    setTotalRoots(0);
   };
 
   const formatNeo4jData = (neo4jData) => {
@@ -126,46 +123,66 @@ const Search = () => {
   return (
     <div>
       <MiniMenu />
-      <div>
-        <label>R1:</label>
-        <select value={r1} onChange={(e) => setR1(e.target.value)}>
-          <option value="">--</option>
-          {arabicLetters.map(letter => (
-            <option key={letter} value={letter}>
-              {letter}
-            </option>
-          ))}
-        </select>
-
-        <label>R2:</label>
-        <select value={r2} onChange={(e) => setR2(e.target.value)}>
-          <option value="">--</option>
-          {arabicLetters.map(letter => (
-            <option key={letter} value={letter}>
-              {letter}
-            </option>
-          ))}
-        </select>
-
-        <label>R3:</label>
-        <select value={r3} onChange={(e) => setR3(e.target.value)}>
-          <option value="">--</option>
-          {arabicLetters.map(letter => (
-            <option key={letter} value={letter}>
-              {letter}
-            </option>
-          ))}
-        </select>
-
-        <button onClick={() => handleFetchRoots()}>Fetch Root(s)</button>
+      
+      {/* Dropdown menus in one row, aligned to the left */}
+      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
+        <div>
+          <label>R1:</label>
+          <select value={r1} onChange={(e) => setR1(e.target.value)}>
+            <option value="">*</option>
+            {arabicLetters.map(letter => (
+              <option key={letter} value={letter}>
+                {letter}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>R2:</label>
+          <select value={r2} onChange={(e) => setR2(e.target.value)}>
+            <option value="">*</option>
+            {arabicLetters.map(letter => (
+              <option key={letter} value={letter}>
+                {letter}
+              </option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label>R3:</label>
+          <select value={r3} onChange={(e) => setR3(e.target.value)}>
+            <option value="">*</option>
+            <option value="NoR3">None</option>
+            {arabicLetters.map(letter => (
+              <option key={letter} value={letter}>
+                {letter}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+  
+      {/* Buttons in another row, aligned to the left */}
+      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+        <button onClick={() => handleFetchRoots(r3 === 'NoR3' ? 'Geminate' : 'Triliteral')}>
+          Fetch Root(s)
+        </button>
         <button onClick={handleCombinate}>Combinate</button>
-        <button onClick={handleClearScreen}>Reset</button>
-
+        <button onClick={() => handleFetchRoots('Extended')}>Fetch Extended</button>
+      </div>
+  
+      {/* Total roots count in another row */}
+      <div style={{ textAlign: 'left', marginBottom: '20px' }}>
         {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25 max)</p>}
       </div>
-
-      <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)} />
-
+  
+      <GraphVisualization
+        data={graphData}
+        onNodeClick={(node, event) =>
+          handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)
+        }
+      />
+  
       {infoBubble && (
         <InfoBubble
           className="info-bubble"
@@ -180,6 +197,8 @@ const Search = () => {
       )}
     </div>
   );
+
+
 };
 
 export default Search;

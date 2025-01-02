@@ -652,13 +652,212 @@ router.get('/hanswehrentry/:wordId', async (req, res) => {
 
 
 router.get('/rootbyletters', async (req, res) => {
+  const { r1, r2, r3, L1, L2, searchType } = req.query;
+  const session = req.driver.session();
+
+  try {
+    let query = 'MATCH (root:Root)';
+    const conditions = [];
+    const params = {};
+
+    // (1) Always consider r1 and r2 if they're set
+    if (r1) {
+      conditions.push('root.r1 = $r1');
+      params.r1 = r1;
+    }
+    if (r2) {
+      conditions.push('root.r2 = $r2');
+      params.r2 = r2;
+    }
+
+    // (2) r3 logic:
+    // If r3 === "NoR3" and searchType = "Geminate", we skip matching root.r3
+    // Else if r3 is a letter, we add that condition
+    if (r3 && r3 !== 'NoR3') {
+      conditions.push('root.r3 = $r3');
+      params.r3 = r3;
+    }
+
+    // (3) Distinguish which root types to fetch
+    switch (searchType) {
+      case 'Geminate':
+        // Match geminate only
+        conditions.push('root.root_type = "Geminate"');
+        break;
+
+      case 'Extended':
+        // Quadriliteral or beyond
+        conditions.push(`
+          root.root_type IN [
+            "Quadriliteral", 
+            "Quintiliteral", 
+            "Hexaliteral", 
+            "Heptaliteral", 
+            "BeyondTriliteral"
+          ]
+        `);
+        break;
+
+      case 'Triliteral':
+      default:
+        // If user doesn't specify or picks "Triliteral", then restrict to triliteral only
+        conditions.push('root.root_type = "Triliteral"');
+        break;
+    }
+
+    // (4) Build the WHERE clause
+    if (conditions.length > 0) {
+      query += ' WHERE ' + conditions.join(' AND ');
+    }
+
+    // (5) Count total
+    const countQuery = query + ' RETURN COUNT(root) AS total';
+    const countResult = await session.run(countQuery, params);
+    const total = countResult.records[0]?.get('total')?.low || 0;
+
+    // (6) Fetch up to 25
+    query += ' RETURN root LIMIT 25';
+    const result = await session.run(query, params);
+
+    if (result.records.length > 0) {
+      const roots = result.records.map((rec) => {
+        const props = rec.get('root').properties;
+        return {
+          ...props,
+          label: L2 === 'off' ? props[L1] : `${props[L1]} / ${props[L2]}`,
+          root_id: props.root_id,
+        };
+      });
+      res.json({ roots, total });
+    } else {
+      res.status(404).json({ error: 'No roots found' });
+    }
+  } catch (error) {
+    console.error('Error fetching root by letters:', error);
+    res.status(500).json({ error: 'Error fetching root by letters' });
+  } finally {
+    await session.close();
+  }
+});
+
+router.get('/geminate-roots', async (req, res) => {
+  const { r1, r2, L1, L2 } = req.query;
+  const session = req.driver.session();
+
+  try {
+    let query = 'MATCH (root:Root)';
+    const conditions = ['root.root_type = "Geminate"'];
+    const params = {};
+
+    if (r1) {
+      conditions.push('root.r1 = $r1');
+      params.r1 = r1;
+    }
+    if (r2) {
+      conditions.push('root.r2 = $r2');
+      params.r2 = r2;
+    }
+
+    query += ' WHERE ' + conditions.join(' AND ') + ' RETURN root LIMIT 25';
+    const result = await session.run(query, params);
+
+    if (result.records.length > 0) {
+      const roots = result.records.map(record => {
+        const root = record.get('root').properties;
+        return {
+          ...root,
+          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+          root_id: root.root_id,
+        };
+      });
+      res.json({ roots, total: roots.length });
+    } else {
+      res.status(404).json({ error: 'No geminate roots found' });
+    }
+  } catch (error) {
+    console.error('Error fetching geminate roots:', error);
+    res.status(500).json({ error: 'Error fetching geminate roots' });
+  } finally {
+    await session.close();
+  }
+});
+
+
+router.get('/triliteral-roots', async (req, res) => {
   const { r1, r2, r3, L1, L2 } = req.query;
   const session = req.driver.session();
 
   try {
-    // Dynamically build the Cypher query based on which letters are provided
     let query = 'MATCH (root:Root)';
-    const conditions = [];
+    const conditions = ['root.root_type = "Triliteral"'];
+    const params = {};
+
+    // Add conditions for R1 and R2
+    if (r1 && r1 !== '*') {
+      conditions.push('root.r1 = $r1');
+      params.r1 = r1;
+    }
+    if (r2 && r2 !== '*') {
+      conditions.push('root.r2 = $r2');
+      params.r2 = r2;
+    }
+
+    // Handle R3
+    if (r3 === 'NoR3') {
+      // Geminate case; exclude R3
+      conditions.push('root.r3 IS NULL');
+    } else if (r3 && r3 !== '*') {
+      // Specific triliteral case
+      conditions.push('root.r3 = $r3');
+      params.r3 = r3;
+    }
+
+    // Ensure no additional radicals exist
+    conditions.push('root.r4 IS NULL');
+    conditions.push('root.r5 IS NULL');
+    conditions.push('root.r6 IS NULL');
+
+    query += ' WHERE ' + conditions.join(' AND ') + ' RETURN root LIMIT 25';
+
+    const result = await session.run(query, params);
+
+    if (result.records.length > 0) {
+      const roots = result.records.map((record) => {
+        const root = record.get('root').properties;
+        return {
+          ...root,
+          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+          root_id: root.root_id,
+        };
+      });
+      res.json({ roots, total: roots.length });
+    } else {
+      res.status(404).json({ error: 'No triliteral roots found' });
+    }
+  } catch (error) {
+    console.error('Error fetching triliteral roots:', error);
+    res.status(500).json({ error: 'Error fetching triliteral roots' });
+  } finally {
+    await session.close();
+  }
+});
+
+
+router.get('/extended-roots', async (req, res) => {
+  const { r1, r2, r3, L1, L2 } = req.query;
+  const session = req.driver.session();
+
+  try {
+    let query = 'MATCH (root:Root)';
+    const conditions = [
+      `root.root_type IN [
+        "Quadriliteral",
+        "Quintiliteral",
+        "Hexaliteral",
+        "Heptaliteral",
+        "BeyondTriliteral"
+      ]`,
+    ];
     const params = {};
 
     if (r1) {
@@ -674,17 +873,7 @@ router.get('/rootbyletters', async (req, res) => {
       params.r3 = r3;
     }
 
-    if (conditions.length > 0) {
-      query += ' WHERE ' + conditions.join(' AND ');
-    }
-
-    // Query to count all matching roots (for total count)
-    const countQuery = query + ' RETURN COUNT(root) AS total';
-    const countResult = await session.run(countQuery, params);
-    const total = countResult.records[0].get('total').low || 0; // Total count of root nodes
-
-    // Fetch the first 25 roots
-    query += ' RETURN root LIMIT 25';
+    query += ' WHERE ' + conditions.join(' AND ') + ' RETURN root LIMIT 25';
     const result = await session.run(query, params);
 
     if (result.records.length > 0) {
@@ -693,20 +882,23 @@ router.get('/rootbyletters', async (req, res) => {
         return {
           ...root,
           label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-          root_id: root.root_id
+          root_id: root.root_id,
         };
       });
-      res.json({ roots, total }); // Return roots and total number of matching roots
+      res.json({ roots, total: roots.length });
     } else {
-      res.status(404).json({ error: 'No roots found' });
+      res.status(404).json({ error: 'No extended roots found' });
     }
   } catch (error) {
-    console.error('Error fetching root by letters:', error);
-    res.status(500).json({ error: 'Error fetching root by letters' });
+    console.error('Error fetching extended roots:', error);
+    res.status(500).json({ error: 'Error fetching extended roots' });
   } finally {
     await session.close();
   }
 });
+
+
+
 
 
 const fs = require('fs');
