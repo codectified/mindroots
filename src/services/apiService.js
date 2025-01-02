@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 // // Create an Axios instance with the base URL for the API
-const api = axios.create({
-  baseURL: 'https://theoption.life/api',
-});
-
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: 'https://theoption.life/api',
 // });
+
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -214,22 +214,51 @@ export const fetchHansWehrEntry = async (wordId) => {
   }
 };
 
-export const fetchRootByLetters = async (r1, r2, r3, L1, L2) => {
+// 1. Modify fetchRootByLetters to accept searchType
+export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Triliteral') => {
   try {
     const response = await api.get('/rootbyletters', {
-      params: {
-        r1,
-        r2,
-        r3,
-        L1,
-        L2
-      }
+      params: { r1, r2, r3, L1, L2, searchType },
     });
-
-    // Convert Neo4j number types to JavaScript integers before returning
     return convertIntegers(response.data);
   } catch (error) {
     console.error('Error fetching roots by letters:', error);
+    throw error;
+  }
+};
+
+export const fetchGeminateRoots = async (r1, r2, L1, L2) => {
+  try {
+    const response = await api.get('/geminate-roots', {
+      params: { r1, r2, L1, L2 },
+    });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching geminate roots:', error);
+    throw error;
+  }
+};
+
+export const fetchTriliteralRoots = async (r1, r2, r3, L1, L2) => {
+  try {
+    const response = await api.get('/triliteral-roots', {
+      params: { r1, r2, r3, L1, L2 },
+    });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching triliteral roots:', error);
+    throw error;
+  }
+};
+
+export const fetchExtendedRoots = async (r1, r2, r3, L1, L2) => {
+  try {
+    const response = await api.get('/extended-roots', {
+      params: { r1, r2, r3, L1, L2 },
+    });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching extended roots:', error);
     throw error;
   }
 };
