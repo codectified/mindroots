@@ -50,19 +50,57 @@
     color: #0077b5; /* LinkedIn blue */
   }
   
-  button {
-    background-color: #333;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    margin: 10px;
-    cursor: pointer;
-    font-family: 'Noto Serif', serif;
-  }
-  
-  button:hover {
-    background-color: #555;
-  }
+/* Ensure buttons have consistent spacing */
+button, .submenu-toggle {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px; /* Ensure consistent padding */
+  margin: 10px 10px 10px 0; /* Add spacing only to the right */
+  cursor: pointer;
+  font-family: 'Noto Serif', serif;
+  border-radius: 4px;
+}
+
+button:hover, .submenu-toggle:hover {
+  background-color: #555;
+}
+
+/* Submenu styling */
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #333;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.submenu label {
+  display: block;
+  margin: 5px 0;
+}
+
+.submenu input {
+  margin-right: 10px;
+}
+
+/* Button row aligned to the left with spacing */
+.button-row {
+  display: flex;
+  justify-content: flex-start;
+  gap: 15px; /* Adds spacing between button containers */
+  margin: 20px 0;
+}
+
+.button-container {
+  position: relative;
+  display: inline-block;
+}
   
   select {
     padding: 5px;
