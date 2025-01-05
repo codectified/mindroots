@@ -18,7 +18,71 @@ const Explore = () => {
   const { selectedCorpus } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [markdownContent, setMarkdownContent] = useState('');
-  const [selectedOption, setSelectedOption] = useState(''); // Default is empty for "Select Node Type"
+
+  
+  // Multi-select state for filters
+  const [selectedFilters, setSelectedFilters] = useState({
+    word: [],
+    root: [],
+    form: [],
+  });
+
+  const [expanded, setExpanded] = useState({ word: false, root: false, form: false });
+
+  // Toggle filter selection
+  const toggleFilter = (category, filter) => {
+    setSelectedFilters((prev) => {
+      const filters = prev[category];
+      const updatedFilters = filters.includes(filter)
+        ? filters.filter((f) => f !== filter)
+        : [...filters, filter];
+      return { ...prev, [category]: updatedFilters };
+    });
+  };
+
+  // Toggle expanded menus
+  const toggleExpanded = (category) => {
+    setExpanded((prev) => ({ ...prev, [category]: !prev[category] }));
+  };
+
+  const subcategories = {
+    word: [
+      'Concrete Word',
+      'Concrete Word;MAA',
+      'Concrete Word;HAB',
+      'Concrete Word;HGN',
+      'Concrete Word;AI',
+      'Abstract Word',
+      'Abstract Word;MS',
+      'Abstract Word;MP',
+      'Abstract Word;SOC',
+      'Abstract Word;LS',
+    ],
+    root: ['Geminate Root', 'Triliteral Root', '3+ Root'],
+    form: [
+      'Form: infinitive',
+      'Form: active_participle',
+      'Form: passive_participle',
+      'Form: noun_of_place',
+      'Form: noun_of_state',
+      'Form: noun_of_instrument',
+      'Form: noun_of_essence',
+      'Form: noun_of_hyperbole',
+      'Form: noun_of_defect',
+      'Form: Concrete',
+      'Form: Abstract',
+      'Form: Movement and Action',
+      'Form: Human-Animal-Body',
+      'Form: Hunting-Gathering-Nature',
+      'Form: Agriculture-Industry',
+      'Form: Mental States',
+      'Form: Metaphysical',
+      'Form: Social',
+      'Form: Linguistic and Symbolic',
+    ],
+  };
+
+
   const closeInfoBubble = () => {
     setInfoBubble(null);
   };
@@ -210,21 +274,28 @@ const Explore = () => {
   };
 
   const loadMarkdownAndFetchData = async () => {
-    if (!selectedOption) {
-      alert('Please select a node type.');
+    const activeFilters = [
+      ...selectedFilters.word,
+      ...selectedFilters.root,
+      ...selectedFilters.form,
+    ];
+    
+    if (activeFilters.length === 0) {
+      alert('Please select at least one filter.');
       return;
     }
-
+  
     try {
+      // Determine markdown content based on selected categories
       let content;
-      if (selectedOption === 'words') {
+      if (selectedFilters.word.length > 0) {
         content = wordsContent;
-      } else if (selectedOption === 'roots') {
+      } else if (selectedFilters.root.length > 0) {
         content = rootsContent;
-      } else if (selectedOption === 'forms') {
+      } else if (selectedFilters.form.length > 0) {
         content = formsContent;
       }
-
+  
       if (content) {
         const response = await fetch(content);
         const text = await response.text();
@@ -232,12 +303,15 @@ const Explore = () => {
       } else {
         setMarkdownContent('');
       }
-
-      const query = exampleQueries[selectedOption];
-      const data = await executeQuery(query);
+  
+      // Combine queries for all selected filters
+      const queries = activeFilters.map((filter) => exampleQueries[filter]);
+      const combinedQuery = queries.join('\nUNION\n');
+  
+      // Fetch data from the backend
+      const data = await executeQuery(combinedQuery);
       const formattedData = formatNeo4jData(data);
-      setGraphData(formattedData); // Update graphData for visualization
-      console.log('Graph data:', formattedData);
+      setGraphData(formattedData);
     } catch (error) {
       console.error('Error loading markdown or fetching data:', error);
     }
@@ -271,59 +345,86 @@ const Explore = () => {
     <div className="start">
       <MiniMenu />
 
-      <div>
-        <select value={selectedOption} onChange={(e) => setSelectedOption(e.target.value)}>
-          <option value="">Select Node Type</option>
-          <option value="words">Word</option>
-          <option value="Concrete Word">Concrete Word</option>
-          <option value="Concrete Word;MAA"> Movement and Action</option>
-          <option value="Concrete Word;HAB"> Human-Animal-Body</option>
-          <option value="Concrete Word;HGN"> Hunting-Gathering-Nature</option>
-          <option value="Concrete Word;AI"> Agriculture-Industry</option>
-          <option value="Abstract Word">Abstract Word</option>
-          <option value="Abstract Word;MS"> Mental States</option>
-          <option value="Abstract Word;MP"> Metaphysical</option>
-          <option value="Abstract Word;SOC"> Social</option>
-          <option value="Abstract Word;LS"> Linguistic and Symbolic</option>
-          <option value="roots">Root</option>
-          <option value="forms">Form</option>
-          <optgroup label="Grammatical Forms">
-            <option value="Form: infinitive"> Infinitive</option>
-            <option value="Form: active_participle"> Active Participle</option>
-            <option value="Form: passive_participle"> Passive Participle</option>
-            <option value="Form: noun_of_place"> Noun of Place</option>
-            <option value="Form: noun_of_state"> Noun of State</option>
-            <option value="Form: noun_of_instrument"> Noun of Instrument</option>
-            <option value="Form: noun_of_essence"> Noun of Essence</option>
-            <option value="Form: noun_of_hyperbole"> Noun of Hyperbole</option>
-            <option value="Form: noun_of_defect"> Noun of Defect</option>
-          </optgroup>
-          <optgroup label="Ontological Forms">
-            <option value="Form: Concrete"> Concrete</option>
-            <option value="Form: Abstract"> Abstract</option>
-            <option value="Form: Movement and Action"> Movement and Action</option>
-            <option value="Form: Human-Animal-Body"> Human-Animal-Body</option>
-            <option value="Form: Hunting-Gathering-Nature"> Hunting-Gathering-Nature</option>
-            <option value="Form: Agriculture-Industry"> Agriculture-Industry</option>
-            <option value="Form: Mental States"> Mental States</option>
-            <option value="Form: Metaphysical"> Metaphysical</option>
-            <option value="Form: Social"> Social</option>
-            <option value="Form: Linguistic and Symbolic"> Linguistic and Symbolic</option>
-          </optgroup>
-        </select>
-        <button onClick={loadMarkdownAndFetchData}>Fetch Node</button>
+      <div className="button-row">
+        {/* Word Button */}
+        <div className="button-container">
+          <button onClick={() => loadMarkdownAndFetchData('word')}>Word</button>
+          <button className="submenu-toggle" onClick={() => toggleExpanded('word')}>
+            ▼
+          </button>
+          {expanded.word && (
+            <div className="submenu">
+              {subcategories.word.map((filter) => (
+                <label key={filter}>
+                  <input
+                    type="checkbox"
+                    checked={selectedFilters.word.includes(filter)}
+                    onChange={() => toggleFilter('word', filter)}
+                  />
+                  {filter}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Root Button */}
+        <div className="button-container">
+          <button onClick={() => loadMarkdownAndFetchData('root')}>Root</button>
+          <button className="submenu-toggle" onClick={() => toggleExpanded('root')}>
+            ▼
+          </button>
+          {expanded.root && (
+            <div className="submenu">
+              {subcategories.root.map((filter) => (
+                <label key={filter}>
+                  <input
+                    type="checkbox"
+                    checked={selectedFilters.root.includes(filter)}
+                    onChange={() => toggleFilter('root', filter)}
+                  />
+                  {filter}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Form Button */}
+        <div className="button-container">
+          <button onClick={() => loadMarkdownAndFetchData('form')}>Form</button>
+          <button className="submenu-toggle" onClick={() => toggleExpanded('form')}>
+            ▼
+          </button>
+          {expanded.form && (
+            <div className="submenu">
+              {subcategories.form.map((filter) => (
+                <label key={filter}>
+                  <input
+                    type="checkbox"
+                    checked={selectedFilters.form.includes(filter)}
+                    onChange={() => toggleFilter('form', filter)}
+                  />
+                  {filter}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
-      <GraphVisualization 
-        data={graphData} 
-        onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)} 
+      <GraphVisualization
+        data={graphData}
+        onNodeClick={(node, event) =>
+          handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)
+        }
       />
 
       {infoBubble && (
         <InfoBubble
           className="info-bubble"
           definition={infoBubble.definition}
-          onClose={closeInfoBubble}
+          onClose={() => setInfoBubble(null)}
           style={{
             top: `${infoBubble.position.y}px`,
             left: `${infoBubble.position.x}px`,
