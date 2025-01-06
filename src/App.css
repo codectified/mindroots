@@ -50,19 +50,85 @@
     color: #0077b5; /* LinkedIn blue */
   }
   
-  button {
-    background-color: #333;
-    color: #fff;
-    border: none;
-    padding: 10px 20px;
-    margin: 10px;
-    cursor: pointer;
-    font-family: 'Noto Serif', serif;
-  }
-  
-  button:hover {
-    background-color: #555;
-  }
+/* Button row aligned to the left with spacing */
+.button-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px; /* Large gap between button groups */
+  margin: 20px 0;
+}
+
+.button-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Smaller gap between the main button and caret toggle */
+}
+
+button {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: 'Noto Serif', serif;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+/* Circular caret toggle button */
+.submenu-toggle {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  font-weight: bold;
+}
+
+/* Active state for caret toggle */
+.submenu-toggle.active {
+  background-color: #555;
+  color: white;
+}
+
+.submenu-toggle:hover {
+  background-color: #777;
+}
+
+/* Submenu styling */
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #333;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.submenu label {
+  display: block;
+  margin: 5px 0;
+}
+
+.submenu input {
+  margin-right: 10px;
+}
   
   select {
     padding: 5px;
