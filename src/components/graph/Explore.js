@@ -45,40 +45,43 @@ const Explore = () => {
     setExpanded((prev) => ({ ...prev, [category]: !prev[category] }));
   };
 
+  const hasActiveFilters = (category) => selectedFilters[category].length > 0;
+
+
   const subcategories = {
     word: [
       'Concrete Word',
-      'Concrete Word;MAA',
-      'Concrete Word;HAB',
-      'Concrete Word;HGN',
-      'Concrete Word;AI',
+      ' Movement and Action',
+      ' Human-Animal-Body',
+      ' Hunting-Gathering-Nature',
+      ' Agriculture-Industry',
       'Abstract Word',
-      'Abstract Word;MS',
-      'Abstract Word;MP',
-      'Abstract Word;SOC',
-      'Abstract Word;LS',
+      ' Mental States',
+      ' Metaphysical',
+      ' Social',
+      ' Linguistic and Symbolic',
     ],
-    root: ['Geminate Root', 'Triliteral Root', '3+ Root'],
+    root: [' Geminate Root', ' Triliteral Root', ' Other Root'],
     form: [
-      'Form: infinitive',
-      'Form: active_participle',
-      'Form: passive_participle',
-      'Form: noun_of_place',
-      'Form: noun_of_state',
-      'Form: noun_of_instrument',
-      'Form: noun_of_essence',
-      'Form: noun_of_hyperbole',
-      'Form: noun_of_defect',
-      'Form: Concrete',
-      'Form: Abstract',
-      'Form: Movement and Action',
-      'Form: Human-Animal-Body',
-      'Form: Hunting-Gathering-Nature',
-      'Form: Agriculture-Industry',
-      'Form: Mental States',
-      'Form: Metaphysical',
-      'Form: Social',
-      'Form: Linguistic and Symbolic',
+      ' Infinitive',
+      ' Active Participle',
+      ' Passive Participle',
+      ' Noun of Place',
+      ' Noun of State',
+      ' Noun of Instrument',
+      ' Noun of Essence',
+      ' Noun of Hyperbole',
+      ' Noun of Defect',
+      ' Concrete',
+      ' Abstract',
+      ' Movement and Action',
+      ' Human-Animal-Body',
+      ' Hunting-Gathering-Nature',
+      ' Agriculture-Industry',
+      ' Mental States',
+      ' Metaphysical',
+      ' Social',
+      ' Linguistic and Symbolic',
     ],
   };
 
@@ -166,6 +169,27 @@ const Explore = () => {
     `,
     roots: `
       MATCH (r:Root)
+      RETURN r
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Root: Geminate': `
+    MATCH (r:Root)
+    WHERE r.root_type = 'Geminate'
+    RETURN r
+    ORDER BY rand()
+    LIMIT 1
+    `,
+    'Root: Triliteral': `
+      MATCH (r:Root)
+      WHERE r.root_type = 'Triliteral'
+      RETURN r
+      ORDER BY rand()
+      LIMIT 1
+    `,
+    'Root: Other': `
+      MATCH (r:Root)
+      WHERE r.root_type IS NULL OR NOT r.root_type IN ['Geminate', 'Triliteral']
       RETURN r
       ORDER BY rand()
       LIMIT 1
@@ -273,49 +297,87 @@ const Explore = () => {
     `,
   };
 
-  const loadMarkdownAndFetchData = async () => {
-    const activeFilters = [
-      ...selectedFilters.word,
-      ...selectedFilters.root,
-      ...selectedFilters.form,
-    ];
-    
-    if (activeFilters.length === 0) {
-      alert('Please select at least one filter.');
-      return;
-    }
   
+  const loadMarkdownAndFetchData = async (category) => {
     try {
-      // Determine markdown content based on selected categories
-      let content;
-      if (selectedFilters.word.length > 0) {
+      let content, exampleKey;
+      if (category === 'word') {
         content = wordsContent;
-      } else if (selectedFilters.root.length > 0) {
+        exampleKey = 'words';
+      } else if (category === 'root') {
         content = rootsContent;
-      } else if (selectedFilters.form.length > 0) {
+        exampleKey = 'roots';
+      } else if (category === 'form') {
         content = formsContent;
+        exampleKey = 'forms';
       }
   
-      if (content) {
-        const response = await fetch(content);
-        const text = await response.text();
-        setMarkdownContent(text);
-      } else {
-        setMarkdownContent('');
+      const response = await fetch(content);
+      const text = await response.text();
+      setMarkdownContent(text);
+  
+      // Map filter labels to query keys
+      const filterKeyMapping = {
+        // Root filters
+        ' Geminate Root': 'Root: Geminate',
+        ' Triliteral Root': 'Root: Triliteral',
+        ' Other Root': 'Root: Other',
+      
+        // Word filters
+        'Concrete Word': 'Concrete Word',
+        ' Movement and Action': 'Concrete Word;MAA',
+        ' Human-Animal-Body': 'Concrete Word;HAB',
+        ' Hunting-Gathering-Nature': 'Concrete Word;HGN',
+        ' Agriculture-Industry': 'Concrete Word;AI',
+        'Abstract Word': 'Abstract Word',
+        ' Mental States': 'Abstract Word;MS',
+        ' Metaphysical': 'Abstract Word;MP',
+        ' Social': 'Abstract Word;SOC',
+        ' Linguistic and Symbolic': 'Abstract Word;LS',
+      
+        // Form filters
+        ' Infinitive': 'Form: infinitive',
+        ' Active Participle': 'Form: active_participle',
+        ' Passive Participle': 'Form: passive_participle',
+        ' Noun of Place': 'Form: noun_of_place',
+        ' Noun of State': 'Form: noun_of_state',
+        ' Noun of Instrument': 'Form: noun_of_instrument',
+        ' Noun of Essence': 'Form: noun_of_essence',
+        ' Noun of Hyperbole': 'Form: noun_of_hyperbole',
+        ' Noun of Defect': 'Form: noun_of_defect',
+        ' Concrete': 'Form: Concrete',
+        ' Abstract': 'Form: Abstract',
+        ' Movement and Action (Form)': 'Form: Movement and Action',
+        ' Human-Animal-Body (Form)': 'Form: Human-Animal-Body',
+        ' Hunting-Gathering-Nature (Form)': 'Form: Hunting-Gathering-Nature',
+        ' Agriculture-Industry (Form)': 'Form: Agriculture-Industry',
+        ' Mental States (Form)': 'Form: Mental States',
+        ' Metaphysical (Form)': 'Form: Metaphysical',
+        ' Social (Form)': 'Form: Social',
+        ' Linguistic and Symbolic (Form)': 'Form: Linguistic and Symbolic',
+      };
+  
+      const activeFilters = selectedFilters[category].length
+        ? selectedFilters[category].map((filter) => filterKeyMapping[filter]).filter(Boolean)
+        : [exampleKey]; // Default to main category if no filters are selected
+  
+      const queries = activeFilters.map((filter) => exampleQueries[filter]).filter(Boolean);
+      if (queries.length === 0) {
+        console.warn('No valid queries to execute.');
+        return;
       }
   
-      // Combine queries for all selected filters
-      const queries = activeFilters.map((filter) => exampleQueries[filter]);
       const combinedQuery = queries.join('\nUNION\n');
-  
-      // Fetch data from the backend
       const data = await executeQuery(combinedQuery);
       const formattedData = formatNeo4jData(data);
       setGraphData(formattedData);
+      console.log('Graph data:', formattedData);
     } catch (error) {
       console.error('Error loading markdown or fetching data:', error);
     }
   };
+
+
 
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
@@ -349,8 +411,11 @@ const Explore = () => {
         {/* Word Button */}
         <div className="button-container">
           <button onClick={() => loadMarkdownAndFetchData('word')}>Word</button>
-          <button className="submenu-toggle" onClick={() => toggleExpanded('word')}>
-            ▼
+          <button
+            className={`submenu-toggle ${hasActiveFilters('word') ? 'active' : ''}`}
+            onClick={() => toggleExpanded('word')}
+          >
+            {expanded.word ? 'v' : '<'}
           </button>
           {expanded.word && (
             <div className="submenu">
@@ -371,8 +436,11 @@ const Explore = () => {
         {/* Root Button */}
         <div className="button-container">
           <button onClick={() => loadMarkdownAndFetchData('root')}>Root</button>
-          <button className="submenu-toggle" onClick={() => toggleExpanded('root')}>
-            ▼
+          <button
+            className={`submenu-toggle ${hasActiveFilters('root') ? 'active' : ''}`}
+            onClick={() => toggleExpanded('root')}
+          >
+            {expanded.root ? 'v' : '<'}
           </button>
           {expanded.root && (
             <div className="submenu">
@@ -393,8 +461,11 @@ const Explore = () => {
         {/* Form Button */}
         <div className="button-container">
           <button onClick={() => loadMarkdownAndFetchData('form')}>Form</button>
-          <button className="submenu-toggle" onClick={() => toggleExpanded('form')}>
-            ▼
+          <button
+            className={`submenu-toggle ${hasActiveFilters('form') ? 'active' : ''}`}
+            onClick={() => toggleExpanded('form')}
+          >
+            {expanded.form ? 'v' : '<'}
           </button>
           {expanded.form && (
             <div className="submenu">

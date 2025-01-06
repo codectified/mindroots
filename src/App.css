@@ -50,20 +50,61 @@
     color: #0077b5; /* LinkedIn blue */
   }
   
-/* Ensure buttons have consistent spacing */
-button, .submenu-toggle {
+/* Button row aligned to the left with spacing */
+.button-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px; /* Large gap between button groups */
+  margin: 20px 0;
+}
+
+.button-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px; /* Smaller gap between the main button and caret toggle */
+}
+
+button {
   background-color: #333;
   color: #fff;
   border: none;
-  padding: 10px 20px; /* Ensure consistent padding */
-  margin: 10px 10px 10px 0; /* Add spacing only to the right */
+  padding: 10px 20px;
   cursor: pointer;
   font-family: 'Noto Serif', serif;
   border-radius: 4px;
 }
 
-button:hover, .submenu-toggle:hover {
+button:hover {
   background-color: #555;
+}
+
+/* Circular caret toggle button */
+.submenu-toggle {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  font-weight: bold;
+}
+
+/* Active state for caret toggle */
+.submenu-toggle.active {
+  background-color: #555;
+  color: white;
+}
+
+.submenu-toggle:hover {
+  background-color: #777;
 }
 
 /* Submenu styling */
@@ -89,18 +130,6 @@ button:hover, .submenu-toggle:hover {
   margin-right: 10px;
 }
 
-/* Button row aligned to the left with spacing */
-.button-row {
-  display: flex;
-  justify-content: flex-start;
-  gap: 15px; /* Adds spacing between button containers */
-  margin: 20px 0;
-}
-
-.button-container {
-  position: relative;
-  display: inline-block;
-}
   
   select {
     padding: 5px;
