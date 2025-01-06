@@ -4,7 +4,7 @@ import React, { createContext, useContext, useState } from 'react';
 const WordShadeContext = createContext();
 
 export const WordShadeProvider = ({ children }) => {
-  const [wordShadeMode, setWordShadeMode] = useState('ontological'); // Default to 'ontological'
+  const [wordShadeMode, setWordShadeMode] = useState('grammatical'); // Default to 'grammatical'
 
   return (
     <WordShadeContext.Provider value={{ wordShadeMode, setWordShadeMode }}>

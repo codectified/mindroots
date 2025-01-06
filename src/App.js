@@ -8,7 +8,6 @@ import CorpusGraphScreen from './components/graph/CorpusGraphScreen';
 import Settings from './components/staticPages/Settings';
 import About from './components/staticPages/About';
 import Explore from './components/graph/Explore';
-import Games from './components/staticPages/Games';
 import Search from './components/graph/Search';
 
 import MarkdownRenderer from './components/utils/MarkdownRenderer';
@@ -58,7 +57,6 @@ const App = () => {
                   <Route path="/project-news" element={<Layout><ProjectNews /></Layout>} />
                   <Route path="/about" element={<Layout><About /></Layout>} />
                   <Route path="/start" element={<Layout><Explore /></Layout>} />
-                  <Route path="/games" element={<Layout><Games /></Layout>} />
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />
                 </Routes>
               </Router>
