@@ -11,6 +11,7 @@ import HighlightController from '../selectors/HighlightController';
 import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import FilterController from '../selectors/FilterController';
 import WordShadeSelector from '../selectors/WordShadeSelector';
+import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 
 const MiniMenu = () => {
@@ -58,6 +59,7 @@ const MiniMenu = () => {
           <div className="settings-top-section">
             <div className="settings-text">
               <LanguageSelector />
+              <DisplayModeSelector />
             </div>
           </div>
   

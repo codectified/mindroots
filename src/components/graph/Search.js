@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
-import GraphVisualization from './GraphVisualization';
+import { useDisplayMode } from '../../contexts/DisplayModeContext';
+import SearchGraph from './SearchGraph';
+import SearchTable from './SeaerchTable';
 import { fetchGeminateRoots, fetchTriliteralRoots, fetchExtendedRoots } from '../../services/apiService'; // Updated service functions
 import { useScript } from '../../contexts/ScriptContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
@@ -15,6 +17,7 @@ const arabicLetters = [
 const Search = () => {
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { L1, L2 } = useScript();
+  const { displayMode } = useDisplayMode();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [r1, setR1] = useState('');
   const [r2, setR2] = useState('');
@@ -176,12 +179,24 @@ const Search = () => {
         {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25 max)</p>}
       </div>
   
-      <GraphVisualization
-        data={graphData}
+    {/* (3) Conditionally render GRAPH or TABLE */}
+    {displayMode === 'graph' ? (
+      <SearchGraph
+        graphData={graphData}
+        onNodeClick={(node, event) =>
+          handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)
+        }
+        infoBubble={infoBubble}
+        closeInfoBubble={closeInfoBubble}
+      />
+    ) : (
+      <SearchTable
+        graphData={graphData}
         onNodeClick={(node, event) =>
           handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)
         }
       />
+    )}
   
       {infoBubble && (
         <InfoBubble
