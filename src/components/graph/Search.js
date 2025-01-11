@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useDisplayMode } from '../../contexts/DisplayModeContext';
-import SearchGraph from './SearchGraph';
-import SearchTable from './SeaerchTable';
+import NodesTable from './NodesTable';
+import GraphVisualization from './GraphVisualization';
 import { fetchGeminateRoots, fetchTriliteralRoots, fetchExtendedRoots } from '../../services/apiService'; // Updated service functions
 import { useScript } from '../../contexts/ScriptContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
@@ -126,14 +126,14 @@ const Search = () => {
   return (
     <div>
       <MiniMenu />
-      
-      {/* Dropdown menus in one row, aligned to the left */}
+
+      {/* Dropdown menus */}
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
         <div>
           <label>R1:</label>
           <select value={r1} onChange={(e) => setR1(e.target.value)}>
             <option value="">*</option>
-            {arabicLetters.map(letter => (
+            {arabicLetters.map((letter) => (
               <option key={letter} value={letter}>
                 {letter}
               </option>
@@ -144,7 +144,7 @@ const Search = () => {
           <label>R2:</label>
           <select value={r2} onChange={(e) => setR2(e.target.value)}>
             <option value="">*</option>
-            {arabicLetters.map(letter => (
+            {arabicLetters.map((letter) => (
               <option key={letter} value={letter}>
                 {letter}
               </option>
@@ -156,7 +156,7 @@ const Search = () => {
           <select value={r3} onChange={(e) => setR3(e.target.value)}>
             <option value="">*</option>
             <option value="NoR3">None</option>
-            {arabicLetters.map(letter => (
+            {arabicLetters.map((letter) => (
               <option key={letter} value={letter}>
                 {letter}
               </option>
@@ -164,40 +164,40 @@ const Search = () => {
           </select>
         </div>
       </div>
-  
-      {/* Buttons in another row, aligned to the left */}
+
+      {/* Buttons */}
       <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
-        <button onClick={() => handleFetchRoots(r3 === 'NoR3' ? 'Geminate' : 'Triliteral')}>
-          Fetch Root(s)
-        </button>
+        <button onClick={() => handleFetchRoots(r3 === 'NoR3' ? 'Geminate' : 'Triliteral')}>Fetch Root(s)</button>
         <button onClick={handleCombinate}>Combinate</button>
         <button onClick={() => handleFetchRoots('Extended')}>Fetch Extended</button>
       </div>
-  
-      {/* Total roots count in another row */}
+
+      {/* Total roots count */}
       <div style={{ textAlign: 'left', marginBottom: '20px' }}>
         {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25 max)</p>}
       </div>
-  
-    {/* (3) Conditionally render GRAPH or TABLE */}
-    {displayMode === 'graph' ? (
-      <SearchGraph
-        graphData={graphData}
-        onNodeClick={(node, event) =>
-          handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)
-        }
-        infoBubble={infoBubble}
-        closeInfoBubble={closeInfoBubble}
-      />
-    ) : (
-      <SearchTable
-        graphData={graphData}
-        onNodeClick={(node, event) =>
-          handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)
-        }
-      />
-    )}
-  
+
+      {/* Conditionally render GraphVisualization or NodesTable */}
+      {displayMode === 'graph' ? (
+        <GraphVisualization
+          data={graphData}
+          onNodeClick={(node, event) =>
+            handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)
+          }
+        />
+      ) : (
+        <NodesTable
+          graphData={graphData}
+          wordShadeMode="grammatical" // Replace with dynamic value if needed
+          onNodeClick={(node, event) =>
+            handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, null, event)
+          }
+          infoBubble={infoBubble}
+          closeInfoBubble={closeInfoBubble}
+        />
+      )}
+
+      {/* InfoBubble */}
       {infoBubble && (
         <InfoBubble
           className="info-bubble"
@@ -212,8 +212,6 @@ const Search = () => {
       )}
     </div>
   );
-
-
 };
 
 export default Search;
