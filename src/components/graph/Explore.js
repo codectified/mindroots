@@ -50,18 +50,18 @@ const Explore = () => {
 
   const subcategories = {
     word: [
-      'Concrete Word',
+      'Concrete',
       ' Movement and Action',
       ' Human-Animal-Body',
       ' Hunting-Gathering-Nature',
       ' Agriculture-Industry',
-      'Abstract Word',
+      'Abstract',
       ' Mental States',
       ' Metaphysical',
       ' Social',
       ' Linguistic and Symbolic',
     ],
-    root: [' Geminate Root', ' Triliteral Root', ' Other Root'],
+    root: [' Geminate', ' Triliteral', ' Other'],
     form: [
       ' Infinitive',
       ' Active Participle',
