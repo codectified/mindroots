@@ -19,8 +19,10 @@ const MiniMenu = () => {
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState(null);
   const [markdownContent, setMarkdownContent] = useState('');
-  const [showCorporaSettings, setShowCorporaSettings] = useState(false);
-  const [showGraphSettings, setShowGraphSettings] = useState(false);
+  const [showTextSettings, setShowTextSettings] = useState(false);
+  const [isGraphMode, setIsGraphMode] = useState(false); // Toggle for Graph/Table mode
+  const [showFilterSettings, setShowFilterSettings] = useState(false);
+  const [showOtherSettings, setShowOtherSettings] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const holdTimeout = useRef(null);
 
@@ -52,60 +54,73 @@ const MiniMenu = () => {
     clearTimeout(holdTimeout.current);
   };
 
+  const handleToggleDisplayMode = () => {
+    setIsGraphMode((prevMode) => !prevMode);
+  };
+
   const renderContent = () => {
     if (selectedOption === 'settings') {
       return (
         <div className="content-container">
-          <div className="settings-top-section">
-            <div className="settings-text">
-              <LanguageSelector />
-              <DisplayModeSelector />
-            </div>
-          </div>
-  
-          {/* Links Section in Row */}
-          <div className="settings-links">
-            <button className="small-icon-button" onClick={() => toggleOption('about')}>
-              <FontAwesomeIcon icon={faInfoCircle} />
-            </button>
-            <button className="small-icon-button" onClick={() => toggleOption('changelog')}>
-              <FontAwesomeIcon icon={faNewspaper} />
-            </button>
-          </div>
-  
-          {/* Corpora Settings */}
+          {/* Text Settings Section */}
           <div
             className="collapsible-section"
-            onClick={() => setShowCorporaSettings((prev) => !prev)}
+            onClick={() => setShowTextSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Corpora Settings
-            <FontAwesomeIcon icon={showCorporaSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+            Text Settings
+            <FontAwesomeIcon icon={showTextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
-          {showCorporaSettings && (
+          {showTextSettings && (
             <>
               <TextLayoutToggle />
               <HighlightController />
             </>
           )}
   
-          {/* Graph Settings */}
+          {/* Filter and Context Control Section */}
           <div
             className="collapsible-section"
-            onClick={() => setShowGraphSettings((prev) => !prev)}
+            onClick={() => setShowFilterSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Graph Settings
-            <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+            Filter and Context Control
+            <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
-          {showGraphSettings && (
+          {showFilterSettings && (
             <>
               <ContextShiftSelector />
-              <NodeLimitSlider />
               <FilterController />
+            </>
+          )}
+  
+          {/* Other Settings Section */}
+          <div
+            className="collapsible-section"
+            onClick={() => setShowOtherSettings((prev) => !prev)}
+            style={{ cursor: 'pointer', marginBottom: '10px' }}
+          >
+            Other Settings
+            <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+          </div>
+          {showOtherSettings && (
+            <>
+              <NodeLimitSlider />
               <WordShadeSelector />
             </>
           )}
+  
+          {/* Links Section at the Bottom */}
+          <div className="settings-links" style={{ marginTop: '20px' }}>
+            <button className="small-icon-button" onClick={() => toggleOption('about')}>
+              <FontAwesomeIcon icon={faInfoCircle} />
+            </button>
+            <button className="small-icon-button" onClick={() => toggleOption('changelog')}>
+              <FontAwesomeIcon icon={faNewspaper} />
+            </button>
+            {/* Display Mode Toggle Button */}
+            <DisplayModeSelector />
+          </div>
         </div>
       );
     } else if (selectedOption === 'about') {
