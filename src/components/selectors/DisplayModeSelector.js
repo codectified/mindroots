@@ -1,45 +1,22 @@
-// ../components/selectors/DisplayModeSelector.js
 import React from 'react';
 import { useDisplayMode } from '../../contexts/DisplayModeContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTable, faProjectDiagram } from '@fortawesome/free-solid-svg-icons';
 
 const DisplayModeSelector = () => {
   const { displayMode, setDisplayMode } = useDisplayMode();
 
-  const handleChange = (event) => {
-    setDisplayMode(event.target.value);
+  const handleToggle = () => {
+    setDisplayMode((prevMode) => (prevMode === 'graph' ? 'table' : 'graph'));
   };
 
   return (
-    <div 
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: '15px',
-        padding: '10px 0'
-      }}
+    <button
+      className="small-icon-button" // Same class as other buttons
+      onClick={handleToggle}
     >
-      <label style={{ whiteSpace: 'nowrap' }}>Display Mode:</label>
-      <div style={{ display: 'flex', gap: '15px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <input
-            type="radio"
-            value="graph"
-            checked={displayMode === 'graph'}
-            onChange={handleChange}
-          />
-          Graph
-        </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <input
-            type="radio"
-            value="table"
-            checked={displayMode === 'table'}
-            onChange={handleChange}
-          />
-          Table
-        </label>
-      </div>
-    </div>
+      <FontAwesomeIcon icon={displayMode === 'graph' ? faTable : faProjectDiagram} size="lg" />
+    </button>
   );
 };
 
