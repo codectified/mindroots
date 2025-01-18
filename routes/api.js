@@ -42,6 +42,31 @@ const formatSimpleData = (records) => {
   }));
 };
 
+// Endpoint to list all available corpora
+router.get('/list/corpora', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (corpus:Corpus)
+      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english, corpus.corpusType AS corpusType
+    `);
+
+    const corpora = result.records.map(record => ({
+      id: convertIntegers(record.get('id')),
+      arabic: record.get('arabic'),
+      english: record.get('english'),
+      corpusType: record.get('corpusType')
+    }));
+
+    res.json(corpora);
+  } catch (error) {
+    console.error('Error fetching corpora:', error);
+    res.status(500).send('Error fetching corpora');
+  } finally {
+    await session.close();
+  }
+});
+
 router.get('/list/quran_items', async (req, res) => {
   const { corpus_id, sura_index } = req.query;
   if (!corpus_id || !sura_index) {
@@ -165,32 +190,55 @@ router.get('/list/surah_aya_count', async (req, res) => {
 });
 
 
-// corpus item graph
 router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const { itemId } = req.params;
-  const { corpusId, script } = req.query; // Added corpusId here
+  const { corpusId, script } = req.query;
   const session = req.driver.session();
-  
+
   try {
-    // Updated query to match the CorpusItem with both item_id and corpus_id, and remove form
     let query = `
       MATCH (item:CorpusItem {item_id: toInteger($itemId), corpus_id: toInteger($corpusId)})
-      OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
-      OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
-      OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
-      RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms
+      OPTIONAL MATCH (item)-[r1:HAS_WORD]->(word:Word)
+      OPTIONAL MATCH (word)<-[r2:HAS_WORD]-(root:Root)
+      OPTIONAL MATCH (word)-[r3:HAS_FORM]->(form:Form)
+      RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms,
+             collect(DISTINCT r1) as r1, collect(DISTINCT r2) as r2, collect(DISTINCT r3) as r3
     `;
 
     const result = await session.run(query, { itemId, corpusId });
     const records = result.records[0];
+
     if (records) {
-      const item = records.get('item').properties;
-      const words = records.get('words').map(record => convertIntegers(record.properties));
-      const roots = records.get('roots').map(record => convertIntegers(record.properties));
-      const forms = records.get('forms').map(record => convertIntegers(record.properties));
-      res.json({ item, words, roots, forms });
+      const nodes = [];
+      const links = [];
+
+      const addNode = (node, label) => {
+        const id = `${label.toLowerCase()}-${node.properties[`${label.toLowerCase()}_id`]}`;
+        nodes.push({ id, type: label.toLowerCase(), ...convertIntegers(node.properties) });
+      };
+
+      const addLink = (rel, type) => {
+        links.push({
+          source: `word-${rel.start.toNumber()}`,
+          target: `root-${rel.end.toNumber()}`,
+          type,
+        });
+      };
+
+      // Add nodes
+      addNode(records.get('item'), 'CorpusItem');
+      records.get('words').forEach((word) => addNode(word, 'Word'));
+      records.get('roots').forEach((root) => addNode(root, 'Root'));
+      records.get('forms').forEach((form) => addNode(form, 'Form'));
+
+      // Add links
+      records.get('r1').forEach((r) => addLink(r, 'HAS_WORD'));
+      records.get('r2').forEach((r) => addLink(r, 'HAS_ROOT'));
+      records.get('r3').forEach((r) => addLink(r, 'HAS_FORM'));
+
+      res.json({ nodes, links });
     } else {
-      res.json({});
+      res.json({ nodes: [], links: [] });
     }
   } catch (error) {
     console.error('Error fetching words and roots by corpus item:', error);
@@ -199,8 +247,6 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
     await session.close();
   }
 });
-
-
 
 // Endpoint to fetch words by form ID
 router.get('/form/:formId', async (req, res) => {
@@ -247,115 +293,6 @@ router.get('/form/:formId', async (req, res) => {
     await session.close();
   }
 });
-
-
-// Endpoint to fetch words by root radicals (not working curently)
-router.get('/words_by_root_radicals', async (req, res) => {
-  const { r1, r2, r3, script } = req.query;
-  const session = req.driver.session();
-  try {
-    console.log(`Received request with r1: ${r1}, r2: ${r2}, r3: ${r3}, script: ${script}`);
-
-    let query = `
-      MATCH (root:Root)
-      WHERE root.r1 = $r1
-    `;
-    if (r2) query += ` AND root.r2 = $r2`;
-    if (r3) query += ` AND root.r3 = $r3`;
-    query += `
-      MATCH (root)-[:HAS_WORD]->(word:Word)
-      RETURN root, collect(DISTINCT word) as words
-    `;
-
-    console.log(`Generated query: ${query}`);
-
-    const params = { r1 };
-    if (r2) params.r2 = r2;
-    if (r3) params.r3 = r3;
-
-    console.log(`Query parameters: ${JSON.stringify(params)}`);
-
-    const result = await session.run(query, params);
-    console.log(`Query result: ${JSON.stringify(result.records)}`);
-
-    const records = result.records[0];
-    if (records) {
-      const root = records.get('root').properties;
-      const words = records.get('words').map(record => convertIntegers(record.properties));
-      res.json({ root, words });
-    } else {
-      res.json({});
-    }
-  } catch (error) {
-    console.error('Error fetching words by root radicals:', error);
-    res.status(500).send('Error fetching words by root radicals');
-  } finally {
-    await session.close();
-  }
-});
-
-
-// Endpoint to fetch roots by radicals (not working currently)
-router.get('/roots_by_radicals', async (req, res) => {
-  const { r1, r2, r3, script } = req.query;
-  const session = req.driver.session();
-  try {
-    console.log(`Received request for roots with radicals r1: ${r1}, r2: ${r2}, r3: ${r3}, script: ${script}`);
-
-    let query = `
-      MATCH (root:Root)
-      WHERE (root.r1 = $r1 OR $r1 = '*')
-        AND (root.r2 = $r2 OR $r2 = '*')
-        AND (root.r3 = $r3 OR $r3 = '*')
-      RETURN root
-    `;
-
-    const result = await session.run(query, { r1, r2, r3 });
-    console.log(`Raw records for roots with radicals r1: ${r1}, r2: ${r2}, r3: ${r3}:`, result.records);
-
-    const roots = result.records.map(record => convertIntegers(record.get('root').properties));
-
-    const formattedRoots = roots.map(root => {
-      return {
-        ...root,
-        label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script]
-      };
-    });
-
-    res.json(formattedRoots);
-  } catch (error) {
-    console.error('Error fetching roots by radicals:', error);
-    res.status(500).send('Error fetching roots by radicals');
-  } finally {
-    await session.close();
-  }
-});
-
-// Endpoint to list all available corpora
-router.get('/list/corpora', async (req, res) => {
-  const session = req.driver.session();
-  try {
-    const result = await session.run(`
-      MATCH (corpus:Corpus)
-      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english, corpus.corpusType AS corpusType
-    `);
-
-    const corpora = result.records.map(record => ({
-      id: convertIntegers(record.get('id')),
-      arabic: record.get('arabic'),
-      english: record.get('english'),
-      corpusType: record.get('corpusType')
-    }));
-
-    res.json(corpora);
-  } catch (error) {
-    console.error('Error fetching corpora:', error);
-    res.status(500).send('Error fetching corpora');
-  } finally {
-    await session.close();
-  }
-});
-
 
 // Fetch words by form ID with lexicon context (no filter)
 router.get('/form/:formId/lexicon', async (req, res) => {
@@ -406,48 +343,53 @@ router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
 });
 
 
-router.get('/form/:formId/roots', async (req, res) => {
-  const { formId } = req.params;
-  const { L1, L2, rootIds } = req.query;
-  const session = req.driver.session();
-  try {
-    let query = `
-      MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)-[:HAS_ROOT]->(root:Root)
-      WHERE root.root_id IN $rootIds
-      RETURN word
-    `;
-    const result = await session.run(query, { formId, rootIds: rootIds.map(id => parseInt(id, 10)) });
-    const words = result.records.map(record => convertIntegers(record.get('word').properties));
-    res.json(words.map(word => ({
-      ...word,
-      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
-    })));
-  } catch (error) {
-    res.status(500).send('Error fetching words by form and roots');
-  } finally {
-    await session.close();
-  }
-});
-
-
-
-
 // Fetch words by root ID with corpus context
 router.get('/root/:rootId/corpus/:corpusId', async (req, res) => {
   const { rootId, corpusId } = req.params;
   const { script } = req.query;
   const session = req.driver.session();
+
   try {
-    let query = `
-      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word:Word)-[:HAS_ROOT]->(root:Root {root_id: toInteger($rootId)})
-      RETURN word
+    const query = `
+      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})
+            <-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word:Word)-[:HAS_ROOT]->(root:Root {root_id: toInteger($rootId)})
+      OPTIONAL MATCH (word)-[etym:ETYM]->(etymWord:Word)
+      RETURN word, etym, etymWord
     `;
     const result = await session.run(query, { rootId, corpusId, script });
-    const words = result.records.map(record => convertIntegers(record.get('word').properties));
-    res.json(words.map(word => ({
-      ...word,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
-    })));
+
+    // Transform Neo4j records into JSON
+    const data = result.records.map(record => {
+      const wordNode  = record.get('word');
+      const etymRel   = record.get('etym');
+      const etymWord  = record.get('etymWord');
+
+      if (!wordNode) return null;
+      const wordProps = convertIntegers(wordNode.properties);
+
+      // Build the main word object
+      const mainLabel = script === 'both'
+        ? `${wordProps.arabic} / ${wordProps.english}`
+        : wordProps[script];
+      const wordData = { ...wordProps, label: mainLabel };
+
+      // If there’s an ETYM relationship, build the object; else null
+      let etymData = null;
+      if (etymRel && etymWord) {
+        const etymWordProps = convertIntegers(etymWord.properties);
+        const etymLabel = script === 'both'
+          ? `${etymWordProps.arabic} / ${etymWordProps.english}`
+          : etymWordProps[script];
+        etymData = {
+          relationshipType: etymRel.type, // "ETYM"
+          targetWord: { ...etymWordProps, label: etymLabel }
+        };
+      }
+
+      return { word: wordData, etym: etymData };
+    }).filter(Boolean);
+
+    res.json(data);
   } catch (error) {
     res.status(500).send('Error fetching words by root and corpus');
   } finally {
@@ -456,83 +398,54 @@ router.get('/root/:rootId/corpus/:corpusId', async (req, res) => {
 });
 
 
-// Endpoint to fetch words by root ID
-router.get('/root/:rootId', async (req, res) => {
-  const { rootId } = req.params;
-  const { script, corpusId } = req.query;
-  const session = req.driver.session();
-  try {
-    let query = `
-      MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
-    `;
-
-    if (corpusId) {
-      query += `
-        WHERE word.corpus_id = toInteger($corpusId)
-      `;
-    }
-
-    query += `
-      RETURN word
-    `;
-
-    const result = await session.run(query, { rootId, script, corpusId });
-    const words = result.records.map(record => convertIntegers(record.get('word').properties));
-
-    const formattedWords = words.map(word => {
-      return {
-        ...word,
-        label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
-      };
-    });
-
-    res.json(formattedWords);
-  } catch (error) {
-    console.error('Error fetching words by root:', error);
-    res.status(500).send('Error fetching words by root');
-  } finally {
-    await session.close();
-  }
-});
-
 // Fetch words by root ID with lexicon context (no filter)
 router.get('/root/:rootId/lexicon', async (req, res) => {
   const { rootId } = req.params;
   const { script } = req.query;
   const session = req.driver.session();
+
   try {
-    let query = `
+    const query = `
       MATCH (root:Root {root_id: toInteger($rootId)})-[:HAS_WORD]->(word:Word)
-      RETURN word
+      OPTIONAL MATCH (word)-[etym:ETYM]->(etymWord:Word)
+      RETURN word, etym, etymWord
     `;
     const result = await session.run(query, { rootId, script });
-    const words = result.records.map(record => convertIntegers(record.get('word').properties));
-    res.json(words.map(word => ({
-      ...word,
-      label: script === 'both' ? `${word.arabic} / ${word.english}` : word[script]
-    })));
+
+    // Transform Neo4j records into JSON
+    const data = result.records.map(record => {
+      const wordNode  = record.get('word');
+      const etymRel   = record.get('etym');
+      const etymWord  = record.get('etymWord');
+
+      if (!wordNode) return null;
+      const wordProps = convertIntegers(wordNode.properties);
+
+      // Build the main word object
+      const mainLabel = script === 'both'
+        ? `${wordProps.arabic} / ${wordProps.english}`
+        : wordProps[script];
+      const wordData = { ...wordProps, label: mainLabel };
+
+      // If there’s an ETYM relationship, build the object; else null
+      let etymData = null;
+      if (etymRel && etymWord) {
+        const etymWordProps = convertIntegers(etymWord.properties);
+        const etymLabel = script === 'both'
+          ? `${etymWordProps.arabic} / ${etymWordProps.english}`
+          : etymWordProps[script];
+        etymData = {
+          relationshipType: etymRel.type,
+          targetWord: { ...etymWordProps, label: etymLabel }
+        };
+      }
+
+      return { word: wordData, etym: etymData };
+    }).filter(Boolean);
+
+    res.json(data);
   } catch (error) {
     res.status(500).send('Error fetching words by root');
-  } finally {
-    await session.close();
-  }
-});
-
-// Endpoint to execute Cypher queries
-router.post('/execute-query', async (req, res) => {
-  const { query } = req.body;  
-  const session = req.driver.session();  
-
-  try {
-    const result = await session.run(query);
-    const records = result.records.map(record => {
-      const processedRecord = record.toObject();
-      return convertIntegers(processedRecord);  // Ensure integers are converted
-    });
-    res.json(records);
-  } catch (error) {
-    console.error('Error executing query:', error);
-    res.status(500).json({ error: 'Error executing query' });
   } finally {
     await session.close();
   }
@@ -569,7 +482,6 @@ router.get('/rootbyword/:wordId', async (req, res) => {
 });
 
 
-
 router.get('/formsbyword/:wordId', async (req, res) => {
   const { wordId } = req.params;
   const { L1, L2 } = req.query;
@@ -594,6 +506,27 @@ router.get('/formsbyword/:wordId', async (req, res) => {
   } catch (error) {
     console.error('Error fetching forms by word:', error);
     res.status(500).json({ error: 'Error fetching forms by word' });
+  } finally {
+    await session.close();
+  }
+});
+
+
+// Endpoint to execute Cypher queries
+router.post('/execute-query', async (req, res) => {
+  const { query } = req.body;  
+  const session = req.driver.session();  
+
+  try {
+    const result = await session.run(query);
+    const records = result.records.map(record => {
+      const processedRecord = record.toObject();
+      return convertIntegers(processedRecord);  // Ensure integers are converted
+    });
+    res.json(records);
+  } catch (error) {
+    console.error('Error executing query:', error);
+    res.status(500).json({ error: 'Error executing query' });
   } finally {
     await session.close();
   }
@@ -649,6 +582,7 @@ router.get('/hanswehrentry/:wordId', async (req, res) => {
     await session.close();
   }
 });
+
 
 
 router.get('/rootbyletters', async (req, res) => {

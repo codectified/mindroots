@@ -100,15 +100,32 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .alphaDecay(0.02) // Alpha decay for stability
       .velocityDecay(0.992); // Adjusted velocity decay
 
-    // Append links
-    const link = zoomLayer.append('g')
-      .attr('class', 'links')
-      .selectAll('line')
-      .data(data.links)
-      .enter().append('line')
-      .attr('stroke-width', 1.5)
-      .attr('stroke', '#bbb')
-      .attr('opacity', 0.3);
+// 1) Define a helper function somewhere above .attr('stroke', …)
+const getLinkColor = (linkDatum) => {
+  // If you have a linkDatum.type set in your data, you can switch on that:
+  switch (linkDatum.type) {
+    case 'BELONGS_TO':
+      return 'gold';
+    case 'HAS_FORM':
+      return 'blue';
+    case 'HAS_WORD':
+      return 'green';
+    case 'ETYM':
+      return 'orange'; 
+    default:
+      return '#bbb';
+  }
+};
+
+// 2) Use that helper function when creating the links
+const link = zoomLayer.append('g')
+  .attr('class', 'links')
+  .selectAll('line')
+  .data(data.links)
+  .enter().append('line')
+  .attr('stroke-width', 1.5)
+  .attr('stroke', d => getLinkColor(d))  // <--- Use the function here
+  .attr('opacity', 0.3);
 
     // Append nodes with custom color logic and size based on dataSize only for Word nodes
     const node = zoomLayer.append('g')

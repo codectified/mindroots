@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-// // Create an Axios instance with the base URL for the API
-const api = axios.create({
-  baseURL: 'https://theoption.life/api',
-});
-
+// // // Create an Axios instance with the base URL for the API
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: 'https://theoption.life/api',
 // });
+
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -77,15 +77,71 @@ export const fetchProseItems = async (corpusType) => {
   }
 };
 
-// Updated fetch functions to handle Neo4j integers
-export const fetchWords = async (concept, script) => {
-  const response = await api.get(`/list/${concept}`, { params: { script } });
+// Fetch all available corpora
+export const fetchCorpora = async () => {
+  const response = await api.get('/list/corpora');
   return response.data.map(item => convertIntegers(item));
 };
 
-export const fetchWordData = async (word, script) => {
-  const response = await api.get(`/word/${word}`, { params: { script } });
-  return convertIntegers(response.data);
+// Fetch corpus items for a given corpus_id
+export const fetchCorpusItems = async (corpusId, script) => {
+  const response = await api.get('/list/corpus_items', { params: { corpus_id: corpusId } });
+
+  return response.data.map(item => ({
+    ...convertIntegers(item),
+    label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
+  }));
+};
+
+
+
+
+//Fetch Nodes
+
+// Fetch words, forms, and roots by corpus item ID
+export const fetchWordsByCorpusItem = async (itemId, corpusId, L1, L2) => {
+  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, L1 } });
+  const data = convertIntegers(response.data);
+
+  return {
+    ...data,
+    words: data.words ? data.words.map(word => ({
+      ...word,
+      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
+    })) : [],
+    forms: data.forms ? data.forms.map(form => ({
+      ...form,
+      label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
+    })) : [],
+    roots: data.roots ? data.roots.map(root => ({
+      ...root,
+      label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+    })) : [],
+  };
+};
+
+export const fetchRootByWord = async (wordId, L1, L2) => {
+  try {
+    const response = await api.get(`/rootbyword/${wordId}`, {
+      params: { L1, L2 }
+    });
+    return convertIntegers(response.data); // Convert integers before returning the data
+  } catch (error) {
+    console.error('Error fetching root by word:', error);
+    throw error;
+  }
+};
+
+export const fetchFormsByWord = async (wordId, L1, L2) => {
+  try {
+    const response = await api.get(`/formsbyword/${wordId}`, {
+      params: { L1, L2 }
+    });
+    return response.data.map(item => convertIntegers(item)); // Convert integers before returning the data
+  } catch (error) {
+    console.error('Error fetching forms by word:', error);
+    throw error;
+  }
 };
 
 export const fetchWordsByFormWithLexicon = async (formId, L1, L2, limit = 100) => {
@@ -114,39 +170,6 @@ export const fetchWordsByRootWithCorpus = async (rootId, corpusId, L1, L2) => {
 };
 
 
-// Fetch corpus items for a given corpus_id
-export const fetchCorpusItems = async (corpusId, script) => {
-  const response = await api.get('/list/corpus_items', { params: { corpus_id: corpusId } });
-
-  return response.data.map(item => ({
-    ...convertIntegers(item),
-    label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
-  }));
-};
-
-// Fetch words, forms, and roots by corpus item ID
-export const fetchWordsByCorpusItem = async (itemId, corpusId, L1, L2) => {
-  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, L1 } });
-  const data = convertIntegers(response.data);
-
-  return {
-    ...data,
-    words: data.words ? data.words.map(word => ({
-      ...word,
-      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
-    })) : [],
-    forms: data.forms ? data.forms.map(form => ({
-      ...form,
-      label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
-    })) : [],
-    roots: data.roots ? data.roots.map(root => ({
-      ...root,
-      label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-    })) : [],
-  };
-};
-
-
 
 // Execute a Cypher query by sending it to the backend
 export const executeQuery = async (query) => {
@@ -159,41 +182,12 @@ export const executeQuery = async (query) => {
   }
 };
 
-export const fetchRootByWord = async (wordId, L1, L2) => {
-  try {
-    const response = await api.get(`/rootbyword/${wordId}`, {
-      params: { L1, L2 }
-    });
-    return convertIntegers(response.data); // Convert integers before returning the data
-  } catch (error) {
-    console.error('Error fetching root by word:', error);
-    throw error;
-  }
-};
-
-export const fetchFormsByWord = async (wordId, L1, L2) => {
-  try {
-    const response = await api.get(`/formsbyword/${wordId}`, {
-      params: { L1, L2 }
-    });
-    return response.data.map(item => convertIntegers(item)); // Convert integers before returning the data
-  } catch (error) {
-    console.error('Error fetching forms by word:', error);
-    throw error;
-  }
-};
 
 
 
 
 
-
-// Fetch all available corpora
-export const fetchCorpora = async () => {
-  const response = await api.get('/list/corpora');
-  return response.data.map(item => convertIntegers(item));
-};
-
+// Fetch node property
 export const fetchLaneEntry = async (wordId) => {
   try {
     const response = await api.get(`/laneentry/${wordId}`);
@@ -214,7 +208,10 @@ export const fetchHansWehrEntry = async (wordId) => {
   }
 };
 
-// 1. Modify fetchRootByLetters to accept searchType
+
+
+// Search by Root
+
 export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Triliteral') => {
   try {
     const response = await api.get('/rootbyletters', {
@@ -262,6 +259,9 @@ export const fetchExtendedRoots = async (r1, r2, r3, L1, L2) => {
     throw error;
   }
 };
+
+
+// Markdown rendering
 
 export const fetchMarkdownFiles = async () => {
   try {
