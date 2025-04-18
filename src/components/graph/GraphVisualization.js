@@ -43,7 +43,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     // Custom node color function based on type and word_type
 
     const getColor = (d) => {
-      if (d.type === 'word') {
+      if (d.type === 'Word') {
         if (wordShadeMode === 'grammatical') {
           // Grammatical color logic
           switch (d.word_type) {
@@ -63,7 +63,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       }
       // Default for non-word nodes
       return d3.scaleOrdinal()
-        .domain(['name', 'word', 'form', 'root'])
+        .domain(['CorpusItem', 'Word', 'Form', 'Root'])
         .range(['gold', 'red', 'blue', 'green'])(d.type);
     };
 
@@ -84,19 +84,19 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       )
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX(d => {
-        if (d.type === 'name') return width / 2;
-        if (d.type === 'form') return width / 4;
-        if (d.type === 'root') return (3 * width) / 4;;
-        if (d.type === 'word') return width / 2;
+        if (d.type === 'CorpusItem') return width / 2;
+        if (d.type === 'Form') return width / 4;
+        if (d.type === 'Root') return (3 * width) / 4;;
+        if (d.type === 'Word') return width / 2;
         return width / 2;
       }).strength(1))
       .force('y', d3.forceY(d => {
-        if (d.type === 'name') return height / 9; // Shift up
-        if (d.type === 'form' || d.type === 'root') return height / 3; // Shift up
-        if (d.type === 'word') return height / 2; // Shift up
+        if (d.type === 'CorpusItem') return height / 9; // Shift up
+        if (d.type === 'Form' || d.type === 'Root') return height / 3; // Shift up
+        if (d.type === 'Word') return height / 2; // Shift up
         return height / 3; // Default to a higher position
       }).strength(1))
-      .force('collide', d3.forceCollide(d => d.type === 'word' ? sizeScale(d.dataSize) + 15 : 50)) // Sets collision radius: 'word' nodes vary based on size; others have fixed radius (10).
+      .force('collide', d3.forceCollide(d => d.type === 'Word' ? sizeScale(d.dataSize) + 15 : 50)) // Sets collision radius: 'word' nodes vary based on size; others have fixed radius (10).
       .alphaDecay(0.02) // Alpha decay for stability
       .velocityDecay(0.992); // Adjusted velocity decay
 
@@ -118,7 +118,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .enter().append('circle')
       // Adjust node radius based on dataSize, only for Word nodes
       .attr('r', d => {
-        if (d.type === 'word') {
+        if (d.type === 'Word') {
           if (d.dataSize === 0) return 1; // Very small size for zero data size
           return sizeScale(d.dataSize);    // Use log scale for Word nodes
         }
