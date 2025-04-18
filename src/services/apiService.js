@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 // // Create an Axios instance with the base URL for the API
-const api = axios.create({
-  baseURL: 'https://theoption.life/api',
-});
-
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: 'https://theoption.life/api',
 // });
+
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -125,24 +125,40 @@ export const fetchCorpusItems = async (corpusId, script) => {
 };
 
 // Fetch words, forms, and roots by corpus item ID
+// services/apiService.js
 export const fetchWordsByCorpusItem = async (itemId, corpusId, L1, L2) => {
-  const response = await api.get(`/words_by_corpus_item/${itemId}`, { params: { corpusId, L1 } });
-  const data = convertIntegers(response.data);
+  // Make the request
+  const response = await api.get(`/words_by_corpus_item/${itemId}`, {
+    params: { corpusId, L1 }
+  });
 
+  // response.data looks like { nodes: [...], links: [...] }
+  let { nodes = [], links = [] } = response.data;
+
+  // If you want to transform or add a 'label' to each node so your front-end can display them easily:
+  nodes = nodes.map(node => {
+    // If your node happens to have properties like `node[L1]`, `node[L2]`, etc.
+    // you can create a user-friendly "label" property:
+    let label;
+    if (node[L1] && node[L2]) {
+      label = (L2 === 'off')
+        ? node[L1]
+        : `${node[L1]} / ${node[L2]}`;
+    } else {
+      // fallback—maybe the 'arabic' or 'english' props if missing L1/L2
+      label = node.arabic || node.english || node.id;
+    }
+
+    return {
+      ...node,
+      label,
+    };
+  });
+
+  // Return the final shape (with or without transformations)
   return {
-    ...data,
-    words: data.words ? data.words.map(word => ({
-      ...word,
-      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
-    })) : [],
-    forms: data.forms ? data.forms.map(form => ({
-      ...form,
-      label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
-    })) : [],
-    roots: data.roots ? data.roots.map(root => ({
-      ...root,
-      label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-    })) : [],
+    nodes,
+    links
   };
 };
 

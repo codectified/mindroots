@@ -21,57 +21,46 @@ const CorpusGraphScreen = () => {
 
 
   const fetchData = useCallback(async () => {
-    if (selectedCorpusItem) {
-      const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
-      const response = await fetchWordsByCorpusItem(itemId, selectedCorpus.id, L1, L2);
+    // Log at the beginning of the function to confirm it is invoked
+    console.log('fetchData invoked');
   
-      if (response && response.words && response.words.length > 0) {
-        const nameNode = {
-          id: `${response.item?.[L1]}_name`,
-          label: L2 === 'off' ? response.item?.[L1] : `${response.item?.[L1]} / ${response.item?.[L2]}`,
-          ...response.item,
-          type: 'name',
-        };
+    if (!selectedCorpusItem) {
+      console.log('No selectedCorpusItem, exiting fetchData');
+      return;
+    }
   
-        const wordNodes = response.words.map(word => ({
-          id: `${word?.[L1]}_word`,
-          label: L2 === 'off' ? word?.[L1] : `${word?.[L1]} / ${word?.[L2]}`,
-          ...word,
-          type: 'word',
-        }));
+    // Log the selected corpus item
+    console.log('Selected Corpus Item:', selectedCorpusItem);
   
-        const formNodes = response.forms.map(form => ({
-          id: `${form?.[L1]}_form`,
-          label: L2 === 'off' ? form?.[L1] : `${form?.[L1]} / ${form?.[L2]}`,
-          ...form,
-          type: 'form',
-        }));
+    const itemId = (selectedCorpusItem.item_id.low !== undefined)
+      ? selectedCorpusItem.item_id.low
+      : selectedCorpusItem.item_id;
   
-        const rootNodes = response.roots.map(root => ({
-          id: `${root?.[L1]}_root`,
-          label: L2 === 'off' ? root?.[L1] : `${root?.[L1]} / ${root?.[L2]}`,
-          ...root,
-          type: 'root',
-        }));
+    // Log the derived item ID
+    console.log('Derived Item ID:', itemId);
   
-        const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
+    // Make the API call and log the raw backend response
+    const response = await fetchWordsByCorpusItem(itemId, selectedCorpus.id, L1, L2);
+    console.log('Backend Response:', response);
   
-        // Create links between nodes
-        const links = [
-          ...wordNodes.map(word => ({ source: nameNode.id, target: word.id })),
-          ...formNodes.map(form => wordNodes.map(word => ({ source: word.id, target: form.id }))).flat(),
-          ...rootNodes.map(root => wordNodes.map(word => ({ source: word.id, target: root.id }))).flat(),
-        ];
+    // Check and log if the response contains nodes
+    if (response && response.nodes && response.nodes.length) {
+      console.log('Response contains nodes:', response.nodes);
   
-        setGraphData({ nodes, links });
+      // Set graph data and log the transformed data
+      setGraphData(response);
+      console.log('Graph Data Set:', response);
   
-        const languages = ['arabic', 'english'];
-        if (response.item?.transliteration) languages.push('transliteration');
-        setAvailableLanguages(languages);
-      } else {
-        setGraphData({ nodes: [], links: [] });
-        setAvailableLanguages(['arabic', 'english']);
+      // Log available languages if transliteration is found
+      if (response.nodes.some(n => n.transliteration)) {
+        console.log('Transliteration detected, updating available languages');
+        setAvailableLanguages(prev => [...prev, 'transliteration']);
       }
+    } else {
+      // Log when there is no data or an empty response
+      console.log('No nodes found in response, resetting graph data and languages');
+      setGraphData({ nodes: [], links: [] });
+      setAvailableLanguages(['arabic', 'english']);
     }
   }, [selectedCorpusItem, selectedCorpus, L1, L2, setGraphData]);
   
