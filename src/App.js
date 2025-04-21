@@ -24,13 +24,14 @@ import { TextLayoutProvider } from './contexts/TextLayoutContext';
 import { HighlightProvider } from './contexts/HighlightContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { WordShadeProvider } from './contexts/WordShadeContext';
-
+import { DisplayModeProvider } from './contexts/DisplayModeContext';
 
 
 import './App.css';
 
 const App = () => {
   return (
+    <DisplayModeProvider>
     <SettingsProvider>
     <TextLayoutProvider>
     <HighlightProvider>
@@ -71,6 +72,7 @@ const App = () => {
     </HighlightProvider>
     </TextLayoutProvider>
     </SettingsProvider>
+    </DisplayModeProvider>
 
 
   );

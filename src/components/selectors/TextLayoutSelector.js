@@ -11,7 +11,7 @@ const TextLayoutToggle = () => {
 
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '20px', padding: '10px 0' }}>
-      <label>Text Layout:</label>
+      <label>Layout:</label>
       <div style={{ display: 'flex', gap: '15px' }}>
         <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           <input

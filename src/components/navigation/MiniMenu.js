@@ -1,9 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faChevronDown, faChevronUp, faBook, faMapMarked, faSearch, faInfoCircle, faNewspaper } from '@fortawesome/free-solid-svg-icons';
-import ReactMarkdown from 'react-markdown';
-import aboutContent from '../../content/about.md';
-import changelogContent from '../../content/changelog.md';
+import { faGlobe, faChevronDown, faChevronUp, faBook, faMapMarked, faSearch, faHome } from '@fortawesome/free-solid-svg-icons';
 import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
@@ -11,15 +8,17 @@ import HighlightController from '../selectors/HighlightController';
 import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import FilterController from '../selectors/FilterController';
 import WordShadeSelector from '../selectors/WordShadeSelector';
-import { useNavigate, Link, useLocation } from 'react-router-dom';
+import DisplayModeSelector from '../selectors/DisplayModeSelector';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 const MiniMenu = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [selectedOption, setSelectedOption] = useState(null);
-  const [markdownContent, setMarkdownContent] = useState('');
-  const [showCorporaSettings, setShowCorporaSettings] = useState(false);
-  const [showGraphSettings, setShowGraphSettings] = useState(false);
+  const [showTextSettings, setShowTextSettings] = useState(false);
+  const [setIsGraphMode] = useState(false); // Toggle for Graph/Table mode
+  const [showFilterSettings, setShowFilterSettings] = useState(false);
+  const [showOtherSettings, setShowOtherSettings] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const holdTimeout = useRef(null);
 
@@ -28,6 +27,7 @@ const MiniMenu = () => {
       setSelectedOption(null);
     }
   }, [location.pathname]);
+
 
   const toggleOption = (option) => {
     setSelectedOption((prevOption) => (prevOption === option ? null : option));
@@ -55,87 +55,72 @@ const MiniMenu = () => {
     if (selectedOption === 'settings') {
       return (
         <div className="content-container">
-          <div className="settings-top-section">
-            <div className="settings-text">
-              <LanguageSelector />
-            </div>
+          {/* Language Selector at the Top */}
+          <div style={{ marginBottom: '10px' }}>
+            <LanguageSelector />
           </div>
   
-          {/* Links Section in Row */}
-          <div className="settings-links">
-            <button className="small-icon-button" onClick={() => toggleOption('about')}>
-              <FontAwesomeIcon icon={faInfoCircle} />
-            </button>
-            <button className="small-icon-button" onClick={() => toggleOption('changelog')}>
-              <FontAwesomeIcon icon={faNewspaper} />
-            </button>
-          </div>
-  
-          {/* Corpora Settings */}
+          {/* Text Settings Section */}
           <div
             className="collapsible-section"
-            onClick={() => setShowCorporaSettings((prev) => !prev)}
+            onClick={() => setShowTextSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Corpora Settings
-            <FontAwesomeIcon icon={showCorporaSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+            Text Settings
+            <FontAwesomeIcon icon={showTextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
-          {showCorporaSettings && (
+          {showTextSettings && (
             <>
               <TextLayoutToggle />
               <HighlightController />
             </>
           )}
   
-          {/* Graph Settings */}
+          {/* Filter and Context Control Section */}
           <div
             className="collapsible-section"
-            onClick={() => setShowGraphSettings((prev) => !prev)}
+            onClick={() => setShowFilterSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Graph Settings
-            <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+            Filter and Context Control
+            <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
-          {showGraphSettings && (
+          {showFilterSettings && (
             <>
               <ContextShiftSelector />
-              <NodeLimitSlider />
               <FilterController />
+            </>
+          )}
+  
+          {/* Other Settings Section */}
+          <div
+            className="collapsible-section"
+            onClick={() => setShowOtherSettings((prev) => !prev)}
+            style={{ cursor: 'pointer', marginBottom: '10px' }}
+          >
+            Other Settings
+            <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+          </div>
+          {showOtherSettings && (
+            <>
+              <NodeLimitSlider />
               <WordShadeSelector />
             </>
           )}
-        </div>
+  
+{/* Links Section at the Bottom */}
+<div className="settings-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+  <button className="small-icon-button" onClick={() => handleNavigation('/mindroots')}>
+    <FontAwesomeIcon icon={faHome} />
+  </button>
+  
+  {/* Display Mode Toggle Button */}
+  <DisplayModeSelector />
+</div>
+</div>
       );
-    } else if (selectedOption === 'about') {
-      return (
-        <div className="content-container">
-          <ReactMarkdown>{markdownContent.slice(23, 209)}</ReactMarkdown>
-          <Link to="/about" className="read-more-link">Read More</Link>
-        </div>
-      );
-    } else if (selectedOption === 'changelog') {
-      return (
-        <div className="content-container">
-          <ReactMarkdown>{markdownContent.slice(0, 1270)}</ReactMarkdown>
-          <Link to="/project-overview" className="read-more-link">Project Overview and Status</Link>
-        </div>
-      );
-    } else {
-      return null;
     }
   };
-
-  useEffect(() => {
-    if (selectedOption === 'about') {
-      fetch(aboutContent)
-        .then((res) => res.text())
-        .then((text) => setMarkdownContent(text));
-    } else if (selectedOption === 'changelog') {
-      fetch(changelogContent)
-        .then((res) => res.text())
-        .then((text) => setMarkdownContent(text));
-    }
-  }, [selectedOption]);
 
   return (
     <div>
