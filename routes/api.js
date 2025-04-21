@@ -58,64 +58,27 @@ router.get('/list/quran_items', async (req, res) => {
   }
 });
 
-// Endpoint to fetch poetry items by corpus_id
-router.get('/list/poetry_items', async (req, res) => {
-  const { corpus_id } = req.query;
-
-  if (!corpus_id) {
-    return res.status(400).send('Missing corpus_id parameter');
-  }
-
-  const session = req.driver.session();
-  try {
-    const result = await session.run(`
-      MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
-      RETURN 
-        item.arabic AS arabic,
-        item.transliteration AS transliteration,
-        toInteger(item.item_id) AS item_id,  /* Convert item_id */
-        item.lemma AS lemma,
-        item.wazn AS wazn,
-        item.part_of_speech AS pos,
-        item.gender AS gender,
-        item.number AS number,
-        item.case AS case,
-        item.prefix AS prefix,
-        item.suffix AS suffix,
-        toInteger(item.line_number) AS line_number,
-        toInteger(item.word_position) AS word_position
-      ORDER BY item.line_number, item.word_position
-    `, { corpus_id });
-
-    const poetryItems = result.records.map(record => record.toObject());
-    res.json(poetryItems);
-  } catch (error) {
-    console.error('Error fetching poetry items:', error);
-    res.status(500).send('Error fetching poetry items');
-  } finally {
-    await session.close();
-  }
-});
-
-
 // Endpoint to list all corpus items by corpus_id
 router.get('/list/corpus_items', async (req, res) => {
-  const { corpus_id } = req.query; // Get corpus_id from query parameters
+  const { corpus_id } = req.query;
   if (!corpus_id) {
     return res.status(400).send('Missing corpus_id parameter');
   }
 
   const session = req.driver.session();
   try {
-    const result = await session.run(`
+    const query = `
       MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
-      RETURN item.arabic AS arabic, item.transliteration AS transliteration, item.item_id AS item_id, item.english AS english
+      RETURN item {
+        ${selectLanguageProps('item')},
+        item_id: toInteger(item.item_id)
+      } AS item
       LIMIT 100
-    `, { corpus_id });
+    `;
 
-    const corpusItems = formatSimpleData(result.records);
-    console.log('Fetched all corpus items:', corpusItems); // Add logging
-    res.json(corpusItems);
+    const result = await session.run(query, { corpus_id });
+    const items = result.records.map(r => convertIntegers(r.get('item')));
+    res.json(items);
   } catch (error) {
     console.error('Error fetching corpus items:', error);
     res.status(500).send('Error fetching corpus items');
@@ -123,6 +86,8 @@ router.get('/list/corpus_items', async (req, res) => {
     await session.close();
   }
 });
+
+
 
 // Endpoint to get the aya count for a specific surah
 router.get('/list/surah_aya_count', async (req, res) => {

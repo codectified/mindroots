@@ -125,13 +125,18 @@ export const fetchWordsByRootWithCorpus = async (rootId, corpusId, L1, L2) => {
 
 
 // Fetch corpus items for a given corpus_id
-export const fetchCorpusItems = async (corpusId, script) => {
+export const fetchCorpusItems = async (corpusId, L1, L2) => {
   const response = await api.get('/list/corpus_items', { params: { corpus_id: corpusId } });
 
-  return response.data.map(item => ({
-    ...convertIntegers(item),
-    label: script === 'both' ? `${item.arabic} / ${item.english}` : item[script],
-  }));
+  return response.data.map(item => {
+    const label = (L2 === 'off' || !item[L2])
+      ? item[L1]
+      : `${item[L1]} / ${item[L2]}`;
+    return {
+      ...item,
+      label
+    };
+  });
 };
 
 // Fetch words, forms, and roots by corpus item ID
