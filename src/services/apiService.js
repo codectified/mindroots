@@ -141,40 +141,26 @@ export const fetchCorpusItems = async (corpusId, L1, L2) => {
 
 // Fetch words, forms, and roots by corpus item ID
 // services/apiService.js
+
 export const fetchWordsByCorpusItem = async (itemId, corpusId, L1, L2) => {
-  // Make the request
+  // 1) send both L1/L2
   const response = await api.get(`/words_by_corpus_item/${itemId}`, {
-    params: { corpusId, L1 }
+    params: { corpusId, L1, L2 }
   });
 
-  // response.data looks like { nodes: [...], links: [...] }
   let { nodes = [], links = [] } = response.data;
 
-  // If you want to transform or add a 'label' to each node so your front-end can display them easily:
-  nodes = nodes.map(node => {
-    // If your node happens to have properties like `node[L1]`, `node[L2]`, etc.
-    // you can create a user-friendly "label" property:
-    let label;
-    if (node[L1] && node[L2]) {
-      label = (L2 === 'off')
-        ? node[L1]
-        : `${node[L1]} / ${node[L2]}`;
-    } else {
-      // fallback—maybe the 'arabic' or 'english' props if missing L1/L2
-      label = node.arabic || node.english || node.id;
-    }
-
-    return {
-      ...node,
-      label,
-    };
+  // 2) label logic
+  const labeled = nodes.map(node => {
+    const val1 = node[L1];
+    const val2 = node[L2];
+    const label = (L2 === 'off' || !val2)
+      ? val1
+      : `${val1} / ${val2}`;
+    return { ...node, label };
   });
 
-  // Return the final shape (with or without transformations)
-  return {
-    nodes,
-    links
-  };
+  return { nodes: labeled, links };
 };
 
 
