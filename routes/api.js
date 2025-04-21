@@ -114,8 +114,6 @@ router.get('/list/surah_aya_count', async (req, res) => {
   }
 });
 
-
-// corpus item graph
 // corpus item graph
 router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const { itemId } = req.params;
@@ -123,123 +121,61 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const session = req.driver.session();
 
   try {
-    // Retrieve both nodes and relationships
     const query = `
       MATCH (item:CorpusItem { item_id: toInteger($itemId), corpus_id: toInteger($corpusId) })
       OPTIONAL MATCH (item)-[r1:HAS_WORD]->(word:Word)
       OPTIONAL MATCH (word)<-[r2:HAS_WORD]-(root:Root)
       OPTIONAL MATCH (word)-[r3:HAS_FORM]->(form:Form)
-      OPTIONAL MATCH (word)-[r4:ETYM]-(etymWord:Word)
       RETURN
         item,
-        collect(DISTINCT word)       AS words,
-        collect(DISTINCT root)       AS roots,
-        collect(DISTINCT form)       AS forms,
-        collect(DISTINCT etymWord)   AS etymWords,
-        collect(DISTINCT r1)         AS hasWordLinks,
-        collect(DISTINCT r2)         AS hasRootLinks,
-        collect(DISTINCT r3)         AS hasFormLinks,
-        collect(DISTINCT r4)         AS hasEtymLinks
+        collect(DISTINCT word) AS words,
+        collect(DISTINCT root) AS roots,
+        collect(DISTINCT form) AS forms,
+        collect(DISTINCT r1)   AS hasWordLinks,
+        collect(DISTINCT r2)   AS hasRootLinks,
+        collect(DISTINCT r3)   AS hasFormLinks
     `;
 
     const result = await session.run(query, { itemId, corpusId });
     const record = result.records[0];
 
-    // If no data, return empty arrays
+    // No match → empty graph
     if (!record) {
       return res.json({ nodes: [], links: [] });
     }
 
-    // Prepare arrays to hold final nodes and links
     const nodes = [];
     const links = [];
-
-    // A map of Neo4j elementId -> node object we create
-    // This lets us track each node by the internal Neo4j ID so we can attach relationships correctly
     const nodeMap = {};
 
-    // Helper function to push a node into `nodes`
-    function addNode(neo4jNode, idProp, nodeType) {
-      if (!neo4jNode) return;
-      const properties = convertIntegers(neo4jNode.properties);
+    // Extract raw Neo4j objects
+    const itemNode     = record.get('item');
+    const words        = record.get('words');
+    const roots        = record.get('roots');
+    const forms        = record.get('forms');
+    const hasWordLinks = record.get('hasWordLinks');
+    const hasRootLinks = record.get('hasRootLinks');
+    const hasFormLinks = record.get('hasFormLinks');
 
-      // We build a custom string ID in React-friendly format
-      // e.g. "word-123" or "form-10" etc.
-      const nodeIdValue = properties[idProp]; // e.g. word.word_id
-      if (!nodeIdValue) return; // If the property is missing, skip
+    // Build nodes
+    addNode(itemNode, 'item_id', 'CorpusItem', nodes, nodeMap);
+    words.forEach(w => addNode(w, 'word_id', 'Word', nodes, nodeMap));
+    roots.forEach(r => addNode(r, 'root_id', 'Root', nodes, nodeMap));
+    forms.forEach(f => addNode(f, 'form_id', 'Form', nodes, nodeMap));
 
-      const uniqueId = `${nodeType.toLowerCase()}-${nodeIdValue}`;
-      const fullNode = {
-        id: uniqueId,
-        type: nodeType,
-        ...properties
-      };
+    // Build links
+    hasWordLinks.forEach(r => addLink(r, nodeMap, links, 'HAS_WORD'));
+    hasRootLinks.forEach(r => addLink(r, nodeMap, links, 'HAS_WORD'));  // schema uses HAS_WORD
+    hasFormLinks.forEach(r => addLink(r, nodeMap, links, 'HAS_FORM'));
 
-      nodes.push(fullNode);
-      // We also store it in our map using Neo4j's elementId
-      nodeMap[neo4jNode.elementId] = fullNode;
-    }
-
-    // --- Extract the raw Node objects from the record ---
-    const item       = record.get('item');        // single node
-    const words      = record.get('words');       // array
-    const roots      = record.get('roots');       // array
-    const forms      = record.get('forms');       // array
-    const etymWords  = record.get('etymWords');   // array
-
-    // --- Add them to "nodes" ---
-    addNode(item, 'item_id', 'CorpusItem');
-
-    words.forEach((w)     => addNode(w, 'word_id', 'Word'));
-    roots.forEach((r)     => addNode(r, 'root_id', 'Root'));
-    forms.forEach((f)     => addNode(f, 'form_id', 'Form'));
-    etymWords.forEach((e) => addNode(e, 'word_id', 'Word')); 
-    // Note: EtymWords are still Word nodes, just matched differently.
-
-    // Helper function to convert each relationship to a {source, target, type} link
-    function addLink(rel, defaultRelType = '') {
-      if (!rel) return;
-      const relType = rel.type || defaultRelType;
-
-      // Some drivers store start node info on `rel.startNodeElementId`, others require 
-      // 'id(startNode(r))' in the query. Adjust as needed:
-      const startId = rel.startNodeElementId;
-      const endId   = rel.endNodeElementId;
-      if (!startId || !endId) return;
-
-      const sourceNode = nodeMap[startId];
-      const targetNode = nodeMap[endId];
-      if (!sourceNode || !targetNode) return;
-
-      links.push({
-        source: sourceNode.id,
-        target: targetNode.id,
-        type:   relType
-      });
-    }
-
-    // --- Now get arrays of relationships from the record ---
-    const hasWordLinks = record.get('hasWordLinks'); // r1
-    const hasRootLinks = record.get('hasRootLinks'); // r2
-    const hasFormLinks = record.get('hasFormLinks'); // r3
-    const hasEtymLinks = record.get('hasEtymLinks'); // r4
-
-    // --- Add each relationship as a link ---
-    hasWordLinks.forEach((r) => addLink(r, 'HAS_WORD'));
-    hasRootLinks.forEach((r) => addLink(r, 'HAS_WORD')); // or "HAS_ROOT", but the actual rel is "HAS_WORD" in your schema
-    hasFormLinks.forEach((r) => addLink(r, 'HAS_FORM'));
-    hasEtymLinks.forEach((r) => addLink(r, 'ETYM'));
-
-    // Return final response
     return res.json({ nodes, links });
   } catch (error) {
-    console.error('Error fetching data:', error);
+    console.error('Error fetching words and roots by corpus item:', error);
     return res.status(500).send('Internal Server Error');
   } finally {
     await session.close();
   }
 });
-
 
 
 // Endpoint to fetch words by form ID
