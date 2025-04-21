@@ -1,6 +1,10 @@
 const express = require('express');
 const neo4j = require('neo4j-driver');
 const router = express.Router();
+const langs   = require('../config/languages');
+
+
+const { convertIntegers, formatSimpleData, addNode, addLink, selectLanguageProps } = require('../utils/neo4jHelpers.js');
 
 // CORS Middleware
 router.use((req, res, next) => {
@@ -17,30 +21,11 @@ router.use((req, res, next) => {
   }
 });
 
+// GET  /api/languages
+router.get('/languages', (_req, res) => {
+  res.json(langs);
+});
 
-// Helper function to convert Neo4j integers to regular numbers
-const convertIntegers = (obj) => {
-  if (typeof obj === 'object' && obj !== null) {
-    if ('low' in obj && 'high' in obj) {
-      return neo4j.int(obj.low, obj.high).toNumber(); // Convert Neo4j integers to numbers
-    }
-    for (const key in obj) {
-      if (obj.hasOwnProperty(key)) {
-        obj[key] = convertIntegers(obj[key]);
-      }
-    }
-  }
-  return obj;
-};
-
-const formatSimpleData = (records) => {
-  return records.map(record => ({
-    item_id: record.get('item_id'),
-    arabic: record.get('arabic'),
-    english: record.get('english'),
-    transliteration: record.get('transliteration')
-  }));
-};
 
 router.get('/list/quran_items', async (req, res) => {
   const { corpus_id, sura_index } = req.query;
@@ -50,20 +35,20 @@ router.get('/list/quran_items', async (req, res) => {
 
   const session = req.driver.session();
   try {
-    const result = await session.run(`
+    const query = `
       MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id), sura_index: toInteger($sura_index)})
-      RETURN 
-        item.arabic AS arabic, 
-        item.transliteration AS transliteration, 
-        toInteger(item.item_id) AS item_id,   /* Convert item_id */
-        toInteger(item.aya_index) AS aya_index, /* Convert aya_index */
-        item.english AS english,
-        item.part_of_speech AS pos,
-        item.gender AS gender
+      RETURN item {
+        ${selectLanguageProps('item')},
+        item_id: toInteger(item.item_id),
+        aya_index: toInteger(item.aya_index),
+        part_of_speech: item.part_of_speech,
+        gender: item.gender
+      } AS item
       ORDER BY item.aya_index
-    `, { corpus_id, sura_index });
+    `;
 
-    const quranItems = result.records.map(record => record.toObject());
+    const result = await session.run(query, { corpus_id, sura_index });
+    const quranItems = result.records.map(r => r.get('item'));
     res.json(quranItems);
   } catch (error) {
     console.error('Error fetching Quran items:', error);

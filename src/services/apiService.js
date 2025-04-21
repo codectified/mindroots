@@ -10,6 +10,16 @@ const api = axios.create({
 });
 
 
+export const getLanguages = async () => {
+  try {
+    const response = await api.get('/languages');
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching languages:', error);
+    throw error;
+  }
+};
+
 // Helper function to convert Neo4j integers to regular numbers
 const convertIntegers = (obj) => {
   if (typeof obj === 'object' && obj !== null) {
