@@ -247,17 +247,19 @@ router.get('/form/:formId', async (req, res) => {
 router.get('/list/corpora', async (req, res) => {
   const session = req.driver.session();
   try {
-    const result = await session.run(`
-      MATCH (corpus:Corpus)
-      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english, corpus.corpusType AS corpusType
-    `);
+    const query = `
+      MATCH (c:Corpus)
+      RETURN c {
+        ${selectLanguageProps('c')},
+        id: toInteger(c.corpus_id),
+        corpusType: c.corpusType
+      } AS corpus
+    `;
+    const result = await session.run(query);
 
-    const corpora = result.records.map(record => ({
-      id: convertIntegers(record.get('id')),
-      arabic: record.get('arabic'),
-      english: record.get('english'),
-      corpusType: record.get('corpusType')
-    }));
+    const corpora = result.records.map(r =>
+      convertIntegers(r.get('corpus'))
+    );
 
     res.json(corpora);
   } catch (error) {
