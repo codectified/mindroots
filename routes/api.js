@@ -274,22 +274,45 @@ router.get('/list/corpora', async (req, res) => {
 // Fetch words by form ID with lexicon context (no filter)
 router.get('/form/:formId/lexicon', async (req, res) => {
   const { formId } = req.params;
-  const { L1, L2, limit = 25 } = req.query; // Default limit to 100 if not provided
+  const { L1, L2, limit } = req.query;
+  if (!L1 || !L2) {
+    return res
+      .status(400)
+      .send('Missing language parameters: please specify both L1 and L2');
+  }
+
   const session = req.driver.session();
   try {
-    let query = `
-      MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
-      RETURN word
-      LIMIT toInteger($limit)
+    const query = `
+      MATCH (form:Form { form_id: toInteger($formId) })<-[:HAS_FORM]-(word:Word)
+      RETURN word {
+        ${selectLanguageProps('word')},
+        word_id:   toInteger(word.word_id),
+        form_id:   toInteger(word.form_id),
+        root_id:   toInteger(word.root_id),
+        corpus_id: toInteger(word.corpus_id)
+      } AS word
+      ${limit ? 'LIMIT toInteger($limit)' : ''}
     `;
-    const result = await session.run(query, { formId, limit });
-    const words = result.records.map(record => convertIntegers(record.get('word').properties));
-    res.json(words.map(word => ({
-      ...word,
-      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
-    })));
-  } catch (error) {
-    res.status(500).send('Error fetching words by form');
+    const params = {
+      formId: parseInt(formId, 10),
+      ...(limit ? { limit: parseInt(limit, 10) } : {})
+    };
+
+    const result = await session.run(query, params);
+    const words = result.records.map(r => convertIntegers(r.get('word')));
+
+    const labeled = words.map(w => {
+      const label = (L2 === 'off' || !w[L2])
+        ? w[L1]
+        : `${w[L1]} / ${w[L2]}`;
+      return { ...w, label };
+    });
+
+    res.json(labeled);
+  } catch (err) {
+    console.error('Error fetching words by form (lexicon):', err);
+    res.status(500).send('Error fetching words by form (lexicon)');
   } finally {
     await session.close();
   }
