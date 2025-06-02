@@ -407,6 +407,8 @@ const Explore = () => {
     <div className="start">
       <MiniMenu />
 
+      <h2>Ontological Search</h2>
+
       <div className="button-row">
         {/* Word Button */}
         <div className="button-container">
