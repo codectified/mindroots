@@ -31,16 +31,6 @@ const MainMenu = () => {
 
       {/* Statistics Section */}
       <div className="statistics-section">
-        <h4>Graph Database Statistics</h4>
-        <ul className="statistics-list">
-        <li>Total Relationships: 335,693</li>
-          <li>Total Nodes: 131,564</li>
-          <li>Corpus Item Nodes: 78,568</li>
-          <li>Word Nodes: 47,922</li>
-          <li>Root Nodes: 5,049</li>
-          <li>Form Nodes: 19</li>
-          <li>Corpus Nodes: 3</li>
-        </ul>
 
       <ul className="articles-list">
       <li>
@@ -63,7 +53,7 @@ const MainMenu = () => {
           </a>
         </div> */}
         <div className="social-links">
-          <a href="https://www.instagram.com/mindroots_/" target="_blank" rel="noopener noreferrer" className="social-icon">
+          <a href="https://www.https://www.instagram.com/omr.ib/" target="_blank" rel="noopener noreferrer" className="social-icon">
             <FontAwesomeIcon icon={faInstagram} />
           </a>
           <a href="https://www.linkedin.com/in/ibomar/" target="_blank" rel="noopener noreferrer" className="social-icon">

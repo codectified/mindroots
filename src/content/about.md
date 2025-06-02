@@ -1,59 +1,35 @@
 # Welcome to MindRoots
 
-MindRoots is a project that explores the intersections of cognitive science, linguistics, and philosophy.
+Mindroots is a graph-based linguistic research tool for exploring the deep structure of language and meaning.	
+	•	The database is built using graph technology with core relationships being between words, roots, forms and corpus items, enabling deep linguistic and ontological analysis across contexts.
+  •	It provides a visual way to explore meaning dynamically rather than relying on static definitions.
+	•	QuranRoots is a future version of the current application which will focus strictly on Islamic texts, whereas the Mindroots application will have a broader scope.
 
-Less formally, it’s a graphical, ontological database and dictionary, where **graphical** means the data is stored in a graph database and visualized with nodes and links. 
+Through deep investigation of languague we find that meaning emerges--from both our words and our actions--when we connect heart and mind, function and form, the root and the fruit--when we understand how we move from one idea to another, the structure and style of our constructions from the greatest stories, to our greatest lines, their every word, every syllable and every sound.
 
-Graph databases closely mirror natural structures and allow for an intuitive exploration of language.
+When the heart and mind are connected and in balance, the soul emerges.
+When they are disconnected, we are left with a body and its parts—which we can study to better understand the whole.
 
-Although due to graphical limitations we can’t view the entire database at once, we can view parts of it.
+Mindroots aims to support such an endeavor as precisely as possible.
 
-Here we can see the 99 Names of God (yellow nodes) and the words (red) and roots (green) that have been linked to each name so far. We’re about halfway through.
+As such, Mindroots is also a project rooted in a rigorous pedagogical effort to unify a linguistic theory of meaning and knowledge or a cognitive theory of language, since such an effort is essentially part an parcel to the self-development and growth, in any case.
 
+Below is an example model of this parallel where we can equate the heart, mind body and soul as yellow and red, and the heart and mind as green and blue.
 
+<!-- IMAGE_HERE -->
 
 ## The Big Idea
 
-The core idea behind MindRoots is that **life and language are deeply intertwined**—just as our hearts, minds, and bodies are interconnected, so too are the words, sounds, and meanings that make up our language.
-
 Language mirrors the structure of the self and is the key to understanding the heart, mind and body. 
 
-How?
+Every word has a root and a form—just as every person has both an external form and an internal essence. Understanding the connections within a language helps us identify the connections within ourselves.
 
-**All words are connected through form and sound**. Every word has a root and a form—just as every person has both an external form and an internal essence. And so, understanding the connections language helps us identify the connections within ourselves.
+If we consider the metaphor of a "root word" we can think of language as a way to see how ideas are literally life taking root in the mind—where every sound goes through stages of meaning until it fruits meaning.
 
-Think of it as a way to imagine how ideas literally are life taking root in the mind—where every sound fits into our system of sound and meaning.
+A Mindroots knowledge attempts traces that movement of meaning from sound to context, from the physical manners and places of articulation to the thoughts in our heads.
 
-Another way to think about it is like a map of meaning tracing the movement from utterance to context, from the physical manners and places of articulation all the way to the thoughts in our heads, those we are aware of and those we are not.
+By connecting the sounds and meanings of words we map essential human experience to abstract ideas. The etymon or "root word" of candid in Latin is candidius meaning "white".  In Arabic a basic  example comes from one of the most common names of god, الرحمان الرحيم, the most merciful of all time and space.  This name consists of two words which share the same essential sounds: ر-ح-م or the root.
 
-By connecting the sounds and meanings of words we map essential human experience to abstract ideas. 
+The word for mercy in Arabic is رَحْمَةٌ (ra7ma) and رَحَمٌ (ra7im) refers to a mother’s womb. What’s the connection?  While some words are linked in ways more which are more obvious than others, depending on your own experience and knowledge.
 
-The basic example comes from Islam and one of the most common names of god, الرحمان الرحيم, the most merciful of all time.  This name consists of two words which share the same essential sounds: ر-ح-م.  This is what we call the root.
-
-
-Detailed definitions can be found for each word, but that’s not necessary to gain a deeper understanding of the general meaning of the root and its related words.  We can look at more words which share the same root to expand the context and connect the dots, literally.
-
-
-One word, unsurprisingly is the word for mercy in Arabic: رَحْمَةٌ (ra7ma).
-
-But how do we understand this idea in any language?  Most people will think of actions and attitudes towards others. 
-
-Let’s look at another related word from the root: رَحَمٌ which refers to a mother’s womb. What’s the connection?  While some words are linked in ways more which are more obvious than others, depending on your own experience and knowledge, in this case an explanation comes to us from god himself in the form of a prophetic narration:
-
-
-Abdullah bin ‘Amr narrated that the Messenger of Allah said:
-“The merciful are shown mercy by Ar-Rahman. Be merciful on the earth, and you will be shown mercy from Who is above the heavens. The womb is named after Ar-Rahman, so whoever connects it, Allah connects him, and whoever severs it, Allah severs him.”
-
-
-حَدَّثَنَا ابْنُ أَبِي عُمَرَ، حَدَّثَنَا سُفْيَانُ، عَنْ عَمْرِو بْنِ دِينَارٍ، عَنْ أَبِي قَابُوسَ، عَنْ عَبْدِ اللَّهِ بْنِ عَمْرٍو، قَالَ قَالَ رَسُولُ اللَّهِ صلى الله عليه وسلم ‏ “‏ الرَّاحِمُونَ يَرْحَمُهُمُ الرَّحْمَنُ ارْحَمُوا مَنْ فِي الأَرْضِ يَرْحَمْكُمْ مَنْ فِي السَّمَاءِ الرَّحِمُ شُجْنَةٌ مِنَ الرَّحْمَنِ فَمَنْ وَصَلَهَا وَصَلَهُ اللَّهُ وَمَنْ قَطَعَهَا قَطَعَهُ اللَّهُ ‏”‏ ‏.‏ قَالَ أَبُو عِيسَى هَذَا حَدِيثٌ حَسَنٌ صَحِيحٌ ‏.‏
-
-
-Grade:	Hasan(Darussalam)		
-Reference	: Jami` at-Tirmidhi 1924
-In-book reference	: Book 27, Hadith 30
-English translation	: Vol. 4, Book 1, Hadith 1924
-
-
-
-
-
+At this point we have to have a conversation.  Definitions put points in space, but it's context which connects them.  Enter Lisan Lab:
