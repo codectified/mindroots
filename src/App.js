@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './components/navigation/MainMenu';
 import Library from './components/navigation/Library';
@@ -45,7 +46,22 @@ const App = () => {
             <GraphDataProvider>
               <Router basename="/">
                 <Routes>
-                  <Route path="/" element={<Layout><DynamicMarkdownRenderer baseFolder="/theoption.life" /></Layout>} />
+                <Route path="/"
+                        element={
+                          <Layout>
+                            <div style={{ backgroundColor: '#fff', minHeight: '100vh', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                              <Link to="/mindroots">
+                                <img
+                                  src="/root-tree.jpeg"
+                                  alt="Root Tree"
+                                  style={{ maxWidth: '100%', height: 'auto', cursor: 'pointer' }}
+                                />
+                              </Link>
+                            </div>
+                          </Layout>
+                        }
+                      />
+
                   <Route path="/getting-started" element={<Layout><MarkdownRenderer filePath="/mindroots/getting-started.md" /></Layout>} />
                   <Route path="/project-overview" element={<Layout><MarkdownRenderer filePath="/mindroots/project-overview.md" /></Layout>} />
                   <Route path="/elements" element={<Layout><MarkdownRenderer filePath="/mindroots/elements.md" /></Layout>} />

@@ -126,6 +126,7 @@ const Search = () => {
   return (
     <div>
       <MiniMenu />
+      <h2>Root Search</h2>
 
       {/* Dropdown menus */}
       <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
