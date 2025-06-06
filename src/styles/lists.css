@@ -1,0 +1,103 @@
+/* lists.css */
+/* ============================================
+   Corpus and Article Lists
+   ============================================ */
+
+/* Corpus Renderer List */
+.corpus-renderer-list {
+  list-style: none;
+  padding: 0;
+  font-size: 24px; /* Default font size */
+}
+
+.corpus-renderer-list li {
+  margin: 5px 0;
+  color: inherit; /* Default text color */
+  cursor: default;
+  font-size: 20px; /* Specific size for library items */
+}
+
+.corpus-renderer-list li:hover {
+  color: #007BFF;
+}
+
+/* Primary List */
+.primary-list li {
+  margin: 10px 0;
+  font-size: 24px; /* Larger font for primary list */
+  cursor: pointer; /* Pointer cursor for clickable items */
+}
+
+.primary-list li:hover {
+  color: #007BFF; /* Hover color for primary list */
+}
+
+/* Corpus Library List */
+.corpus-library-list {
+  list-style: none;
+  padding: 0;
+  font-size: 24px; /* Specific size for library items */
+}
+
+.corpus-library-list li {
+  margin: 8px 0;
+  color: #333;
+  cursor: pointer;
+  font-size: 20px; /* Specific size for library items */
+}
+
+.corpus-library-list li:hover {
+  color: #0056b3; /* Hover effect for library items */
+}
+
+/* Articles List */
+.articles-list {
+  list-style: none;
+  padding: 0;
+  font-size: 18px;
+}
+
+.articles-list li {
+  margin: 5px 0;
+  color: #444;
+  font-size: 20px; /* Specific size for library items */
+}
+
+.articles-list li a {
+  color: #0056b3;
+  text-decoration: none;
+}
+
+.articles-list li a:hover {
+  text-decoration: underline;
+}
+
+/* Statistics List and Section */
+.statistics-section {
+  margin: 20px 0;
+  text-align: center;
+}
+
+.statistics-section h4 {
+  margin-bottom: 10px;
+  font-size: 1rem;
+  font-weight: bold;
+}
+
+.statistics-list {
+  list-style-type: none;
+  padding: 0;
+  font-size: 0.9rem; /* Small text */
+  line-height: 1.5;
+  color: #555; /* Muted color for stats */
+}
+
+.statistics-list li {
+  font-size: 14px; /* Smaller font size for statistics */
+  cursor: default; /* Remove pointer cursor */
+  color: inherit; /* Use the default text color */
+}
+
+.statistics-list li:hover {
+  color: inherit; /* Remove hover effect */
+}
