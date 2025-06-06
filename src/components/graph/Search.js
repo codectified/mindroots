@@ -129,52 +129,66 @@ const Search = () => {
       <h2>Root Search</h2>
 
       {/* Dropdown menus */}
-      <div style={{ display: 'flex', gap: '10px', alignItems: 'center', marginBottom: '10px' }}>
-        <div>
-          <label>R1:</label>
-          <select value={r1} onChange={(e) => setR1(e.target.value)}>
-            <option value="">*</option>
-            {arabicLetters.map((letter) => (
-              <option key={letter} value={letter}>
-                {letter}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>R2:</label>
-          <select value={r2} onChange={(e) => setR2(e.target.value)}>
-            <option value="">*</option>
-            {arabicLetters.map((letter) => (
-              <option key={letter} value={letter}>
-                {letter}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label>R3:</label>
-          <select value={r3} onChange={(e) => setR3(e.target.value)}>
-            <option value="">*</option>
-            <option value="NoR3">None</option>
-            {arabicLetters.map((letter) => (
-              <option key={letter} value={letter}>
-                {letter}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+<div className="button-row" style={{ marginBottom: '10px' }}>
+  <div>
+    <label>R1:</label>
+    <select
+      className="uniform-select"
+      value={r1}
+      onChange={(e) => setR1(e.target.value)}
+    >
+      <option value="">*</option>
+      {arabicLetters.map((letter) => (
+        <option key={letter} value={letter}>
+          {letter}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <div>
+    <label>R2:</label>
+    <select
+      className="uniform-select"
+      value={r2}
+      onChange={(e) => setR2(e.target.value)}
+    >
+      <option value="">*</option>
+      {arabicLetters.map((letter) => (
+        <option key={letter} value={letter}>
+          {letter}
+        </option>
+      ))}
+    </select>
+  </div>
+
+  <div>
+    <label>R3:</label>
+    <select
+      className="uniform-select"
+      value={r3}
+      onChange={(e) => setR3(e.target.value)}
+    >
+      <option value="">*</option>
+      <option value="NoR3">None</option>
+      {arabicLetters.map((letter) => (
+        <option key={letter} value={letter}>
+          {letter}
+        </option>
+      ))}
+    </select>
+  </div>
+</div>
 
       {/* Buttons */}
-      <div style={{ display: 'flex', gap: '10px', marginBottom: '10px' }}>
+    <div className="button-row" style={{ marginBottom: '10px' }}>
         <button onClick={() => handleFetchRoots(r3 === 'NoR3' ? 'Geminate' : 'Triliteral')}>Fetch Root(s)</button>
         <button onClick={handleCombinate}>Combinate</button>
         <button onClick={() => handleFetchRoots('Extended')}>Fetch Extended</button>
       </div>
 
       {/* Total roots count */}
-      <div style={{ textAlign: 'left', marginBottom: '20px' }}>
+      <div>
         {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25 max)</p>}
       </div>
 
@@ -207,7 +221,6 @@ const Search = () => {
           style={{
             top: `${infoBubble.position.y}px`,
             left: `${infoBubble.position.x}px`,
-            position: 'absolute',
           }}
         />
       )}

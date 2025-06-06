@@ -3,7 +3,6 @@ import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBook, faSearch, faMapMarked } from '@fortawesome/free-solid-svg-icons';
 import { faInstagram, faLinkedin } from '@fortawesome/free-brands-svg-icons'; // Import from brands package
-import '../../App.css';
 
 const MainMenu = () => {
   const navigate = useNavigate();

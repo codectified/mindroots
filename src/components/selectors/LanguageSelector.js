@@ -6,18 +6,26 @@ const LanguageSelector = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '20px', rowGap: '2px', alignItems: 'center' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '5px', whiteSpace: 'nowrap' }}>
+      <div className="selector-row">
+        <div className="selector-pair">
           <label>L1 (Primary Language):</label>
-          <select value={L1} onChange={(e) => setL1(e.target.value)} style={{ margin: 0 }}>
+          <select
+            className="uniform-select"
+            value={L1}
+            onChange={(e) => setL1(e.target.value)}
+          >
             <option value="arabic">Arabic</option>
             <option value="english">English</option>
           </select>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', whiteSpace: 'nowrap' }}>
+        <div className="selector-pair">
           <label>L2:</label>
-          <select value={L2} onChange={(e) => setL2(e.target.value)} style={{ margin: 0 }}>
+          <select
+            className="uniform-select"
+            value={L2}
+            onChange={(e) => setL2(e.target.value)}
+          >
             <option value="off">Off</option>
             <option value="arabic">Arabic</option>
             <option value="english">English</option>

@@ -1,0 +1,105 @@
+/* media-queries.css */
+/* ============================================
+   Media Queries for Mobile Responsiveness 
+   ============================================ */
+
+@media (max-width: 768px) {
+  .overlay {
+    margin: 10px;
+    padding: 10px;
+    margin-top: 80px;
+  }
+
+  button {
+    padding: 8px 16px;
+    font-size: 14px;
+  }
+
+  select {
+    padding: 4px;
+    font-size: 14px;
+  }
+
+  li {
+    font-size: 20px;
+  }
+
+  .menu-button {
+    padding: 8px;
+    font-size: 16px;
+  }
+
+  .mainmenu-title {
+    font-size: 36px;
+  }
+
+  .mainmenu-item {
+    font-size: 20px;
+  }
+
+  .info-bubble {
+    max-width: 90%; /* Adjust width for smaller screens */
+    max-height: 60%; /* Adjust height for smaller screens */
+  }
+
+  .info-bubble-content {
+    max-height: 70vh; /* Content scrolls within the bubble */
+    overflow-y: scroll; /* Ensure vertical scrolling */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling for touch devices */
+  }
+
+  .close-button {
+    font-size: 20px; /* Larger close button for better tapability */
+  }
+}
+
+@media (max-width: 480px) {
+  .overlay {
+    margin: 5px;
+    padding: 5px;
+    margin-top: 80px;
+  }
+
+  button {
+    padding: 6px 12px;
+    font-size: 12px;
+  }
+
+  select {
+    padding: 3px;
+    font-size: 12px;
+  }
+
+  li {
+    font-size: 18px;
+  }
+
+  .menu-button {
+    padding: 6px;
+    font-size: 14px;
+  }
+
+  .mainmenu-title {
+    font-size: 28px;
+  }
+
+  .mainmenu-item {
+    font-size: 18px;
+  }
+
+  .info-bubble {
+    max-width: 80%; /* Adjust width even more for very small screens */
+    max-height: 50%; /* Adjust height for smaller screens */
+    transform: translate(-55%, -50%); /* Shift it a bit more to the left */
+  }
+
+  .info-bubble-content {
+    max-height: 50vh; /* Adjust content height to fit mobile screen */
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch; /* Enable smooth scrolling */
+  }
+
+  .close-button {
+    font-size: 18px; /* Slightly smaller for mobile */
+  }
+}
