@@ -1,0 +1,184 @@
+/* buttons.css */
+/* ============================================
+   Button Rows, Buttons, and Toggles
+   ============================================ */
+
+/* Button row aligned to the left with spacing */
+.button-row {
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 20px; /* Large gap between button groups */
+  margin: 20px 0;
+}
+
+.button-container {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 5px; /* small gap between label/button and caret toggle */
+}
+
+button {
+  background-color: #333;
+  color: #fff;
+  border: none;
+  padding: 10px 20px;
+  cursor: pointer;
+  font-family: 'Noto Serif', serif;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #555;
+}
+
+/* Circular caret toggle button */
+.submenu-toggle {
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: none;
+  border-radius: 50%;
+  background-color: white;
+  color: #333;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s;
+  font-weight: bold;
+}
+
+/* Active and Hover States for submenu-toggle */
+.submenu-toggle.active {
+  background-color: #555;
+  color: white;
+}
+
+.submenu-toggle:hover {
+  background-color: #777;
+}
+
+/* Submenu styling */
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  margin-top: 5px;
+  padding: 10px;
+  border: 1px solid #ddd;
+  background-color: #333;
+  color: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  z-index: 10;
+}
+
+.submenu label {
+  display: block;
+  margin: 5px 0;
+}
+
+.submenu input {
+  margin-right: 10px;
+}
+
+/* Simple Toggles/Buttons */
+.toggle-slider {
+  display: flex;
+  justify-content: space-around; /* Reduces space between elements */
+  width: 100%;
+}
+
+.selected {
+  font-weight: bold;
+  color: #fff;
+}
+
+.unselected {
+  font-weight: normal;
+  color: #999;
+}
+
+.social-links {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.social-icon {
+  font-size: 1.5em;
+  color: #333;
+  transition: color 0.3s;
+}
+
+.social-icon:hover {
+  color: #0077b5; /* LinkedIn blue */
+}
+
+/* Container around the three “R1/R2/R3” selects */
+.root-filters-container {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+/* Container around the “Fetch/Combinate/Fetch Extended” buttons */
+.root-buttons-container {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+/* The “total roots” line */
+.root-total-container {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+/* ============================================
+   1) Uniform dropdown style
+   ============================================ */
+.uniform-select {
+  padding: 5px 8px;       /* same as your inline LanguageSelector */
+  font-size: 16px;        /* same default font‐size */
+  font-family: 'Noto Serif', serif;
+  margin: 0;              /* override any default margins */
+  min-width: 120px;       /* force a consistent width */
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: white;
+  color: #333;
+  appearance: none;       /* remove native arrows in some browsers */
+  -webkit-appearance: none;
+  -moz-appearance: none;
+}
+
+.uniform-select:focus {
+  outline: none;
+  border-color: #666;
+}
+
+/* ============================================
+   2) Reusable flex‐layout for label+select pairs
+   (LanguageSelector & ContextShiftSelector)
+   ============================================ */
+/* Container that wraps multiple “label + select” items */
+.selector-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;      /* same as your inline gap: ’20px’ */
+  row-gap: 2px;   /* same as inline rowGap: ’2px’ */
+  column-gap: 15px; /* same as inline columnGap: ’15px’ */
+  align-items: center;
+}
+
+/* Each “label + select” group stays on one line */
+.selector-pair {
+  display: flex;
+  align-items: center;
+  gap: 5px;         /* same as inline gap: ’5px’ */
+  white-space: nowrap;
+}
+

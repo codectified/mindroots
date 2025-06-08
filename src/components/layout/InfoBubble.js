@@ -1,12 +1,15 @@
+// src/layout/InfoBubble.jsx
 import React, { useRef } from 'react';
+import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
+import '../../styles/info-bubble.css'; // ensure your CSS is here
 
-const InfoBubble = ({ definition, onClose, style }) => {
-  const infoBubbleRef = useRef(null); // Create a ref for the draggable node
+export default function InfoBubble({ definition, onClose, style }) {
+  const infoBubbleRef = useRef(null);
 
-  return (
+  // The bubble UI
+  const bubble = (
     <Draggable nodeRef={infoBubbleRef} cancel=".info-bubble-content, .close-button">
-      {/* Use nodeRef here to avoid findDOMNode usage */}
       <div ref={infoBubbleRef} className="info-bubble" style={style}>
         <div className="info-bubble-header">
           <button
@@ -23,6 +26,7 @@ const InfoBubble = ({ definition, onClose, style }) => {
       </div>
     </Draggable>
   );
-};
 
-export default InfoBubble;
+  // Render it under document.body, so it’s never a child of your table div
+  return ReactDOM.createPortal(bubble, document.body);
+}

@@ -1,0 +1,70 @@
+/* content.css */
+/* ============================================
+   Images, Content Containers, and Project News 
+   ============================================ */
+
+/* Responsive Images */
+.responsive-image {
+  max-width: 100%;
+  height: auto;
+  cursor: pointer;
+}
+
+/* Graph Image Container */
+.graph-image-container {
+  text-align: center;
+  margin: 20px 0;
+}
+
+/* Generic Content Container */
+.content-container {
+  padding: 15px;
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  margin-bottom: 20px;
+  background-color: #f9f9f9;
+}
+
+/* Read More Link */
+.read-more-link {
+  display: block;
+  margin-top: 10px;
+  color: #007bff;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.read-more-link:hover {
+  text-decoration: underline;
+}
+
+/* Project News Styles */
+.project-news-container {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+  font-family: 'Noto Serif', serif;
+  font-size: 18px;
+  color: #333;
+}
+
+.project-news-title {
+  font-size: 24px;
+  margin-bottom: 20px;
+}
+
+/* Main Site Link (Footer) */
+.main-site-link {
+  margin-top: 20px;
+  text-align: center;
+}
+
+.main-site-link a {
+  text-decoration: none;
+  color: #333; /* Adjust color as needed */
+  font-size: .7em; /* Adjust size as needed */
+}
+
+.main-site-link a:hover {
+  text-decoration: underline;
+}

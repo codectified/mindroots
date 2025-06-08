@@ -1,0 +1,25 @@
+/* language-toggle.css */
+/* ============================================
+   Language Toggle (Fixed Position) 
+   ============================================ */
+
+.language-toggle-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px;
+}
+
+.language-toggle {
+  position: fixed; /* Makes the toggle follow the scroll */
+  top: 24px; /* Distance from the top of the viewport */
+  left: 20px; /* Distance from the left of the viewport */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 80px;
+  background-color: #444;
+  border-radius: 20px;
+  padding: 5px;
+  z-index: 1000; /* Ensure it appears above other elements */
+}

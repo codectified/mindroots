@@ -1,0 +1,51 @@
+/* main-menu.css */
+/* ============================================
+   Main Menu (Home Screen Style) 
+   ============================================ */
+
+/* Custom Icon (for main menu items) */
+.custom-icon {
+  width: 50px;
+  height: 50px;
+  object-fit: contain;
+}
+
+/* Main Menu Container and Title */
+.mainmenu-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 40vh;
+  background-color: transparent;
+}
+
+.mainmenu-title {
+  font-family: 'Cinzel', serif;
+  font-size: 48px;
+  color: #333;
+  margin-bottom: 40px;
+}
+
+/* Main Menu List Items */
+.mainmenu-list {
+  list-style-type: none;
+  padding: 0;
+}
+
+.mainmenu-item {
+  font-family: 'Noto Serif', serif;
+  font-size: 24px;
+  color: #007BFF;
+  cursor: pointer;
+  margin: 20px 0;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mainmenu-item .mainmenu-icon {
+  margin-right: 10px;
+  font-size: 20px;
+}

@@ -1,0 +1,113 @@
+/* markdown.css */
+/* ============================================
+   Markdown Homepage + Page Styles 
+   ============================================ */
+
+/* General styling for the markdown container */
+.markdown-homepage {
+  background-color: #2c2c2c;
+  color: #dcdcdc;
+  padding: 20px;
+  font-family: 'Noto Serif', serif;
+  line-height: 1.6;
+  min-height: auto; /* Remove the fixed minimum height */
+  margin-bottom: 20px; /* Add some consistent spacing between articles */
+}
+
+/* Arabic Text Styling (RTL) */
+.markdown-homepage.rtl {
+  direction: rtl; /* Ensure text flows from right to left */
+  text-align: right; /* Align text to the right */
+  unicode-bidi: bidi-override; /* Override the bidirectional algorithm */
+}
+
+/* Override heading alignment for RTL */
+.markdown-homepage.rtl h1,
+.markdown-homepage.rtl h2,
+.markdown-homepage.rtl h3 {
+  text-align: right; /* Align headers to the right */
+}
+
+/* Styling for English text (LTR) */
+.markdown-homepage.ltr {
+  direction: ltr; /* Set text direction to left-to-right */
+  text-align: left; /* Align text to the left */
+}
+
+/* Headings (LTR and default) */
+.markdown-homepage h1 {
+  font-size: 2.5em; /* Largest for H1 */
+  color: #e8e8e8; 
+  margin-bottom: 0px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.markdown-homepage h2 {
+  font-size: 2em; /* Slightly smaller for H2 */
+  color: #e8e8e8;
+  margin-bottom: 0px;
+  font-weight: bold;
+  text-align: left;
+}
+
+.markdown-homepage h3 {
+  font-size: 1.75em; /* Smaller for H3 */
+  color: #e8e8e8;
+  margin-bottom: 0px;
+  font-weight: bold;
+  text-align: left;
+}
+
+/* Paragraph styling */
+.markdown-homepage p {
+  margin-bottom: 15px;
+  text-align: justify; /* Justify paragraphs */
+}
+
+/* Link styling */
+.markdown-homepage a {
+  color: #66b2ff; /* Softer blue */
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.markdown-homepage a:hover {
+  text-decoration: underline;
+  color: #ff8c66; /* Softer hover color */
+}
+
+/* List styling */
+.markdown-homepage ul,
+.markdown-homepage ol {
+  margin-left: 20px;
+  padding-left: 20px;
+  list-style-position: outside; /* Changed to outside for better spacing */
+}
+
+.markdown-homepage ul li,
+.markdown-homepage ol li {
+  margin-bottom: 5px; /* Add some spacing between list items */
+}
+
+/* Blockquote styling */
+.markdown-homepage blockquote {
+  border-left: 5px solid #888; /* Darker gray border for blockquote */
+  padding-left: 10px;
+  color: #c0c0c0; /* Softer off-white for blockquote text */
+}
+
+/* Code block styling */
+.markdown-homepage code {
+  background-color: #444; /* Slightly lighter background for code blocks */
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: 'Courier New', Courier, monospace; /* Ensure code has a monospaced font */
+}
+
+/* Markdown Page / Mindroots (light mode) */
+.markdown-page,
+.markdown-mindroots {
+  background: white;
+  color: black;
+}
