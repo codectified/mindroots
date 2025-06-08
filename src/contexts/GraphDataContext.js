@@ -68,7 +68,7 @@ export const GraphDataProvider = ({ children }) => {
   };
 
 // Updated functions to prevent duplicates based on `word_id`
-const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
+const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
   try {
     let allNewWords = [];
     if (contextFilter === 'lexicon') {
@@ -98,7 +98,7 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
   }
 };
 
-const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
+const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
   try {
     let allNewWords = [];
     if (contextFilter === 'lexicon') {
@@ -135,7 +135,8 @@ const handleWordNodeClick = async (
   L1,
   L2,
   corpusId,
-  event
+  event,
+  position
 ) => {
   try {
     // Determine the numeric word ID
@@ -170,13 +171,6 @@ const handleWordNodeClick = async (
       // Fetch or read definitions
       const definitions = node.properties?.definitions ||
         await fetchLaneEntry(wordId, L1, L2);
-
-      // Position under the click, including scroll offset
-      const position = {
-        x: event.pageX,
-        y: event.pageY,
-      };
-
       setInfoBubble({
         definition: definitions,
         position,
@@ -210,7 +204,8 @@ const handleNodeClick = async (
       L1,
       L2,
       contextFilterForm,
-      corpusId
+      corpusId,
+      position
     );
   } else if (node.type === 'root') {
     await handleRootNodeClick(
@@ -218,7 +213,8 @@ const handleNodeClick = async (
       L1,
       L2,
       contextFilterRoot,
-      corpusId
+      corpusId,
+      position
     );
   } else if (node.type === 'word') {
     // Pass the event through so handleWordNodeClick can read pageX/pageY
@@ -227,7 +223,8 @@ const handleNodeClick = async (
       L1,
       L2,
       corpusId,
-      event
+      event,
+      position
     );
   }
 };
