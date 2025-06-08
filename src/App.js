@@ -1,4 +1,3 @@
-import React from 'react';
 import { Link } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import MainMenu from './components/navigation/MainMenu';
@@ -12,7 +11,6 @@ import Explore from './components/graph/Explore';
 import Search from './components/graph/Search';
 
 import MarkdownRenderer from './components/utils/MarkdownRenderer';
-import DynamicMarkdownRenderer from './components/utils/DynamicMarkdownRenderer';
 import Layout from './components/layout/Layout';
 
 import { ScriptProvider } from './contexts/ScriptContext';
@@ -27,8 +25,17 @@ import { SettingsProvider } from './contexts/SettingsContext';
 import { WordShadeProvider } from './contexts/WordShadeContext';
 import { DisplayModeProvider } from './contexts/DisplayModeContext';
 
-
-import './App.css';
+import './styles/base.css';
+import './styles/buttons.css';
+import './styles/lists.css';
+import './styles/main-menu.css';
+import './styles/icon-grid.css';
+import './styles/menu.css';
+import './styles/language-toggle.css';
+import './styles/info-bubble.css';
+import './styles/markdown.css';
+import './styles/content.css';
+import './styles/media-queries.css';
 
 const App = () => {
   return (

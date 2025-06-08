@@ -89,7 +89,6 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
           style={{
             top: `${infoBubble.position.y}px`,
             left: `${infoBubble.position.x}px`,
-            position: 'absolute',
           }}
         />
       )}

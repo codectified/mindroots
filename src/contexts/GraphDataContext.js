@@ -68,7 +68,7 @@ export const GraphDataProvider = ({ children }) => {
   };
 
 // Updated functions to prevent duplicates based on `word_id`
-const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
+const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
   try {
     let allNewWords = [];
     if (contextFilter === 'lexicon') {
@@ -98,7 +98,7 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
   }
 };
 
-const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
+const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
   try {
     let allNewWords = [];
     if (contextFilter === 'lexicon') {
@@ -129,39 +129,52 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId) => {
 };
 
 // Handle word node click
-const handleWordNodeClick = async (node, L1, L2, corpusId) => {
+// 1) Updated handleWordNodeClick
+const handleWordNodeClick = async (
+  node,
+  L1,
+  L2,
+  corpusId,
+  event,
+  position
+) => {
   try {
-    const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
-    const currentNodes = graphData.nodes || [];
+    // Determine the numeric word ID
+    const wordId = node.word_id?.low !== undefined
+      ? node.word_id.low
+      : node.word_id;
 
-    const rootNodeDisplayed = currentNodes.some(n => n.type === 'root' && n.root_id === node.root_id);
+    // Check if the corresponding root is already displayed
+    const alreadyHasRoot = graphData.nodes.some(
+      n => n.type === 'root' && n.root_id === node.root_id
+    );
 
-    if (!rootNodeDisplayed) {
+    if (!alreadyHasRoot) {
+      // Fetch and add the missing root
       const root = await fetchRootByWord(wordId, L1, L2);
       const newRootNode = {
         id: `root_${root.root_id}`,
-        label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+        label: L2 === 'off'
+          ? root[L1]
+          : `${root[L1]} / ${root[L2]}`,
         ...root,
         type: 'root',
       };
-
-      // Fix: Wrap newLink in an array
+      // Link from word to root
       const newLink = [{ source: node.id, target: newRootNode.id }];
 
       setGraphData(prev => ({
         nodes: [...prev.nodes, newRootNode],
-        links: [...prev.links, ...newLink], // newLink is now an array
+        links: [...prev.links, ...newLink],
       }));
     } else {
-      let definitions = node.properties?.definitions || await fetchLaneEntry(wordId, L1, L2);
-      
-      // Set the info bubble position to the center of the screen
-      let centerPosition = {
-        x: (window.innerWidth - 200) / 2,  // Assuming bubble width is 200px
-        y: (window.innerHeight - 100) / 2  // Assuming bubble height is 100px
-      };
-
-      setInfoBubble({ definition: definitions, position: centerPosition });
+      // Fetch or read definitions
+      const definitions = node.properties?.definitions ||
+        await fetchLaneEntry(wordId, L1, L2);
+      setInfoBubble({
+        definition: definitions,
+        position,
+      });
     }
   } catch (error) {
     console.error('Error handling word node click:', error);
@@ -169,20 +182,52 @@ const handleWordNodeClick = async (node, L1, L2, corpusId) => {
 };
 
   // Centralized node click handler with position handling
-  const handleNodeClick = async (node, L1, L2, contextFilterRoot, contextFilterForm, corpusId, event) => {
-    const position = {
-      x: event.clientX,
-      y: event.clientY,
-    };
-
-    if (node.type === 'form') {
-      await handleFormNodeClick(node, L1, L2, contextFilterForm, corpusId);
-    } else if (node.type === 'root') {
-      await handleRootNodeClick(node, L1, L2, contextFilterRoot, corpusId);
-    } else if (node.type === 'word') {
-      await handleWordNodeClick(node, L1, L2, corpusId, position);
-    }
+// 2) Updated handleNodeClick (central dispatcher)
+const handleNodeClick = async (
+  node,
+  L1,
+  L2,
+  contextFilterRoot,
+  contextFilterForm,
+  corpusId,
+  event
+) => {
+  // Always capture the true click point
+  const position = {
+    x: event.pageX,
+    y: event.pageY,
   };
+
+  if (node.type === 'form') {
+    await handleFormNodeClick(
+      node,
+      L1,
+      L2,
+      contextFilterForm,
+      corpusId,
+      position
+    );
+  } else if (node.type === 'root') {
+    await handleRootNodeClick(
+      node,
+      L1,
+      L2,
+      contextFilterRoot,
+      corpusId,
+      position
+    );
+  } else if (node.type === 'word') {
+    // Pass the event through so handleWordNodeClick can read pageX/pageY
+    await handleWordNodeClick(
+      node,
+      L1,
+      L2,
+      corpusId,
+      event,
+      position
+    );
+  }
+};
 
   return (
     <GraphDataContext.Provider value={{
