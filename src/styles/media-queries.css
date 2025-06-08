@@ -37,10 +37,6 @@
     font-size: 20px;
   }
 
-  .info-bubble {
-    max-width: 90%; /* Adjust width for smaller screens */
-    max-height: 60%; /* Adjust height for smaller screens */
-  }
 
   .info-bubble-content {
     max-height: 70vh; /* Content scrolls within the bubble */
@@ -85,12 +81,6 @@
 
   .mainmenu-item {
     font-size: 18px;
-  }
-
-  .info-bubble {
-    max-width: 80%; /* Adjust width even more for very small screens */
-    max-height: 50%; /* Adjust height for smaller screens */
-    transform: translate(-55%, -50%); /* Shift it a bit more to the left */
   }
 
   .info-bubble-content {
