@@ -213,17 +213,18 @@ const Search = () => {
       )}
 
       {/* InfoBubble */}
-      {infoBubble && (
-        <InfoBubble
-          className="info-bubble"
-          definition={infoBubble.definition}
-          onClose={closeInfoBubble}
-          style={{
-            top: `${infoBubble.position.y}px`,
-            left: `${infoBubble.position.x}px`,
-          }}
-        />
-      )}
+{/* Only render the “global” InfoBubble when in graph mode */}
+{displayMode === 'graph' && infoBubble && (
+  <InfoBubble
+    className="info-bubble"
+    definition={infoBubble.definition}
+    onClose={closeInfoBubble}
+    style={{
+      top: `${infoBubble.position.y}px`,
+      left: `${infoBubble.position.x}px`,
+    }}
+  />
+)}
     </div>
   );
 };

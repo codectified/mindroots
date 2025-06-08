@@ -1,10 +1,6 @@
 /* info-bubble.css */
-/* ============================================
-   Info Bubble Modal Styles 
-   ============================================ */
-
 .info-bubble {
-  position: absolute;      /* ← changed from fixed to absolute */
+  position: absolute;      /* ← must be absolute, not fixed */
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 5px;
@@ -17,16 +13,14 @@
   -webkit-overflow-scrolling: touch;
 }
 
-/* Info Bubble Inner Content */
 .info-bubble-content {
   margin-top: 20px;
-  padding-right: 10px; /* Add space for scroll bar */
-  max-height: 300px; /* Ensure the content can scroll */
-  overflow-y: scroll; /* Ensure scrollability */
-  -webkit-overflow-scrolling: touch; /* Ensure smooth scrolling on iOS */
+  padding-right: 10px;
+  max-height: 300px;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* Close Button for Info Bubble */
 .close-button {
   position: absolute;
   top: -10px;
@@ -38,19 +32,13 @@
   color: #333;
   font-weight: bold;
   z-index: 1001;
-  touch-action: manipulation; /* Optimize touch behavior */
+  touch-action: manipulation;
 }
-
 .close-button:focus {
-  outline: none; /* Remove focus outline for better mobile experience */
+  outline: none;
 }
-
+.close-button:hover,
 .close-button:active {
-  color: #e74c3c; /* Change color on touch/click */
-}
-
-.close-button:hover {
-  color: #e74c3c; /* Change color on hover */
-  background-color: transparent;
+  color: #e74c3c;
   transform: scale(1.2);
 }
