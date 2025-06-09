@@ -32,4 +32,10 @@ By connecting the sounds and meanings of words we map essential human experience
 
 The word for mercy in Arabic is رَحْمَةٌ (ra7ma) and رَحَمٌ (ra7im) refers to a mother’s womb. What’s the connection?  While some words are linked in ways more which are more obvious than others, depending on your own experience and knowledge.
 
-At this point we have to have a conversation.  Definitions put points in space, but it's context which connects them.  Enter Lisan Lab:
+At this point we have to have a conversation.  Definitions put points in space, but it's context which connects them.  Enter Lisan Lab:  https://www.youtube.com/@codectified
+
+
+---
+Privacy Notice
+
+This application does not collect or store any personal data. Any queries submitted through the chatbot are processed anonymously and used solely to generate responses. No user information is saved, tracked, or shared.
