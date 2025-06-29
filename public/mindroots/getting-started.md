@@ -2,7 +2,7 @@
 
 Mindroots leverages a graph database featuring approximately 50,000 words and 5,000 roots, imported primarily from Lane’s Lexicon and supplemented with additional translations and linguistic information.
 
-Each of the three main pages—**Library**, **Explore**, and **Search**—allows you to interact with and visualize the underlying graph database in different ways:
+Three pages—**Library**, **Explore**, and **Search**—allows you to interact with and visualize the underlying graph database in different ways:
 
 + <span style="color:gold;">And corpus items are gold</span> because they are the choice examples of speech and expression. It's usually where we start.
 
