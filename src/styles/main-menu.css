@@ -1,51 +1,44 @@
-/* main-menu.css */
 /* ============================================
-   Main Menu (Home Screen Style) 
+   Main Menu Icon Grid (Four-Quadrant Grid)
    ============================================ */
-
-/* Custom Icon (for main menu items) */
-.custom-icon {
-  width: 50px;
-  height: 50px;
-  object-fit: contain;
+.icon-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 30px;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 20px 0;
 }
 
-/* Main Menu Container and Title */
-.mainmenu-container {
+.icon-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  min-height: 40vh;
-  background-color: transparent;
-}
-
-.mainmenu-title {
-  font-family: 'Cinzel', serif;
-  font-size: 48px;
-  color: #333;
-  margin-bottom: 40px;
-}
-
-/* Main Menu List Items */
-.mainmenu-list {
-  list-style-type: none;
-  padding: 0;
-}
-
-.mainmenu-item {
-  font-family: 'Noto Serif', serif;
-  font-size: 24px;
-  color: #007BFF;
   cursor: pointer;
-  margin: 20px 0;
   text-align: center;
-  display: flex;
-  align-items: center;
-  justify-content: center;
+  background: #f9f9f9;
+  border-radius: 8px;
+  padding: 20px;
+  transition: transform 0.2s ease, background 0.2s ease;
 }
 
-.mainmenu-item .mainmenu-icon {
-  margin-right: 10px;
-  font-size: 20px;
+.icon-item:hover {
+  transform: translateY(-5px);
+  background: #f0f0f0;
+}
+
+.icon-item .icon {
+  font-size: 32px;
+  margin-bottom: 10px;
+}
+
+.icon-item span {
+  font-size: 16px;
+  font-family: 'Noto Serif', serif;
+  color: #333;
+  word-wrap: break-word;
 }

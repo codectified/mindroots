@@ -36,6 +36,7 @@ import './styles/info-bubble.css';
 import './styles/markdown.css';
 import './styles/content.css';
 import './styles/media-queries.css';
+import LisanLab from './components/staticPages/LisanLab';
 
 const App = () => {
   return (
@@ -82,6 +83,8 @@ const App = () => {
                   <Route path="/about" element={<Layout><About /></Layout>} />
                   <Route path="/start" element={<Layout><Explore /></Layout>} />
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />
+                  <Route path="/lisan-lab" element={<Layout><LisanLab /></Layout>} />
+
                 </Routes>
               </Router>
             </GraphDataProvider>
