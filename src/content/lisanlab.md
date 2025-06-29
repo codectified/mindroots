@@ -4,6 +4,8 @@
 **Recordings repository:**  
 [YouTube Channel](https://youtube.com/@codectified?si=SLxiWPYEyNYNlTMR)
 
+**Lab Reports:** (Coming Soon)
+
 **Google Meet Link:**  
 [Join Meeting](https://meet.google.com/qdi-rytx-vix)
 
