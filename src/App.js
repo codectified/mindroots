@@ -84,6 +84,8 @@ const App = () => {
                   <Route path="/start" element={<Layout><Explore /></Layout>} />
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />
                   <Route path="/lisan-lab" element={<Layout><LisanLab /></Layout>} />
+                  <Route path="/lisan-lab/reports" element={<Layout><MarkdownRenderer filePath="/mindroots/lisanlab-reports/lisanlab-reports.md" /></Layout>}/>
+                  
 
                 </Routes>
               </Router>
