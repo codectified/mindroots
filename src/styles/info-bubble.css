@@ -5,19 +5,25 @@
   border: 1px solid #ccc;
   border-radius: 5px;
   padding: 10px;
-  max-width: 300px;
-  max-height: 200px;
+  width: 400px;
+  height: 300px;
+  max-width: 90vw;
+  max-height: 80vh;
+  min-width: 250px;
+  min-height: 150px;
   overflow-y: auto;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
   z-index: 1000;
   -webkit-overflow-scrolling: touch;
+  resize: both;
+  overflow: hidden;
 }
 
 .info-bubble-content {
   margin-top: 20px;
   padding-right: 10px;
-  max-height: 300px;
-  overflow-y: scroll;
+  height: calc(100% - 40px);
+  overflow-y: auto;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -41,4 +47,36 @@
 .close-button:active {
   color: #e74c3c;
   transform: scale(1.2);
+}
+
+/* Mobile styles for larger info bubble */
+@media (max-width: 768px) {
+  .info-bubble {
+    width: 90vw !important;
+    height: 60vh !important;
+    max-width: 90vw;
+    max-height: 60vh;
+    min-width: 280px;
+    min-height: 150px;
+    padding: 15px;
+    /* Center the bubble on mobile */
+    left: 50% !important;
+    top: 50% !important;
+    transform: translate(-50%, -50%) !important;
+    position: fixed !important;
+    resize: none; /* Disable resize on mobile for better UX */
+  }
+  
+  .info-bubble-content {
+    height: calc(100% - 50px);
+    padding-right: 15px;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  
+  .close-button {
+    font-size: 22px;
+    top: -12px;
+    right: -8px;
+  }
 }
