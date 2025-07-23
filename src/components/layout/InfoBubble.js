@@ -8,7 +8,7 @@ export default function InfoBubble({ definition, onClose, style }) {
   const infoBubbleRef = useRef(null);
   const [centeredStyle, setCenteredStyle] = useState(style);
 
-  // Calculate centered positioning after the bubble mounts
+  // Calculate positioning: X centered in viewport, Y follows click
   useEffect(() => {
     if (!infoBubbleRef.current || !style) return;
 
@@ -25,11 +25,13 @@ export default function InfoBubble({ definition, onClose, style }) {
       return value || 0;
     };
 
-    const originalLeft = parsePosition(style.left);
     const originalTop = parsePosition(style.top);
 
-    // Offset by half the bubble size to center it on the click coordinates
-    const centeredLeft = originalLeft - bubbleWidth / 2;
+    // X: Center horizontally in viewport
+    const viewportWidth = document.documentElement.clientWidth;
+    const centeredLeft = (viewportWidth - bubbleWidth) / 2;
+
+    // Y: Offset by half the bubble height to center vertically on click Y coordinate
     const centeredTop = originalTop - bubbleHeight / 2;
 
     setCenteredStyle({
