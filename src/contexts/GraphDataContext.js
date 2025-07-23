@@ -11,6 +11,7 @@ import {
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
 import { useFilter } from './FilterContext'; // Import the filter context
+import { useScript } from './ScriptContext'; // Import the script context for language settings
 
 
 
@@ -22,7 +23,7 @@ export const GraphDataProvider = ({ children }) => {
   const [contextMenu, setContextMenu] = useState(null); // State to manage context menu visibility
 
   const { limit } = useNodeLimit();
-
+  const { L1, L2 } = useScript(); // Get current language settings
   const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
 
   // Function to filter Word nodes, Form nodes, and remove associated links
@@ -237,11 +238,11 @@ const handleContextMenuAction = async (action, node) => {
   try {
     switch (action) {
       case 'expand':
-        // Reuse existing expand logic based on node type
+        // Reuse existing expand logic based on node type using current language settings
         if (node.type === 'root') {
-          await handleRootNodeClick(node, 'arabic', 'english', 'lexicon', null, { x: 0, y: 0 });
+          await handleRootNodeClick(node, L1, L2, 'lexicon', null, { x: 0, y: 0 });
         } else if (node.type === 'form') {
-          await handleFormNodeClick(node, 'arabic', 'english', 'lexicon', null, { x: 0, y: 0 });
+          await handleFormNodeClick(node, L1, L2, 'lexicon', null, { x: 0, y: 0 });
         }
         break;
       
