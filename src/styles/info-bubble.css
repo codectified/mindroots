@@ -52,18 +52,13 @@
 /* Mobile styles for larger info bubble */
 @media (max-width: 768px) {
   .info-bubble {
-    width: 90vw !important;
-    height: 60vh !important;
+    width: 90vw;
+    height: 60vh;
     max-width: 90vw;
     max-height: 60vh;
     min-width: 280px;
     min-height: 150px;
     padding: 15px;
-    /* Center the bubble on mobile */
-    left: 50% !important;
-    top: 50% !important;
-    transform: translate(-50%, -50%) !important;
-    position: fixed !important;
     resize: none; /* Disable resize on mobile for better UX */
   }
   
