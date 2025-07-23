@@ -1,0 +1,111 @@
+/* node-context-menu.css - Styled consistently with InfoBubble */
+.node-context-menu {
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 10px;
+  width: 200px;
+  min-height: 120px;
+  max-width: 90vw;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  font-family: 'Noto Serif', serif;
+}
+
+.node-context-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+}
+
+.node-context-menu-title {
+  font-weight: bold;
+  font-size: 14px;
+  color: #333;
+  text-transform: capitalize;
+}
+
+.context-menu-close-button {
+  position: absolute;
+  top: -10px;
+  right: -5px;
+  background: none;
+  border: none;
+  font-size: 18px;
+  cursor: pointer;
+  color: #333;
+  font-weight: bold;
+  z-index: 1001;
+  touch-action: manipulation;
+}
+
+.context-menu-close-button:focus {
+  outline: none;
+}
+
+.context-menu-close-button:hover,
+.context-menu-close-button:active {
+  color: #e74c3c;
+  transform: scale(1.2);
+}
+
+.node-context-menu-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.context-menu-option {
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-family: 'Noto Serif', serif;
+  font-size: 14px;
+  color: #333;
+  text-align: left;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.context-menu-option:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.context-menu-option:active {
+  background-color: #dee2e6;
+  transform: translateY(1px);
+}
+
+.context-menu-option:focus {
+  outline: none;
+  border-color: #666;
+  box-shadow: 0 0 0 2px rgba(102, 102, 102, 0.2);
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+  .node-context-menu {
+    width: 85vw;
+    max-width: 85vw;
+    min-width: 250px;
+    padding: 15px;
+  }
+  
+  .context-menu-option {
+    padding: 12px 15px;
+    font-size: 16px;
+    min-height: 44px; /* Touch-friendly size */
+  }
+  
+  .context-menu-close-button {
+    font-size: 22px;
+    top: -12px;
+    right: -8px;
+  }
+}

@@ -1,5 +1,8 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useWordShade } from '../../contexts/WordShadeContext';
+import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useGraphData } from '../../contexts/GraphDataContext';
+import NodeContextMenu from './NodeContextMenu';
 import * as d3 from 'd3';
 
 const GraphVisualization = ({ data, onNodeClick }) => {
@@ -7,10 +10,34 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const containerRef = useRef();
   const [simulation, setSimulation] = useState(null);
 
-  // Wrap onNodeClick in useCallback to prevent it from changing on every render
-  const handleNodeClick = useCallback((event, d) => onNodeClick(d, event), [onNodeClick]);
-
+  const { isAdvancedMode } = useAdvancedMode();
+  const { contextMenu, setContextMenu, handleContextMenuAction } = useGraphData();
   const { wordShadeMode } = useWordShade();
+
+  // Enhanced click handler that checks for advanced mode
+  const handleNodeClick = useCallback((event, d) => {
+    if (isAdvancedMode) {
+      // In advanced mode, show context menu
+      const position = {
+        x: event.pageX,
+        y: event.pageY
+      };
+      setContextMenu({ node: d, position });
+    } else {
+      // In guided mode, use original behavior
+      onNodeClick(d, event);
+    }
+  }, [isAdvancedMode, onNodeClick, setContextMenu]);
+
+  // Context menu action handler
+  const handleMenuAction = useCallback((action, node) => {
+    handleContextMenuAction(action, node);
+  }, [handleContextMenuAction]);
+
+  // Close context menu handler
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, [setContextMenu]);
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
@@ -202,6 +229,16 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%' }}>
       <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
+      
+      {/* Render context menu in advanced mode */}
+      {contextMenu && (
+        <NodeContextMenu
+          node={contextMenu.node}
+          position={contextMenu.position}
+          onClose={handleCloseContextMenu}
+          onAction={handleMenuAction}
+        />
+      )}
     </div>
   );
 };

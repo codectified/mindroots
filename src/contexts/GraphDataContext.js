@@ -5,7 +5,9 @@ import {
   fetchRootByWord, 
   fetchLaneEntry, 
   fetchWordsByFormWithLexicon, 
-  fetchWordsByFormWithCorpus 
+  fetchWordsByFormWithCorpus,
+  summarizeNodeContent,
+  reportNodeIssue
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
 import { useFilter } from './FilterContext'; // Import the filter context
@@ -17,6 +19,7 @@ const GraphDataContext = createContext();
 export const GraphDataProvider = ({ children }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
+  const [contextMenu, setContextMenu] = useState(null); // State to manage context menu visibility
 
   const { limit } = useNodeLimit();
 
@@ -229,6 +232,70 @@ const handleNodeClick = async (
   }
 };
 
+// Context menu action handlers
+const handleContextMenuAction = async (action, node) => {
+  try {
+    switch (action) {
+      case 'expand':
+        // Reuse existing expand logic based on node type
+        if (node.type === 'root') {
+          await handleRootNodeClick(node, 'arabic', 'english', 'lexicon', null, { x: 0, y: 0 });
+        } else if (node.type === 'form') {
+          await handleFormNodeClick(node, 'arabic', 'english', 'lexicon', null, { x: 0, y: 0 });
+        }
+        break;
+      
+      case 'collapse':
+        // Remove child nodes connected to this node
+        const nodeIdsToRemove = new Set();
+        
+        // Find all nodes connected to the clicked node
+        graphData.links.forEach(link => {
+          const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+          const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+          
+          if (sourceId === node.id) {
+            nodeIdsToRemove.add(targetId);
+          }
+        });
+        
+        // Remove the identified nodes and their links
+        setGraphData(prev => ({
+          nodes: prev.nodes.filter(n => !nodeIdsToRemove.has(n.id)),
+          links: prev.links.filter(link => {
+            const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+            const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+            return !nodeIdsToRemove.has(sourceId) && !nodeIdsToRemove.has(targetId);
+          })
+        }));
+        break;
+      
+      case 'summarize':
+        const nodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        const summary = await summarizeNodeContent(nodeId, node.type);
+        setInfoBubble({
+          definition: summary,
+          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        });
+        break;
+      
+      case 'report':
+        const reportNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        const reportResult = await reportNodeIssue(reportNodeId, node.type, 'User reported issue via context menu');
+        setInfoBubble({
+          definition: reportResult,
+          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        });
+        break;
+      
+      default:
+        console.warn('Unknown action:', action);
+    }
+  } catch (error) {
+    console.error('Error handling context menu action:', error);
+  }
+};
+
   return (
     <GraphDataContext.Provider value={{
       graphData: filteredGraphData,
@@ -238,7 +305,10 @@ const handleNodeClick = async (
       handleFormNodeClick,
       handleWordNodeClick,
       infoBubble,
-      setInfoBubble
+      setInfoBubble,
+      contextMenu,
+      setContextMenu,
+      handleContextMenuAction
     }}>
       {children}
     </GraphDataContext.Provider>
