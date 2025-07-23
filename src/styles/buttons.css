@@ -174,11 +174,51 @@ button:hover {
   align-items: center;
 }
 
-/* Each “label + select” group stays on one line */
+/* Each "label + select" group stays on one line */
 .selector-pair {
   display: flex;
   align-items: center;
-  gap: 5px;         /* same as inline gap: ’5px’ */
+  gap: 5px;         /* same as inline gap: '5px' */
   white-space: nowrap;
+}
+
+/* ============================================
+   Mobile Responsive Styles for Dropdowns
+   ============================================ */
+@media (max-width: 768px) {
+  .button-row {
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+  }
+  
+  .button-row > div {
+    flex: 1;
+    min-width: 0;
+    max-width: 48%;
+  }
+  
+  .uniform-select {
+    min-width: 80px;
+    width: 100%;
+    font-size: 14px;
+    padding: 4px 6px;
+  }
+  
+  .button-row label {
+    font-size: 14px;
+    margin-right: 5px;
+  }
+}
+
+@media (max-width: 480px) {
+  .button-row > div {
+    max-width: 100%;
+    margin-bottom: 5px;
+  }
+  
+  .uniform-select {
+    min-width: 100px;
+  }
 }
 
