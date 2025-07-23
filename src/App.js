@@ -24,6 +24,7 @@ import { HighlightProvider } from './contexts/HighlightContext';
 import { SettingsProvider } from './contexts/SettingsContext';
 import { WordShadeProvider } from './contexts/WordShadeContext';
 import { DisplayModeProvider } from './contexts/DisplayModeContext';
+import { AdvancedModeProvider } from './contexts/AdvancedModeContext';
 
 import './styles/base.css';
 import './styles/buttons.css';
@@ -33,6 +34,7 @@ import './styles/icon-grid.css';
 import './styles/menu.css';
 import './styles/language-toggle.css';
 import './styles/info-bubble.css';
+import './styles/node-context-menu.css';
 import './styles/markdown.css';
 import './styles/content.css';
 import './styles/media-queries.css';
@@ -40,6 +42,7 @@ import LisanLab from './components/staticPages/LisanLab';
 
 const App = () => {
   return (
+    <AdvancedModeProvider>
     <DisplayModeProvider>
     <SettingsProvider>
     <TextLayoutProvider>
@@ -101,7 +104,7 @@ const App = () => {
     </TextLayoutProvider>
     </SettingsProvider>
     </DisplayModeProvider>
-
+    </AdvancedModeProvider>
 
   );
 };

@@ -9,6 +9,7 @@ import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import FilterController from '../selectors/FilterController';
 import WordShadeSelector from '../selectors/WordShadeSelector';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
+import ModeSelector from '../selectors/ModeSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const MiniMenu = () => {
@@ -59,6 +60,9 @@ const MiniMenu = () => {
           <div style={{ marginBottom: '10px' }}>
             <LanguageSelector />
           </div>
+
+          {/* Mode Selector */}
+          <ModeSelector />
   
           {/* Text Settings Section */}
           <div
