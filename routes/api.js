@@ -650,6 +650,34 @@ router.get('/hanswehrentry/:wordId', async (req, res) => {
   }
 });
 
+router.get('/corpusitementry/:corpusId/:itemId', async (req, res) => {
+  const { corpusId, itemId } = req.params;
+  const session = req.driver.session();
+  
+  try {
+    const query = `
+      MATCH (item:CorpusItem {corpus_id: toInteger($corpusId), item_id: toInteger($itemId)})
+      RETURN item.entry AS entry
+    `;
+    const result = await session.run(query, { 
+      corpusId: parseInt(corpusId), 
+      itemId: parseInt(itemId) 
+    });
+
+    if (result.records.length > 0) {
+      const entry = result.records[0].get('entry');
+      res.json(entry);
+    } else {
+      res.status(404).json({ error: 'Corpus item entry not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching corpus item entry:', error);
+    res.status(500).json({ error: 'Error fetching corpus item entry' });
+  } finally {
+    await session.close();
+  }
+});
+
 
 router.get('/rootbyletters', async (req, res) => {
   const { r1, r2, r3, L1, L2, searchType } = req.query;

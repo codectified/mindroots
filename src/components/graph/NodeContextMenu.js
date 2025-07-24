@@ -1,9 +1,10 @@
-import React, { useRef, useEffect } from 'react';
+import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import '../../styles/node-context-menu.css';
 
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
+  const [openSubmenu, setOpenSubmenu] = useState(null);
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -63,6 +64,14 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         break;
       case 'word':
         options.push(
+          { 
+            label: 'Entries', 
+            action: 'entries',
+            submenu: [
+              { label: 'Lane', action: 'lane-entry' },
+              { label: 'Hans Wehr', action: 'hanswehr-entry' }
+            ]
+          },
           { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
         );
@@ -77,6 +86,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         break;
       case 'name': // corpus item nodes
         options.push(
+          { label: 'Entry', action: 'corpus-item-entry' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
@@ -89,7 +99,18 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     return options;
   };
 
-  const handleOptionClick = (action) => {
+  const handleOptionClick = (option) => {
+    if (option.submenu) {
+      // Toggle submenu visibility
+      setOpenSubmenu(openSubmenu === option.action ? null : option.action);
+    } else {
+      // Execute action and close menu
+      onAction(option.action, node);
+      onClose();
+    }
+  };
+
+  const handleSubmenuClick = (action) => {
     onAction(action, node);
     onClose();
   };
@@ -110,13 +131,30 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
       </div>
       <div className="node-context-menu-content">
         {menuOptions.map((option, index) => (
-          <button
-            key={index}
-            className="context-menu-option"
-            onClick={() => handleOptionClick(option.action)}
-          >
-            {option.label}
-          </button>
+          <div key={index} className="context-menu-item">
+            <button
+              className={`context-menu-option ${option.submenu ? 'has-submenu' : ''}`}
+              onClick={() => handleOptionClick(option)}
+            >
+              {option.label}
+              {option.submenu && <span className="submenu-arrow">▶</span>}
+            </button>
+            
+            {/* Render submenu if it exists and is open */}
+            {option.submenu && openSubmenu === option.action && (
+              <div className="context-submenu">
+                {option.submenu.map((subOption, subIndex) => (
+                  <button
+                    key={subIndex}
+                    className="context-submenu-option"
+                    onClick={() => handleSubmenuClick(subOption.action)}
+                  >
+                    {subOption.label}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         ))}
       </div>
     </div>

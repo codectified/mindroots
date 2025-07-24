@@ -59,6 +59,10 @@
   gap: 8px;
 }
 
+.context-menu-item {
+  position: relative;
+}
+
 .context-menu-option {
   background-color: #f8f9fa;
   border: 1px solid #ddd;
@@ -86,6 +90,56 @@
   outline: none;
   border-color: #666;
   box-shadow: 0 0 0 2px rgba(102, 102, 102, 0.2);
+}
+
+.context-menu-option.has-submenu {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.submenu-arrow {
+  font-size: 12px;
+  color: #666;
+  margin-left: 8px;
+}
+
+.context-submenu {
+  position: absolute;
+  left: 100%;
+  top: 0;
+  min-width: 140px;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
+  padding: 4px;
+  z-index: 1001;
+}
+
+.context-submenu-option {
+  display: block;
+  width: 100%;
+  background-color: #f8f9fa;
+  border: 1px solid #ddd;
+  border-radius: 3px;
+  padding: 6px 10px;
+  margin: 2px 0;
+  cursor: pointer;
+  font-family: 'Noto Serif', serif;
+  font-size: 13px;
+  color: #333;
+  text-align: left;
+  transition: background-color 0.2s;
+}
+
+.context-submenu-option:hover {
+  background-color: #e9ecef;
+  border-color: #adb5bd;
+}
+
+.context-submenu-option:active {
+  background-color: #dee2e6;
 }
 
 /* Mobile styles */

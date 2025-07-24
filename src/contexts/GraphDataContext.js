@@ -4,6 +4,8 @@ import {
   fetchWordsByRootWithCorpus, 
   fetchRootByWord, 
   fetchLaneEntry, 
+  fetchHansWehrEntry,
+  fetchCorpusItemEntry,
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus,
   summarizeNodeContent,
@@ -276,6 +278,34 @@ const handleContextMenuAction = async (action, node) => {
         const summary = await summarizeNodeContent(nodeId, node.type);
         setInfoBubble({
           definition: summary,
+          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        });
+        break;
+      
+      case 'lane-entry':
+        const laneWordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+        const laneEntry = await fetchLaneEntry(laneWordId);
+        setInfoBubble({
+          definition: laneEntry,
+          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        });
+        break;
+      
+      case 'hanswehr-entry':
+        const hansWehrWordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+        const hansWehrEntry = await fetchHansWehrEntry(hansWehrWordId);
+        setInfoBubble({
+          definition: hansWehrEntry,
+          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+        });
+        break;
+      
+      case 'corpus-item-entry':
+        const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+        const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
+        const corpusItemEntry = await fetchCorpusItemEntry(corpusId, corpusItemId);
+        setInfoBubble({
+          definition: corpusItemEntry,
           position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
         });
         break;
