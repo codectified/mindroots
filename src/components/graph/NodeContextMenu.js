@@ -1,10 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { useGraphData } from '../../contexts/GraphDataContext';
 import '../../styles/node-context-menu.css';
 
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
+  const { corpusItemEntries } = useGraphData();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -85,10 +87,16 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         );
         break;
       case 'name': // corpus item nodes
-        options.push(
-          { label: 'Entry', action: 'corpus-item-entry' },
-          { label: 'Report Issue', action: 'report' }
-        );
+        // Check if entry exists for this corpus item
+        const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+        const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
+        const entryKey = `${corpusId}_${corpusItemId}`;
+        const hasEntry = corpusItemEntries[entryKey] !== null && corpusItemEntries[entryKey] !== undefined;
+        
+        if (hasEntry) {
+          options.push({ label: 'Entry', action: 'corpus-item-entry' });
+        }
+        options.push({ label: 'Report Issue', action: 'report' });
         break;
       default:
         options.push(
