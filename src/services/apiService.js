@@ -214,6 +214,16 @@ export const fetchHansWehrEntry = async (wordId) => {
   }
 };
 
+export const fetchCorpusItemEntry = async (corpusId, itemId) => {
+  try {
+    const response = await api.get(`/corpusitementry/${corpusId}/${itemId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching corpus item entry:', error);
+    throw error;
+  }
+};
+
 // 1. Modify fetchRootByLetters to accept searchType
 export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Triliteral') => {
   try {
