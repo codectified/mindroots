@@ -23,6 +23,7 @@ export const GraphDataProvider = ({ children }) => {
   const [graphData, setGraphData] = useState({ nodes: [], links: [] });
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
   const [contextMenu, setContextMenu] = useState(null); // State to manage context menu visibility
+  const [corpusItemEntries, setCorpusItemEntries] = useState({}); // Cache for corpus item entries
 
   const { limit } = useNodeLimit();
   const { L1, L2 } = useScript(); // Get current language settings
@@ -235,6 +236,41 @@ const handleNodeClick = async (
   }
 };
 
+// Function to prefetch corpus item entry when context menu is opened
+const prefetchCorpusItemEntry = async (node) => {
+  if (node.type === 'name') { // corpus item nodes have type 'name'
+    const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+    const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
+    const entryKey = `${corpusId}_${corpusItemId}`;
+    
+    // Only fetch if not already cached
+    if (!corpusItemEntries[entryKey]) {
+      try {
+        const entry = await fetchCorpusItemEntry(corpusId, corpusItemId);
+        setCorpusItemEntries(prev => ({
+          ...prev,
+          [entryKey]: entry
+        }));
+      } catch (error) {
+        // If entry doesn't exist or fails to fetch, cache null to avoid repeated attempts
+        console.log('No entry found for corpus item:', entryKey);
+        setCorpusItemEntries(prev => ({
+          ...prev,
+          [entryKey]: null
+        }));
+      }
+    }
+  }
+};
+
+// Enhanced setContextMenu function that prefetches entry data
+const setContextMenuWithPrefetch = async (contextMenuData) => {
+  setContextMenu(contextMenuData);
+  if (contextMenuData?.node) {
+    await prefetchCorpusItemEntry(contextMenuData.node);
+  }
+};
+
 // Context menu action handlers
 const handleContextMenuAction = async (action, node) => {
   try {
@@ -303,11 +339,15 @@ const handleContextMenuAction = async (action, node) => {
       case 'corpus-item-entry':
         const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
         const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
-        const corpusItemEntry = await fetchCorpusItemEntry(corpusId, corpusItemId);
-        setInfoBubble({
-          definition: corpusItemEntry,
-          position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
-        });
+        const entryKey = `${corpusId}_${corpusItemId}`;
+        const cachedEntry = corpusItemEntries[entryKey];
+        
+        if (cachedEntry) {
+          setInfoBubble({
+            definition: cachedEntry,
+            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+          });
+        }
         break;
       
       case 'report':
@@ -338,7 +378,8 @@ const handleContextMenuAction = async (action, node) => {
       infoBubble,
       setInfoBubble,
       contextMenu,
-      setContextMenu,
+      setContextMenu: setContextMenuWithPrefetch,
+      corpusItemEntries,
       handleContextMenuAction
     }}>
       {children}
