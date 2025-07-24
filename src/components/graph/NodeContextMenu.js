@@ -6,7 +6,7 @@ import '../../styles/node-context-menu.css';
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
-  const { corpusItemEntries } = useGraphData();
+  const { corpusItemEntries, rootEntries } = useGraphData();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -57,9 +57,20 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
 
     switch (nodeType) {
       case 'root':
+        // Check if entry exists for this root
+        const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+        const hasRootEntry = rootEntries[rootId] !== null && rootEntries[rootId] !== undefined;
+        
         options.push(
           { label: 'Expand', action: 'expand' },
-          { label: 'Collapse', action: 'collapse' },
+          { label: 'Collapse', action: 'collapse' }
+        );
+        
+        if (hasRootEntry) {
+          options.push({ label: 'Entry', action: 'root-entry' });
+        }
+        
+        options.push(
           { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
         );

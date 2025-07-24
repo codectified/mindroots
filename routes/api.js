@@ -678,6 +678,31 @@ router.get('/corpusitementry/:corpusId/:itemId', async (req, res) => {
   }
 });
 
+router.get('/rootentry/:rootId', async (req, res) => {
+  const { rootId } = req.params;
+  const session = req.driver.session();
+  
+  try {
+    const query = `
+      MATCH (root:Root {root_id: toInteger($rootId)})
+      RETURN root.entry AS entry
+    `;
+    const result = await session.run(query, { rootId: parseInt(rootId) });
+
+    if (result.records.length > 0) {
+      const entry = result.records[0].get('entry');
+      res.json(entry);
+    } else {
+      res.status(404).json({ error: 'Root entry not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching root entry:', error);
+    res.status(500).json({ error: 'Error fetching root entry' });
+  } finally {
+    await session.close();
+  }
+});
+
 
 router.get('/rootbyletters', async (req, res) => {
   const { r1, r2, r3, L1, L2, searchType } = req.query;

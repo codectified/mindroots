@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-// // Create an Axios instance with the base URL for the API
-const api = axios.create({
-  baseURL: 'https://theoption.life/api',
-});
-
+// // // Create an Axios instance with the base URL for the API
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: 'https://theoption.life/api',
 // });
+
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -220,6 +220,16 @@ export const fetchCorpusItemEntry = async (corpusId, itemId) => {
     return response.data;
   } catch (error) {
     console.error('Error fetching corpus item entry:', error);
+    throw error;
+  }
+};
+
+export const fetchRootEntry = async (rootId) => {
+  try {
+    const response = await api.get(`/rootentry/${rootId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching root entry:', error);
     throw error;
   }
 };
