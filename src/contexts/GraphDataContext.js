@@ -6,6 +6,7 @@ import {
   fetchLaneEntry, 
   fetchHansWehrEntry,
   fetchCorpusItemEntry,
+  fetchRootEntry,
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus,
   summarizeNodeContent,
@@ -24,6 +25,7 @@ export const GraphDataProvider = ({ children }) => {
   const [infoBubble, setInfoBubble] = useState(null); // State to manage info bubble visibility
   const [contextMenu, setContextMenu] = useState(null); // State to manage context menu visibility
   const [corpusItemEntries, setCorpusItemEntries] = useState({}); // Cache for corpus item entries
+  const [rootEntries, setRootEntries] = useState({}); // Cache for root entries
 
   const { limit } = useNodeLimit();
   const { L1, L2 } = useScript(); // Get current language settings
@@ -263,11 +265,37 @@ const prefetchCorpusItemEntry = async (node) => {
   }
 };
 
+// Function to prefetch root entry when context menu is opened
+const prefetchRootEntry = async (node) => {
+  if (node.type === 'root') {
+    const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+    
+    // Only fetch if not already cached
+    if (!rootEntries[rootId]) {
+      try {
+        const entry = await fetchRootEntry(rootId);
+        setRootEntries(prev => ({
+          ...prev,
+          [rootId]: entry
+        }));
+      } catch (error) {
+        // If entry doesn't exist or fails to fetch, cache null to avoid repeated attempts
+        console.log('No entry found for root:', rootId);
+        setRootEntries(prev => ({
+          ...prev,
+          [rootId]: null
+        }));
+      }
+    }
+  }
+};
+
 // Enhanced setContextMenu function that prefetches entry data
 const setContextMenuWithPrefetch = async (contextMenuData) => {
   setContextMenu(contextMenuData);
   if (contextMenuData?.node) {
     await prefetchCorpusItemEntry(contextMenuData.node);
+    await prefetchRootEntry(contextMenuData.node);
   }
 };
 
@@ -350,6 +378,18 @@ const handleContextMenuAction = async (action, node) => {
         }
         break;
       
+      case 'root-entry':
+        const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+        const cachedRootEntry = rootEntries[rootId];
+        
+        if (cachedRootEntry) {
+          setInfoBubble({
+            definition: cachedRootEntry,
+            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+          });
+        }
+        break;
+      
       case 'report':
         const reportNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
         const reportResult = await reportNodeIssue(reportNodeId, node.type, 'User reported issue via context menu');
@@ -380,6 +420,7 @@ const handleContextMenuAction = async (action, node) => {
       contextMenu,
       setContextMenu: setContextMenuWithPrefetch,
       corpusItemEntries,
+      rootEntries,
       handleContextMenuAction
     }}>
       {children}
