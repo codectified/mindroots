@@ -28,8 +28,11 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
 
     // Get viewport dimensions
     const viewportWidth = document.documentElement.clientWidth;
-    const menuWidth = 200; // Approximate menu width
-    const menuHeight = 150; // Approximate menu height
+    const isMobile = viewportWidth <= 768;
+    
+    // Use responsive dimensions
+    const menuWidth = isMobile ? 240 : 200;
+    const menuHeight = isMobile ? 200 : 150; // Account for more compact mobile layout
 
     // X: Center horizontally in viewport (like InfoBubble)
     const centeredLeft = (viewportWidth - menuWidth) / 2;
@@ -167,6 +170,21 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     onClose();
   };
 
+  // Helper function to determine submenu positioning
+  const getSubmenuClass = () => {
+    if (!menuRef.current || !position) return '';
+    
+    const menuRect = menuRef.current.getBoundingClientRect();
+    const viewportWidth = window.innerWidth;
+    const isMobile = viewportWidth <= 768;
+    const submenuWidth = isMobile ? 120 : 120; // Consistent submenu width
+    
+    // Check if submenu would overflow to the right
+    const wouldOverflow = menuRect.right + submenuWidth > viewportWidth - 10;
+    
+    return wouldOverflow ? 'left-aligned' : '';
+  };
+
   const menuOptions = getMenuOptions();
 
   const menu = (
@@ -191,7 +209,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
             
             {/* Render submenu if it exists and is open */}
             {option.submenu && openSubmenu === option.action && (
-              <div className="context-submenu">
+              <div className={`context-submenu ${getSubmenuClass()}`}>
                 {option.submenu.map((subOption, subIndex) => (
                   <button
                     key={subIndex}

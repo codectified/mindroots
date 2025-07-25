@@ -54,6 +54,7 @@
 }
 
 .context-menu-option {
+  width: 100%;
   background-color: #f8f9fa;
   border: 1px solid #ddd;
   border-radius: 4px;
@@ -62,7 +63,7 @@
   font-family: 'Noto Serif', serif;
   font-size: 14px;
   color: #333;
-  text-align: left;
+  text-align: center;
   transition: background-color 0.2s, border-color 0.2s;
 }
 
@@ -96,15 +97,20 @@
 
 .context-submenu {
   position: absolute;
-  left: 100%;
+  left: calc(100% - 5px);
   top: 0;
-  min-width: 140px;
+  min-width: 120px;
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 4px;
   box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.15);
   padding: 4px;
   z-index: 1001;
+}
+
+.context-submenu.left-aligned {
+  left: auto;
+  right: calc(100% - 5px);
 }
 
 .context-submenu-option {
@@ -119,7 +125,7 @@
   font-family: 'Noto Serif', serif;
   font-size: 13px;
   color: #333;
-  text-align: left;
+  text-align: center;
   transition: background-color 0.2s;
 }
 
@@ -135,21 +141,34 @@
 /* Mobile styles */
 @media (max-width: 768px) {
   .node-context-menu {
-    width: 85vw;
-    max-width: 85vw;
-    min-width: 250px;
-    padding: 15px;
+    width: 240px;
+    max-width: 80vw;
+    max-height: 70vh;
+    padding: 12px;
+    min-height: auto;
   }
   
   .context-menu-option {
-    padding: 12px 15px;
-    font-size: 16px;
-    min-height: 44px; /* Touch-friendly size */
+    padding: 10px 12px;
+    font-size: 15px;
+    min-height: 40px; /* Touch-friendly but more compact */
   }
   
   .context-menu-close-button {
-    font-size: 22px;
-    top: -12px;
-    right: -8px;
+    width: 24px;
+    height: 24px;
+    font-size: 18px;
+    top: 6px;
+    right: 6px;
+  }
+  
+  .context-submenu {
+    min-width: 120px;
+    max-width: 60vw;
+  }
+  
+  .context-submenu-option {
+    padding: 8px 10px;
+    font-size: 14px;
   }
 }
