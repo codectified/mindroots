@@ -6,7 +6,7 @@ import '../../styles/node-context-menu.css';
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
-  const { corpusItemEntries, rootEntries, graphData } = useGraphData();
+  const { corpusItemEntries, rootEntries } = useGraphData();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -51,30 +51,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     };
   };
 
-  // Helper function to determine if a node is currently expanded
-  const isNodeExpanded = (node) => {
-    if (!node || !graphData) return false;
-    
-    // For root nodes, check if there are any word nodes with matching root_id
-    if (node.type === 'root') {
-      const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
-      return graphData.nodes.some(n => 
-        n.type === 'word' && 
-        (n.root_id?.low === rootId || n.root_id === rootId)
-      );
-    }
-    
-    // For form nodes, check if there are any word nodes with matching form_id
-    if (node.type === 'form') {
-      const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
-      return graphData.nodes.some(n => 
-        n.type === 'word' && 
-        (n.form_id?.low === formId || n.form_id === formId)
-      );
-    }
-    
-    return false;
-  };
 
   // Get menu options based on node type
   const getMenuOptions = () => {
@@ -88,13 +64,11 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         // Check if entry exists for this root
         const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
         const hasRootEntry = rootEntries[rootId] !== null && rootEntries[rootId] !== undefined;
-        const isExpanded = isNodeExpanded(node);
         
-        // Add expand/collapse toggle
-        options.push({
-          label: isExpanded ? 'Collapse' : 'Expand',
-          action: isExpanded ? 'collapse' : 'expand'
-        });
+        options.push(
+          { label: 'Expand', action: 'expand' },
+          { label: 'Collapse', action: 'collapse' }
+        );
         
         if (hasRootEntry) {
           options.push({ label: 'Entry', action: 'root-entry' });
@@ -120,15 +94,9 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         );
         break;
       case 'form':
-        const isFormExpanded = isNodeExpanded(node);
-        
-        // Add expand/collapse toggle
-        options.push({
-          label: isFormExpanded ? 'Collapse' : 'Expand',
-          action: isFormExpanded ? 'collapse' : 'expand'
-        });
-        
         options.push(
+          { label: 'Expand', action: 'expand' },
+          { label: 'Collapse', action: 'collapse' },
           { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
         );
