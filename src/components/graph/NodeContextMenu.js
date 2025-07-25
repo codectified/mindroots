@@ -6,7 +6,7 @@ import '../../styles/node-context-menu.css';
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
-  const { corpusItemEntries, rootEntries } = useGraphData();
+  const { corpusItemEntries, rootEntries, graphData } = useGraphData();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -22,7 +22,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     };
   }, [onClose]);
 
-  // Calculate centered positioning similar to InfoBubble
+  // Calculate positioning to match InfoBubble behavior
   const getCenteredStyle = () => {
     if (!position) return {};
 
@@ -31,10 +31,10 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     const menuWidth = 200; // Approximate menu width
     const menuHeight = 150; // Approximate menu height
 
-    // X: Center horizontally in viewport
+    // X: Center horizontally in viewport (like InfoBubble)
     const centeredLeft = (viewportWidth - menuWidth) / 2;
 
-    // Y: Center vertically on click Y coordinate, offset by half menu height
+    // Y: Offset by half menu height to center on click Y coordinate (like InfoBubble)
     const centeredTop = position.y - menuHeight / 2;
 
     // Keep within viewport bounds
@@ -46,6 +46,31 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
       left: `${finalLeft}px`,
       top: `${finalTop}px`
     };
+  };
+
+  // Helper function to determine if a node is currently expanded
+  const isNodeExpanded = (node) => {
+    if (!node || !graphData) return false;
+    
+    // For root nodes, check if there are any word nodes with matching root_id
+    if (node.type === 'root') {
+      const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+      return graphData.nodes.some(n => 
+        n.type === 'word' && 
+        (n.root_id?.low === rootId || n.root_id === rootId)
+      );
+    }
+    
+    // For form nodes, check if there are any word nodes with matching form_id
+    if (node.type === 'form') {
+      const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+      return graphData.nodes.some(n => 
+        n.type === 'word' && 
+        (n.form_id?.low === formId || n.form_id === formId)
+      );
+    }
+    
+    return false;
   };
 
   // Get menu options based on node type
@@ -60,11 +85,13 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         // Check if entry exists for this root
         const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
         const hasRootEntry = rootEntries[rootId] !== null && rootEntries[rootId] !== undefined;
+        const isExpanded = isNodeExpanded(node);
         
-        options.push(
-          { label: 'Expand', action: 'expand' },
-          { label: 'Collapse', action: 'collapse' }
-        );
+        // Add expand/collapse toggle
+        options.push({
+          label: isExpanded ? 'Collapse' : 'Expand',
+          action: isExpanded ? 'collapse' : 'expand'
+        });
         
         if (hasRootEntry) {
           options.push({ label: 'Entry', action: 'root-entry' });
@@ -90,9 +117,15 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         );
         break;
       case 'form':
+        const isFormExpanded = isNodeExpanded(node);
+        
+        // Add expand/collapse toggle
+        options.push({
+          label: isFormExpanded ? 'Collapse' : 'Expand',
+          action: isFormExpanded ? 'collapse' : 'expand'
+        });
+        
         options.push(
-          { label: 'Expand', action: 'expand' },
-          { label: 'Collapse', action: 'collapse' },
           { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
         );
@@ -138,16 +171,13 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
 
   const menu = (
     <div ref={menuRef} className="node-context-menu" style={getCenteredStyle()}>
-      <div className="node-context-menu-header">
-        <span className="node-context-menu-title">{node?.type} Node</span>
-        <button
-          className="context-menu-close-button"
-          onClick={onClose}
-          aria-label="Close Context Menu"
-        >
-          ×
-        </button>
-      </div>
+      <button
+        className="context-menu-close-button"
+        onClick={onClose}
+        aria-label="Close Context Menu"
+      >
+        ×
+      </button>
       <div className="node-context-menu-content">
         {menuOptions.map((option, index) => (
           <div key={index} className="context-menu-item">
