@@ -13,34 +13,24 @@
   font-family: 'Noto Serif', serif;
 }
 
-.node-context-menu-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #eee;
-}
-
-.node-context-menu-title {
-  font-weight: bold;
-  font-size: 14px;
-  color: #333;
-  text-transform: capitalize;
-}
-
 .context-menu-close-button {
   position: absolute;
-  top: -10px;
-  right: -5px;
+  top: 5px;
+  right: 5px;
+  width: 20px;
+  height: 20px;
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: 16px;
   cursor: pointer;
-  color: #333;
+  color: #666;
   font-weight: bold;
   z-index: 1001;
   touch-action: manipulation;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 3px;
 }
 
 .context-menu-close-button:focus {
@@ -50,7 +40,7 @@
 .context-menu-close-button:hover,
 .context-menu-close-button:active {
   color: #e74c3c;
-  transform: scale(1.2);
+  background-color: #f8f9fa;
 }
 
 .node-context-menu-content {
