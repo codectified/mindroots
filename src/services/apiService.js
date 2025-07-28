@@ -234,6 +234,28 @@ export const fetchRootEntry = async (rootId) => {
   }
 };
 
+// New consolidated expand function
+export const expandGraph = async (sourceType, sourceId, targetType, options = {}) => {
+  try {
+    const params = new URLSearchParams();
+    
+    // Add query parameters
+    if (options.L1) params.append('L1', options.L1);
+    if (options.L2) params.append('L2', options.L2);
+    if (options.corpus_id) params.append('corpus_id', options.corpus_id);
+    if (options.limit) params.append('limit', options.limit);
+    
+    const queryString = params.toString();
+    const url = `/expand/${sourceType}/${sourceId}/${targetType}${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await api.get(url);
+    return response.data; // Returns { nodes, links }
+  } catch (error) {
+    console.error('Error expanding graph:', error);
+    throw error;
+  }
+};
+
 // 1. Modify fetchRootByLetters to accept searchType
 export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Triliteral') => {
   try {

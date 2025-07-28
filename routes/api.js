@@ -165,6 +165,7 @@ router.get('/list/surah_aya_count', async (req, res) => {
 });
 
 
+// DEPRECATED: Use /expand/corpusitem/:itemId/word instead
 // corpus item graph
 router.get('/words_by_corpus_item/:itemId', async (req, res) => {
   const { itemId } = req.params;
@@ -357,30 +358,264 @@ router.get('/list/corpora', async (req, res) => {
 });
 
 
-// Fetch words by form ID with lexicon context (no filter)
-router.get('/form/:formId/lexicon', async (req, res) => {
-  const { formId } = req.params;
-  const { L1, L2, limit = 25 } = req.query; // Default limit to 100 if not provided
+// Consolidated expansion route
+router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
+  const { sourceType, sourceId, targetType } = req.params;
+  const { L1, L2, corpus_id, limit = 25 } = req.query;
+  
+  console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, limitType: typeof limit });
+  
   const session = req.driver.session();
+  
   try {
-    let query = `
-      MATCH (form:Form {form_id: toInteger($formId)})<-[:HAS_FORM]-(word:Word)
-      RETURN word
-      LIMIT toInteger($limit)
-    `;
-    const result = await session.run(query, { formId, limit });
-    const words = result.records.map(record => convertIntegers(record.get('word').properties));
-    res.json(words.map(word => ({
-      ...word,
-      label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`
-    })));
+    let query = '';
+    let params = { sourceId, limit };
+    
+    // Add corpus_id to params if provided
+    if (corpus_id) {
+      params.corpus_id = corpus_id;
+    }
+    
+    // Build query based on source and target types
+    if (sourceType === 'root' && targetType === 'word') {
+      if (corpus_id) {
+        query = `
+          MATCH (root:Root {root_id: toInteger($sourceId)})-[:HAS_WORD]->(word:Word)
+          MATCH (corpus:Corpus {corpus_id: toInteger($corpus_id)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word)
+          RETURN root, word
+          LIMIT toInteger($limit)
+        `;
+      } else {
+        query = `
+          MATCH (root:Root {root_id: toInteger($sourceId)})-[:HAS_WORD]->(word:Word)
+          RETURN root, word
+          LIMIT toInteger($limit)
+        `;
+      }
+    } else if (sourceType === 'form' && targetType === 'word') {
+      if (corpus_id) {
+        query = `
+          MATCH (form:Form {form_id: toInteger($sourceId)})<-[:HAS_FORM]-(word:Word)
+          MATCH (corpus:Corpus {corpus_id: toInteger($corpus_id)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word)
+          RETURN form, word
+          LIMIT toInteger($limit)
+        `;
+      } else {
+        query = `
+          MATCH (form:Form {form_id: toInteger($sourceId)})<-[:HAS_FORM]-(word:Word)
+          RETURN form, word
+          LIMIT toInteger($limit)
+        `;
+      }
+    } else if (sourceType === 'corpusitem' && targetType === 'word') {
+      if (!corpus_id) {
+        return res.status(400).json({ error: 'corpus_id is required for corpusitem expansion' });
+      }
+      query = `
+        MATCH (item:CorpusItem {item_id: toInteger($sourceId), corpus_id: toInteger($corpus_id)})
+        OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
+        OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
+        OPTIONAL MATCH (word)<-[:HAS_ROOT]-(root:Root)
+        RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms
+      `;
+    } else {
+      console.error('Invalid source/target combination:', sourceType, targetType);
+      return res.status(400).json({ 
+        error: `Invalid source/target type combination: ${sourceType} -> ${targetType}`,
+        supportedCombinations: ['root->word', 'form->word', 'corpusitem->word']
+      });
+    }
+    
+    console.log('Executing query:', query);
+    console.log('With params:', params);
+    
+    const result = await session.run(query, params);
+    const nodes = [];
+    const links = [];
+    const nodeMap = new Map();
+    
+    console.log(`Query returned ${result.records.length} records`);
+    
+    // Check if no records found - return 404 only if the source node doesn't exist
+    if (result.records.length === 0) {
+      return res.status(404).json({ 
+        error: `No ${sourceType} node found with ID ${sourceId}`,
+        sourceType,
+        sourceId,
+        targetType
+      });
+    }
+    
+    if (sourceType === 'corpusitem' && targetType === 'word') {
+      // Handle corpus item expansion using collect pattern
+      const record = result.records[0];
+      const item = record.get('item')?.properties;
+      const words = record.get('words') || [];
+      const roots = record.get('roots') || [];
+      const forms = record.get('forms') || [];
+      
+      // Add the corpus item node
+      if (item) {
+        const itemNode = {
+          id: `corpusitem_${item.item_id}`,
+          label: L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`,
+          ...convertIntegers(item),
+          type: 'name'
+        };
+        nodes.push(itemNode);
+        nodeMap.set(itemNode.id, itemNode);
+      }
+      
+      // Add word nodes and links
+      words.forEach(wordObj => {
+        if (wordObj && wordObj.properties) {
+          const word = wordObj.properties;
+          const wordNode = {
+            id: `word_${word.word_id}`,
+            label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
+            ...convertIntegers(word),
+            type: 'word'
+          };
+          
+          if (!nodeMap.has(wordNode.id)) {
+            nodes.push(wordNode);
+            nodeMap.set(wordNode.id, wordNode);
+            
+            // Add link from corpus item to word
+            if (item) {
+              links.push({
+                source: `corpusitem_${item.item_id}`,
+                target: `word_${word.word_id}`,
+                type: 'HAS_WORD'
+              });
+            }
+          }
+        }
+      });
+      
+      // Add root nodes and links
+      roots.forEach(rootObj => {
+        if (rootObj && rootObj.properties) {
+          const root = rootObj.properties;
+          const rootNode = {
+            id: `root_${root.root_id}`,
+            label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+            ...convertIntegers(root),
+            type: 'root'
+          };
+          
+          if (!nodeMap.has(rootNode.id)) {
+            nodes.push(rootNode);
+            nodeMap.set(rootNode.id, rootNode);
+          }
+        }
+      });
+      
+      // Add form nodes and links
+      forms.forEach(formObj => {
+        if (formObj && formObj.properties) {
+          const form = formObj.properties;
+          const formNode = {
+            id: `form_${form.form_id}`,
+            label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
+            ...convertIntegers(form),
+            type: 'form'
+          };
+          
+          if (!nodeMap.has(formNode.id)) {
+            nodes.push(formNode);
+            nodeMap.set(formNode.id, formNode);
+          }
+        }
+      });
+      
+      // Add links between words and their roots/forms
+      words.forEach(wordObj => {
+        if (wordObj && wordObj.properties) {
+          const word = wordObj.properties;
+          const wordId = `word_${word.word_id}`;
+          
+          // Find matching roots and forms for this word
+          roots.forEach(rootObj => {
+            if (rootObj && rootObj.properties) {
+              const root = rootObj.properties;
+              links.push({
+                source: `root_${root.root_id}`,
+                target: wordId,
+                type: 'HAS_ROOT'
+              });
+            }
+          });
+          
+          forms.forEach(formObj => {
+            if (formObj && formObj.properties) {
+              const form = formObj.properties;
+              links.push({
+                source: wordId,
+                target: `form_${form.form_id}`,
+                type: 'HAS_FORM'
+              });
+            }
+          });
+        }
+      });
+      
+    } else {
+      // Handle root/form to word expansion
+      result.records.forEach(record => {
+        const sourceNode = record.get(sourceType)?.properties;
+        const targetNode = record.get(targetType)?.properties;
+        
+        if (sourceNode && !nodeMap.has(`${sourceType}_${sourceNode[`${sourceType}_id`]}`)) {
+          const node = {
+            id: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
+            label: L2 === 'off' ? sourceNode[L1] : `${sourceNode[L1]} / ${sourceNode[L2]}`,
+            ...convertIntegers(sourceNode),
+            type: sourceType
+          };
+          nodes.push(node);
+          nodeMap.set(node.id, node);
+        }
+        
+        if (targetNode && !nodeMap.has(`${targetType}_${targetNode[`${targetType}_id`]}`)) {
+          const node = {
+            id: `${targetType}_${targetNode[`${targetType}_id`]}`,
+            label: L2 === 'off' ? targetNode[L1] : `${targetNode[L1]} / ${targetNode[L2]}`,
+            ...convertIntegers(targetNode),
+            type: targetType
+          };
+          nodes.push(node);
+          nodeMap.set(node.id, node);
+          
+          // Create appropriate link based on relationship type
+          if (sourceType === 'root' && targetType === 'word') {
+            links.push({
+              source: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
+              target: `${targetType}_${targetNode[`${targetType}_id`]}`,
+              type: 'HAS_ROOT'
+            });
+          } else if (sourceType === 'form' && targetType === 'word') {
+            links.push({
+              source: `${targetType}_${targetNode[`${targetType}_id`]}`,
+              target: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
+              type: 'HAS_FORM'
+            });
+          }
+        }
+      });
+    }
+    
+    console.log(`Returning ${nodes.length} nodes and ${links.length} links`);
+    res.json({ nodes, links });
   } catch (error) {
-    res.status(500).send('Error fetching words by form');
+    console.error('Error in expand route:', error);
+    res.status(500).json({ error: 'Error expanding graph', details: error.message });
   } finally {
     await session.close();
   }
 });
 
+// DEPRECATED: Use /expand/form/:formId/word instead
 // Fetch words by form and corpus filter
 router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
   const { formId, corpusId } = req.params;
@@ -432,6 +667,7 @@ router.get('/form/:formId/roots', async (req, res) => {
 
 
 
+// DEPRECATED: Use /expand/root/:rootId/word instead
 // Fetch words by root ID with corpus context
 router.get('/root/:rootId/corpus/:corpusId', async (req, res) => {
   const { rootId, corpusId } = req.params;
@@ -495,6 +731,7 @@ router.get('/root/:rootId', async (req, res) => {
   }
 });
 
+// DEPRECATED: Use /expand/root/:rootId/word instead
 // Fetch words by root ID with lexicon context (no filter)
 router.get('/root/:rootId/lexicon', async (req, res) => {
   const { rootId } = req.params;

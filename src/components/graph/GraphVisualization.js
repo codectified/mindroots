@@ -127,15 +127,39 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .alphaDecay(0.02) // Alpha decay for stability
       .velocityDecay(0.992); // Adjusted velocity decay
 
-    // Append links
+    // Append links with enhanced styling based on relationship type
     const link = zoomLayer.append('g')
       .attr('class', 'links')
       .selectAll('line')
       .data(data.links)
       .enter().append('line')
-      .attr('stroke-width', 1.5)
-      .attr('stroke', '#bbb')
-      .attr('opacity', 0.3);
+      .attr('stroke', '#999')
+      .attr('stroke-opacity', 0.6)
+      .attr('stroke-width', d => {
+        // Vary stroke width based on relationship type
+        if (d.type) {
+          switch (d.type) {
+            case 'HAS_WORD': return 2;
+            case 'HAS_ROOT': return 1.5;
+            case 'HAS_FORM': return 1.5;
+            default: return 1;
+          }
+        }
+        return 1.5; // Default for backward compatibility
+      });
+
+    // Add link labels for relationship types (optional, can be toggled)
+    const linkLabels = zoomLayer.append('g')
+      .attr('class', 'link-labels')
+      .selectAll('text')
+      .data(data.links.filter(d => d.type)) // Only show labels for links with types
+      .enter().append('text')
+      .attr('font-size', '8px')
+      .attr('fill', '#666')
+      .attr('text-anchor', 'middle')
+      .text(d => d.type)
+      .style('pointer-events', 'none')
+      .attr('opacity', 0.7);
 
     // Append nodes with custom color logic and size based on dataSize only for Word nodes
     const node = zoomLayer.append('g')
@@ -189,6 +213,10 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         .attr('y1', d => d.source.y + shiftY)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y + shiftY);
+
+      // Position link labels at midpoint of links
+      linkLabels.attr('x', d => (d.source.x + d.target.x) / 2)
+        .attr('y', d => (d.source.y + d.target.y) / 2 + shiftY);
     });
 
     newSimulation.force('link').links(data.links);

@@ -9,6 +9,7 @@ import {
   fetchRootEntry,
   fetchWordsByFormWithLexicon, 
   fetchWordsByFormWithCorpus,
+  expandGraph,
   summarizeNodeContent,
   reportNodeIssue
 } from '../services/apiService';
@@ -76,64 +77,146 @@ export const GraphDataProvider = ({ children }) => {
     links: filteredLinks,
   };
 
-// Updated functions to prevent duplicates based on `word_id`
+// Updated functions to use consolidated expand route and handle links
 const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
+  console.log('handleRootNodeClick called with:', { node, L1, L2, contextFilter, corpusId });
+  
   try {
-    let allNewWords = [];
-    if (contextFilter === 'lexicon') {
-      allNewWords = await fetchWordsByRootWithLexicon(node.root_id, L1, L2);
-    } else if (contextFilter === corpusId) {
-      allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, L1, L2);
+    const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+    const options = { L1, L2, limit: 100 };
+    
+    // Add corpus filter if specified
+    if (contextFilter === corpusId && corpusId) {
+      options.corpus_id = corpusId;
     }
 
-    const currentWordIds = new Set(graphData.nodes.map(n => n.word_id)); // Existing `word_id`s
-    const newNodes = allNewWords
-      .filter(word => !currentWordIds.has(word.word_id)) // Filter out duplicates
-      .map(word => ({
-        id: `word_${word.word_id}`,
-        label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
-        ...word,
-        type: 'word',
-      }));
+    console.log('Calling expandGraph with:', 'root', rootId, 'word', options);
+    const result = await expandGraph('root', rootId, 'word', options);
+    console.log('expandGraph returned:', result);
 
-    const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
+    if (!result || !result.nodes || !result.links) {
+      throw new Error('Invalid response format from expandGraph');
+    }
+
+    const { nodes: newNodes, links: newLinks } = result;
+
+    // Filter out duplicate nodes based on node ID
+    const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
+    const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+    
+    // Filter out duplicate links
+    const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
+    const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+
+    console.log(`Adding ${filteredNewNodes.length} new nodes and ${filteredNewLinks.length} new links`);
 
     setGraphData(prev => ({
-      nodes: [...prev.nodes, ...newNodes],
-      links: [...prev.links, ...newLinks],
+      nodes: [...prev.nodes, ...filteredNewNodes],
+      links: [...prev.links, ...filteredNewLinks],
     }));
   } catch (error) {
-    console.error('Error fetching data for clicked root node:', error);
+    console.error('New expand route failed, falling back to old method:', error);
+    // Fallback to old method only when new route fails
+    try {
+      let allNewWords = [];
+      if (contextFilter === 'lexicon') {
+        allNewWords = await fetchWordsByRootWithLexicon(node.root_id, L1, L2);
+      } else if (contextFilter === corpusId) {
+        allNewWords = await fetchWordsByRootWithCorpus(node.root_id, corpusId, L1, L2);
+      }
+
+      const currentWordIds = new Set(graphData.nodes.map(n => n.word_id));
+      const newNodes = allNewWords
+        .filter(word => !currentWordIds.has(word.word_id))
+        .map(word => ({
+          id: `word_${word.word_id}`,
+          label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
+          ...word,
+          type: 'word',
+        }));
+
+      const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
+
+      console.log(`Fallback: Adding ${newNodes.length} new nodes and ${newLinks.length} new links`);
+
+      setGraphData(prev => ({
+        nodes: [...prev.nodes, ...newNodes],
+        links: [...prev.links, ...newLinks],
+      }));
+    } catch (fallbackError) {
+      console.error('Fallback method also failed:', fallbackError);
+    }
   }
 };
 
 const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
+  console.log('handleFormNodeClick called with:', { node, L1, L2, contextFilter, corpusId });
+  
   try {
-    let allNewWords = [];
-    if (contextFilter === 'lexicon') {
-      allNewWords = await fetchWordsByFormWithLexicon(node.form_id, L1, L2, limit);
-    } else if (contextFilter === corpusId) {
-      allNewWords = await fetchWordsByFormWithCorpus(node.form_id, corpusId, L1, L2, limit);
+    const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+    const options = { L1, L2, limit };
+    
+    // Add corpus filter if specified
+    if (contextFilter === corpusId && corpusId) {
+      options.corpus_id = corpusId;
     }
 
-    const currentWordIds = new Set(graphData.nodes.map(n => n.word_id));
-    const newNodes = allNewWords
-      .filter(word => !currentWordIds.has(word.word_id))
-      .map(word => ({
-        id: `word_${word.word_id}`,
-        label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
-        ...word,
-        type: 'word',
-      }));
+    console.log('Calling expandGraph with:', 'form', formId, 'word', options);
+    const result = await expandGraph('form', formId, 'word', options);
+    console.log('expandGraph returned:', result);
 
-    const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
+    if (!result || !result.nodes || !result.links) {
+      throw new Error('Invalid response format from expandGraph');
+    }
+
+    const { nodes: newNodes, links: newLinks } = result;
+
+    // Filter out duplicate nodes based on node ID
+    const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
+    const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+    
+    // Filter out duplicate links
+    const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
+    const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+
+    console.log(`Adding ${filteredNewNodes.length} new nodes and ${filteredNewLinks.length} new links`);
 
     setGraphData(prev => ({
-      nodes: [...prev.nodes, ...newNodes],
-      links: [...prev.links, ...newLinks],
+      nodes: [...prev.nodes, ...filteredNewNodes],
+      links: [...prev.links, ...filteredNewLinks],
     }));
   } catch (error) {
-    console.error('Error fetching data for clicked form node:', error);
+    console.error('New expand route failed, falling back to old method:', error);
+    // Fallback to old method only when new route fails
+    try {
+      let allNewWords = [];
+      if (contextFilter === 'lexicon') {
+        allNewWords = await fetchWordsByFormWithLexicon(node.form_id, L1, L2, limit);
+      } else if (contextFilter === corpusId) {
+        allNewWords = await fetchWordsByFormWithCorpus(node.form_id, corpusId, L1, L2, limit);
+      }
+
+      const currentWordIds = new Set(graphData.nodes.map(n => n.word_id));
+      const newNodes = allNewWords
+        .filter(word => !currentWordIds.has(word.word_id))
+        .map(word => ({
+          id: `word_${word.word_id}`,
+          label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
+          ...word,
+          type: 'word',
+        }));
+
+      const newLinks = newNodes.map(word => ({ source: node.id, target: word.id }));
+
+      console.log(`Fallback: Adding ${newNodes.length} new nodes and ${newLinks.length} new links`);
+
+      setGraphData(prev => ({
+        nodes: [...prev.nodes, ...newNodes],
+        links: [...prev.links, ...newLinks],
+      }));
+    } catch (fallbackError) {
+      console.error('Fallback method also failed:', fallbackError);
+    }
   }
 };
 
