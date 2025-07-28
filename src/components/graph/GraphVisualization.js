@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useWordShade } from '../../contexts/WordShadeContext';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
+import { useShowLinks } from '../selectors/ShowLinksToggle';
 import NodeContextMenu from './NodeContextMenu';
 import * as d3 from 'd3';
 
@@ -9,11 +10,11 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const svgRef = useRef();
   const containerRef = useRef();
   const [simulation, setSimulation] = useState(null);
-  const [linkOpacity, setLinkOpacity] = useState(0.6); // Default opacity for non-highlighted links
 
   const { isAdvancedMode } = useAdvancedMode();
   const { contextMenu, setContextMenu, handleContextMenuAction } = useGraphData();
   const { wordShadeMode } = useWordShade();
+  const { showLinks } = useShowLinks();
 
   // Enhanced click handler that checks for advanced mode
   const handleNodeClick = useCallback((event, d) => {
@@ -139,8 +140,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         return d.type === 'ETYM' ? '#FFD700' : '#999';
       })
       .attr('stroke-opacity', d => {
-        // ETYM links are more opaque for visibility, others use slider value
-        return d.type === 'ETYM' ? 0.9 : linkOpacity;
+        // ETYM links are more opaque for visibility, others use 10% or hidden
+        return d.type === 'ETYM' ? 0.9 : (showLinks ? 0.1 : 0);
       })
       .attr('stroke-width', d => {
         // Vary stroke width based on relationship type
@@ -247,36 +248,12 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick, linkOpacity]);
+  }, [data, handleNodeClick, showLinks]);
 
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
       <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
       
-      {/* Opacity Slider */}
-      <div style={{
-        position: 'absolute',
-        top: '10px',
-        right: '10px',
-        background: 'rgba(255, 255, 255, 0.9)',
-        padding: '10px',
-        borderRadius: '5px',
-        fontSize: '12px',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-      }}>
-        <label style={{ display: 'block', marginBottom: '5px' }}>
-          Link Opacity: {Math.round(linkOpacity * 100)}%
-        </label>
-        <input
-          type="range"
-          min="0.1"
-          max="1"
-          step="0.1"
-          value={linkOpacity}
-          onChange={(e) => setLinkOpacity(parseFloat(e.target.value))}
-          style={{ width: '100px' }}
-        />
-      </div>
       
       {/* Render context menu in advanced mode */}
       {contextMenu && (
