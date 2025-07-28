@@ -12,7 +12,16 @@ const WordShadeSelector = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
       <label>Word Shade Mode:</label>
-      <div style={{ display: 'flex', gap: '15px' }}>
+      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <input
+            type="radio"
+            value="none"
+            checked={wordShadeMode === 'none'}
+            onChange={handleChange}
+          />
+          None
+        </label>
         <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
           <input
             type="radio"
