@@ -1,28 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useFormFilter } from '../../contexts/FormFilterContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
+import { useFilter } from '../../contexts/FilterContext';
 
 const FormClassificationFilter = () => {
   const { selectedFormClassifications, setSelectedFormClassifications } = useFormFilter();
   const { graphData } = useGraphData();
+  const { hideFormNodes } = useFilter();
   const [availableClassifications, setAvailableClassifications] = useState([]);
+  const allSeenClassifications = useRef(new Set());
 
   // Extract unique form classifications from current graph data
   useEffect(() => {
     const formNodes = graphData.nodes.filter(node => node.type === 'form');
-    const classifications = [...new Set(
-      formNodes
-        .map(node => node.classification)
-        .filter(classification => classification && classification.trim() !== '')
-    )].sort();
+    const currentClassifications = formNodes
+      .map(node => node.classification)
+      .filter(classification => classification && classification.trim() !== '');
     
+    // Add to our running set of all seen classifications
+    currentClassifications.forEach(classification => {
+      allSeenClassifications.current.add(classification);
+    });
+    
+    // Use all seen classifications, not just current ones
+    const classifications = [...allSeenClassifications.current].sort();
     setAvailableClassifications(classifications);
-    
-    // If no selections made yet, default to all available
-    if (selectedFormClassifications.length === 0 && classifications.length > 0) {
-      setSelectedFormClassifications(classifications);
+  }, [graphData.nodes]);
+
+  // Separate effect for initializing selections
+  useEffect(() => {
+    if (selectedFormClassifications.length === 0 && availableClassifications.length > 0) {
+      setSelectedFormClassifications(availableClassifications);
     }
-  }, [graphData.nodes, selectedFormClassifications.length, setSelectedFormClassifications]);
+  }, [availableClassifications, selectedFormClassifications.length, setSelectedFormClassifications]);
 
   const handleClassificationToggle = (classification) => {
     if (selectedFormClassifications.includes(classification)) {
@@ -32,38 +42,25 @@ const FormClassificationFilter = () => {
     }
   };
 
-  if (availableClassifications.length === 0) {
-    return null; // Don't show the filter if no form classifications are available
+  if (hideFormNodes || availableClassifications.length === 0) {
+    return null; // Don't show the filter if form nodes are hidden or no form classifications are available
   }
 
   return (
-    <div style={{ marginBottom: '15px' }}>
-      <label style={{ display: 'block', marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>
-        Form Classifications
-      </label>
-      
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+      <label>Form Classifications:</label>
+      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
         {availableClassifications.map(classification => (
-          <label
-            key={classification}
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              cursor: 'pointer',
-              fontSize: '13px',
-              padding: '2px 0'
-            }}
-          >
+          <label key={classification} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <input
               type="checkbox"
               checked={selectedFormClassifications.includes(classification)}
               onChange={() => handleClassificationToggle(classification)}
-              style={{ 
-                marginRight: '8px',
-                accentColor: '#007bff' // Blue checkmark
+              style={{
+                accentColor: '#007bff'
               }}
             />
-            <span>{classification}</span>
+            {classification}
           </label>
         ))}
       </div>
