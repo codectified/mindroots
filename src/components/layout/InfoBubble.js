@@ -8,6 +8,20 @@ export default function InfoBubble({ definition, onClose, style }) {
   const infoBubbleRef = useRef(null);
   const [centeredStyle, setCenteredStyle] = useState(style);
 
+  // Handle click outside to close
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (infoBubbleRef.current && !infoBubbleRef.current.contains(event.target)) {
+        onClose();
+      }
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [onClose]);
+
   // Calculate positioning: X centered in viewport, Y follows click
   useEffect(() => {
     if (!infoBubbleRef.current || !style) return;

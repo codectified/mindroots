@@ -157,13 +157,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
 
   const menu = (
     <div ref={menuRef} className="node-context-menu" style={getCenteredStyle()}>
-      <button
-        className="context-menu-close-button"
-        onClick={onClose}
-        aria-label="Close Context Menu"
-      >
-        ×
-      </button>
       <div className="node-context-menu-content">
         {menuOptions.map((option, index) => (
           <div key={index} className="context-menu-item">
