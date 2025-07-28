@@ -9,6 +9,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const svgRef = useRef();
   const containerRef = useRef();
   const [simulation, setSimulation] = useState(null);
+  const [linkOpacity, setLinkOpacity] = useState(0.6); // Default opacity for non-highlighted links
 
   const { isAdvancedMode } = useAdvancedMode();
   const { contextMenu, setContextMenu, handleContextMenuAction } = useGraphData();
@@ -133,12 +134,19 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .selectAll('line')
       .data(data.links)
       .enter().append('line')
-      .attr('stroke', '#999')
-      .attr('stroke-opacity', 0.6)
+      .attr('stroke', d => {
+        // ETYM links are highlighted in gold, others remain gray
+        return d.type === 'ETYM' ? '#FFD700' : '#999';
+      })
+      .attr('stroke-opacity', d => {
+        // ETYM links are more opaque for visibility, others use slider value
+        return d.type === 'ETYM' ? 0.9 : linkOpacity;
+      })
       .attr('stroke-width', d => {
         // Vary stroke width based on relationship type
         if (d.type) {
           switch (d.type) {
+            case 'ETYM': return 2.5; // Thicker for ETYM links
             case 'HAS_WORD': return 2;
             case 'HAS_ROOT': return 1.5;
             case 'HAS_FORM': return 1.5;
@@ -148,18 +156,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         return 1.5; // Default for backward compatibility
       });
 
-    // Add link labels for relationship types (optional, can be toggled)
-    const linkLabels = zoomLayer.append('g')
-      .attr('class', 'link-labels')
-      .selectAll('text')
-      .data(data.links.filter(d => d.type)) // Only show labels for links with types
-      .enter().append('text')
-      .attr('font-size', '8px')
-      .attr('fill', '#666')
-      .attr('text-anchor', 'middle')
-      .text(d => d.type)
-      .style('pointer-events', 'none')
-      .attr('opacity', 0.7);
+    // Link labels removed for cleaner visualization
 
     // Append nodes with custom color logic and size based on dataSize only for Word nodes
     const node = zoomLayer.append('g')
@@ -214,9 +211,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y + shiftY);
 
-      // Position link labels at midpoint of links
-      linkLabels.attr('x', d => (d.source.x + d.target.x) / 2)
-        .attr('y', d => (d.source.y + d.target.y) / 2 + shiftY);
+      // Link labels removed
     });
 
     newSimulation.force('link').links(data.links);
@@ -252,11 +247,36 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick]);
+  }, [data, handleNodeClick, linkOpacity]);
 
   return (
-    <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%' }}>
+    <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
       <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
+      
+      {/* Opacity Slider */}
+      <div style={{
+        position: 'absolute',
+        top: '10px',
+        right: '10px',
+        background: 'rgba(255, 255, 255, 0.9)',
+        padding: '10px',
+        borderRadius: '5px',
+        fontSize: '12px',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+      }}>
+        <label style={{ display: 'block', marginBottom: '5px' }}>
+          Link Opacity: {Math.round(linkOpacity * 100)}%
+        </label>
+        <input
+          type="range"
+          min="0.1"
+          max="1"
+          step="0.1"
+          value={linkOpacity}
+          onChange={(e) => setLinkOpacity(parseFloat(e.target.value))}
+          style={{ width: '100px' }}
+        />
+      </div>
       
       {/* Render context menu in advanced mode */}
       {contextMenu && (

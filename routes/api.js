@@ -382,13 +382,15 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
         query = `
           MATCH (root:Root {root_id: toInteger($sourceId)})-[:HAS_WORD]->(word:Word)
           MATCH (corpus:Corpus {corpus_id: toInteger($corpus_id)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word)
-          RETURN root, word
+          OPTIONAL MATCH (word)-[:ETYM]->(etym:Word)
+          RETURN root, word, etym
           LIMIT toInteger($limit)
         `;
       } else {
         query = `
           MATCH (root:Root {root_id: toInteger($sourceId)})-[:HAS_WORD]->(word:Word)
-          RETURN root, word
+          OPTIONAL MATCH (word)-[:ETYM]->(etym:Word)
+          RETURN root, word, etym
           LIMIT toInteger($limit)
         `;
       }
@@ -408,6 +410,8 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
         `;
       }
     } else if (sourceType === 'corpusitem' && targetType === 'word') {
+      // CONSOLIDATED: This replaces the legacy /words_by_corpus_item/:itemId route
+      // Returns corpus item + connected words, forms, and roots with proper relationships
       if (!corpus_id) {
         return res.status(400).json({ error: 'corpus_id is required for corpusitem expansion' });
       }
@@ -415,7 +419,7 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
         MATCH (item:CorpusItem {item_id: toInteger($sourceId), corpus_id: toInteger($corpus_id)})
         OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
         OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
-        OPTIONAL MATCH (word)<-[:HAS_ROOT]-(root:Root)
+        OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
         RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms
       `;
     } else {
@@ -542,7 +546,7 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
               links.push({
                 source: `root_${root.root_id}`,
                 target: wordId,
-                type: 'HAS_ROOT'
+                type: 'HAS_WORD'
               });
             }
           });
@@ -592,7 +596,7 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
             links.push({
               source: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
               target: `${targetType}_${targetNode[`${targetType}_id`]}`,
-              type: 'HAS_ROOT'
+              type: 'HAS_WORD'
             });
           } else if (sourceType === 'form' && targetType === 'word') {
             links.push({
@@ -600,6 +604,38 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
               target: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
               type: 'HAS_FORM'
             });
+          }
+        }
+        
+        // Handle ETYM relationships for root expansions
+        if (sourceType === 'root' && targetType === 'word') {
+          const etymNode = record.get('etym')?.properties;
+          if (etymNode && targetNode) {
+            const etymNodeId = `word_${etymNode.word_id}`;
+            const sourceWordId = `word_${targetNode.word_id}`;
+            
+            // Add etym node if not already present
+            if (!nodeMap.has(etymNodeId)) {
+              const node = {
+                id: etymNodeId,
+                label: L2 === 'off' ? etymNode[L1] : `${etymNode[L1]} / ${etymNode[L2]}`,
+                ...convertIntegers(etymNode),
+                type: 'word'
+              };
+              nodes.push(node);
+              nodeMap.set(etymNodeId, node);
+            }
+            
+            // Add ETYM link
+            const linkId = `${sourceWordId}->${etymNodeId}`;
+            if (!nodeMap.has(linkId)) {
+              links.push({
+                source: sourceWordId,
+                target: etymNodeId,
+                type: 'ETYM'
+              });
+              nodeMap.set(linkId, true); // Track link to avoid duplicates
+            }
           }
         }
       });
