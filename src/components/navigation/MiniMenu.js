@@ -114,14 +114,9 @@ const MiniMenu = () => {
             </>
           )}
   
-{/* Links Section at the Bottom */}
+{/* Links Section at the Bottom - removed buttons that moved to vertical stack */}
 <div className="settings-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-  <button className="small-icon-button" onClick={() => handleNavigation('/mindroots')}>
-    <FontAwesomeIcon icon={faHome} />
-  </button>
-  
-  {/* Display Mode Toggle Button */}
-  <DisplayModeSelector />
+  {/* Buttons moved to vertical stack under Mindroots button */}
 </div>
 </div>
       );
@@ -164,6 +159,51 @@ const MiniMenu = () => {
           <FontAwesomeIcon icon={isMenuExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
         </a>
       </div>
+      
+      {/* Vertical button stack under Mindroots button */}
+      {isMenuExpanded && (
+        <div style={{
+          position: 'absolute',
+          top: '80px', // Below the main menu buttons
+          right: '30px', // Center under Mindroots button (50px Mindroots width / 2 - 30px button width / 2 + 20px from right = 30px)
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '10px',
+          zIndex: 1000,
+          alignItems: 'center'
+        }}>
+          <button 
+            className="mini-menu-button" 
+            onClick={() => handleNavigation('/mindroots')}
+            style={{
+              width: '30px',
+              height: '30px',
+              minWidth: '30px',
+              minHeight: '30px',
+              maxWidth: '30px',
+              maxHeight: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              backgroundColor: '#333',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: '12px',
+              border: 'none',
+              transition: 'background-color 0.2s',
+              padding: '0',
+              flexShrink: 0
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#555'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#333'}
+          >
+            <FontAwesomeIcon icon={faHome} />
+          </button>
+          
+          <DisplayModeSelector />
+        </div>
+      )}
       
       {/* Overlay content panel */}
       {selectedOption && (
