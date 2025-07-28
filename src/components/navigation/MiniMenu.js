@@ -129,7 +129,7 @@ const MiniMenu = () => {
   };
 
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
       <div className="menu-container">
         {isMenuExpanded && (
           <>
@@ -164,7 +164,27 @@ const MiniMenu = () => {
           <FontAwesomeIcon icon={isMenuExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
         </a>
       </div>
-      <div>{renderContent()}</div>
+      
+      {/* Overlay content panel */}
+      {selectedOption && (
+        <div style={{
+          position: 'absolute',
+          top: '80px', // Below the menu buttons
+          right: '20px', // Align with menu container
+          backgroundColor: 'rgba(255, 255, 255, 0.95)',
+          border: '1px solid #ccc',
+          borderRadius: '8px',
+          padding: '20px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          zIndex: 1002, // Higher than menu container (1000), info bubbles (1000), and close buttons (1001)
+          minWidth: '300px',
+          maxWidth: '400px',
+          maxHeight: '70vh',
+          overflowY: 'auto'
+        }}>
+          {renderContent()}
+        </div>
+      )}
     </div>
   );
 };
