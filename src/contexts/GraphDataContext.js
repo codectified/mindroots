@@ -12,6 +12,7 @@ import {
 import { useNodeLimit } from './NodeLimitContext'; 
 import { useFilter } from './FilterContext'; // Import the filter context
 import { useScript } from './ScriptContext'; // Import the script context for language settings
+import { useFormFilter } from './FormFilterContext'; // Import the form filter context
 
 
 
@@ -51,22 +52,40 @@ export const GraphDataProvider = ({ children }) => {
   const { limit } = useNodeLimit();
   const { L1, L2 } = useScript(); // Get current language settings
   const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
+  const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
 
   // Function to filter Word nodes, Form nodes, and remove associated links
   const applyFilter = (nodes, links) => {
     console.log("Filter word types:", filterWordTypes);
     console.log("Hide form nodes:", hideFormNodes);
+    console.log("Selected form classifications:", selectedFormClassifications);
   
     const filteredNodes = nodes.filter(node => {
       const isWordNode = node.node_type === 'Word';
       const isFormNode = node.node_type === 'Form';
   
       // Determine if the node should be included based on the filters
-      const includeNode =
-        (!isWordNode || filterWordTypes.length === 0 || filterWordTypes.includes(node.word_type)) &&
-        (!isFormNode || !hideFormNodes); // Hide only Form nodes if hideFormNodes is true
+      let includeNode = true;
+      
+      // Apply word type filter
+      if (isWordNode && filterWordTypes.length > 0 && !filterWordTypes.includes(node.word_type)) {
+        includeNode = false;
+      }
+      
+      // Apply general form node filter
+      if (isFormNode && hideFormNodes) {
+        includeNode = false;
+      }
+      
+      // Apply form classification filter
+      if (isFormNode && selectedFormClassifications.length > 0) {
+        const nodeClassification = node.classification;
+        if (!nodeClassification || !selectedFormClassifications.includes(nodeClassification)) {
+          includeNode = false;
+        }
+      }
   
-      console.log(`Node ${node.id} (${node.node_type}) included: ${includeNode}`);
+      console.log(`Node ${node.id} (${node.node_type}, classification: ${node.classification}) included: ${includeNode}`);
       return includeNode;
     });
   
