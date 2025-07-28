@@ -16,6 +16,9 @@ export function getNodeColor(node, wordShadeMode) {
         case 'Abstract':  return '#FFCCCC';
         default:          return '#660000';
       }
+    } else if (wordShadeMode === 'none') {
+      // No word shading - use default red for all word nodes
+      return 'red';
     }
   }
   // Default color for other node types

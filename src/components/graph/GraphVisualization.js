@@ -88,6 +88,9 @@ const GraphVisualization = ({ data, onNodeClick }) => {
             case 'Abstract': return '#FFCCCC'; // Medium Blue
             default: return '#660000'; // Darker Blue
           }
+        } else if (wordShadeMode === 'none') {
+          // No word shading - use default red for all word nodes
+          return 'red';
         }
       }
       // Default for non-word nodes
