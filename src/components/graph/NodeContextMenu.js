@@ -22,33 +22,46 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     };
   }, [onClose]);
 
-  // Calculate positioning to match InfoBubble behavior
+  // Calculate positioning - desktop follows cursor, mobile centers in viewport
   const getCenteredStyle = () => {
     if (!position) return {};
 
     // Get viewport dimensions
     const viewportWidth = document.documentElement.clientWidth;
+    const viewportHeight = window.innerHeight;
     const isMobile = viewportWidth <= 768;
     
     // Use responsive dimensions
     const menuWidth = isMobile ? 240 : 200;
-    const menuHeight = isMobile ? 200 : 150; // Account for more compact mobile layout
-
-    // X: Center horizontally in viewport (like InfoBubble)
-    const centeredLeft = (viewportWidth - menuWidth) / 2;
-
-    // Y: Offset by half menu height to center on click Y coordinate (like InfoBubble)
-    const centeredTop = position.y - menuHeight / 2;
-
-    // Keep within viewport bounds
+    const menuHeight = isMobile ? 200 : 150;
     const margin = 10;
-    const finalLeft = Math.max(margin, Math.min(centeredLeft, viewportWidth - menuWidth - margin));
-    const finalTop = Math.max(margin, Math.min(centeredTop, window.innerHeight - menuHeight - margin));
 
-    return {
-      left: `${finalLeft}px`,
-      top: `${finalTop}px`
-    };
+    if (isMobile) {
+      // Mobile: Center horizontally in viewport, vertically centered on click Y
+      const centeredLeft = (viewportWidth - menuWidth) / 2;
+      const centeredTop = position.y - menuHeight / 2;
+      
+      const finalLeft = Math.max(margin, Math.min(centeredLeft, viewportWidth - menuWidth - margin));
+      const finalTop = Math.max(margin, Math.min(centeredTop, viewportHeight - menuHeight - margin));
+
+      return {
+        left: `${finalLeft}px`,
+        top: `${finalTop}px`
+      };
+    } else {
+      // Desktop: Center on cursor position
+      const cursorCenteredLeft = position.x - menuWidth / 2;
+      const cursorCenteredTop = position.y - menuHeight / 2;
+      
+      // Keep within viewport bounds
+      const finalLeft = Math.max(margin, Math.min(cursorCenteredLeft, viewportWidth - menuWidth - margin));
+      const finalTop = Math.max(margin, Math.min(cursorCenteredTop, viewportHeight - menuHeight - margin));
+
+      return {
+        left: `${finalLeft}px`,
+        top: `${finalTop}px`
+      };
+    }
   };
 
 
@@ -192,6 +205,16 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
             )}
           </div>
         ))}
+        
+        {/* Close button at the bottom */}
+        <div className="context-menu-item">
+          <button
+            className="context-menu-option"
+            onClick={onClose}
+          >
+            Close
+          </button>
+        </div>
       </div>
     </div>
   );
