@@ -113,6 +113,13 @@
   right: calc(100% - 5px);
 }
 
+.context-submenu.centered {
+  left: 50%;
+  transform: translateX(-50%);
+  top: 100%;
+  margin-top: 5px;
+}
+
 .context-submenu-option {
   display: block;
   width: 100%;
