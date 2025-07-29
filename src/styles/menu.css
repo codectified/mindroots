@@ -103,3 +103,64 @@
   align-items: left; /* Aligns buttons vertically */
   gap: 10px; /* Adds space between buttons */
 }
+
+/* Vertical button stack positioning */
+.vertical-button-stack {
+  position: absolute;
+  top: 80px; /* Desktop: below main menu buttons */
+  right: 30px; /* Desktop: center under Mindroots button */
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  z-index: 1000;
+  align-items: center;
+}
+
+/* Mobile-specific menu positioning */  
+@media (max-width: 768px) {
+  .menu-container {
+    position: fixed !important; /* Ensure it's fixed to viewport on mobile */
+    top: auto !important;
+    bottom: 20px !important;
+    right: auto !important; 
+    left: 20px !important;
+    flex-direction: row-reverse; /* Mindroots button on left, nav buttons extend right */
+  }
+  
+  .vertical-button-stack {
+    position: fixed !important; /* Fixed to viewport on mobile */
+    top: auto;
+    bottom: 80px; /* Mobile: above main menu buttons (20px menu bottom + 60px menu height) */
+    right: auto;
+    left: 30px; /* Mobile: center above Mindroots button */
+    flex-direction: column-reverse; /* Mobile: expand upwards */
+  }
+}
+
+/* Settings panel positioning */
+.settings-panel {
+  position: absolute;
+  top: 80px; /* Desktop: below menu buttons */
+  right: 20px; /* Desktop: align with menu container */
+  background-color: rgba(255, 255, 255, 0.95);
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  padding: 20px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 1002;
+  min-width: 300px;
+  max-width: 400px;
+  max-height: 70vh;
+  overflow-y: auto;
+}
+
+/* Mobile: settings panel above menu */
+@media (max-width: 768px) {
+  .settings-panel {
+    position: fixed !important; /* Fixed to viewport on mobile */
+    top: auto;
+    bottom: 80px; /* Mobile: above main menu buttons (20px menu bottom + 60px menu height) */
+    right: auto;
+    left: 20px; /* Mobile: align with menu container */
+  }
+}

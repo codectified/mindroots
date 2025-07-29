@@ -9,6 +9,8 @@ import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import FilterController from '../selectors/FilterController';
 import WordShadeSelector from '../selectors/WordShadeSelector';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
+import ModeSelector from '../selectors/ModeSelector';
+import ShowLinksToggle from '../selectors/ShowLinksToggle';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const MiniMenu = () => {
@@ -18,6 +20,7 @@ const MiniMenu = () => {
   const [showTextSettings, setShowTextSettings] = useState(false);
   const [setIsGraphMode] = useState(false); // Toggle for Graph/Table mode
   const [showFilterSettings, setShowFilterSettings] = useState(false);
+  const [showContextSettings, setShowContextSettings] = useState(false);
   const [showOtherSettings, setShowOtherSettings] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const holdTimeout = useRef(null);
@@ -55,18 +58,54 @@ const MiniMenu = () => {
     if (selectedOption === 'settings') {
       return (
         <div className="content-container">
-          {/* Language Selector at the Top */}
+          {/* 1. Language Control */}
           <div style={{ marginBottom: '10px' }}>
             <LanguageSelector />
           </div>
+
+          {/* 2. Mode Control */}
+          <ModeSelector />
+          
+          {/* 3. Link Control */}
+          <ShowLinksToggle />
   
-          {/* Text Settings Section */}
+          {/* 4. Filter Control */}
+          <div
+            className="collapsible-section"
+            onClick={() => setShowFilterSettings((prev) => !prev)}
+            style={{ cursor: 'pointer', marginBottom: '10px' }}
+          >
+            Filter Control
+            <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+          </div>
+          {showFilterSettings && (
+            <>
+              <FilterController />
+            </>
+          )}
+          
+          {/* 5. Context Control */}
+          <div
+            className="collapsible-section"
+            onClick={() => setShowContextSettings((prev) => !prev)}
+            style={{ cursor: 'pointer', marginBottom: '10px' }}
+          >
+            Context Control
+            <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+          </div>
+          {showContextSettings && (
+            <>
+              <ContextShiftSelector />
+            </>
+          )}
+  
+          {/* 6. Text Control */}
           <div
             className="collapsible-section"
             onClick={() => setShowTextSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Text Settings
+            Text Control
             <FontAwesomeIcon icon={showTextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
           {showTextSettings && (
@@ -75,30 +114,14 @@ const MiniMenu = () => {
               <HighlightController />
             </>
           )}
-  
-          {/* Filter and Context Control Section */}
-          <div
-            className="collapsible-section"
-            onClick={() => setShowFilterSettings((prev) => !prev)}
-            style={{ cursor: 'pointer', marginBottom: '10px' }}
-          >
-            Filter and Context Control
-            <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
-          </div>
-          {showFilterSettings && (
-            <>
-              <ContextShiftSelector />
-              <FilterController />
-            </>
-          )}
-  
-          {/* Other Settings Section */}
+          
+          {/* 7. General Node Control */}
           <div
             className="collapsible-section"
             onClick={() => setShowOtherSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Other Settings
+            General Node Control
             <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
           {showOtherSettings && (
@@ -108,14 +131,9 @@ const MiniMenu = () => {
             </>
           )}
   
-{/* Links Section at the Bottom */}
+{/* Links Section at the Bottom - removed buttons that moved to vertical stack */}
 <div className="settings-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-  <button className="small-icon-button" onClick={() => handleNavigation('/mindroots')}>
-    <FontAwesomeIcon icon={faHome} />
-  </button>
-  
-  {/* Display Mode Toggle Button */}
-  <DisplayModeSelector />
+  {/* Buttons moved to vertical stack under Mindroots button */}
 </div>
 </div>
       );
@@ -123,7 +141,7 @@ const MiniMenu = () => {
   };
 
   return (
-    <div>
+    <div style={{ position: 'relative' }}>
       <div className="menu-container">
         {isMenuExpanded && (
           <>
@@ -158,7 +176,49 @@ const MiniMenu = () => {
           <FontAwesomeIcon icon={isMenuExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
         </a>
       </div>
-      <div>{renderContent()}</div>
+      
+      {/* Vertical button stack under Mindroots button */}
+      {isMenuExpanded && (
+        <div className="vertical-button-stack">
+          <button 
+            className="mini-menu-button" 
+            onClick={() => handleNavigation('/mindroots')}
+            style={{
+              width: '30px',
+              height: '30px',
+              minWidth: '30px',
+              minHeight: '30px',
+              maxWidth: '30px',
+              maxHeight: '30px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
+              backgroundColor: '#333',
+              color: '#fff',
+              cursor: 'pointer',
+              fontSize: '12px',
+              border: 'none',
+              transition: 'background-color 0.2s',
+              padding: '0',
+              flexShrink: 0
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#555'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = '#333'}
+          >
+            <FontAwesomeIcon icon={faHome} />
+          </button>
+          
+          <DisplayModeSelector />
+        </div>
+      )}
+      
+      {/* Settings panel */}
+      {selectedOption && (
+        <div className="settings-panel">
+          {renderContent()}
+        </div>
+      )}
     </div>
   );
 };

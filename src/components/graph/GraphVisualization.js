@@ -1,5 +1,9 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useWordShade } from '../../contexts/WordShadeContext';
+import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useGraphData } from '../../contexts/GraphDataContext';
+import { useShowLinks } from '../selectors/ShowLinksToggle';
+import NodeContextMenu from './NodeContextMenu';
 import * as d3 from 'd3';
 
 const GraphVisualization = ({ data, onNodeClick }) => {
@@ -7,10 +11,35 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const containerRef = useRef();
   const [simulation, setSimulation] = useState(null);
 
-  // Wrap onNodeClick in useCallback to prevent it from changing on every render
-  const handleNodeClick = useCallback((event, d) => onNodeClick(d, event), [onNodeClick]);
-
+  const { isAdvancedMode } = useAdvancedMode();
+  const { contextMenu, setContextMenu, handleContextMenuAction } = useGraphData();
   const { wordShadeMode } = useWordShade();
+  const { showLinks } = useShowLinks();
+
+  // Enhanced click handler that checks for advanced mode
+  const handleNodeClick = useCallback((event, d) => {
+    if (isAdvancedMode) {
+      // In advanced mode, show context menu
+      const position = {
+        x: event.pageX,
+        y: event.pageY
+      };
+      setContextMenu({ node: d, position });
+    } else {
+      // In guided mode, use original behavior
+      onNodeClick(d, event);
+    }
+  }, [isAdvancedMode, onNodeClick, setContextMenu]);
+
+  // Context menu action handler
+  const handleMenuAction = useCallback((action, node) => {
+    handleContextMenuAction(action, node);
+  }, [handleContextMenuAction]);
+
+  // Close context menu handler
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, [setContextMenu]);
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
@@ -59,6 +88,9 @@ const GraphVisualization = ({ data, onNodeClick }) => {
             case 'Abstract': return '#FFCCCC'; // Medium Blue
             default: return '#660000'; // Darker Blue
           }
+        } else if (wordShadeMode === 'none') {
+          // No word shading - use default red for all word nodes
+          return 'red';
         }
       }
       // Default for non-word nodes
@@ -100,15 +132,35 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .alphaDecay(0.02) // Alpha decay for stability
       .velocityDecay(0.992); // Adjusted velocity decay
 
-    // Append links
+    // Append links with enhanced styling based on relationship type
     const link = zoomLayer.append('g')
       .attr('class', 'links')
       .selectAll('line')
       .data(data.links)
       .enter().append('line')
-      .attr('stroke-width', 1.5)
-      .attr('stroke', '#bbb')
-      .attr('opacity', 0.3);
+      .attr('stroke', d => {
+        // ETYM links are highlighted in gold, others remain gray
+        return d.type === 'ETYM' ? '#FFD700' : '#999';
+      })
+      .attr('stroke-opacity', d => {
+        // ETYM links are more opaque for visibility, others use 10% or hidden
+        return d.type === 'ETYM' ? 0.9 : (showLinks ? 0.1 : 0);
+      })
+      .attr('stroke-width', d => {
+        // Vary stroke width based on relationship type
+        if (d.type) {
+          switch (d.type) {
+            case 'ETYM': return 2.5; // Thicker for ETYM links
+            case 'HAS_WORD': return 2;
+            case 'HAS_ROOT': return 1.5;
+            case 'HAS_FORM': return 1.5;
+            default: return 1;
+          }
+        }
+        return 1.5; // Default for backward compatibility
+      });
+
+    // Link labels removed for cleaner visualization
 
     // Append nodes with custom color logic and size based on dataSize only for Word nodes
     const node = zoomLayer.append('g')
@@ -162,6 +214,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         .attr('y1', d => d.source.y + shiftY)
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y + shiftY);
+
+      // Link labels removed
     });
 
     newSimulation.force('link').links(data.links);
@@ -197,11 +251,22 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick]);
+  }, [data, handleNodeClick, showLinks]);
 
   return (
-    <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%' }}>
+    <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
       <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
+      
+      
+      {/* Render context menu in advanced mode */}
+      {contextMenu && (
+        <NodeContextMenu
+          node={contextMenu.node}
+          position={contextMenu.position}
+          onClose={handleCloseContextMenu}
+          onAction={handleMenuAction}
+        />
+      )}
     </div>
   );
 };

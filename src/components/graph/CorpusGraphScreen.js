@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import GraphVisualization from './GraphVisualization';
-import { fetchWordsByCorpusItem } from '../../services/apiService';
+import { expandGraph } from '../../services/apiService';
 import MiniMenu from '../navigation/MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
@@ -23,50 +23,20 @@ const CorpusGraphScreen = () => {
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
       const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
-      const response = await fetchWordsByCorpusItem(itemId, selectedCorpus.id, L1, L2);
+      const response = await expandGraph('corpusitem', itemId, 'word', { 
+        L1, 
+        L2, 
+        corpus_id: selectedCorpus.id 
+      });
   
-      if (response && response.words && response.words.length > 0) {
-        const nameNode = {
-          id: `${response.item?.[L1]}_name`,
-          label: L2 === 'off' ? response.item?.[L1] : `${response.item?.[L1]} / ${response.item?.[L2]}`,
-          ...response.item,
-          type: 'name',
-        };
+      if (response && response.nodes && response.nodes.length > 0) {
+        // Use the response directly - it already has the correct structure
+        setGraphData({ nodes: response.nodes, links: response.links });
   
-        const wordNodes = response.words.map(word => ({
-          id: `${word?.[L1]}_word`,
-          label: L2 === 'off' ? word?.[L1] : `${word?.[L1]} / ${word?.[L2]}`,
-          ...word,
-          type: 'word',
-        }));
-  
-        const formNodes = response.forms.map(form => ({
-          id: `${form?.[L1]}_form`,
-          label: L2 === 'off' ? form?.[L1] : `${form?.[L1]} / ${form?.[L2]}`,
-          ...form,
-          type: 'form',
-        }));
-  
-        const rootNodes = response.roots.map(root => ({
-          id: `${root?.[L1]}_root`,
-          label: L2 === 'off' ? root?.[L1] : `${root?.[L1]} / ${root?.[L2]}`,
-          ...root,
-          type: 'root',
-        }));
-  
-        const nodes = [nameNode, ...wordNodes, ...formNodes, ...rootNodes];
-  
-        // Create links between nodes
-        const links = [
-          ...wordNodes.map(word => ({ source: nameNode.id, target: word.id })),
-          ...formNodes.map(form => wordNodes.map(word => ({ source: word.id, target: form.id }))).flat(),
-          ...rootNodes.map(root => wordNodes.map(word => ({ source: word.id, target: root.id }))).flat(),
-        ];
-  
-        setGraphData({ nodes, links });
-  
+        // Extract available languages from the corpus item node
+        const corpusItemNode = response.nodes.find(n => n.type === 'name');
         const languages = ['arabic', 'english'];
-        if (response.item?.transliteration) languages.push('transliteration');
+        if (corpusItemNode?.transliteration) languages.push('transliteration');
         setAvailableLanguages(languages);
       } else {
         setGraphData({ nodes: [], links: [] });
