@@ -162,16 +162,7 @@ const MiniMenu = () => {
       
       {/* Vertical button stack under Mindroots button */}
       {isMenuExpanded && (
-        <div style={{
-          position: 'absolute',
-          top: '80px', // Below the main menu buttons
-          right: '30px', // Center under Mindroots button (50px Mindroots width / 2 - 30px button width / 2 + 20px from right = 30px)
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '10px',
-          zIndex: 1000,
-          alignItems: 'center'
-        }}>
+        <div className="vertical-button-stack">
           <button 
             className="mini-menu-button" 
             onClick={() => handleNavigation('/mindroots')}
@@ -205,23 +196,9 @@ const MiniMenu = () => {
         </div>
       )}
       
-      {/* Overlay content panel */}
+      {/* Settings panel */}
       {selectedOption && (
-        <div style={{
-          position: 'absolute',
-          top: '80px', // Below the menu buttons
-          right: '20px', // Align with menu container
-          backgroundColor: 'rgba(255, 255, 255, 0.95)',
-          border: '1px solid #ccc',
-          borderRadius: '8px',
-          padding: '20px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          zIndex: 1002, // Higher than menu container (1000), info bubbles (1000), and close buttons (1001)
-          minWidth: '300px',
-          maxWidth: '400px',
-          maxHeight: '70vh',
-          overflowY: 'auto'
-        }}>
+        <div className="settings-panel">
           {renderContent()}
         </div>
       )}
