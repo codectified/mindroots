@@ -145,12 +145,20 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     const menuRect = menuRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
     const isMobile = viewportWidth <= 768;
-    const submenuWidth = isMobile ? 120 : 120; // Consistent submenu width
+    const submenuWidth = isMobile ? 120 : 120;
+    const margin = 10;
     
-    // Check if submenu would overflow to the right
-    const wouldOverflow = menuRect.right + submenuWidth > viewportWidth - 10;
+    // Calculate if submenu would overflow on either side
+    const rightOverflow = menuRect.right + submenuWidth > viewportWidth - margin;
+    const leftOverflow = menuRect.left - submenuWidth < margin;
     
-    return wouldOverflow ? 'left-aligned' : '';
+    // If both sides would overflow, or if centered would be better, use centered positioning
+    if ((rightOverflow && leftOverflow) || (!rightOverflow && !leftOverflow)) {
+      return 'centered';
+    }
+    
+    // Otherwise use left-aligned if right would overflow
+    return rightOverflow ? 'left-aligned' : '';
   };
 
   const menuOptions = getMenuOptions();
