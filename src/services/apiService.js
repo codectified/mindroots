@@ -1,13 +1,13 @@
 import axios from 'axios';
 
-// // Create an Axios instance with the base URL for the API
-const api = axios.create({
-  baseURL: 'https://theoption.life/api',
-});
-
+// // // Create an Axios instance with the base URL for the API
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: 'https://theoption.life/api',
 // });
+
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -214,6 +214,48 @@ export const fetchHansWehrEntry = async (wordId) => {
   }
 };
 
+export const fetchCorpusItemEntry = async (corpusId, itemId) => {
+  try {
+    const response = await api.get(`/corpusitementry/${corpusId}/${itemId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching corpus item entry:', error);
+    throw error;
+  }
+};
+
+export const fetchRootEntry = async (rootId) => {
+  try {
+    const response = await api.get(`/rootentry/${rootId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Error fetching root entry:', error);
+    throw error;
+  }
+};
+
+// New consolidated expand function
+export const expandGraph = async (sourceType, sourceId, targetType, options = {}) => {
+  try {
+    const params = new URLSearchParams();
+    
+    // Add query parameters
+    if (options.L1) params.append('L1', options.L1);
+    if (options.L2) params.append('L2', options.L2);
+    if (options.corpus_id) params.append('corpus_id', options.corpus_id);
+    if (options.limit) params.append('limit', options.limit);
+    
+    const queryString = params.toString();
+    const url = `/expand/${sourceType}/${sourceId}/${targetType}${queryString ? `?${queryString}` : ''}`;
+    
+    const response = await api.get(url);
+    return response.data; // Returns { nodes, links }
+  } catch (error) {
+    console.error('Error expanding graph:', error);
+    throw error;
+  }
+};
+
 // 1. Modify fetchRootByLetters to accept searchType
 export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Triliteral') => {
   try {
@@ -271,4 +313,23 @@ export const fetchMarkdownFiles = async () => {
     console.error('Error fetching markdown files:', error);
     throw error;
   }
+};
+
+// Placeholder service functions for advanced mode features
+export const summarizeNodeContent = async (nodeId, nodeType) => {
+  // Placeholder for GPT integration
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`This is a placeholder summary for ${nodeType} node with ID: ${nodeId}. GPT integration will be implemented here.`);
+    }, 1000);
+  });
+};
+
+export const reportNodeIssue = async (nodeId, nodeType, issue) => {
+  // Placeholder for issue reporting
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(`Issue reported for ${nodeType} node (ID: ${nodeId}): ${issue}. Issue tracking system will be implemented here.`);
+    }, 500);
+  });
 };
