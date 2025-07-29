@@ -6,9 +6,6 @@ const ModeSelector = () => {
 
   return (
     <div className="selector-pair" style={{ marginBottom: '10px' }}>
-      <label style={{ marginRight: '10px', fontSize: '14px', fontWeight: 'bold' }}>
-        Mode:
-      </label>
       <div style={{ display: 'flex', gap: '5px' }}>
         <button
           className={`mode-toggle-button ${!isAdvancedMode ? 'active' : ''}`}

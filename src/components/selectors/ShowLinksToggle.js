@@ -26,15 +26,22 @@ const ShowLinksToggle = () => {
 
   return (
     <div style={{ marginBottom: '10px' }}>
-      <label style={{ display: 'flex', alignItems: 'center', cursor: 'pointer' }}>
-        <input
-          type="checkbox"
-          checked={showLinks}
-          onChange={(e) => setShowLinks(e.target.checked)}
-          style={{ marginRight: '8px' }}
-        />
-        <span style={{ fontSize: '14px' }}>Show Links</span>
-      </label>
+      <button
+        className={`mode-toggle-button ${showLinks ? 'active' : ''}`}
+        onClick={() => setShowLinks(!showLinks)}
+        style={{
+          padding: '4px 12px',
+          fontSize: '12px',
+          borderRadius: '4px',
+          border: '1px solid #ccc',
+          backgroundColor: showLinks ? '#333' : '#f8f9fa',
+          color: showLinks ? '#fff' : '#333',
+          cursor: 'pointer',
+          fontFamily: 'Noto Serif, serif'
+        }}
+      >
+        Show Links
+      </button>
     </div>
   );
 };
