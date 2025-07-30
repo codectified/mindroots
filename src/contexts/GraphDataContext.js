@@ -13,6 +13,7 @@ import { useNodeLimit } from './NodeLimitContext';
 import { useFilter } from './FilterContext'; // Import the filter context
 import { useScript } from './ScriptContext'; // Import the script context for language settings
 import { useFormFilter } from './FormFilterContext'; // Import the form filter context
+import { useContextFilter } from './ContextFilterContext'; // Import the context filter context
 
 
 
@@ -53,6 +54,7 @@ export const GraphDataProvider = ({ children }) => {
   const { L1, L2 } = useScript(); // Get current language settings
   const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
   const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
+  const { contextFilterRoot, contextFilterForm } = useContextFilter(); // Access context filter
 
   // Function to filter Word nodes, Form nodes, and remove associated links
   const applyFilter = (nodes, links) => {
@@ -124,9 +126,12 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
     const options = { L1, L2, limit: 100 };
     
-    // Add corpus filter if specified
-    if (contextFilter === corpusId && corpusId) {
-      options.corpus_id = corpusId;
+    // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
+    if (contextFilter && contextFilter !== 'lexicon') {
+      options.corpus_id = contextFilter;
+      console.log('Adding corpus filter:', contextFilter);
+    } else {
+      console.log('No corpus filter - using lexicon scope');
     }
 
     console.log('Calling expandGraph with:', 'root', rootId, 'word', options);
@@ -171,9 +176,12 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
     const options = { L1, L2, limit };
     
-    // Add corpus filter if specified
-    if (contextFilter === corpusId && corpusId) {
-      options.corpus_id = corpusId;
+    // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
+    if (contextFilter && contextFilter !== 'lexicon') {
+      options.corpus_id = contextFilter;
+      console.log('Adding corpus filter:', contextFilter);
+    } else {
+      console.log('No corpus filter - using lexicon scope');
     }
 
     console.log('Calling expandGraph with:', 'form', formId, 'word', options);
@@ -379,11 +387,11 @@ const handleContextMenuAction = async (action, node) => {
   try {
     switch (action) {
       case 'expand':
-        // Reuse existing expand logic based on node type using current language settings
+        // Reuse existing expand logic based on node type using current context filter settings
         if (node.type === 'root') {
-          await handleRootNodeClick(node, L1, L2, 'lexicon', null, { x: 0, y: 0 });
+          await handleRootNodeClick(node, L1, L2, contextFilterRoot, null, { x: 0, y: 0 });
         } else if (node.type === 'form') {
-          await handleFormNodeClick(node, L1, L2, 'lexicon', null, { x: 0, y: 0 });
+          await handleFormNodeClick(node, L1, L2, contextFilterForm, null, { x: 0, y: 0 });
         }
         break;
       
