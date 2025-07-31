@@ -4,7 +4,8 @@
       "Bash(curl:*)",
       "Bash(find:*)",
       "Bash(grep:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(lsof:*)"
     ],
     "deny": []
   }
