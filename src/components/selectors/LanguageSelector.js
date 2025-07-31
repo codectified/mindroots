@@ -8,7 +8,7 @@ const LanguageSelector = () => {
     <div>
       <div className="selector-row">
         <div className="selector-pair">
-          <label>L1 (Primary Language):</label>
+          <label>L1:</label>
           <select
             className="uniform-select"
             value={L1}

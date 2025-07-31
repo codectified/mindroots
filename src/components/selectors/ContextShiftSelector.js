@@ -36,7 +36,7 @@ const ContextShiftSelector = () => {
     <div>
       <div className="selector-row">
         <div className="selector-pair">
-          <label>Form Context:</label>
+          <label>Form:</label>
           <select
             className="uniform-select"
             name="form"
@@ -53,7 +53,7 @@ const ContextShiftSelector = () => {
         </div>
 
         <div className="selector-pair">
-          <label>Root Context:</label>
+          <label>Root:</label>
           <select
             className="uniform-select"
             name="root"

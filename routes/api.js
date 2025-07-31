@@ -430,8 +430,14 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
       });
     }
     
-    console.log('Executing query:', query);
-    console.log('With params:', params);
+    console.log('=== EXPAND REQUEST DEBUG ===');
+    console.log('Source:', sourceType, sourceId);
+    console.log('Target:', targetType);
+    console.log('Corpus filter:', corpus_id || 'none');
+    console.log('Query params:', params);
+    console.log('Generated Cypher Query:');
+    console.log(query);
+    console.log('=== END DEBUG ===');
     
     const result = await session.run(query, params);
     const nodes = [];
@@ -440,14 +446,42 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
     
     console.log(`Query returned ${result.records.length} records`);
     
-    // Check if no records found - return 404 only if the source node doesn't exist
+    // If no records found, we need to distinguish between:
+    // 1. Source node doesn't exist (404)
+    // 2. Source node exists but no targets in corpus (200 with empty data)
     if (result.records.length === 0) {
-      return res.status(404).json({ 
-        error: `No ${sourceType} node found with ID ${sourceId}`,
-        sourceType,
-        sourceId,
-        targetType
-      });
+      // Check if the source node exists at all
+      let sourceExistsQuery = '';
+      if (sourceType === 'root') {
+        sourceExistsQuery = `MATCH (n:Root {root_id: toInteger($sourceId)}) RETURN n LIMIT 1`;
+      } else if (sourceType === 'form') {
+        sourceExistsQuery = `MATCH (n:Form {form_id: toInteger($sourceId)}) RETURN n LIMIT 1`;
+      }
+      
+      if (sourceExistsQuery) {
+        const sourceCheck = await session.run(sourceExistsQuery, { sourceId });
+        if (sourceCheck.records.length === 0) {
+          // Source node doesn't exist - return 404
+          return res.status(404).json({ 
+            error: `No ${sourceType} node found with ID ${sourceId}`,
+            sourceType,
+            sourceId,
+            targetType
+          });
+        } else {
+          // Source exists but no targets found (possibly due to corpus filter) - return empty result
+          console.log(`${sourceType} ${sourceId} exists but no ${targetType} nodes found${corpus_id ? ` in corpus ${corpus_id}` : ''}`);
+          return res.json({ 
+            nodes: [], 
+            links: [],
+            info: {
+              message: `${sourceType} exists but no ${targetType} nodes found${corpus_id ? ` in corpus ${corpus_id}` : ''}`,
+              sourceExists: true,
+              corpusFiltered: !!corpus_id
+            }
+          });
+        }
+      }
     }
     
     if (sourceType === 'corpusitem' && targetType === 'word') {
