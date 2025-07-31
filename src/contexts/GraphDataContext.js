@@ -14,6 +14,8 @@ import { useFilter } from './FilterContext'; // Import the filter context
 import { useScript } from './ScriptContext'; // Import the script context for language settings
 import { useFormFilter } from './FormFilterContext'; // Import the form filter context
 import { useContextFilter } from './ContextFilterContext'; // Import the context filter context
+import { useFormNodeLimit } from './FormNodeLimitContext'; // Import the form node limit context
+import { useAdvancedMode } from './AdvancedModeContext'; // Import the advanced mode context
 
 
 
@@ -49,12 +51,15 @@ export const GraphDataProvider = ({ children }) => {
   const [contextMenu, setContextMenu] = useState(null); // State to manage context menu visibility
   const [corpusItemEntries, setCorpusItemEntries] = useState({}); // Cache for corpus item entries
   const [rootEntries, setRootEntries] = useState({}); // Cache for root entries
+  const [formNodeScrollIndex, setFormNodeScrollIndex] = useState({}); // Track scroll index per form node
 
   const { limit } = useNodeLimit();
   const { L1, L2 } = useScript(); // Get current language settings
   const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
   const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); // Access context filter
+  const { formNodeLimit } = useFormNodeLimit(); // Access form node limit
+  const { isAdvancedMode } = useAdvancedMode(); // Access advanced mode
 
   // Function to filter Word nodes, Form nodes, and remove associated links
   const applyFilter = (nodes, links) => {
@@ -169,12 +174,31 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
   }
 };
 
-const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
-  console.log('handleFormNodeClick called with:', { node, L1, L2, contextFilter, corpusId });
+const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, position, isAdvancedMode = false, paginationOffset = null) => {
+  console.log('handleFormNodeClick called with:', { node, L1, L2, contextFilter, corpusId, isAdvancedMode, paginationOffset });
   
   try {
     const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
-    const options = { L1, L2, limit };
+    const formKey = `form_${formId}`;
+    
+    // Determine offset for pagination
+    let offset = 0;
+    if (paginationOffset !== null) {
+      // Advanced mode pagination with explicit offset
+      offset = paginationOffset;
+    } else if (!isAdvancedMode) {
+      // Guided mode: use scroll index tracking
+      const currentScrollIndex = formNodeScrollIndex[formKey] || 0;
+      offset = currentScrollIndex * formNodeLimit;
+      
+      // Update scroll index for next tap
+      setFormNodeScrollIndex(prev => ({
+        ...prev,
+        [formKey]: currentScrollIndex + 1
+      }));
+    }
+    
+    const options = { L1, L2, limit: formNodeLimit, offset };
     
     // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
     if (contextFilter && contextFilter !== 'lexicon') {
@@ -183,6 +207,8 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     } else {
       console.log('No corpus filter - using lexicon scope');
     }
+    
+    console.log('Pagination info:', { formKey, offset, limit: formNodeLimit, currentScrollIndex: formNodeScrollIndex[formKey] || 0 });
 
     console.log('Calling expandGraph with:', 'form', formId, 'word', options);
     const result = await expandGraph('form', formId, 'word', options);
@@ -194,25 +220,59 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
 
     const { nodes: rawNodes, links: newLinks } = result;
 
+    // Check if no results returned
+    if (!rawNodes || rawNodes.length === 0) {
+      console.log('No more results for form node pagination');
+      // Reset scroll index if no more results
+      if (!isAdvancedMode) {
+        setFormNodeScrollIndex(prev => ({
+          ...prev,
+          [formKey]: 0
+        }));
+      }
+      return;
+    }
+
     // Normalize nodes to ensure consistent structure
     const newNodes = normalizeNodes(rawNodes);
 
-    // Filter out duplicate nodes based on node ID
-    const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
-    const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
-    
-    // Filter out duplicate links
-    const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
-    const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+    // For pagination: remove previous chunk of word nodes connected to this form
+    setGraphData(prev => {
+      // Find all word nodes currently connected to this form node
+      const formNodeId = `form_${formId}`;
+      const connectedWordIds = new Set();
+      
+      prev.links.forEach(link => {
+        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+        
+        if (sourceId === formNodeId && targetId.startsWith('word_')) {
+          connectedWordIds.add(targetId);
+        }
+        if (targetId === formNodeId && sourceId.startsWith('word_')) {
+          connectedWordIds.add(sourceId);
+        }
+      });
 
-    console.log(`Adding ${filteredNewNodes.length} new nodes and ${filteredNewLinks.length} new links`);
-    console.log('Current node IDs:', Array.from(currentNodeIds));
-    console.log('New node IDs being added:', filteredNewNodes.map(n => n.id));
+      // Remove old word nodes and their links
+      const filteredNodes = prev.nodes.filter(node => 
+        !connectedWordIds.has(node.id) || node.id === formNodeId
+      );
+      
+      const filteredLinks = prev.links.filter(link => {
+        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+        return !connectedWordIds.has(sourceId) && !connectedWordIds.has(targetId);
+      });
 
-    setGraphData(prev => ({
-      nodes: [...prev.nodes, ...filteredNewNodes],
-      links: [...prev.links, ...filteredNewLinks],
-    }));
+      console.log(`Replaced ${connectedWordIds.size} old word nodes with ${newNodes.length} new ones`);
+      console.log('New chunk node IDs:', newNodes.map(n => n.id));
+
+      return {
+        nodes: [...filteredNodes, ...newNodes],
+        links: [...filteredLinks, ...newLinks]
+      };
+    });
   } catch (error) {
     console.error('Form expansion failed:', error);
     // Fallback removed to ensure consistent node structure
@@ -291,13 +351,25 @@ const handleNodeClick = async (
   };
 
   if (node.type === 'form') {
+    const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+    const formKey = `form_${formId}`;
+    
+    // Reset scroll indices for other form nodes when tapping a different one
+    if (!isAdvancedMode) {
+      setFormNodeScrollIndex(prev => {
+        const newIndex = { [formKey]: prev[formKey] || 0 };
+        return newIndex;
+      });
+    }
+    
     await handleFormNodeClick(
       node,
       L1,
       L2,
       contextFilterForm,
       corpusId,
-      position
+      position,
+      isAdvancedMode
     );
   } else if (node.type === 'root') {
     await handleRootNodeClick(
@@ -383,7 +455,7 @@ const setContextMenuWithPrefetch = async (contextMenuData) => {
 };
 
 // Context menu action handlers
-const handleContextMenuAction = async (action, node) => {
+const handleContextMenuAction = async (action, node, options = {}) => {
   try {
     switch (action) {
       case 'expand':
@@ -391,7 +463,14 @@ const handleContextMenuAction = async (action, node) => {
         if (node.type === 'root') {
           await handleRootNodeClick(node, L1, L2, contextFilterRoot, null, { x: 0, y: 0 });
         } else if (node.type === 'form') {
-          await handleFormNodeClick(node, L1, L2, contextFilterForm, null, { x: 0, y: 0 });
+          await handleFormNodeClick(node, L1, L2, contextFilterForm, null, { x: 0, y: 0 }, true);
+        }
+        break;
+      
+      case 'expand-with-pagination':
+        // Advanced mode pagination
+        if (node.type === 'form') {
+          await handleFormNodeClick(node, L1, L2, contextFilterForm, null, { x: 0, y: 0 }, true, options.offset);
         }
         break;
       
@@ -504,7 +583,9 @@ const handleContextMenuAction = async (action, node) => {
       setContextMenu: setContextMenuWithPrefetch,
       corpusItemEntries,
       rootEntries,
-      handleContextMenuAction
+      handleContextMenuAction,
+      formNodeScrollIndex,
+      setFormNodeScrollIndex
     }}>
       {children}
     </GraphDataContext.Provider>

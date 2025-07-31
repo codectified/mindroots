@@ -1,12 +1,15 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import { useGraphData } from '../../contexts/GraphDataContext';
+import { useFormNodeLimit } from '../../contexts/FormNodeLimitContext';
 import '../../styles/node-context-menu.css';
 
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
-  const { corpusItemEntries, rootEntries } = useGraphData();
+  const [currentPage, setCurrentPage] = useState(0);
+  const { corpusItemEntries, rootEntries, formNodeScrollIndex } = useGraphData();
+  const { formNodeLimit } = useFormNodeLimit();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -107,8 +110,33 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         );
         break;
       case 'form':
+        // Get form ID for pagination tracking
+        const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+        const formKey = `form_${formId}`;
+        const scrollIndex = formNodeScrollIndex[formKey] || 0;
+        
         options.push(
-          { label: 'Expand', action: 'expand' },
+          { 
+            label: 'Expand', 
+            action: 'expand',
+            pagination: {
+              currentPage: currentPage,
+              formKey: formKey,
+              scrollIndex: scrollIndex,
+              limit: formNodeLimit
+            }
+          },
+          { 
+            label: `◀ Page ${Math.max(0, currentPage)}`, 
+            action: 'expand-prev',
+            disabled: currentPage === 0,
+            pagination: true
+          },
+          { 
+            label: `Page ${currentPage + 1} ▶`, 
+            action: 'expand-next',
+            pagination: true
+          },
           { label: 'Collapse', action: 'collapse' },
           { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
@@ -139,6 +167,20 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     if (option.submenu) {
       // Toggle submenu visibility
       setOpenSubmenu(openSubmenu === option.action ? null : option.action);
+    } else if (option.action === 'expand-prev') {
+      // Previous page
+      if (currentPage > 0) {
+        const newPage = currentPage - 1;
+        setCurrentPage(newPage);
+        onAction('expand-with-pagination', node, { offset: newPage * formNodeLimit });
+        // Don't close menu for pagination actions
+      }
+    } else if (option.action === 'expand-next') {
+      // Next page
+      const newPage = currentPage + 1;
+      setCurrentPage(newPage);
+      onAction('expand-with-pagination', node, { offset: newPage * formNodeLimit });
+      // Don't close menu for pagination actions
     } else {
       // Execute action and close menu
       onAction(option.action, node);
@@ -182,8 +224,9 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         {menuOptions.map((option, index) => (
           <div key={index} className="context-menu-item">
             <button
-              className={`context-menu-option ${option.submenu ? 'has-submenu' : ''}`}
-              onClick={() => handleOptionClick(option)}
+              className={`context-menu-option ${option.submenu ? 'has-submenu' : ''} ${option.disabled ? 'disabled' : ''}`}
+              onClick={() => !option.disabled && handleOptionClick(option)}
+              disabled={option.disabled}
             >
               {option.label}
               {option.submenu && <span className="submenu-arrow">▶</span>}

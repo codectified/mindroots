@@ -11,6 +11,7 @@ import WordShadeSelector from '../selectors/WordShadeSelector';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
+import FormNodeLimitSlider from '../selectors/FormNodeLimitSlider';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 const MiniMenu = () => {
@@ -127,6 +128,7 @@ const MiniMenu = () => {
           {showOtherSettings && (
             <>
               <NodeLimitSlider />
+              <FormNodeLimitSlider />
               <WordShadeSelector />
             </>
           )}

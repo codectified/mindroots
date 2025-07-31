@@ -361,15 +361,15 @@ router.get('/list/corpora', async (req, res) => {
 // Consolidated expansion route
 router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
   const { sourceType, sourceId, targetType } = req.params;
-  const { L1, L2, corpus_id, limit = 25 } = req.query;
+  const { L1, L2, corpus_id, limit = 25, offset = 0 } = req.query;
   
-  console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, limitType: typeof limit });
+  console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, offset, limitType: typeof limit, offsetType: typeof offset });
   
   const session = req.driver.session();
   
   try {
     let query = '';
-    let params = { sourceId, limit };
+    let params = { sourceId, limit, offset };
     
     // Add corpus_id to params if provided
     if (corpus_id) {
@@ -400,12 +400,14 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
           MATCH (form:Form {form_id: toInteger($sourceId)})<-[:HAS_FORM]-(word:Word)
           MATCH (corpus:Corpus {corpus_id: toInteger($corpus_id)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word)
           RETURN form, word
+          SKIP toInteger($offset)
           LIMIT toInteger($limit)
         `;
       } else {
         query = `
           MATCH (form:Form {form_id: toInteger($sourceId)})<-[:HAS_FORM]-(word:Word)
           RETURN form, word
+          SKIP toInteger($offset)
           LIMIT toInteger($limit)
         `;
       }
