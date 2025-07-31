@@ -1,13 +1,13 @@
 import axios from 'axios';
 
 // // // Create an Axios instance with the base URL for the API
-const api = axios.create({
-  baseURL: 'https://theoption.life/api',
-});
-
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: 'https://theoption.life/api',
 // });
+
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+});
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -245,10 +245,24 @@ export const expandGraph = async (sourceType, sourceId, targetType, options = {}
     if (options.corpus_id) params.append('corpus_id', options.corpus_id);
     if (options.limit) params.append('limit', options.limit);
     
+    // Add cache buster to prevent stale data when corpus context changes
+    params.append('_t', Date.now().toString());
+    
     const queryString = params.toString();
     const url = `/expand/${sourceType}/${sourceId}/${targetType}${queryString ? `?${queryString}` : ''}`;
     
-    const response = await api.get(url);
+    console.log(`Making API request to: ${url}`);
+    
+    const response = await api.get(url, {
+      // Prevent caching of expand requests
+      headers: {
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
+        'Pragma': 'no-cache',
+        'Expires': '0'
+      }
+    });
+    
+    console.log(`API response status: ${response.status}, data length: ${response.data?.nodes?.length || 0} nodes`);
     return response.data; // Returns { nodes, links }
   } catch (error) {
     console.error('Error expanding graph:', error);
