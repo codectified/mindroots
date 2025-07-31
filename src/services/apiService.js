@@ -244,6 +244,7 @@ export const expandGraph = async (sourceType, sourceId, targetType, options = {}
     if (options.L2) params.append('L2', options.L2);
     if (options.corpus_id) params.append('corpus_id', options.corpus_id);
     if (options.limit) params.append('limit', options.limit);
+    if (options.offset !== undefined) params.append('offset', options.offset);
     
     const queryString = params.toString();
     const url = `/expand/${sourceType}/${sourceId}/${targetType}${queryString ? `?${queryString}` : ''}`;

@@ -27,6 +27,7 @@ import { DisplayModeProvider } from './contexts/DisplayModeContext';
 import { AdvancedModeProvider } from './contexts/AdvancedModeContext';
 import { ShowLinksProvider } from './components/selectors/ShowLinksToggle';
 import { FormFilterProvider } from './contexts/FormFilterContext';
+import { FormNodeLimitProvider } from './contexts/FormNodeLimitContext';
 
 import './styles/base.css';
 import './styles/buttons.css';
@@ -58,7 +59,8 @@ const App = () => {
           <ContextFilterProvider>
             <ShowLinksProvider>
               <FormFilterProvider>
-                <GraphDataProvider>
+                <FormNodeLimitProvider>
+                  <GraphDataProvider>
               <Router basename="/">
                 <Routes>
                 <Route path="/"
@@ -96,7 +98,8 @@ const App = () => {
 
                 </Routes>
               </Router>
-                </GraphDataProvider>
+                  </GraphDataProvider>
+                </FormNodeLimitProvider>
               </FormFilterProvider>
             </ShowLinksProvider>
           </ContextFilterProvider>
