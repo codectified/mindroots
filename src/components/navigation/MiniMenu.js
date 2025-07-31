@@ -63,34 +63,31 @@ const MiniMenu = () => {
             <LanguageSelector />
           </div>
 
-          {/* 2. Mode Control */}
-          <ModeSelector />
-          
-          {/* 3. Link Control */}
-          <ShowLinksToggle />
-  
-          {/* 4. Filter Control */}
+          {/* 2. General */}
           <div
             className="collapsible-section"
-            onClick={() => setShowFilterSettings((prev) => !prev)}
+            onClick={() => setShowOtherSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Filter Control
-            <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+            General
+            <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
-          {showFilterSettings && (
+          {showOtherSettings && (
             <>
-              <FilterController />
+              <ModeSelector />
+              <ShowLinksToggle />
+              <NodeLimitSlider />
+              <WordShadeSelector />
             </>
           )}
           
-          {/* 5. Context Control */}
+          {/* 3. Contexts */}
           <div
             className="collapsible-section"
             onClick={() => setShowContextSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Context Control
+            Contexts
             <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
           {showContextSettings && (
@@ -99,35 +96,34 @@ const MiniMenu = () => {
             </>
           )}
   
-          {/* 6. Text Control */}
+          {/* 4. Filters */}
+          <div
+            className="collapsible-section"
+            onClick={() => setShowFilterSettings((prev) => !prev)}
+            style={{ cursor: 'pointer', marginBottom: '10px' }}
+          >
+            Filters
+            <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+          </div>
+          {showFilterSettings && (
+            <>
+              <FilterController />
+            </>
+          )}
+
+          {/* 5. Text - moved to bottom */}
           <div
             className="collapsible-section"
             onClick={() => setShowTextSettings((prev) => !prev)}
             style={{ cursor: 'pointer', marginBottom: '10px' }}
           >
-            Text Control
+            Text
             <FontAwesomeIcon icon={showTextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
           </div>
           {showTextSettings && (
             <>
               <TextLayoutToggle />
               <HighlightController />
-            </>
-          )}
-          
-          {/* 7. General Node Control */}
-          <div
-            className="collapsible-section"
-            onClick={() => setShowOtherSettings((prev) => !prev)}
-            style={{ cursor: 'pointer', marginBottom: '10px' }}
-          >
-            General Node Control
-            <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
-          </div>
-          {showOtherSettings && (
-            <>
-              <NodeLimitSlider />
-              <WordShadeSelector />
             </>
           )}
   

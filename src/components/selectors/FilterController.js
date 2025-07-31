@@ -80,7 +80,6 @@ const FilterController = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
-      <label>Filter by Nodes:</label>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
         {['phrase', 'verb', 'noun', 'unclassified'].map((type) => (
