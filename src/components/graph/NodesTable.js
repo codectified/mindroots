@@ -5,14 +5,15 @@ import { useFilter } from '../../contexts/FilterContext';
 import { useFormFilter } from '../../contexts/FormFilterContext';
 
 const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeInfoBubble }) => {
-  const [expandedNodes, setExpandedNodes] = useState({});
+  const [expandedRoots, setExpandedRoots] = useState({});
+  const [expandedForms, setExpandedForms] = useState({});
   const { hideFormNodes } = useFilter();
   const { selectedFormClassifications } = useFormFilter();
 
-  // Collect root nodes for top-level rows
+  // Collect root nodes
   const rootNodes = graphData.nodes.filter((n) => n.type === 'root');
 
-  // Collect form nodes for top-level rows (filtered by classification)
+  // Collect form nodes (filtered by classification)
   const formNodes = graphData.nodes.filter((n) => {
     if (n.type !== 'form') return false;
     if (hideFormNodes) return false;
@@ -20,11 +21,19 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
     return selectedFormClassifications.includes(n.classification);
   });
 
-  const handleParentRowClick = (parentNode, event) => {
-    onNodeClick(parentNode, event);
-    setExpandedNodes((prev) => ({
+  const handleRootRowClick = (root, event) => {
+    onNodeClick(root, event);
+    setExpandedRoots((prev) => ({
       ...prev,
-      [parentNode.id]: !prev[parentNode.id],
+      [root.id]: !prev[root.id],
+    }));
+  };
+
+  const handleFormRowClick = (form, event) => {
+    onNodeClick(form, event);
+    setExpandedForms((prev) => ({
+      ...prev,
+      [form.id]: !prev[form.id],
     }));
   };
 
@@ -32,126 +41,143 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
     onNodeClick(word, event);
   };
 
-  const getChildWords = (parentNode) => {
-    let childWords = [];
-    
-    if (parentNode.type === 'root') {
-      childWords = graphData.nodes
-        .filter((n) => n.type === 'word' && n.root_id === parentNode.root_id);
-    } else if (parentNode.type === 'form') {
-      childWords = graphData.nodes
-        .filter((n) => n.type === 'word' && n.form_id === parentNode.form_id);
-    }
-    
-    return childWords.sort((a, b) => (b.dataSize || 0) - (a.dataSize || 0)); // Sort by dataSize descending
+  const getWordsForRoot = (root) => {
+    return graphData.nodes
+      .filter((n) => n.type === 'word' && n.root_id === root.root_id)
+      .sort((a, b) => (b.dataSize || 0) - (a.dataSize || 0));
   };
 
+  const getWordsForForm = (form) => {
+    return graphData.nodes
+      .filter((n) => n.type === 'word' && n.form_id === form.form_id)
+      .sort((a, b) => (b.dataSize || 0) - (a.dataSize || 0));
+  };
 
   return (
     <>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
-        <thead>
-          <tr style={{ borderBottom: '1px solid #ccc' }}>
-            <th style={{ padding: '8px', textAlign: 'left' }}>Arabic</th>
-            <th style={{ padding: '8px', textAlign: 'left' }}>English</th>
-          </tr>
-        </thead>
-        <tbody>
-          {/* Render root nodes */}
-          {rootNodes.map((root) => {
-            const isExpanded = expandedNodes[root.id];
-            const color = getNodeColor(root, wordShadeMode);
+      {/* SECTION 1: ROOTS TABLE */}
+      <div style={{ marginBottom: '30px' }}>
+        <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>Roots</h3>
+        <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+          <thead>
+            <tr style={{ borderBottom: '1px solid #ccc' }}>
+              <th style={{ padding: '8px', textAlign: 'left' }}>Arabic</th>
+              <th style={{ padding: '8px', textAlign: 'left' }}>English</th>
+            </tr>
+          </thead>
+          <tbody>
+            {rootNodes.map((root) => {
+              const isExpanded = expandedRoots[root.id];
+              const color = getNodeColor(root, wordShadeMode);
 
-            return (
-              <React.Fragment key={`root-${root.id}`}>
-                {/* Root row */}
-                <tr
-                  onClick={(e) => handleParentRowClick(root, e)}
-                  style={{ cursor: 'pointer', borderBottom: '1px solid #eee', color, fontWeight: 'bold' }}
-                >
-                  <td style={{ padding: '8px' }}>{root.arabic ?? '(no Arabic)'}</td>
-                  <td style={{ padding: '8px' }}>{root.english ?? '(no English)'}</td>
-                </tr>
+              return (
+                <React.Fragment key={`root-${root.id}`}>
+                  {/* Root row */}
+                  <tr
+                    onClick={(e) => handleRootRowClick(root, e)}
+                    style={{ 
+                      cursor: 'pointer', 
+                      borderBottom: '1px solid #eee', 
+                      color
+                    }}
+                  >
+                    <td style={{ padding: '8px' }}>{root.arabic ?? '(no Arabic)'}</td>
+                    <td style={{ padding: '8px' }}>{root.english ?? '(no English)'}</td>
+                  </tr>
 
-                {/* Child word rows (only if expanded) */}
-                {isExpanded &&
-                  getChildWords(root).map((word) => {
-                    const wordColor = getNodeColor(word, wordShadeMode);
-                    return (
-                      <tr
-                        key={`root-${root.id}-word-${word.id}`}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent parent row click
-                          handleWordRowClick(word, e);
-                        }}
-                        style={{
-                          background: '#f9f9f9',
-                          borderBottom: '1px solid #eee',
-                          cursor: 'pointer',
-                          color: wordColor,
-                        }}
-                      >
-                        <td style={{ padding: '8px 8px 8px 40px' }}>{word.arabic ?? '(no Arabic)'}</td>
-                        <td style={{ padding: '8px' }}>{word.english ?? '(no English)'}</td>
-                      </tr>
-                    );
-                  })}
-              </React.Fragment>
-            );
-          })}
+                  {/* Expanded word rows */}
+                  {isExpanded &&
+                    getWordsForRoot(root).map((word) => {
+                      const wordColor = getNodeColor(word, wordShadeMode);
+                      return (
+                        <tr
+                          key={`root-${root.id}-word-${word.id}`}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleWordRowClick(word, e);
+                          }}
+                          style={{
+                            background: '#f9f9f9',
+                            borderBottom: '1px solid #eee',
+                            cursor: 'pointer',
+                            color: wordColor,
+                          }}
+                        >
+                          <td style={{ padding: '8px 8px 8px 40px' }}>{word.arabic ?? '(no Arabic)'}</td>
+                          <td style={{ padding: '8px' }}>{word.english ?? '(no English)'}</td>
+                        </tr>
+                      );
+                    })}
+                </React.Fragment>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
 
-          {/* Render form nodes */}
-          {formNodes.map((form) => {
-            const isExpanded = expandedNodes[form.id];
-            const color = getNodeColor(form, wordShadeMode);
+      {/* SECTION 2: FORMS TABLE */}
+      {formNodes.length > 0 && (
+        <div>
+          <h3 style={{ margin: '0 0 10px 0', fontSize: '16px', fontWeight: 'bold' }}>Forms</h3>
+          <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+            <thead>
+              <tr style={{ borderBottom: '1px solid #ccc' }}>
+                <th style={{ padding: '8px', textAlign: 'left' }}>Arabic</th>
+                <th style={{ padding: '8px', textAlign: 'left' }}>English</th>
+              </tr>
+            </thead>
+            <tbody>
+              {formNodes.map((form) => {
+                const isExpanded = expandedForms[form.id];
+                const color = getNodeColor(form, wordShadeMode);
 
-            return (
-              <React.Fragment key={`form-${form.id}`}>
-                {/* Form row */}
-                <tr
-                  onClick={(e) => handleParentRowClick(form, e)}
-                  style={{ 
-                    cursor: 'pointer', 
-                    borderBottom: '1px solid #eee', 
-                    color, 
-                    fontStyle: 'italic',
-                    backgroundColor: '#f0f8ff' // Light blue background to distinguish forms
-                  }}
-                >
-                  <td style={{ padding: '8px' }}>{form.arabic ?? '(no Arabic)'}</td>
-                  <td style={{ padding: '8px' }}>{form.english ?? '(no English)'}</td>
-                </tr>
+                return (
+                  <React.Fragment key={`form-${form.id}`}>
+                    {/* Form row */}
+                    <tr
+                      onClick={(e) => handleFormRowClick(form, e)}
+                      style={{ 
+                        cursor: 'pointer', 
+                        borderBottom: '1px solid #eee', 
+                        color: '#1976d2' // Blue text to distinguish forms
+                      }}
+                    >
+                      <td style={{ padding: '8px' }}>{form.arabic ?? '(no Arabic)'}</td>
+                      <td style={{ padding: '8px' }}>{form.english ?? '(no English)'}</td>
+                    </tr>
 
-                {/* Child word rows (only if expanded) */}
-                {isExpanded &&
-                  getChildWords(form).map((word) => {
-                    const wordColor = getNodeColor(word, wordShadeMode);
-                    return (
-                      <tr
-                        key={`form-${form.id}-word-${word.id}`}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent parent row click
-                          handleWordRowClick(word, e);
-                        }}
-                        style={{
-                          background: '#f9f9f9',
-                          borderBottom: '1px solid #eee',
-                          cursor: 'pointer',
-                          color: wordColor,
-                        }}
-                      >
-                        <td style={{ padding: '8px 8px 8px 40px' }}>{word.arabic ?? '(no Arabic)'}</td>
-                        <td style={{ padding: '8px' }}>{word.english ?? '(no English)'}</td>
-                      </tr>
-                    );
-                  })}
-              </React.Fragment>
-            );
-          })}
-        </tbody>
-      </table>
+                    {/* Expanded word rows */}
+                    {isExpanded &&
+                      getWordsForForm(form).map((word) => {
+                        const wordColor = getNodeColor(word, wordShadeMode);
+                        return (
+                          <tr
+                            key={`form-${form.id}-word-${word.id}`}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleWordRowClick(word, e);
+                            }}
+                            style={{
+                              background: '#f9f9f9',
+                              borderBottom: '1px solid #eee',
+                              cursor: 'pointer',
+                              color: wordColor,
+                            }}
+                          >
+                            <td style={{ padding: '8px 8px 8px 40px' }}>{word.arabic ?? '(no Arabic)'}</td>
+                            <td style={{ padding: '8px' }}>{word.english ?? '(no English)'}</td>
+                          </tr>
+                        );
+                      })}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
 
-      {/* Conditionally render the InfoBubble */}
+      {/* InfoBubble */}
       {infoBubble && (
         <InfoBubble
           className="info-bubble"
