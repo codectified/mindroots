@@ -94,6 +94,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         break;
       case 'word':
         options.push(
+          { label: 'Expand to Corpus Items', action: 'expand-to-corpusitems' },
           { 
             label: 'Entries', 
             action: 'entries',
