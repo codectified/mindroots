@@ -283,14 +283,10 @@ const handleWordToCorpusItemExpansion = async (node, L1, L2, contextFilter, posi
 
     const { nodes: rawNodes, links: newLinks, info } = result;
     
-    // Handle empty results with user feedback
+    // Handle empty results - no InfoBubble needed
     if (rawNodes.length === 0) {
       console.log(`No corpus items found for word ${wordId}`);
-      setInfoBubble({ 
-        definition: `No corpus items found for this word. This word may not appear in any of the available corpora.`, 
-        position: position || { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
-      });
-      return; // Don't update graph data if no results
+      return; // Don't update graph data if no results, no InfoBubble shown
     }
 
     // Normalize nodes to ensure consistent structure
@@ -314,10 +310,16 @@ const handleWordToCorpusItemExpansion = async (node, L1, L2, contextFilter, posi
     }));
   } catch (error) {
     console.error('Word to corpus item expansion failed:', error);
-    setInfoBubble({ 
-      definition: `Failed to load corpus items for this word. Please try again later.`, 
-      position: position || { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
-    });
+    
+    // Check if it's the backend unsupported combination error
+    if (error.message && error.message.includes('Invalid source/target type combination')) {
+      console.warn('Backend does not yet support word->corpusitem expansion. Backend update needed.');
+      console.warn('Supported combinations:', error.supportedCombinations || 'See backend error for details');
+      return; // Silently fail - no InfoBubble for unsupported feature
+    }
+    
+    // For other errors, don't show InfoBubble either - just log
+    console.error('Unexpected error during corpus item expansion:', error);
   }
 };
 
