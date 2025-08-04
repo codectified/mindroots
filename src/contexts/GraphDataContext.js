@@ -563,6 +563,80 @@ const handleContextMenuAction = async (action, node) => {
         }
         break;
       
+      case 'expand-to-root':
+        // Expand word to root node
+        if (node.type === 'word') {
+          const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+          
+          // Check if the corresponding root is already displayed
+          const alreadyHasRoot = graphData.nodes.some(
+            n => n.type === 'root' && n.root_id === node.root_id
+          );
+
+          if (!alreadyHasRoot) {
+            // Fetch and add the missing root
+            const root = await fetchRootByWord(wordId, L1, L2);
+            const rawRootNode = {
+              id: `root_${root.root_id}`,
+              label: L2 === 'off'
+                ? root[L1]
+                : `${root[L1]} / ${root[L2]}`,
+              ...root,
+              type: 'root',
+            };
+            const newRootNode = normalizeNode(rawRootNode);
+            // Link from word to root
+            const newLink = [{ source: node.id, target: newRootNode.id }];
+
+            setGraphData(prev => ({
+              nodes: [...prev.nodes, newRootNode],
+              links: [...prev.links, ...newLink],
+            }));
+          }
+        }
+        break;
+      
+      case 'expand-to-form':
+        // Expand word to form node using the consolidated expand route
+        if (node.type === 'word') {
+          const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+          const options = { L1, L2, limit };
+          
+          // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
+          if (contextFilterForm && contextFilterForm !== 'lexicon') {
+            options.corpus_id = contextFilterForm;
+          }
+
+          try {
+            const result = await expandGraph('word', wordId, 'form', options);
+            
+            if (result && result.nodes && result.links) {
+              const { nodes: rawNodes, links: newLinks } = result;
+              
+              if (rawNodes.length > 0) {
+                // Normalize nodes to ensure consistent structure
+                const newNodes = normalizeNodes(rawNodes);
+
+                // Filter out duplicate nodes based on node ID
+                const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
+                const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+                
+                // Filter out duplicate links
+                const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
+                const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+
+                setGraphData(prev => ({
+                  nodes: [...prev.nodes, ...filteredNewNodes],
+                  links: [...prev.links, ...filteredNewLinks],
+                }));
+              }
+            }
+          } catch (error) {
+            console.error('Word to form expansion failed:', error);
+          }
+        }
+        break;
+      
       case 'collapse':
         // Remove child nodes connected to this node
         const nodeIdsToRemove = new Set();
