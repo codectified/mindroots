@@ -422,11 +422,47 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
         OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
         RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms
       `;
+    } else if (sourceType === 'word' && targetType === 'corpusitem') {
+      // NEW: Word -> CorpusItem expansion
+      // Find all corpus items that contain this word
+      if (corpus_id) {
+        query = `
+          MATCH (word:Word {word_id: toInteger($sourceId)})
+          MATCH (word)<-[:HAS_WORD]-(item:CorpusItem)-[:BELONGS_TO]->(corpus:Corpus {corpus_id: toInteger($corpus_id)})
+          RETURN word, item
+          LIMIT toInteger($limit)
+        `;
+      } else {
+        query = `
+          MATCH (word:Word {word_id: toInteger($sourceId)})
+          MATCH (word)<-[:HAS_WORD]-(item:CorpusItem)
+          RETURN word, item
+          LIMIT toInteger($limit)
+        `;
+      }
+    } else if (sourceType === 'word' && targetType === 'root') {
+      // NEW: Word -> Root expansion
+      // Find the root this word belongs to
+      query = `
+        MATCH (word:Word {word_id: toInteger($sourceId)})
+        MATCH (word)<-[:HAS_WORD]-(root:Root)
+        RETURN word, root
+        LIMIT toInteger($limit)
+      `;
+    } else if (sourceType === 'word' && targetType === 'form') {
+      // NEW: Word -> Form expansion  
+      // Find forms this word is connected to
+      query = `
+        MATCH (word:Word {word_id: toInteger($sourceId)})
+        MATCH (word)-[:HAS_FORM]->(form:Form)
+        RETURN word, form
+        LIMIT toInteger($limit)
+      `;
     } else {
       console.error('Invalid source/target combination:', sourceType, targetType);
       return res.status(400).json({ 
         error: `Invalid source/target type combination: ${sourceType} -> ${targetType}`,
-        supportedCombinations: ['root->word', 'form->word', 'corpusitem->word']
+        supportedCombinations: ['root->word', 'form->word', 'corpusitem->word', 'word->corpusitem', 'word->root', 'word->form']
       });
     }
     
@@ -595,6 +631,90 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
               });
             }
           });
+        }
+      });
+      
+    } else if (sourceType === 'word' && targetType === 'corpusitem') {
+      // Handle word to corpus item expansion
+      result.records.forEach(record => {
+        const sourceNode = record.get('word')?.properties;
+        const targetNode = record.get('item')?.properties;
+        
+        // Add source word node if not already present
+        if (sourceNode && !nodeMap.has(`word_${sourceNode.word_id}`)) {
+          const wordNode = {
+            id: `word_${sourceNode.word_id}`,
+            label: L2 === 'off' ? sourceNode[L1] : `${sourceNode[L1]} / ${sourceNode[L2]}`,
+            ...convertIntegers(sourceNode),
+            type: 'word'
+          };
+          nodes.push(wordNode);
+          nodeMap.set(wordNode.id, wordNode);
+        }
+        
+        // Add target corpus item node
+        if (targetNode && !nodeMap.has(`corpusitem_${targetNode.item_id}`)) {
+          const corpusItemNode = {
+            id: `corpusitem_${targetNode.item_id}`,
+            label: L2 === 'off' ? targetNode[L1] : `${targetNode[L1]} / ${targetNode[L2]}`,
+            ...convertIntegers(targetNode),
+            type: 'name' // corpus items use 'name' type
+          };
+          nodes.push(corpusItemNode);
+          nodeMap.set(corpusItemNode.id, corpusItemNode);
+          
+          // Create link from word to corpus item
+          links.push({
+            source: `word_${sourceNode.word_id}`,
+            target: `corpusitem_${targetNode.item_id}`,
+            type: 'USED_IN'
+          });
+        }
+      });
+      
+    } else if (sourceType === 'word' && (targetType === 'root' || targetType === 'form')) {
+      // Handle word to root/form expansion
+      result.records.forEach(record => {
+        const sourceNode = record.get('word')?.properties;
+        const targetNode = record.get(targetType)?.properties;
+        
+        // Add source word node if not already present
+        if (sourceNode && !nodeMap.has(`word_${sourceNode.word_id}`)) {
+          const wordNode = {
+            id: `word_${sourceNode.word_id}`,
+            label: L2 === 'off' ? sourceNode[L1] : `${sourceNode[L1]} / ${sourceNode[L2]}`,
+            ...convertIntegers(sourceNode),
+            type: 'word'
+          };
+          nodes.push(wordNode);
+          nodeMap.set(wordNode.id, wordNode);
+        }
+        
+        // Add target node (root or form)
+        if (targetNode && !nodeMap.has(`${targetType}_${targetNode[`${targetType}_id`]}`)) {
+          const node = {
+            id: `${targetType}_${targetNode[`${targetType}_id`]}`,
+            label: L2 === 'off' ? targetNode[L1] : `${targetNode[L1]} / ${targetNode[L2]}`,
+            ...convertIntegers(targetNode),
+            type: targetType
+          };
+          nodes.push(node);
+          nodeMap.set(node.id, node);
+          
+          // Create appropriate link
+          if (targetType === 'root') {
+            links.push({
+              source: `${targetType}_${targetNode[`${targetType}_id`]}`,
+              target: `word_${sourceNode.word_id}`,
+              type: 'HAS_WORD'
+            });
+          } else if (targetType === 'form') {
+            links.push({
+              source: `word_${sourceNode.word_id}`,
+              target: `${targetType}_${targetNode[`${targetType}_id`]}`,
+              type: 'HAS_FORM'
+            });
+          }
         }
       });
       
