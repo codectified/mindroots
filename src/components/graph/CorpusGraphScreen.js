@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { expandGraph } from '../../services/apiService';
 import MiniMenu from '../navigation/MiniMenu';
+import MainMenu from '../navigation/MainMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
@@ -60,7 +61,12 @@ const CorpusGraphScreen = () => {
   }
 
   if (!selectedCorpus || !selectedCorpusItem) {
-    return <div>Please select a corpus and an item to view the graph.</div>;
+    return (
+      <div>
+        <MiniMenu />
+        <MainMenu />
+      </div>
+    );
   }
 
   return (
