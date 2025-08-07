@@ -1,6 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
 import { 
-  fetchRootByWord, 
   fetchLaneEntry, 
   fetchHansWehrEntry,
   fetchCorpusItemEntry,
@@ -49,6 +48,7 @@ export const GraphDataProvider = ({ children }) => {
   const [contextMenu, setContextMenu] = useState(null); // State to manage context menu visibility
   const [corpusItemEntries, setCorpusItemEntries] = useState({}); // Cache for corpus item entries
   const [rootEntries, setRootEntries] = useState({}); // Cache for root entries
+  const [wordClickStates, setWordClickStates] = useState({}); // Track click progression for word nodes
 
   const { limit } = useNodeLimit();
   const { L1, L2 } = useScript(); // Get current language settings
@@ -256,57 +256,190 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
   }
 };
 
-// Handle word node click
-// 1) Updated handleWordNodeClick
+// Handle word node expansion to corpus items
+const handleWordToCorpusItemExpansion = async (node, L1, L2, contextFilter, position) => {
+  console.log('handleWordToCorpusItemExpansion called with:', { node, L1, L2, contextFilter });
+  
+  try {
+    const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+    const options = { L1, L2, limit };
+    
+    // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
+    if (contextFilter && contextFilter !== 'lexicon') {
+      options.corpus_id = contextFilter;
+      console.log('Adding corpus filter for corpusitem expansion:', contextFilter);
+    } else {
+      console.log('No corpus filter for corpusitem expansion - using lexicon scope');
+    }
+
+    console.log('Calling expandGraph with:', 'word', wordId, 'corpusitem', options);
+    const result = await expandGraph('word', wordId, 'corpusitem', options);
+    console.log('expandGraph returned:', result);
+
+    if (!result || !result.nodes || !result.links) {
+      throw new Error('Invalid response format from expandGraph');
+    }
+
+    const { nodes: rawNodes, links: newLinks, info } = result;
+    
+    // Handle empty results - no InfoBubble needed
+    if (rawNodes.length === 0) {
+      console.log(`No corpus items found for word ${wordId}`);
+      return; // Don't update graph data if no results, no InfoBubble shown
+    }
+
+    // Normalize nodes to ensure consistent structure
+    const newNodes = normalizeNodes(rawNodes);
+
+    // Filter out duplicate nodes based on node ID
+    const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
+    const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+    
+    // Filter out duplicate links
+    const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
+    const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+
+    console.log(`Adding ${filteredNewNodes.length} new corpus item nodes and ${filteredNewLinks.length} new links`);
+    console.log('Current node IDs:', Array.from(currentNodeIds));
+    console.log('New corpus item node IDs being added:', filteredNewNodes.map(n => n.id));
+
+    setGraphData(prev => ({
+      nodes: [...prev.nodes, ...filteredNewNodes],
+      links: [...prev.links, ...filteredNewLinks],
+    }));
+  } catch (error) {
+    console.error('Word to corpus item expansion failed:', error);
+    
+    // Check if it's the backend unsupported combination error
+    if (error.message && error.message.includes('Invalid source/target type combination')) {
+      console.warn('Backend does not yet support word->corpusitem expansion. Backend update needed.');
+      console.warn('Supported combinations:', error.supportedCombinations || 'See backend error for details');
+      return; // Silently fail - no InfoBubble for unsupported feature
+    }
+    
+    // For other errors, don't show InfoBubble either - just log
+    console.error('Unexpected error during corpus item expansion:', error);
+  }
+};
+
+// Handle word node click with 3-click progression
 const handleWordNodeClick = async (
   node,
   L1,
   L2,
+  contextFilterForm, // Use form context filter for word expansions
   corpusId,
   event,
   position
 ) => {
   try {
-    // Determine the numeric word ID
-    const wordId = node.word_id?.low !== undefined
-      ? node.word_id.low
-      : node.word_id;
+    const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+    const nodeKey = node.id;
+    
+    // Get current click state for this word (default to 0)
+    const currentClickState = wordClickStates[nodeKey] || 0;
+    console.log(`Word node ${nodeKey} click state: ${currentClickState}`);
 
-    // Check if the corresponding root is already displayed
-    const alreadyHasRoot = graphData.nodes.some(
-      n => n.type === 'root' && n.root_id === node.root_id
-    );
+    if (currentClickState === 0) {
+      // FIRST CLICK: Expand to root node(s)
+      console.log('First click: expanding to root');
+      
+      // Check if the corresponding root is already displayed
+      const alreadyHasRoot = graphData.nodes.some(
+        n => n.type === 'root' && n.root_id === node.root_id
+      );
 
-    if (!alreadyHasRoot) {
-      // Fetch and add the missing root
-      const root = await fetchRootByWord(wordId, L1, L2);
-      const rawRootNode = {
-        id: `root_${root.root_id}`,
-        label: L2 === 'off'
-          ? root[L1]
-          : `${root[L1]} / ${root[L2]}`,
-        ...root,
-        type: 'root',
-      };
-      const newRootNode = normalizeNode(rawRootNode);
-      // Link from word to root
-      const newLink = [{ source: node.id, target: newRootNode.id }];
+      if (!alreadyHasRoot) {
+        // Use the universal expand route to get the root
+        const options = { L1, L2, limit: 1 };
+        try {
+          const result = await expandGraph('word', wordId, 'root', options);
+          
+          if (result && result.nodes && result.links) {
+            const { nodes: rawNodes, links: newLinks } = result;
+            
+            if (rawNodes.length > 0) {
+              // Normalize nodes to ensure consistent structure
+              const newNodes = normalizeNodes(rawNodes);
 
-      setGraphData(prev => ({
-        nodes: [...prev.nodes, newRootNode],
-        links: [...prev.links, ...newLink],
+              // Filter out duplicate nodes based on node ID
+              const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
+              const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+              
+              // Filter out duplicate links
+              const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
+              const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+
+              setGraphData(prev => ({
+                nodes: [...prev.nodes, ...filteredNewNodes],
+                links: [...prev.links, ...filteredNewLinks],
+              }));
+            }
+          }
+        } catch (error) {
+          console.error('Word to root expansion failed during 3-click progression:', error);
+        }
+      }
+      
+      // Update click state to 1
+      setWordClickStates(prev => ({
+        ...prev,
+        [nodeKey]: 1
       }));
-    } else {
-      // Fetch or read definitions
+      
+    } else if (currentClickState === 1) {
+      // SECOND CLICK: Show InfoBubble with definitions
+      console.log('Second click: showing definitions');
+      
       const definitions = node.properties?.definitions ||
         await fetchLaneEntry(wordId, L1, L2);
       setInfoBubble({
         definition: definitions,
         position,
       });
+      
+      // Update click state to 2
+      setWordClickStates(prev => ({
+        ...prev,
+        [nodeKey]: 2
+      }));
+      
+    } else if (currentClickState === 2) {
+      // THIRD CLICK: Expand to corpus items
+      console.log('Third click: expanding to corpus items');
+      
+      // Check if corpus items are already connected to this word
+      const hasCorpusItems = graphData.links.some(link => {
+        const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+        const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+        return (sourceId === node.id || targetId === node.id) && 
+               (link.type === 'USED_IN' || link.type === 'APPEARS_IN');
+      });
+      
+      if (!hasCorpusItems) {
+        await handleWordToCorpusItemExpansion(node, L1, L2, contextFilterForm, position);
+      } else {
+        console.log('Corpus items already expanded for this word');
+        setInfoBubble({
+          definition: 'Corpus items are already displayed for this word.',
+          position,
+        });
+      }
+      
+      // Reset click state to 0 for next cycle
+      setWordClickStates(prev => ({
+        ...prev,
+        [nodeKey]: 0
+      }));
+      
     }
   } catch (error) {
     console.error('Error handling word node click:', error);
+    // Reset click state on error
+    setWordClickStates(prev => ({
+      ...prev,
+      [node.id]: 0
+    }));
   }
 };
 
@@ -351,6 +484,7 @@ const handleNodeClick = async (
       node,
       L1,
       L2,
+      contextFilterForm, // Use form context filter for word expansions
       corpusId,
       event,
       position
@@ -429,6 +563,95 @@ const handleContextMenuAction = async (action, node) => {
           await handleRootNodeClick(node, L1, L2, contextFilterRoot, null, { x: 0, y: 0 });
         } else if (node.type === 'form') {
           await handleFormNodeClick(node, L1, L2, contextFilterForm, null, { x: 0, y: 0 });
+        }
+        break;
+      
+      case 'expand-to-corpusitems':
+        // Expand word to corpus items
+        if (node.type === 'word') {
+          await handleWordToCorpusItemExpansion(node, L1, L2, contextFilterForm, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+        }
+        break;
+      
+      case 'expand-to-root':
+        // Expand word to root node using the consolidated expand route
+        if (node.type === 'word') {
+          const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+          const options = { L1, L2, limit };
+          
+          // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
+          if (contextFilterForm && contextFilterForm !== 'lexicon') {
+            options.corpus_id = contextFilterForm;
+          }
+
+          try {
+            const result = await expandGraph('word', wordId, 'root', options);
+            
+            if (result && result.nodes && result.links) {
+              const { nodes: rawNodes, links: newLinks } = result;
+              
+              if (rawNodes.length > 0) {
+                // Normalize nodes to ensure consistent structure
+                const newNodes = normalizeNodes(rawNodes);
+
+                // Filter out duplicate nodes based on node ID
+                const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
+                const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+                
+                // Filter out duplicate links
+                const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
+                const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+
+                setGraphData(prev => ({
+                  nodes: [...prev.nodes, ...filteredNewNodes],
+                  links: [...prev.links, ...filteredNewLinks],
+                }));
+              }
+            }
+          } catch (error) {
+            console.error('Word to root expansion failed:', error);
+          }
+        }
+        break;
+      
+      case 'expand-to-form':
+        // Expand word to form node using the consolidated expand route
+        if (node.type === 'word') {
+          const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+          const options = { L1, L2, limit };
+          
+          // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
+          if (contextFilterForm && contextFilterForm !== 'lexicon') {
+            options.corpus_id = contextFilterForm;
+          }
+
+          try {
+            const result = await expandGraph('word', wordId, 'form', options);
+            
+            if (result && result.nodes && result.links) {
+              const { nodes: rawNodes, links: newLinks } = result;
+              
+              if (rawNodes.length > 0) {
+                // Normalize nodes to ensure consistent structure
+                const newNodes = normalizeNodes(rawNodes);
+
+                // Filter out duplicate nodes based on node ID
+                const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
+                const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+                
+                // Filter out duplicate links
+                const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
+                const filteredNewLinks = newLinks.filter(link => !currentLinkIds.has(`${link.source}-${link.target}-${link.type || ''}`));
+
+                setGraphData(prev => ({
+                  nodes: [...prev.nodes, ...filteredNewNodes],
+                  links: [...prev.links, ...filteredNewLinks],
+                }));
+              }
+            }
+          } catch (error) {
+            console.error('Word to form expansion failed:', error);
+          }
         }
         break;
       
@@ -535,6 +758,9 @@ const handleContextMenuAction = async (action, node) => {
       handleRootNodeClick,
       handleFormNodeClick,
       handleWordNodeClick,
+      handleWordToCorpusItemExpansion,
+      wordClickStates,
+      setWordClickStates,
       infoBubble,
       setInfoBubble,
       contextMenu,

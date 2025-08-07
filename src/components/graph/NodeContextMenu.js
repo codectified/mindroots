@@ -95,6 +95,15 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
       case 'word':
         options.push(
           { 
+            label: 'Expand', 
+            action: 'expand',
+            submenu: [
+              { label: 'Root', action: 'expand-to-root' },
+              { label: 'Form', action: 'expand-to-form' },
+              { label: 'Corpus Usage', action: 'expand-to-corpusitems' }
+            ]
+          },
+          { 
             label: 'Entries', 
             action: 'entries',
             submenu: [
