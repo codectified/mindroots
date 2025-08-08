@@ -11,12 +11,10 @@ export const FilterProvider = ({ children }) => {
   const [filterWordTypes, setFilterWordTypes] = useState([
     'phrase', 'verb', 'noun', 'unclassified',
   ]); // All selected by default
-  const [hideFormNodes, setHideFormNodes] = useState(!isAdvancedMode); // Form nodes shown by default in advanced mode
+  const [hideFormNodes, setHideFormNodes] = useState(false); // Form nodes shown by default in both modes
 
-  // Update form nodes visibility when advanced mode changes
-  useEffect(() => {
-    setHideFormNodes(!isAdvancedMode);
-  }, [isAdvancedMode]);
+  // Form nodes are always visible by default in both guided and advanced modes
+  // The only difference is that advanced mode has context menu functionality
 
   const toggleWordType = (type) => {
     setFilterWordTypes((prevTypes) =>
