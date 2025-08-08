@@ -3,8 +3,8 @@ import React, { createContext, useState, useContext } from 'react';
 const FormFilterContext = createContext();
 
 export const FormFilterProvider = ({ children }) => {
-  // Initialize with all possible classifications to prevent filtering out nodes during initial load
-  const [selectedFormClassifications, setSelectedFormClassifications] = useState(['ontological', 'Grammatical', 'Morphological']);
+  // Initialize with only Grammatical as default
+  const [selectedFormClassifications, setSelectedFormClassifications] = useState(['Grammatical']);
 
   return (
     <FormFilterContext.Provider value={{
