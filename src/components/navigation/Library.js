@@ -37,21 +37,62 @@ const ArticlesAndReferences = () => {
     navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english)}`);
   };
 
-  return (
-    <div>
-      <MiniMenu />
-  
-      {/* Render corpus list */}
-      <h2>Corpus Library</h2>
-      <ul className="corpus-library-list">
-        {corpora.map((corpus) => (
-          <li key={corpus.id} onClick={() => handleSelect(corpus)}>
-            {L2 === 'off' ? corpus[L1] : `${corpus[L1]} / ${corpus[L2]}`}
-          </li>
-        ))}
-      </ul>
-  
+  // Separate corpora by type
+  const corpus99Names = corpora.find(c => c.id === 1); // 99 Names
+  const corpusQuran = corpora.find(c => c.id === 2);   // Quran
+  const poetryCorpora = corpora.filter(c => c.corpusType === 'poetry'); // Poetry
 
+  return (
+    <div className="corpus-library-container">
+      <MiniMenu />
+      
+      <div className="corpus-library-header">
+        <h1 className="library-title">Corpus Library</h1>
+      </div>
+
+      {/* Top Row: Quran (left) and 99 Names (right) */}
+      <div className="corpus-top-row">
+        {corpusQuran && (
+          <div className="corpus-card corpus-left" onClick={() => handleSelect(corpusQuran)}>
+            <h2 className="corpus-title">
+              {L2 === 'off' ? corpusQuran[L1] : corpusQuran[L1]}
+            </h2>
+            {L2 !== 'off' && (
+              <p className="corpus-subtitle">{corpusQuran[L2]}</p>
+            )}
+          </div>
+        )}
+        
+        {corpus99Names && (
+          <div className="corpus-card corpus-right" onClick={() => handleSelect(corpus99Names)}>
+            <h2 className="corpus-title">
+              {L2 === 'off' ? corpus99Names[L1] : corpus99Names[L1]}
+            </h2>
+            {L2 !== 'off' && (
+              <p className="corpus-subtitle">{corpus99Names[L2]}</p>
+            )}
+          </div>
+        )}
+      </div>
+
+      {/* Poetry Section */}
+      {poetryCorpora.length > 0 && (
+        <div className="poetry-section">
+          <h2 className="section-title">Poetry</h2>
+          <div className="poetry-corpora">
+            {poetryCorpora.map((corpus) => (
+              <div key={corpus.id} className="corpus-card poetry-card" onClick={() => handleSelect(corpus)}>
+                <h3 className="corpus-title">
+                  {L2 === 'off' ? corpus[L1] : corpus[L1]}
+                </h3>
+                {L2 !== 'off' && (
+                  <p className="corpus-subtitle">{corpus[L2]}</p>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
