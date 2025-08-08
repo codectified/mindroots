@@ -270,25 +270,171 @@ export const expandGraph = async (sourceType, sourceId, targetType, options = {}
   }
 };
 
-// 1. Modify fetchRootByLetters to accept searchType
-export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Triliteral') => {
+/* 
+=== BACKEND IMPLEMENTATION GUIDE ===
+
+The new /radical-search endpoint should implement the following Cypher queries based on searchType:
+
+1. 'biradical_only': Only return roots with exactly 2 radicals
+MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
+WHERE rp.radical IN $radicals AND rp.position IN $positions
+WITH root, collect(rp) as matched_radicals
+WHERE size(matched_radicals) = size($radicals) AND size((root)-[:HAS_RADICAL]->(:RadicalPosition)) = 2
+RETURN root
+
+2. 'exact_match': Return roots that match exactly the specified radicals
+MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
+WHERE rp.radical IN $radicals AND rp.position IN $positions
+WITH root, collect(rp) as matched_radicals
+WHERE size(matched_radicals) = size($radicals) AND size((root)-[:HAS_RADICAL]->(:RadicalPosition)) = size($radicals)
+RETURN root
+
+3. 'biradical_and_matching_triradical': Return biradicals + triliteral where R3=R2
+MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
+WHERE rp.radical IN $radicals AND rp.position IN $positions
+WITH root, collect(rp) as matched_radicals, size((root)-[:HAS_RADICAL]->(:RadicalPosition)) as root_length
+WHERE size(matched_radicals) >= 2 AND (
+  (root_length = 2 AND size(matched_radicals) = 2) OR
+  (root_length = 3 AND size(matched_radicals) = 3)
+)
+RETURN root
+
+4. 'extended_and_longer': Return quadriliteral and longer roots
+MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
+WHERE rp.radical IN $radicals AND rp.position IN $positions
+WITH root, collect(rp) as matched_radicals
+WHERE size(matched_radicals) = size($radicals) AND size((root)-[:HAS_RADICAL]->(:RadicalPosition)) >= 4
+RETURN root
+
+5. 'flexible': Return any roots that match the given radicals (partial matching allowed)
+MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
+WHERE rp.radical IN $radicals AND rp.position IN $positions
+WITH root, collect(rp) as matched_radicals
+WHERE size(matched_radicals) = size($radicals)
+RETURN root
+
+Parameters should be:
+- $radicals: array of radical strings ["ك", "ت", "ب"]  
+- $positions: array of position integers [1, 2, 3]
+- L1, L2: for language display formatting
+*/
+
+// New unified radical search function using RadicalPosition layer
+export const fetchRootsByRadicals = async (radicals = [], L1, L2, searchType = 'flexible') => {
   try {
-    const response = await api.get('/rootbyletters', {
-      params: { r1, r2, r3, L1, L2, searchType },
+    const response = await api.get('/radical-search', {
+      params: { 
+        radicals: JSON.stringify(radicals), // [{ radical: 'ك', position: 1 }, { radical: 'ت', position: 2 }]
+        L1, 
+        L2, 
+        searchType 
+      },
     });
     return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching roots by radicals:', error);
+    throw error;
+  }
+};
+
+// Legacy fetchRootByLetters - now aliases to new radical search for backward compatibility
+export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Triliteral') => {
+  try {
+    // Convert old r1,r2,r3 format to new radicals array format
+    const radicals = [];
+    if (r1) radicals.push({ radical: r1, position: 1 });
+    if (r2) radicals.push({ radical: r2, position: 2 });
+    if (r3 && r3 !== 'NoR3') radicals.push({ radical: r3, position: 3 });
+    
+    // Determine search behavior based on inputs
+    let searchBehavior = 'flexible';
+    if (r3 === 'NoR3') {
+      searchBehavior = 'biradical_only';
+    } else if (r3 === r2) {
+      searchBehavior = 'biradical_and_matching_triradical';
+    } else if (r3) {
+      searchBehavior = 'exact_match';
+    }
+    
+    return await fetchRootsByRadicals(radicals, L1, L2, searchBehavior);
   } catch (error) {
     console.error('Error fetching roots by letters:', error);
     throw error;
   }
 };
 
+// ===== NEW DISTINCT SEARCH FUNCTIONS MATCHING BACKEND ENDPOINTS =====
+
+// 1. Fetch Root(s) - Position-specific search with wildcards and "None" support
+export const fetchRoots = async (r1, r2, r3, L1, L2) => {
+  try {
+    // Convert empty strings to wildcards for API
+    const params = {
+      r1: r1 || '*',
+      r2: r2 || '*', 
+      r3: r3 === 'NoR3' ? 'None' : (r3 || '*'),
+      L1,
+      L2
+    };
+    
+    const response = await api.get('/search-roots', { params });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching roots:', error);
+    throw error;
+  }
+};
+
+// 2. Combinate - Return all valid permutations of specified radicals
+export const fetchCombinateRoots = async (r1, r2, r3, L1, L2) => {
+  try {
+    // Only send non-empty radicals
+    const params = {
+      L1,
+      L2
+    };
+    
+    if (r1) params.r1 = r1;
+    if (r2) params.r2 = r2; 
+    if (r3 === 'NoR3') {
+      params.r3 = 'None';
+    } else if (r3) {
+      params.r3 = r3;
+    }
+    
+    const response = await api.get('/search-combinate', { params });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching combinate roots:', error);
+    throw error;
+  }
+};
+
+// 3. Fetch Extended - Only roots with 4+ radicals
+export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2) => {
+  try {
+    // Send all radicals as optional filters
+    const params = { L1, L2 };
+    if (r1) params.r1 = r1;
+    if (r2) params.r2 = r2;
+    if (r3 && r3 !== 'NoR3') params.r3 = r3;
+    
+    const response = await api.get('/search-extended', { params });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching extended roots:', error);
+    throw error;
+  }
+};
+
+// Legacy functions now using the new radical search system
 export const fetchGeminateRoots = async (r1, r2, L1, L2) => {
   try {
-    const response = await api.get('/geminate-roots', {
-      params: { r1, r2, L1, L2 },
-    });
-    return convertIntegers(response.data);
+    const radicals = [];
+    if (r1) radicals.push({ radical: r1, position: 1 });
+    if (r2) radicals.push({ radical: r2, position: 2 });
+    
+    return await fetchRootsByRadicals(radicals, L1, L2, 'biradical_only');
   } catch (error) {
     console.error('Error fetching geminate roots:', error);
     throw error;
@@ -297,10 +443,18 @@ export const fetchGeminateRoots = async (r1, r2, L1, L2) => {
 
 export const fetchTriliteralRoots = async (r1, r2, r3, L1, L2) => {
   try {
-    const response = await api.get('/triliteral-roots', {
-      params: { r1, r2, r3, L1, L2 },
-    });
-    return convertIntegers(response.data);
+    const radicals = [];
+    if (r1) radicals.push({ radical: r1, position: 1 });
+    if (r2) radicals.push({ radical: r2, position: 2 });
+    if (r3) radicals.push({ radical: r3, position: 3 });
+    
+    // Determine search type based on input pattern
+    let searchType = 'exact_match';
+    if (r3 === r2 && r1 && r2) {
+      searchType = 'biradical_and_matching_triradical';
+    }
+    
+    return await fetchRootsByRadicals(radicals, L1, L2, searchType);
   } catch (error) {
     console.error('Error fetching triliteral roots:', error);
     throw error;
@@ -309,10 +463,12 @@ export const fetchTriliteralRoots = async (r1, r2, r3, L1, L2) => {
 
 export const fetchExtendedRoots = async (r1, r2, r3, L1, L2) => {
   try {
-    const response = await api.get('/extended-roots', {
-      params: { r1, r2, r3, L1, L2 },
-    });
-    return convertIntegers(response.data);
+    const radicals = [];
+    if (r1) radicals.push({ radical: r1, position: 1 });
+    if (r2) radicals.push({ radical: r2, position: 2 });
+    if (r3) radicals.push({ radical: r3, position: 3 });
+    
+    return await fetchRootsByRadicals(radicals, L1, L2, 'extended_and_longer');
   } catch (error) {
     console.error('Error fetching extended roots:', error);
     throw error;

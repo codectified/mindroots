@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useDisplayMode } from '../../contexts/DisplayModeContext';
 import NodesTable from './NodesTable';
 import GraphVisualization from './GraphVisualization';
-import { fetchGeminateRoots, fetchTriliteralRoots, fetchExtendedRoots } from '../../services/apiService'; // Updated service functions
+import { fetchRoots, fetchCombinateRoots, fetchExtendedRootsNew } from '../../services/apiService'; // New distinct search functions
 import { useScript } from '../../contexts/ScriptContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
@@ -26,84 +26,48 @@ const Search = () => {
 
   const closeInfoBubble = () => setInfoBubble(null);
 
-  const handleFetchRoots = async (searchType = 'Triliteral') => {
+  // 1. Fetch Root(s) - Position-specific search with wildcards and "None" support
+  const handleFetchRoots = async () => {
     try {
-      let roots = [];
-      let total = 0;
-
-      // Select appropriate service function based on searchType
-      if (searchType === 'Geminate') {
-        const { roots: geminateRoots, total: geminateTotal } = await fetchGeminateRoots(r1, r2, L1, L2);
-        roots = geminateRoots;
-        total = geminateTotal;
-      } else if (searchType === 'Extended') {
-        const { roots: extendedRoots, total: extendedTotal } = await fetchExtendedRoots(r1, r2, r3, L1, L2);
-        roots = extendedRoots;
-        total = extendedTotal;
-      } else {
-        const { roots: triliteralRoots, total: triliteralTotal } = await fetchTriliteralRoots(r1, r2, r3, L1, L2);
-        roots = triliteralRoots;
-        total = triliteralTotal;
-      }
-
-      // Format and set graph data
+      const { roots, total } = await fetchRoots(r1, r2, r3, L1, L2);
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
     } catch (error) {
       console.error('Error fetching roots:', error);
+      setGraphData({ nodes: [], links: [] });
+      setTotalRoots(0);
     }
   };
 
-  const handleCombinate = async () => {
-    const combinations = generateCombinations(); // Generate all combinations
+  // 3. Fetch Extended - Only roots with 4+ radicals
+  const handleFetchExtended = async () => {
     try {
-      const responses = await Promise.allSettled(
-        combinations.map(async (combo) => {
-          try {
-            const { roots } = await fetchTriliteralRoots(combo[0], combo[1] || '', combo[2] || '', L1, L2);
-            return roots; // Return only the roots for this combination
-          } catch (error) {
-            console.warn(`No roots found for combination: ${combo.join('-')}`);
-            return []; // Return an empty array for failed requests
-          }
-        })
-      );
-
-      const allRoots = responses
-        .filter((result) => result.status === 'fulfilled') // Only take fulfilled results
-        .map((result) => result.value) // Extract the roots from the result
-        .flat(); // Flatten the array
-
-      if (allRoots.length > 0) {
-        const formattedData = formatNeo4jData(allRoots);
-        setGraphData(formattedData);
-        setTotalRoots(allRoots.length);
-      } else {
-        setGraphData({ nodes: [], links: [] });
-        setTotalRoots(0);
-      }
+      const { roots, total } = await fetchExtendedRootsNew(r1, r2, r3, L1, L2);
+      const formattedData = formatNeo4jData(roots);
+      setGraphData(formattedData);
+      setTotalRoots(total || roots.length);
     } catch (error) {
-      console.error('Error fetching combinations:', error);
+      console.error('Error fetching extended roots:', error);
+      setGraphData({ nodes: [], links: [] });
+      setTotalRoots(0);
     }
   };
 
-  const generateCombinations = () => {
-    const letters = [r1, r2, r3].filter(Boolean); // Only include selected letters
-    const combos = [];
-
-    const permute = (arr, m = []) => {
-      if (arr.length === 0) combos.push(m);
-      for (let i = 0; i < arr.length; i++) {
-        const curr = arr.slice();
-        const next = curr.splice(i, 1);
-        permute(curr.slice(), m.concat(next));
-      }
-    };
-
-    permute(letters);
-    return combos;
+  // 2. Combinate - Return all valid permutations of specified radicals
+  const handleCombinate = async () => {
+    try {
+      const { roots, total } = await fetchCombinateRoots(r1, r2, r3, L1, L2);
+      const formattedData = formatNeo4jData(roots);
+      setGraphData(formattedData);
+      setTotalRoots(total || roots.length);
+    } catch (error) {
+      console.error('Error fetching combinate roots:', error);
+      setGraphData({ nodes: [], links: [] });
+      setTotalRoots(0);
+    }
   };
+
 
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
@@ -182,9 +146,36 @@ const Search = () => {
 
       {/* Buttons */}
     <div className="button-row" style={{ marginBottom: '10px' }}>
-        <button onClick={() => handleFetchRoots(r3 === 'NoR3' ? 'Geminate' : 'Triliteral')}>Fetch Root(s)</button>
-        <button onClick={handleCombinate}>Combinate</button>
-        <button onClick={() => handleFetchRoots('Extended')}>Fetch Extended</button>
+        <button 
+          onClick={handleFetchRoots}
+          disabled={!r1}
+        >
+          Fetch Root(s)
+        </button>
+        <button 
+          onClick={handleCombinate}
+          disabled={!r1}
+        >
+          Combinate
+        </button>
+        <button 
+          onClick={handleFetchExtended}
+          disabled={false}
+        >
+          Fetch Extended
+        </button>
+      </div>
+
+      {/* User feedback for search logic */}
+      <div style={{ marginBottom: '10px', fontSize: '12px', color: '#666' }}>
+        <div>🔍 <strong>Fetch Root(s):</strong> Position-specific search {r3 === 'NoR3' ? '(biradical only)' : '(2-3 radicals)'}</div>
+        <div>🔀 <strong>Combinate:</strong> All permutations of selected radicals {r3 === 'NoR3' ? '(biradical only)' : ''}</div>
+        <div>📈 <strong>Extended:</strong> Only roots with 4+ radicals</div>
+        {r1 && (
+          <div style={{ marginTop: '5px', fontStyle: 'italic' }}>
+            Pattern: {r1 || '*'} - {r2 || '*'} - {r3 === 'NoR3' ? 'None' : (r3 || '*')}
+          </div>
+        )}
       </div>
 
       {/* Total roots count */}
