@@ -25,23 +25,23 @@ const MainMenu = () => {
       <div className="icon-grid">
         <div className="icon-item" onClick={() => handleNavigation('/corpus-menu')}>
           <FontAwesomeIcon icon={faBook} className="icon" />
-          <span>Current Corpus Library</span>
+          <span>Corpus Library</span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/start')}>
           <FontAwesomeIcon icon={faMapMarked} className="icon" />
           <span>
-            Ontological and Random Knowledge Graph Exploration
+            Graph Exploration
           </span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/sandbox')}>
           <FontAwesomeIcon icon={faSearch} className="icon" />
           <span>
-            Advanced Search by Root, Partial Root & Radical Combination
+            Advanced Root Search
           </span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/lisan-lab')}>
           <FontAwesomeIcon icon={faPodcast} className="icon" />
-          <span>Lisān Lab Podcast & Reports</span>
+          <span>Lisān Lab & Reports</span>
         </div>
       </div>
 
