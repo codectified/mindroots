@@ -79,11 +79,13 @@ export const GraphDataProvider = ({ children }) => {
         includeNode = false;
       }
       
-      // Apply form classification filter
+      // Apply form classification filter (case-insensitive comparison)
       if (isFormNode && selectedFormClassifications.length > 0) {
         const nodeClassification = node.classification;
-        console.log(`Checking form node ${node.id}: classification="${nodeClassification}", selectedFormClassifications=[${selectedFormClassifications.join(', ')}], includes=${selectedFormClassifications.includes(nodeClassification)}`);
-        if (!nodeClassification || !selectedFormClassifications.includes(nodeClassification)) {
+        const nodeClassificationNormalized = nodeClassification ? nodeClassification.toLowerCase() : '';
+        const selectedClassificationsNormalized = selectedFormClassifications.map(c => c.toLowerCase());
+        console.log(`Checking form node ${node.id}: classification="${nodeClassification}", selectedFormClassifications=[${selectedFormClassifications.join(', ')}], includes=${selectedClassificationsNormalized.includes(nodeClassificationNormalized)}`);
+        if (!nodeClassification || !selectedClassificationsNormalized.includes(nodeClassificationNormalized)) {
           includeNode = false;
         }
       }

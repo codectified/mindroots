@@ -154,6 +154,14 @@
   overflow-y: auto;
 }
 
+/* Settings Menu Section Headers */
+.collapsible-section {
+  font-weight: 600 !important;
+  font-family: 'Noto Serif', serif !important;
+  color: #333 !important;
+  font-size: 14px !important;
+}
+
 /* Mobile: settings panel above menu */
 @media (max-width: 768px) {
   .settings-panel {

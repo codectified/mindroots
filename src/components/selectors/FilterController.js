@@ -11,40 +11,11 @@ const FilterController = () => {
   const { selectedFormClassifications, setSelectedFormClassifications } = useFormFilter();
   const { graphData } = useGraphData();
 
-  // Hardcoded available classifications - always show these three options
-  // Note: 'ontological' is lowercase in database, 'Grammatical' is capitalized
-  const availableClassifications = ['ontological', 'Grammatical', 'Morphological'];
-  
-  // Check which classifications are actually present in the current graph data
-  const presentClassifications = React.useMemo(() => {
-    const formNodes = graphData.nodes.filter(node => node.type === 'form');
-    const currentClassifications = formNodes
-      .map(node => node.classification)
-      .filter(classification => classification && classification.trim() !== '');
-    
-    return new Set(currentClassifications);
-  }, [graphData.nodes]);
-
-  // Initialize selections when classifications become available
-  React.useEffect(() => {
-    // Only update if we have present classifications and current selection doesn't match
-    if (presentClassifications.size > 0) {
-      const presentClassificationsList = [...presentClassifications];
-      const currentlySelected = selectedFormClassifications.filter(c => presentClassifications.has(c));
-      
-      // If current selection doesn't include all present classifications, update it
-      if (presentClassificationsList.some(c => !selectedFormClassifications.includes(c))) {
-        setSelectedFormClassifications(presentClassificationsList);
-      }
-    }
-  }, [presentClassifications, selectedFormClassifications, setSelectedFormClassifications]);
+  // Hardcoded available classifications - always show these three options and always clickable
+  // All normalized to proper case for display
+  const availableClassifications = ['Ontological', 'Grammatical', 'Morphological'];
 
   const handleClassificationToggle = (classification) => {
-    // Only allow toggling if the classification is present in the graph
-    if (!presentClassifications.has(classification)) {
-      return;
-    }
-    
     if (selectedFormClassifications.includes(classification)) {
       setSelectedFormClassifications(prev => prev.filter(c => c !== classification));
     } else {
@@ -134,33 +105,28 @@ const FilterController = () => {
           {!hideFormNodes && (
             <div style={{ marginLeft: '26px', marginTop: '5px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
               {availableClassifications.map(classification => {
-                const isPresent = presentClassifications.has(classification);
-                const isDisabled = !isPresent;
-                
                 return (
                   <label key={classification} style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
-                    gap: '5px',
-                    opacity: isDisabled ? 0.5 : 1
+                    gap: '5px'
                   }}>
                     <input
                       type="checkbox"
                       checked={selectedFormClassifications.includes(classification)}
-                      onChange={() => !isDisabled && handleClassificationToggle(classification)}
-                      disabled={isDisabled}
+                      onChange={() => handleClassificationToggle(classification)}
                       style={{
                         appearance: 'none',
                         width: '16px',
                         height: '16px',
                         borderRadius: '50%',
-                        border: `2px solid ${isDisabled ? '#ccc' : grammaticalColorStyles.form}`,
-                        backgroundColor: selectedFormClassifications.includes(classification) && !isDisabled ? grammaticalColorStyles.form : 'transparent',
-                        cursor: isDisabled ? 'not-allowed' : 'pointer',
+                        border: `2px solid ${grammaticalColorStyles.form}`,
+                        backgroundColor: selectedFormClassifications.includes(classification) ? grammaticalColorStyles.form : 'transparent',
+                        cursor: 'pointer',
                       }}
                     />
                     <span style={{ 
-                      color: isDisabled ? '#ccc' : grammaticalColorStyles.form, 
+                      color: grammaticalColorStyles.form, 
                       fontSize: '14px' 
                     }}>
                       {classification}
