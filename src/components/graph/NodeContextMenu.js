@@ -88,7 +88,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         }
         
         options.push(
-          { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
@@ -111,7 +110,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
               { label: 'Hans Wehr', action: 'hanswehr-entry' }
             ]
           },
-          { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
@@ -119,7 +117,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         options.push(
           { label: 'Expand', action: 'expand' },
           { label: 'Collapse', action: 'collapse' },
-          { label: 'Summarize', action: 'summarize' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
