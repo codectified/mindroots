@@ -63,7 +63,12 @@ const MiniMenu = () => {
             <LanguageSelector />
           </div>
 
-          {/* 2. General */}
+          {/* 2. Mode Selection */}
+          <div style={{ marginBottom: '10px' }}>
+            <ModeSelector />
+          </div>
+
+          {/* 3. General */}
           <div
             className="collapsible-section"
             onClick={() => setShowOtherSettings((prev) => !prev)}
@@ -74,14 +79,13 @@ const MiniMenu = () => {
           </div>
           {showOtherSettings && (
             <>
-              <ModeSelector />
               <ShowLinksToggle />
               <NodeLimitSlider />
               <WordShadeSelector />
             </>
           )}
           
-          {/* 3. Contexts */}
+          {/* 4. Contexts */}
           <div
             className="collapsible-section"
             onClick={() => setShowContextSettings((prev) => !prev)}
@@ -96,7 +100,7 @@ const MiniMenu = () => {
             </>
           )}
   
-          {/* 4. Filters */}
+          {/* 5. Filters */}
           <div
             className="collapsible-section"
             onClick={() => setShowFilterSettings((prev) => !prev)}
@@ -111,7 +115,7 @@ const MiniMenu = () => {
             </>
           )}
 
-          {/* 5. Text - moved to bottom */}
+          {/* 6. Text - moved to bottom */}
           <div
             className="collapsible-section"
             onClick={() => setShowTextSettings((prev) => !prev)}
