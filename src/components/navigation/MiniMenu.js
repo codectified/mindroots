@@ -12,10 +12,12 @@ import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 
 const MiniMenu = () => {
   const location = useLocation();
   const navigate = useNavigate();
+  const { isAdvancedMode } = useAdvancedMode();
   const [selectedOption, setSelectedOption] = useState(null);
   const [showTextSettings, setShowTextSettings] = useState(false);
   const [setIsGraphMode] = useState(false); // Toggle for Graph/Table mode
@@ -58,84 +60,89 @@ const MiniMenu = () => {
     if (selectedOption === 'settings') {
       return (
         <div className="content-container">
-          {/* 1. Language Control */}
+          {/* 1. Language Control - Always visible */}
           <div style={{ marginBottom: '10px' }}>
             <LanguageSelector />
           </div>
 
-          {/* 2. Mode Selection */}
+          {/* 2. Mode Selection - Always visible */}
           <div style={{ marginBottom: '10px' }}>
             <ModeSelector />
           </div>
 
-          {/* 3. General */}
-          <div
-            className="collapsible-section"
-            onClick={() => setShowOtherSettings((prev) => !prev)}
-            style={{ cursor: 'pointer', marginBottom: '10px' }}
-          >
-            General
-            <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
-          </div>
-          {showOtherSettings && (
+          {/* Advanced Mode Only Sections */}
+          {isAdvancedMode && (
             <>
-              <ShowLinksToggle />
-              <NodeLimitSlider />
-              <WordShadeSelector />
-            </>
-          )}
-          
-          {/* 4. Contexts */}
-          <div
-            className="collapsible-section"
-            onClick={() => setShowContextSettings((prev) => !prev)}
-            style={{ cursor: 'pointer', marginBottom: '10px' }}
-          >
-            Contexts
-            <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
-          </div>
-          {showContextSettings && (
-            <>
-              <ContextShiftSelector />
-            </>
-          )}
-  
-          {/* 5. Filters */}
-          <div
-            className="collapsible-section"
-            onClick={() => setShowFilterSettings((prev) => !prev)}
-            style={{ cursor: 'pointer', marginBottom: '10px' }}
-          >
-            Filters
-            <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
-          </div>
-          {showFilterSettings && (
-            <>
-              <FilterController />
-            </>
-          )}
+              {/* 3. General */}
+              <div
+                className="collapsible-section"
+                onClick={() => setShowOtherSettings((prev) => !prev)}
+                style={{ cursor: 'pointer', marginBottom: '10px' }}
+              >
+                General
+                <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+              </div>
+              {showOtherSettings && (
+                <>
+                  <ShowLinksToggle />
+                  <NodeLimitSlider />
+                  <WordShadeSelector />
+                </>
+              )}
+              
+              {/* 4. Contexts */}
+              <div
+                className="collapsible-section"
+                onClick={() => setShowContextSettings((prev) => !prev)}
+                style={{ cursor: 'pointer', marginBottom: '10px' }}
+              >
+                Contexts
+                <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+              </div>
+              {showContextSettings && (
+                <>
+                  <ContextShiftSelector />
+                </>
+              )}
+      
+              {/* 5. Filters */}
+              <div
+                className="collapsible-section"
+                onClick={() => setShowFilterSettings((prev) => !prev)}
+                style={{ cursor: 'pointer', marginBottom: '10px' }}
+              >
+                Filters
+                <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+              </div>
+              {showFilterSettings && (
+                <>
+                  <FilterController />
+                </>
+              )}
 
-          {/* 6. Text - moved to bottom */}
-          <div
-            className="collapsible-section"
-            onClick={() => setShowTextSettings((prev) => !prev)}
-            style={{ cursor: 'pointer', marginBottom: '10px' }}
-          >
-            Text
-            <FontAwesomeIcon icon={showTextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
-          </div>
-          {showTextSettings && (
-            <>
-              <TextLayoutToggle />
-              <HighlightController />
+              {/* 6. Text - moved to bottom */}
+              <div
+                className="collapsible-section"
+                onClick={() => setShowTextSettings((prev) => !prev)}
+                style={{ cursor: 'pointer', marginBottom: '10px' }}
+              >
+                Text
+                <FontAwesomeIcon icon={showTextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+              </div>
+              {showTextSettings && (
+                <>
+                  <TextLayoutToggle />
+                  <HighlightController />
+                </>
+              )}
             </>
           )}
   
-{/* Links Section at the Bottom - removed buttons that moved to vertical stack */}
-<div className="settings-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-  {/* Buttons moved to vertical stack under Mindroots button */}
-</div>
-</div>
+          {/* Links Section at the Bottom - removed buttons that moved to vertical stack */}
+          <div className="settings-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+            {/* Buttons moved to vertical stack under Mindroots button */}
+          </div>
+        </div>
       );
     }
   };
