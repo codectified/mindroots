@@ -1,7 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(find:*)",
+      "Bash(node server.js)",
+      "Bash(pkill:*)",
+      "Bash(rm:*)"
     ],
     "deny": []
   }
