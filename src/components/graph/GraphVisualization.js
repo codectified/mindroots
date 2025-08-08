@@ -14,7 +14,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const { isAdvancedMode } = useAdvancedMode();
   const { contextMenu, setContextMenu, handleContextMenuAction } = useGraphData();
   const { wordShadeMode } = useWordShade();
-  const { showLinks } = useShowLinks();
+  const { showLinks, showLinkLabels } = useShowLinks();
 
   // Enhanced click handler that checks for advanced mode
   const handleNodeClick = useCallback((event, d) => {
@@ -160,7 +160,28 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         return 1.5; // Default for backward compatibility
       });
 
-    // Link labels removed for cleaner visualization
+    // Link labels - conditionally render based on showLinkLabels
+    const linkLabel = showLinks && showLinkLabels ? zoomLayer.append('g')
+      .attr('class', 'link-labels')
+      .selectAll('text')
+      .data(data.links)
+      .enter().append('text')
+      .text(d => {
+        // Map link types to cleaner display labels
+        const labelMap = {
+          'HAS_WORD': 'WORD',
+          'HAS_ROOT': 'ROOT', 
+          'HAS_FORM': 'FORM',
+          'ETYM': 'ETYMON'
+        };
+        return labelMap[d.type] || d.type || '';
+      })
+      .attr('font-size', '10px')
+      .attr('fill', '#666')
+      .attr('text-anchor', 'middle')
+      .attr('dy', '-2px')
+      .style('pointer-events', 'none')
+      .style('font-family', 'Noto Sans, sans-serif') : null;
 
     // Append nodes with custom color logic and size based on dataSize only for Word nodes
     const node = zoomLayer.append('g')
@@ -215,7 +236,11 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         .attr('x2', d => d.target.x)
         .attr('y2', d => d.target.y + shiftY);
 
-      // Link labels removed
+      // Position link labels at midpoint of links
+      if (linkLabel) {
+        linkLabel.attr('x', d => (d.source.x + d.target.x) / 2)
+          .attr('y', d => (d.source.y + d.target.y) / 2 + shiftY);
+      }
     });
 
     newSimulation.force('link').links(data.links);
@@ -251,7 +276,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick, showLinks]);
+  }, [data, handleNodeClick, showLinks, showLinkLabels]);
 
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
