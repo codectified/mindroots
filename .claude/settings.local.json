@@ -5,7 +5,9 @@
       "Bash(find:*)",
       "Bash(node server.js)",
       "Bash(pkill:*)",
-      "Bash(rm:*)"
+      "Bash(rm:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)"
     ],
     "deny": []
   }
