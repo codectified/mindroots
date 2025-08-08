@@ -167,9 +167,19 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .data(data.links)
       .enter().append('text')
       .text(d => {
-        // Map link types to cleaner display labels
+        // Map link types to cleaner display labels based on context
+        if (d.type === 'HAS_WORD') {
+          // Check source node type to determine appropriate label
+          if (d.source.type === 'root') {
+            return 'ROOT';
+          } else if (d.source.type === 'name') { // corpus item nodes
+            return 'WORD';
+          } else {
+            return 'WORD'; // default fallback for HAS_WORD
+          }
+        }
+        
         const labelMap = {
-          'HAS_WORD': 'WORD',
           'HAS_ROOT': 'ROOT', 
           'HAS_FORM': 'FORM',
           'ETYM': 'ETYMON'
