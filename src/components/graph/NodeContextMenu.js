@@ -78,21 +78,26 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
         const hasRootEntry = rootEntries[rootId] !== null && rootEntries[rootId] !== undefined;
         
-        options.push(
-          { label: 'Expand', action: 'expand' },
-          { label: 'Collapse', action: 'collapse' }
-        );
-        
         if (hasRootEntry) {
           options.push({ label: 'Entry', action: 'root-entry' });
         }
         
         options.push(
+          { label: 'Expand', action: 'expand' },
+          { label: 'Collapse', action: 'collapse' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
       case 'word':
         options.push(
+          { 
+            label: 'Entries', 
+            action: 'entries',
+            submenu: [
+              { label: 'Lane', action: 'lane-entry' },
+              { label: 'Hans Wehr', action: 'hanswehr-entry' }
+            ]
+          },
           { 
             label: 'Expand', 
             action: 'expand',
@@ -100,14 +105,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
               { label: 'Root', action: 'expand-to-root' },
               { label: 'Form', action: 'expand-to-form' },
               { label: 'Corpus Usage', action: 'expand-to-corpusitems' }
-            ]
-          },
-          { 
-            label: 'Entries', 
-            action: 'entries',
-            submenu: [
-              { label: 'Lane', action: 'lane-entry' },
-              { label: 'Hans Wehr', action: 'hanswehr-entry' }
             ]
           },
           { label: 'Report Issue', action: 'report' }
