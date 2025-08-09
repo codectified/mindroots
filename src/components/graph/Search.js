@@ -50,6 +50,7 @@ const Search = () => {
       
       return () => clearTimeout(timeoutId);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [resultLimit]); // Only depend on resultLimit to avoid infinite loops
 
   // 1. Fetch Root(s) - Position-specific search with wildcards and "None" support
