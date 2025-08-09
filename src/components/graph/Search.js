@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useDisplayMode } from '../../contexts/DisplayModeContext';
 import NodesTable from './NodesTable';
 import GraphVisualization from './GraphVisualization';
@@ -23,48 +23,80 @@ const Search = () => {
   const [r2, setR2] = useState('');
   const [r3, setR3] = useState('');
   const [totalRoots, setTotalRoots] = useState(0);
+  const [resultLimit, setResultLimit] = useState(25);
+  const [lastSearchType, setLastSearchType] = useState(null);
 
   const closeInfoBubble = () => setInfoBubble(null);
+
+  // Auto re-run search when result limit changes
+  useEffect(() => {
+    if (lastSearchType && totalRoots > 0) {
+      // Debounce the search to avoid too many rapid API calls
+      const timeoutId = setTimeout(() => {
+        switch (lastSearchType) {
+          case 'roots':
+            handleFetchRoots();
+            break;
+          case 'combinate':
+            handleCombinate();
+            break;
+          case 'extended':
+            handleFetchExtended();
+            break;
+          default:
+            break;
+        }
+      }, 300);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [resultLimit]); // Only depend on resultLimit to avoid infinite loops
 
   // 1. Fetch Root(s) - Position-specific search with wildcards and "None" support
   const handleFetchRoots = async () => {
     try {
-      const { roots, total } = await fetchRoots(r1, r2, r3, L1, L2);
+      const { roots, total } = await fetchRoots(r1, r2, r3, L1, L2, resultLimit);
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
+      setLastSearchType('roots');
     } catch (error) {
       console.error('Error fetching roots:', error);
       setGraphData({ nodes: [], links: [] });
       setTotalRoots(0);
+      setLastSearchType(null);
     }
   };
 
   // 3. Fetch Extended - Only roots with 4+ radicals
   const handleFetchExtended = async () => {
     try {
-      const { roots, total } = await fetchExtendedRootsNew(r1, r2, r3, L1, L2);
+      const { roots, total } = await fetchExtendedRootsNew(r1, r2, r3, L1, L2, resultLimit);
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
+      setLastSearchType('extended');
     } catch (error) {
       console.error('Error fetching extended roots:', error);
       setGraphData({ nodes: [], links: [] });
       setTotalRoots(0);
+      setLastSearchType(null);
     }
   };
 
   // 2. Combinate - Return all valid permutations of specified radicals
   const handleCombinate = async () => {
     try {
-      const { roots, total } = await fetchCombinateRoots(r1, r2, r3, L1, L2);
+      const { roots, total } = await fetchCombinateRoots(r1, r2, r3, L1, L2, resultLimit);
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
+      setLastSearchType('combinate');
     } catch (error) {
       console.error('Error fetching combinate roots:', error);
       setGraphData({ nodes: [], links: [] });
       setTotalRoots(0);
+      setLastSearchType(null);
     }
   };
 
@@ -178,9 +210,32 @@ const Search = () => {
         )}
       </div>
 
-      {/* Total roots count */}
-      <div>
-        {totalRoots > 0 && <p>Total Roots Found: {totalRoots} (Showing 25 max)</p>}
+      {/* Result limit slider */}
+      <div style={{ marginBottom: '15px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
+          <label htmlFor="result-limit" style={{ fontSize: '14px', fontWeight: 'bold' }}>
+            Node Limit:
+          </label>
+          <input
+            id="result-limit"
+            type="range"
+            min="10"
+            max="100"
+            step="5"
+            value={resultLimit}
+            onChange={(e) => setResultLimit(Number(e.target.value))}
+            style={{
+              flex: 1,
+              maxWidth: '200px'
+            }}
+          />
+          <span style={{ fontSize: '14px', minWidth: '40px' }}>{resultLimit}</span>
+        </div>
+        {totalRoots > 0 && (
+          <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>
+            Total Roots Found: {totalRoots} (Showing {Math.min(totalRoots, resultLimit)} of {totalRoots})
+          </p>
+        )}
       </div>
 
       {/* Conditionally render GraphVisualization or NodesTable */}
