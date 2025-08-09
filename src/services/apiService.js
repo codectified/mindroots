@@ -366,7 +366,7 @@ export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Trili
 // ===== NEW DISTINCT SEARCH FUNCTIONS MATCHING BACKEND ENDPOINTS =====
 
 // 1. Fetch Root(s) - Position-specific search with wildcards and "None" support
-export const fetchRoots = async (r1, r2, r3, L1, L2) => {
+export const fetchRoots = async (r1, r2, r3, L1, L2, limit = 25) => {
   try {
     // Convert empty strings to wildcards for API
     const params = {
@@ -374,7 +374,8 @@ export const fetchRoots = async (r1, r2, r3, L1, L2) => {
       r2: r2 || '*', 
       r3: r3 === 'NoR3' ? 'None' : (r3 || '*'),
       L1,
-      L2
+      L2,
+      limit
     };
     
     const response = await api.get('/search-roots', { params });
@@ -386,12 +387,13 @@ export const fetchRoots = async (r1, r2, r3, L1, L2) => {
 };
 
 // 2. Combinate - Return all valid permutations of specified radicals
-export const fetchCombinateRoots = async (r1, r2, r3, L1, L2) => {
+export const fetchCombinateRoots = async (r1, r2, r3, L1, L2, limit = 25) => {
   try {
     // Only send non-empty radicals
     const params = {
       L1,
-      L2
+      L2,
+      limit
     };
     
     if (r1) params.r1 = r1;
@@ -411,10 +413,10 @@ export const fetchCombinateRoots = async (r1, r2, r3, L1, L2) => {
 };
 
 // 3. Fetch Extended - Only roots with 4+ radicals
-export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2) => {
+export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2, limit = 25) => {
   try {
     // Send all radicals as optional filters
-    const params = { L1, L2 };
+    const params = { L1, L2, limit };
     if (r1) params.r1 = r1;
     if (r2) params.r2 = r2;
     if (r3 && r3 !== 'NoR3') params.r3 = r3;

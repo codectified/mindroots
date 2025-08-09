@@ -1558,7 +1558,7 @@ router.get('/list-markdown-files', (req, res) => {
 // 1. Fetch Root(s) - Position-specific search with wildcards and "None" support  
 router.get('/search-roots', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2 } = req.query;
+    const { r1, r2, r3, L1, L2, limit = 25 } = req.query;
     
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
@@ -1643,7 +1643,7 @@ router.get('/search-roots', async (req, res) => {
     cypherQuery += `
       RETURN root
       ORDER BY root.${L1}
-      LIMIT 25
+      LIMIT ${parseInt(limit)}
     `;
 
     const result = await session.run(cypherQuery, queryParams);
@@ -1677,7 +1677,7 @@ router.get('/search-roots', async (req, res) => {
 // 2. Combinate - Return all valid permutations of specified radicals
 router.get('/search-combinate', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2 } = req.query;
+    const { r1, r2, r3, L1, L2, limit = 25 } = req.query;
     
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
@@ -1705,7 +1705,7 @@ router.get('/search-combinate', async (req, res) => {
           AND size(root_radicals) = 2
         RETURN root
         ORDER BY root.${L1}
-        LIMIT 25
+        LIMIT ${parseInt(limit)}
       `;
     } else {
       // Standard combinate - any permutations (2-3 radicals)
@@ -1718,7 +1718,7 @@ router.get('/search-combinate', async (req, res) => {
           AND size([r in root_radicals WHERE r IN $radicals]) = size($radicals)
         RETURN root
         ORDER BY root.${L1}
-        LIMIT 25
+        LIMIT ${parseInt(limit)}
       `;
     }
 
@@ -1753,7 +1753,7 @@ router.get('/search-combinate', async (req, res) => {
 // 3. Fetch Extended - Only roots with 4+ radicals
 router.get('/search-extended', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2 } = req.query;
+    const { r1, r2, r3, L1, L2, limit = 25 } = req.query;
     
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
@@ -1795,7 +1795,7 @@ router.get('/search-extended', async (req, res) => {
     cypherQuery += `
       RETURN DISTINCT root
       ORDER BY root.${L1}
-      LIMIT 25
+      LIMIT ${parseInt(limit)}
     `;
 
     const result = await session.run(cypherQuery, queryParams);
