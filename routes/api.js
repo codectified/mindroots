@@ -1,5 +1,6 @@
 const express = require('express');
 const neo4j = require('neo4j-driver');
+const { authenticateAPI } = require('../middleware/auth');
 const router = express.Router();
 
 // CORS Middleware
@@ -16,6 +17,9 @@ router.use((req, res, next) => {
     next();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -63,6 +67,9 @@ router.get('/list/quran_items', async (req, res) => {
       ORDER BY item.aya_index
     `, { corpus_id, sura_index });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     const quranItems = result.records.map(record => record.toObject());
     res.json(quranItems);
   } catch (error) {
@@ -72,6 +79,9 @@ router.get('/list/quran_items', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // Endpoint to fetch poetry items by corpus_id
 router.get('/list/poetry_items', async (req, res) => {
@@ -102,6 +112,9 @@ router.get('/list/poetry_items', async (req, res) => {
       ORDER BY item.line_number, item.word_position
     `, { corpus_id });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     const poetryItems = result.records.map(record => record.toObject());
     res.json(poetryItems);
   } catch (error) {
@@ -111,6 +124,9 @@ router.get('/list/poetry_items', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 // Endpoint to list all corpus items by corpus_id
@@ -128,6 +144,9 @@ router.get('/list/corpus_items', async (req, res) => {
       LIMIT 100
     `, { corpus_id });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     const corpusItems = formatSimpleData(result.records);
     console.log('Fetched all corpus items:', corpusItems); // Add logging
     res.json(corpusItems);
@@ -138,6 +157,9 @@ router.get('/list/corpus_items', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // Endpoint to get the aya count for a specific surah
 router.get('/list/surah_aya_count', async (req, res) => {
@@ -154,8 +176,14 @@ router.get('/list/surah_aya_count', async (req, res) => {
       RETURN count(aya) AS aya_count
     `, { sura_index });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     const ayaCount = result.records[0].get('aya_count').toInt(); // Get the aya count
     res.json({ aya_count: ayaCount });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } catch (error) {
     console.error('Error fetching aya count:', error);
     res.status(500).send('Error fetching aya count');
@@ -163,6 +191,9 @@ router.get('/list/surah_aya_count', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 // DEPRECATED: Use /expand/corpusitem/:itemId/word instead
@@ -183,6 +214,9 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
     `;
 
     const result = await session.run(query, { itemId, corpusId });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     const records = result.records[0];
     if (records) {
       const item = records.get('item').properties;
@@ -190,8 +224,14 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
       const roots = records.get('roots').map(record => convertIntegers(record.properties));
       const forms = records.get('forms').map(record => convertIntegers(record.properties));
       res.json({ item, words, roots, forms });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     } else {
       res.json({});
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching words and roots by corpus item:', error);
@@ -200,6 +240,9 @@ router.get('/words_by_corpus_item/:itemId', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 
@@ -231,6 +274,9 @@ router.get('/form/:formId', async (req, res) => {
     `;
 
     const result = await session.run(query, { formId, script, corpusId });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
 
     const formattedWords = words.map(word => {
@@ -240,6 +286,9 @@ router.get('/form/:formId', async (req, res) => {
       };
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     res.json(formattedWords);
   } catch (error) {
     console.error('Error fetching words by form:', error);
@@ -248,6 +297,9 @@ router.get('/form/:formId', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 // Endpoint to fetch words by root radicals (not working curently)
@@ -284,8 +336,14 @@ router.get('/words_by_root_radicals', async (req, res) => {
       const root = records.get('root').properties;
       const words = records.get('words').map(record => convertIntegers(record.properties));
       res.json({ root, words });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     } else {
       res.json({});
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching words by root radicals:', error);
@@ -294,6 +352,9 @@ router.get('/words_by_root_radicals', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 // Endpoint to fetch roots by radicals (not working currently)
@@ -312,6 +373,9 @@ router.get('/roots_by_radicals', async (req, res) => {
     `;
 
     const result = await session.run(query, { r1, r2, r3 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     console.log(`Raw records for roots with radicals r1: ${r1}, r2: ${r2}, r3: ${r3}:`, result.records);
 
     const roots = result.records.map(record => convertIntegers(record.get('root').properties));
@@ -323,6 +387,9 @@ router.get('/roots_by_radicals', async (req, res) => {
       };
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     res.json(formattedRoots);
   } catch (error) {
     console.error('Error fetching roots by radicals:', error);
@@ -331,6 +398,9 @@ router.get('/roots_by_radicals', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // Endpoint to list all available corpora
 router.get('/list/corpora', async (req, res) => {
@@ -357,6 +427,9 @@ router.get('/list/corpora', async (req, res) => {
   }
 });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
 
 // Consolidated expansion route
 router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
@@ -364,6 +437,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
   const { L1, L2, corpus_id, limit = 25 } = req.query;
   
   console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, limitType: typeof limit });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   
   const session = req.driver.session();
   
@@ -414,6 +490,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
       // Returns corpus item + connected words, forms, and roots with proper relationships
       if (!corpus_id) {
         return res.status(400).json({ error: 'corpus_id is required for corpusitem expansion' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       }
       query = `
         MATCH (item:CorpusItem {item_id: toInteger($sourceId), corpus_id: toInteger($corpus_id)})
@@ -464,6 +543,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
         error: `Invalid source/target type combination: ${sourceType} -> ${targetType}`,
         supportedCombinations: ['root->word', 'form->word', 'corpusitem->word', 'word->corpusitem', 'word->root', 'word->form']
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
     
     console.log('=== EXPAND REQUEST DEBUG ===');
@@ -496,6 +578,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
       
       if (sourceExistsQuery) {
         const sourceCheck = await session.run(sourceExistsQuery, { sourceId });
+
+// API Authentication middleware
+router.use(authenticateAPI);
         if (sourceCheck.records.length === 0) {
           // Source node doesn't exist - return 404
           return res.status(404).json({ 
@@ -504,6 +589,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
             sourceId,
             targetType
           });
+
+// API Authentication middleware
+router.use(authenticateAPI);
         } else {
           // Source exists but no targets found (possibly due to corpus filter) - return empty result
           console.log(`${sourceType} ${sourceId} exists but no ${targetType} nodes found${corpus_id ? ` in corpus ${corpus_id}` : ''}`);
@@ -516,6 +604,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
               corpusFiltered: !!corpus_id
             }
           });
+
+// API Authentication middleware
+router.use(authenticateAPI);
         }
       }
     }
@@ -562,10 +653,16 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
                 target: `word_${word.word_id}`,
                 type: 'HAS_WORD'
               });
+
+// API Authentication middleware
+router.use(authenticateAPI);
             }
           }
         }
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
       // Add root nodes and links
       roots.forEach(rootObj => {
@@ -584,6 +681,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
           }
         }
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
       // Add form nodes and links
       forms.forEach(formObj => {
@@ -602,6 +702,9 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
           }
         }
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
       // Add links between words and their roots/forms
       words.forEach(wordObj => {
@@ -618,8 +721,14 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
                 target: wordId,
                 type: 'HAS_WORD'
               });
+
+// API Authentication middleware
+router.use(authenticateAPI);
             }
           });
+
+// API Authentication middleware
+router.use(authenticateAPI);
           
           forms.forEach(formObj => {
             if (formObj && formObj.properties) {
@@ -629,10 +738,19 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
                 target: `form_${form.form_id}`,
                 type: 'HAS_FORM'
               });
+
+// API Authentication middleware
+router.use(authenticateAPI);
             }
           });
+
+// API Authentication middleware
+router.use(authenticateAPI);
         }
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
     } else if (sourceType === 'word' && targetType === 'corpusitem') {
       // Handle word to corpus item expansion
@@ -669,8 +787,14 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
             target: `corpusitem_${targetNode.item_id}`,
             type: 'USED_IN'
           });
+
+// API Authentication middleware
+router.use(authenticateAPI);
         }
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
     } else if (sourceType === 'word' && (targetType === 'root' || targetType === 'form')) {
       // Handle word to root/form expansion
@@ -708,15 +832,24 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
               target: `word_${sourceNode.word_id}`,
               type: 'HAS_WORD'
             });
+
+// API Authentication middleware
+router.use(authenticateAPI);
           } else if (targetType === 'form') {
             links.push({
               source: `word_${sourceNode.word_id}`,
               target: `${targetType}_${targetNode[`${targetType}_id`]}`,
               type: 'HAS_FORM'
             });
+
+// API Authentication middleware
+router.use(authenticateAPI);
           }
         }
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
     } else {
       // Handle root/form to word expansion
@@ -752,12 +885,18 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
               target: `${targetType}_${targetNode[`${targetType}_id`]}`,
               type: 'HAS_WORD'
             });
+
+// API Authentication middleware
+router.use(authenticateAPI);
           } else if (sourceType === 'form' && targetType === 'word') {
             links.push({
               source: `${targetType}_${targetNode[`${targetType}_id`]}`,
               target: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
               type: 'HAS_FORM'
             });
+
+// API Authentication middleware
+router.use(authenticateAPI);
           }
         }
         
@@ -788,22 +927,37 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
                 target: etymNodeId,
                 type: 'ETYM'
               });
+
+// API Authentication middleware
+router.use(authenticateAPI);
               nodeMap.set(linkId, true); // Track link to avoid duplicates
             }
           }
         }
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
     
     console.log(`Returning ${nodes.length} nodes and ${links.length} links`);
     res.json({ nodes, links });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } catch (error) {
     console.error('Error in expand route:', error);
     res.status(500).json({ error: 'Error expanding graph', details: error.message });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // DEPRECATED: Use /expand/form/:formId/word instead
 // Fetch words by form and corpus filter
@@ -818,6 +972,9 @@ router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
       LIMIT toInteger($limit)
     `;
     const result = await session.run(query, { formId, corpusId, limit });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
@@ -829,6 +986,9 @@ router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 router.get('/form/:formId/roots', async (req, res) => {
@@ -842,6 +1002,9 @@ router.get('/form/:formId/roots', async (req, res) => {
       RETURN word
     `;
     const result = await session.run(query, { formId, rootIds: rootIds.map(id => parseInt(id, 10)) });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
@@ -853,6 +1016,9 @@ router.get('/form/:formId/roots', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 
@@ -869,6 +1035,9 @@ router.get('/root/:rootId/corpus/:corpusId', async (req, res) => {
       RETURN word
     `;
     const result = await session.run(query, { rootId, corpusId, script });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
@@ -880,6 +1049,9 @@ router.get('/root/:rootId/corpus/:corpusId', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 // Endpoint to fetch words by root ID
@@ -903,6 +1075,9 @@ router.get('/root/:rootId', async (req, res) => {
     `;
 
     const result = await session.run(query, { rootId, script, corpusId });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
 
     const formattedWords = words.map(word => {
@@ -912,6 +1087,9 @@ router.get('/root/:rootId', async (req, res) => {
       };
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     res.json(formattedWords);
   } catch (error) {
     console.error('Error fetching words by root:', error);
@@ -920,6 +1098,9 @@ router.get('/root/:rootId', async (req, res) => {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // DEPRECATED: Use /expand/root/:rootId/word instead
 // Fetch words by root ID with lexicon context (no filter)
@@ -933,6 +1114,9 @@ router.get('/root/:rootId/lexicon', async (req, res) => {
       RETURN word
     `;
     const result = await session.run(query, { rootId, script });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     const words = result.records.map(record => convertIntegers(record.get('word').properties));
     res.json(words.map(word => ({
       ...word,
@@ -945,6 +1129,9 @@ router.get('/root/:rootId/lexicon', async (req, res) => {
   }
 });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
 // Endpoint to execute Cypher queries
 router.post('/execute-query', async (req, res) => {
   const { query } = req.body;  
@@ -956,14 +1143,23 @@ router.post('/execute-query', async (req, res) => {
       const processedRecord = record.toObject();
       return convertIntegers(processedRecord);  // Ensure integers are converted
     });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     res.json(records);
   } catch (error) {
     console.error('Error executing query:', error);
     res.status(500).json({ error: 'Error executing query' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 router.get('/rootbyword/:wordId', async (req, res) => {
@@ -977,6 +1173,9 @@ router.get('/rootbyword/:wordId', async (req, res) => {
     `;
     const result = await session.run(query, { wordId: parseInt(wordId) });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     if (result.records.length > 0) {
       const root = result.records[0].get('root').properties;
       res.json({
@@ -984,16 +1183,28 @@ router.get('/rootbyword/:wordId', async (req, res) => {
         label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
         root_id: root.root_id
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     } else {
       res.status(404).json({ error: 'Root not found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching root by word:', error);
     res.status(500).json({ error: 'Error fetching root by word' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 
@@ -1008,6 +1219,9 @@ router.get('/formsbyword/:wordId', async (req, res) => {
     `;
     const result = await session.run(query, { wordId: parseInt(wordId) });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     if (result.records.length > 0) {
       const forms = result.records.map(record => record.get('form').properties);
       res.json(forms.map(form => ({
@@ -1017,14 +1231,23 @@ router.get('/formsbyword/:wordId', async (req, res) => {
       })));
     } else {
       res.status(404).json({ error: 'Forms not found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching forms by word:', error);
     res.status(500).json({ error: 'Error fetching forms by word' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 router.get('/laneentry/:wordId', async (req, res) => {
@@ -1038,19 +1261,31 @@ router.get('/laneentry/:wordId', async (req, res) => {
     `;
     const result = await session.run(query, { wordId: parseInt(wordId) });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     if (result.records.length > 0) {
       const definitions = result.records[0].get('definitions');
       res.json(definitions);
     } else {
       res.status(404).json({ error: 'Lane entry not found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching Lane entry by word:', error);
     res.status(500).json({ error: 'Error fetching Lane entry by word' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 router.get('/hanswehrentry/:wordId', async (req, res) => {
   const { wordId } = req.params;
@@ -1063,19 +1298,31 @@ router.get('/hanswehrentry/:wordId', async (req, res) => {
     `;
     const result = await session.run(query, { wordId: parseInt(wordId) });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     if (result.records.length > 0) {
       const hanswehrEntry = result.records[0].get('hanswehrEntry');
       res.json(hanswehrEntry);
     } else {
       res.status(404).json({ error: 'Hans Wehr entry not found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching Hans Wehr entry by word:', error);
     res.status(500).json({ error: 'Error fetching Hans Wehr entry by word' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 router.get('/corpusitementry/:corpusId/:itemId', async (req, res) => {
   const { corpusId, itemId } = req.params;
@@ -1091,19 +1338,31 @@ router.get('/corpusitementry/:corpusId/:itemId', async (req, res) => {
       itemId: parseInt(itemId) 
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     if (result.records.length > 0) {
       const entry = result.records[0].get('entry');
       res.json(entry);
     } else {
       res.status(404).json({ error: 'Corpus item entry not found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching corpus item entry:', error);
     res.status(500).json({ error: 'Error fetching corpus item entry' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 router.get('/rootentry/:rootId', async (req, res) => {
   const { rootId } = req.params;
@@ -1116,19 +1375,31 @@ router.get('/rootentry/:rootId', async (req, res) => {
     `;
     const result = await session.run(query, { rootId: parseInt(rootId) });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     if (result.records.length > 0) {
       const entry = result.records[0].get('entry');
       res.json(entry);
     } else {
       res.status(404).json({ error: 'Root entry not found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching root entry:', error);
     res.status(500).json({ error: 'Error fetching root entry' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 router.get('/rootbyletters', async (req, res) => {
@@ -1208,17 +1479,32 @@ router.get('/rootbyletters', async (req, res) => {
           root_id: props.root_id,
         };
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       res.json({ roots, total });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     } else {
       res.status(404).json({ error: 'No roots found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching root by letters:', error);
     res.status(500).json({ error: 'Error fetching root by letters' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 router.get('/geminate-roots', async (req, res) => {
   const { r1, r2, L1, L2 } = req.query;
@@ -1250,17 +1536,32 @@ router.get('/geminate-roots', async (req, res) => {
           root_id: root.root_id,
         };
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       res.json({ roots, total: roots.length });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     } else {
       res.status(404).json({ error: 'No geminate roots found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching geminate roots:', error);
     res.status(500).json({ error: 'Error fetching geminate roots' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 router.get('/triliteral-roots', async (req, res) => {
@@ -1310,17 +1611,32 @@ router.get('/triliteral-roots', async (req, res) => {
           root_id: root.root_id,
         };
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       res.json({ roots, total: roots.length });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     } else {
       res.status(404).json({ error: 'No triliteral roots found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching triliteral roots:', error);
     res.status(500).json({ error: 'Error fetching triliteral roots' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 router.get('/extended-roots', async (req, res) => {
@@ -1365,17 +1681,32 @@ router.get('/extended-roots', async (req, res) => {
           root_id: root.root_id,
         };
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       res.json({ roots, total: roots.length });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     } else {
       res.status(404).json({ error: 'No extended roots found' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
   } catch (error) {
     console.error('Error fetching extended roots:', error);
     res.status(500).json({ error: 'Error fetching extended roots' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   } finally {
     await session.close();
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // ===== NEW RADICALPOSITION-BASED ROOT SEARCH ENDPOINT =====
 router.get('/radical-search', async (req, res) => {
@@ -1388,15 +1719,24 @@ router.get('/radical-search', async (req, res) => {
       radicalsArray = JSON.parse(radicals || '[]');
     } catch (e) {
       return res.status(400).json({ error: 'Invalid radicals format. Expected JSON array.' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
     
     // Validate input
     if (!Array.isArray(radicalsArray) || radicalsArray.length === 0) {
       return res.status(400).json({ error: 'At least one radical is required' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
     
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
     
     // Extract radicals and positions for Cypher query
@@ -1506,6 +1846,9 @@ router.get('/radical-search', async (req, res) => {
           label: L2 === 'off' ? convertedRoot[L1] : `${convertedRoot[L1]} / ${convertedRoot[L2]}`
         };
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
       // Return results with metadata
       res.json({
@@ -1515,6 +1858,9 @@ router.get('/radical-search', async (req, res) => {
         radicals: radicalsArray,
         message: `Found ${roots.length} roots using RadicalPosition search`
       });
+
+// API Authentication middleware
+router.use(authenticateAPI);
       
     } finally {
       await session.close();
@@ -1527,8 +1873,14 @@ router.get('/radical-search', async (req, res) => {
       message: error.message,
       searchType: req.query.searchType
     });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 
@@ -1551,7 +1903,13 @@ router.get('/list-markdown-files', (req, res) => {
     const markdownFiles = files.filter(file => file.endsWith('.md'));
     res.json(markdownFiles);
   });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // ===== NEW UPDATED SEARCH ENDPOINTS WITH DISTINCT BEHAVIORS =====
 
@@ -1562,6 +1920,9 @@ router.get('/search-roots', async (req, res) => {
     
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
 
     const session = req.driver.session();
@@ -1653,6 +2014,9 @@ router.get('/search-roots', async (req, res) => {
       };
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     await session.close();
     res.json({
       roots,
@@ -1661,14 +2025,23 @@ router.get('/search-roots', async (req, res) => {
       message: `Found ${roots.length} roots with position-specific search`
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
   } catch (error) {
     console.error('Error in search-roots endpoint:', error);
     res.status(500).json({ 
       error: 'Internal server error',
       message: error.message
     });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // 2. Combinate - Return all valid permutations of specified radicals
 router.get('/search-combinate', async (req, res) => {
@@ -1677,6 +2050,9 @@ router.get('/search-combinate', async (req, res) => {
     
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
 
     // Collect non-wildcard radicals
@@ -1684,6 +2060,9 @@ router.get('/search-combinate', async (req, res) => {
     
     if (inputRadicals.length === 0) {
       return res.status(400).json({ error: 'At least one radical is required for combinate search' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
 
     const session = req.driver.session();
@@ -1729,6 +2108,9 @@ router.get('/search-combinate', async (req, res) => {
       };
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     await session.close();
     res.json({
       roots,
@@ -1737,14 +2119,23 @@ router.get('/search-combinate', async (req, res) => {
       message: `Found ${roots.length} roots with combinate search`
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
   } catch (error) {
     console.error('Error in search-combinate endpoint:', error);
     res.status(500).json({ 
       error: 'Internal server error',
       message: error.message
     });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 // 3. Fetch Extended - Only roots with 4+ radicals
 router.get('/search-extended', async (req, res) => {
@@ -1753,6 +2144,9 @@ router.get('/search-extended', async (req, res) => {
     
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
+
+// API Authentication middleware
+router.use(authenticateAPI);
     }
 
     const session = req.driver.session();
@@ -1805,6 +2199,9 @@ router.get('/search-extended', async (req, res) => {
       };
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
     await session.close();
     res.json({
       roots,
@@ -1813,14 +2210,23 @@ router.get('/search-extended', async (req, res) => {
       message: `Found ${roots.length} extended roots (4+ radicals)`
     });
 
+// API Authentication middleware
+router.use(authenticateAPI);
+
   } catch (error) {
     console.error('Error in search-extended endpoint:', error);
     res.status(500).json({ 
       error: 'Internal server error',
       message: error.message
     });
+
+// API Authentication middleware
+router.use(authenticateAPI);
   }
 });
+
+// API Authentication middleware
+router.use(authenticateAPI);
 
 
 module.exports = router;
