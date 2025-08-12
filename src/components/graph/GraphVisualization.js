@@ -4,6 +4,7 @@ import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import { useShowLinks } from '../selectors/ShowLinksToggle';
 import NodeContextMenu from './NodeContextMenu';
+import NodeInspector from './NodeInspector';
 import * as d3 from 'd3';
 
 const GraphVisualization = ({ data, onNodeClick }) => {
@@ -12,7 +13,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const [simulation, setSimulation] = useState(null);
 
   const { isAdvancedMode } = useAdvancedMode();
-  const { contextMenu, setContextMenu, handleContextMenuAction } = useGraphData();
+  const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
   const { wordShadeMode } = useWordShade();
   const { showLinks, showLinkLabels } = useShowLinks();
 
@@ -40,6 +41,11 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const handleCloseContextMenu = useCallback(() => {
     setContextMenu(null);
   }, [setContextMenu]);
+
+  // Close node inspector handler
+  const handleCloseInspector = useCallback(() => {
+    setNodeInspectorData(null);
+  }, [setNodeInspectorData]);
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
@@ -95,7 +101,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       }
       // Default for non-word nodes
       return d3.scaleOrdinal()
-        .domain(['name', 'word', 'form', 'root'])
+        .domain(['corpusitem', 'word', 'form', 'root'])
         .range(['gold', 'red', 'blue', 'green'])(d.type);
     };
 
@@ -116,14 +122,14 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       )
       .force('center', d3.forceCenter(width / 2, height / 2))
       .force('x', d3.forceX(d => {
-        if (d.type === 'name') return width / 2;
+        if (d.type === 'corpusitem') return width / 2;
         if (d.type === 'form') return width / 4;
         if (d.type === 'root') return (3 * width) / 4;;
         if (d.type === 'word') return width / 2;
         return width / 2;
       }).strength(1))
       .force('y', d3.forceY(d => {
-        if (d.type === 'name') return height / 9; // Shift up
+        if (d.type === 'corpusitem') return height / 9; // Shift up
         if (d.type === 'form' || d.type === 'root') return height / 3; // Shift up
         if (d.type === 'word') return height / 2; // Shift up
         return height / 3; // Default to a higher position
@@ -172,7 +178,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
           // Check source node type to determine appropriate label
           if (d.source.type === 'root') {
             return 'ROOT';
-          } else if (d.source.type === 'name') { // corpus item nodes
+          } else if (d.source.type === 'corpusitem') { // corpus item nodes
             return 'WORD';
           } else {
             return 'WORD'; // default fallback for HAS_WORD
@@ -300,6 +306,14 @@ const GraphVisualization = ({ data, onNodeClick }) => {
           position={contextMenu.position}
           onClose={handleCloseContextMenu}
           onAction={handleMenuAction}
+        />
+      )}
+      
+      {/* Render node inspector */}
+      {nodeInspectorData && (
+        <NodeInspector
+          nodeData={nodeInspectorData}
+          onClose={handleCloseInspector}
         />
       )}
     </div>
