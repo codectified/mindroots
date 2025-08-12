@@ -546,3 +546,16 @@ NEO4J_PASSWORD=your-password
 API_KEY=localhost-dev-key-123
 ```
 
+#### Legacy Type Cleanup (August 12, 2025)
+**Important**: Removed all legacy 'name' type references from codebase. Corpus items now consistently use 'corpusitem' type throughout:
+
+**Files Updated**:
+- `GraphVisualization.js`: Updated D3 color scales and force simulation positioning
+- `CorpusGraphScreen.js`: Updated corpus item node detection
+- `GraphDataContext.js`: Updated prefetch logic and removed type mapping
+- `NodeContextMenu.js`: Updated context menu case statement
+- `nodeColoring.js`: Updated color domain mapping
+- `routes/api.js`: Updated backend type validation mapping
+
+**Database Reality**: Corpus items in Neo4j have always been labeled as 'CorpusItem' nodes, not 'name' nodes. The 'name' references were legacy artifacts in the frontend code that needed cleanup.
+
