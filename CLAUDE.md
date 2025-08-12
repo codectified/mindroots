@@ -439,3 +439,110 @@ After any changes:
 - Memory build failures = use memory flags or restart server
 - Git merge conflicts = forgot to git pull before merging
 
+---
+
+## 🔍 Node Inspector Feature (Latest)
+
+### Feature Overview
+- **Date Added**: August 12, 2025
+- **Purpose**: Comprehensive node inspection showing all properties, relationships, and connections
+- **Access**: Context menu "Inspect Node" option available for all node types
+
+### Implementation Details
+
+#### Backend Endpoint
+- **Route**: `GET /inspect/:nodeType/:nodeId`
+- **File**: `routes/api.js`
+- **Functionality**: Returns comprehensive node data including:
+  - All node properties with types and formatting
+  - All relationships (incoming/outgoing) with counts  
+  - Connected node type summaries
+  - Raw data for advanced users
+
+#### Frontend Integration
+- **API Service**: `inspectNode()` function in `src/services/apiService.js`
+- **Context Menu**: "Inspect Node" option added to all node types in `NodeContextMenu.js`
+- **UI Component**: `NodeInspector.js` - Full-screen modal with comprehensive data display
+- **Styles**: Consolidated into `src/styles/info-bubble.css` (not separate stylesheet)
+
+#### Key Features
+- **Summary Dashboard**: Total properties, relationships, connected nodes
+- **Properties Table**: All node properties with type-specific formatting and color coding
+- **Relationships Overview**: Directional relationships with counts and badges
+- **Connected Node Types**: Visual grid showing connected node type distribution
+- **Raw Data Viewer**: Collapsible JSON view for advanced inspection
+- **Mobile Responsive**: Optimized layout for mobile devices
+
+#### Technical Implementation
+```javascript
+// Context action handler in GraphDataContext.js
+case 'inspect':
+  const inspectNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+  const inspectionData = await inspectNode(node.type, inspectNodeId);
+  setNodeInspectorData(inspectionData);
+```
+
+#### Styling Consolidation Notes
+- **Previous**: Separate `node-inspector.css` file
+- **Current**: Consolidated into existing `info-bubble.css` file
+- **Reason**: Reduce file proliferation, reuse existing modal patterns
+- **Button Styles**: Uses existing button classes from `buttons.css`
+
+### Testing Requirements
+
+#### Backend Testing
+```bash
+# Must restart backend after adding new endpoint
+node server.js
+
+# Test the inspect endpoint
+curl "http://localhost:5001/api/inspect/root/123"
+curl "http://localhost:5001/api/inspect/word/456" 
+curl "http://localhost:5001/api/inspect/form/789"
+```
+
+#### Frontend Testing
+1. **Switch to localhost**: Comment production API URL, uncomment localhost in `apiService.js`
+2. **Restart backend**: New endpoint requires server restart
+3. **Test all node types**: Right-click any node → "Inspect Node"
+4. **Verify UI components**: Summary, properties, relationships, connected nodes
+5. **Test mobile responsiveness**: Check layout on mobile devices
+6. **Close functionality**: Both X button and footer close button
+
+#### Development Workflow Notes
+- **API URL Switch**: Always switch `apiService.js` to localhost for testing
+- **Authentication Setup**: Localhost requires auth header with development key
+- **Backend Restart**: Required when adding new endpoints or environment changes
+- **Style Consolidation**: Prefer existing stylesheets over new ones
+- **Button Consistency**: Use existing button patterns for UI consistency
+
+#### Authentication Configuration
+```javascript
+// localhost development setup in apiService.js
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+  headers: {
+    'Authorization': 'Bearer localhost-dev-key-123',
+  },
+});
+
+// production setup (commented out for localhost testing)
+// const api = axios.create({
+//   baseURL: 'https://theoption.life/api',
+//   headers: {
+//     'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
+//   },
+// });
+```
+
+#### Required .env Variables for Localhost
+```bash
+# Neo4j database connection
+NEO4J_URI=neo4j+s://your-database.databases.neo4j.io
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=your-password
+
+# API authentication (required for auth middleware)
+API_KEY=localhost-dev-key-123
+```
+
