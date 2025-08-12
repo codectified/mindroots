@@ -1568,42 +1568,42 @@ router.get('/search-roots', async (req, res) => {
     let cypherQuery = '';
     let queryParams = {};
 
-    // Handle "None" case for R3 (biradical only)
+    // Create mutable copy of r3 for potential modification
+    let actualR3 = r3;
+    
+    // Handle "None" case for R3 (biradical/geminate search)
     if (r3 === 'None') {
-      cypherQuery = `
-        MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
-        WHERE 1=1
-      `;
-      
-      const conditions = [];
-      if (r1 && r1 !== '*') {
-        conditions.push('(rp.radical = $r1 AND rp.position = 1)');
-        queryParams.r1 = r1;
-      }
+      // If r2 is specified, treat as geminate search (r3 = r2)
+      // This saves the user from manually setting r3 to the same value as r2
       if (r2 && r2 !== '*') {
-        conditions.push('(rp.radical = $r2 AND rp.position = 2)');
-        queryParams.r2 = r2;
+        // Convert None + specified r2 to geminate search
+        actualR3 = r2; // Set r3 to same value as r2
+        // Fall through to standard search logic below
+      } else {
+        // Return all biradical roots (wildcard search when r2 is also wildcard)
+        cypherQuery = `
+          MATCH (root:Root)
+          WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) = 2
+        `;
+        
+        // Add r1 filter if specified
+        if (r1 && r1 !== '*') {
+          cypherQuery += `
+            AND EXISTS { MATCH (root)-[:HAS_RADICAL]->(rp1:RadicalPosition) WHERE rp1.radical = $r1 AND rp1.position = 1 }
+          `;
+          queryParams.r1 = r1;
+        }
+        
+        cypherQuery += `
+          RETURN root
+          ORDER BY root.${L1}
+          LIMIT ${parseInt(limit)}
+        `;
       }
-      
-      if (conditions.length > 0) {
-        cypherQuery += ' AND (' + conditions.join(' OR ') + ')';
-      }
-      
-      cypherQuery += `
-        WITH root, collect(rp) as matched_radicals
-        WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) = 2
-      `;
-      
-      // Additional filtering for matched positions
-      if (r1 && r1 !== '*' && r2 && r2 !== '*') {
-        cypherQuery += ' AND size(matched_radicals) = 2';
-      } else if (r1 && r1 !== '*') {
-        cypherQuery += ' AND any(rp in matched_radicals WHERE rp.position = 1)';
-      } else if (r2 && r2 !== '*') {
-        cypherQuery += ' AND any(rp in matched_radicals WHERE rp.position = 2)';
-      }
-      
-    } else {
+    }
+    
+    // Standard position-specific search (handles both regular and converted geminate searches)
+    if (actualR3 !== 'None') {
       // Standard position-specific search (2-3 radicals)
       const conditions = [];
       if (r1 && r1 !== '*') {
@@ -1614,9 +1614,9 @@ router.get('/search-roots', async (req, res) => {
         conditions.push('(rp.radical = $r2 AND rp.position = 2)');
         queryParams.r2 = r2;
       }
-      if (r3 && r3 !== '*') {
+      if (actualR3 && actualR3 !== '*') {
         conditions.push('(rp.radical = $r3 AND rp.position = 3)');
-        queryParams.r3 = r3;
+        queryParams.r3 = actualR3;
       }
       
       // If no radicals specified (all wildcards), return all roots
