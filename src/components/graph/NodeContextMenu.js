@@ -85,6 +85,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         options.push(
           { label: 'Expand', action: 'expand' },
           { label: 'Collapse', action: 'collapse' },
+          { label: 'Inspect Node', action: 'inspect' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
@@ -107,6 +108,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
               { label: 'Corpus Usage', action: 'expand-to-corpusitems' }
             ]
           },
+          { label: 'Inspect Node', action: 'inspect' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
@@ -114,6 +116,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         options.push(
           { label: 'Expand', action: 'expand' },
           { label: 'Collapse', action: 'collapse' },
+          { label: 'Inspect Node', action: 'inspect' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
@@ -127,10 +130,14 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         if (hasEntry) {
           options.push({ label: 'Entry', action: 'corpus-item-entry' });
         }
-        options.push({ label: 'Report Issue', action: 'report' });
+        options.push(
+          { label: 'Inspect Node', action: 'inspect' },
+          { label: 'Report Issue', action: 'report' }
+        );
         break;
       default:
         options.push(
+          { label: 'Inspect Node', action: 'inspect' },
           { label: 'Report Issue', action: 'report' }
         );
     }

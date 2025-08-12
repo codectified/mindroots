@@ -6,7 +6,8 @@ import {
   fetchRootEntry,
   expandGraph,
   summarizeNodeContent,
-  reportNodeIssue
+  reportNodeIssue,
+  inspectNode
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
 import { useFilter } from './FilterContext'; // Import the filter context
@@ -49,6 +50,7 @@ export const GraphDataProvider = ({ children }) => {
   const [corpusItemEntries, setCorpusItemEntries] = useState({}); // Cache for corpus item entries
   const [rootEntries, setRootEntries] = useState({}); // Cache for root entries
   const [wordClickStates, setWordClickStates] = useState({}); // Track click progression for word nodes
+  const [nodeInspectorData, setNodeInspectorData] = useState(null); // State for node inspector
 
   const { limit } = useNodeLimit();
   const { L1, L2 } = useScript(); // Get current language settings
@@ -735,6 +737,20 @@ const handleContextMenuAction = async (action, node) => {
         }
         break;
       
+      case 'inspect':
+        const inspectNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        try {
+          const inspectionData = await inspectNode(node.type, inspectNodeId);
+          setNodeInspectorData(inspectionData);
+        } catch (error) {
+          console.error('Error inspecting node:', error);
+          setInfoBubble({
+            definition: 'Failed to inspect node. Please try again.',
+            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+          });
+        }
+        break;
+      
       case 'report':
         const reportNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
         const reportResult = await reportNodeIssue(reportNodeId, node.type, 'User reported issue via context menu');
@@ -769,7 +785,9 @@ const handleContextMenuAction = async (action, node) => {
       setContextMenu: setContextMenuWithPrefetch,
       corpusItemEntries,
       rootEntries,
-      handleContextMenuAction
+      handleContextMenuAction,
+      nodeInspectorData,
+      setNodeInspectorData
     }}>
       {children}
     </GraphDataContext.Provider>
