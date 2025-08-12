@@ -498,7 +498,7 @@ const handleNodeClick = async (
 
 // Function to prefetch corpus item entry when context menu is opened
 const prefetchCorpusItemEntry = async (node) => {
-  if (node.type === 'name') { // corpus item nodes have type 'name'
+  if (node.type === 'corpusitem') { // corpus item nodes
     const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
     const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
     const entryKey = `${corpusId}_${corpusItemId}`;

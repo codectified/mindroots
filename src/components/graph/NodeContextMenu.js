@@ -120,7 +120,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
           { label: 'Report Issue', action: 'report' }
         );
         break;
-      case 'name': // corpus item nodes
+      case 'corpusitem': // corpus item nodes
         // Check if entry exists for this corpus item
         const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
         const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
