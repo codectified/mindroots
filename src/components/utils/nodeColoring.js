@@ -24,6 +24,6 @@ export function getNodeColor(node, wordShadeMode) {
   // Default color for other node types
   return d3
     .scaleOrdinal()
-    .domain(['name', 'word', 'form', 'root'])
+    .domain(['corpusitem', 'word', 'form', 'root'])
     .range(['gold', 'red', 'blue', 'green'])(node.type);
 }
