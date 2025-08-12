@@ -1605,11 +1605,6 @@ router.get('/search-roots', async (req, res) => {
       
     } else {
       // Standard position-specific search (2-3 radicals)
-      cypherQuery = `
-        MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
-        WHERE 1=1
-      `;
-      
       const conditions = [];
       if (r1 && r1 !== '*') {
         conditions.push('(rp.radical = $r1 AND rp.position = 1)');
@@ -1624,27 +1619,28 @@ router.get('/search-roots', async (req, res) => {
         queryParams.r3 = r3;
       }
       
-      if (conditions.length > 0) {
-        cypherQuery += ' AND (' + conditions.join(' OR ') + ')';
-      }
-      
-      cypherQuery += `
-        WITH root, collect(rp) as matched_radicals
-        WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
-      `;
-      
-      // Count expected matches
-      const expectedMatches = [r1, r2, r3].filter(r => r && r !== '*').length;
-      if (expectedMatches > 0) {
-        cypherQuery += ` AND size(matched_radicals) = ${expectedMatches}`;
+      // If no radicals specified (all wildcards), return all roots
+      if (conditions.length === 0) {
+        cypherQuery = `
+          MATCH (root:Root)
+          WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
+          RETURN root
+          ORDER BY root.${L1}
+          LIMIT ${parseInt(limit)}
+        `;
+      } else {
+        cypherQuery = `
+          MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
+          WHERE (${conditions.join(' OR ')})
+          WITH root, collect(rp) as matched_radicals
+          WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
+            AND size(matched_radicals) = ${conditions.length}
+          RETURN root
+          ORDER BY root.${L1}
+          LIMIT ${parseInt(limit)}
+        `;
       }
     }
-
-    cypherQuery += `
-      RETURN root
-      ORDER BY root.${L1}
-      LIMIT ${parseInt(limit)}
-    `;
 
     const result = await session.run(cypherQuery, queryParams);
     
