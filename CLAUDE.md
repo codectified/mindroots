@@ -372,3 +372,70 @@ const convertIntegers = (obj) => {
 
 **Last Updated**: After root search system overhaul and merge to master
 **Status**: Production-ready with comprehensive search functionality
+---
+
+## 🔐 API Authentication System
+
+### Security Implementation
+- **Date Added**: August 12, 2025
+- **Purpose**: Protect Neo4j database from bot attacks (31% malicious traffic)
+- **Method**: Bearer token authentication
+
+### Authentication Files
+- middleware/auth.js - Authentication middleware
+- routes/api.js - Protected endpoints (28+ routes)  
+- src/services/apiService.js - Frontend auth headers
+- .env - API_KEY storage (not in git)
+
+### Implementation Details
+All API routes protected with authenticateAPI middleware that validates Bearer tokens against API_KEY environment variable.
+
+### Frontend Integration
+apiService.js includes Authorization header with Bearer token for all requests to https://theoption.life/api
+
+### Route Protection
+Single middleware line protects all routes: router.use(authenticateAPI)
+
+---
+
+## 🔄 Git Workflow & Production Deployment
+
+### Server Information
+- **Host**: 34.228.180.221
+- **User**: bitnami  
+- **SSH Key**: /Users/omaribrahim/Downloads/wp.pem
+- **App Directory**: /var/www/mindroots
+- **Memory Constraint**: 1GB RAM (affects builds)
+
+### CRITICAL Git Workflow
+ALWAYS follow this sequence when merging feature branches:
+
+1. git checkout master
+2. git pull origin master  (CRITICAL - never skip\!)
+3. git checkout feature-branch-name
+4. git rebase master
+5. git checkout master  
+6. git merge feature-branch-name
+7. git push origin master
+
+### Memory-Constrained Builds
+Frontend builds require: GENERATE_SOURCEMAP=false NODE_OPTIONS=--max-old-space-size=400 npm run build
+
+If build fails with memory errors:
+1. sudo reboot (restart server to free memory)
+2. Wait 2-3 minutes for services to restart  
+3. Retry build command
+
+### Post-Deployment Verification
+After any changes:
+1. git status (should be clean)
+2. ls -la build/static/js/ (check build timestamp)
+3. pm2 list (backend running)
+4. Test API with curl + auth header
+
+### Common Issues
+- Frontend changes not appearing = outdated build timestamp
+- Authentication failures = check API key matches in .env and apiService.js
+- Memory build failures = use memory flags or restart server
+- Git merge conflicts = forgot to git pull before merging
+
