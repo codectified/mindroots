@@ -181,13 +181,12 @@ const Search = () => {
     <div className="button-row" style={{ marginBottom: '10px' }}>
         <button 
           onClick={handleFetchRoots}
-          disabled={!r1}
         >
           Fetch Root(s)
         </button>
         <button 
           onClick={handleCombinate}
-          disabled={!r1}
+          disabled={!r1 && !r2 && !r3}
         >
           Combinate
         </button>
