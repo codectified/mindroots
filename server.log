@@ -1966,3 +1966,89 @@ API access granted for IP: ::1 at 2025-08-12T20:24:01.422Z
 API access granted for IP: ::1 at 2025-08-12T20:24:01.422Z
 API access granted for IP: ::1 at 2025-08-12T20:24:01.422Z
 API access granted for IP: ::1 at 2025-08-12T20:24:01.423Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+API access granted for IP: ::1 at 2025-08-12T20:25:09.491Z
+Expand route called: corpusitem/2/word {
+  L1: 'arabic',
+  L2: 'off',
+  corpus_id: '1',
+  limit: 25,
+  limitType: 'number'
+}
+=== EXPAND REQUEST DEBUG ===
+Source: corpusitem 2
+Target: word
+Corpus filter: 1
+Query params: { sourceId: '2', limit: 25, corpus_id: '1' }
+Generated Cypher Query:
+
+        MATCH (item:CorpusItem {item_id: toInteger($sourceId), corpus_id: toInteger($corpus_id)})
+        OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
+        OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
+        OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
+        RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms
+      
+=== END DEBUG ===
+Query returned 1 records
+Returning 6 nodes and 5 links
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:11.786Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.783Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.784Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.785Z
+API access granted for IP: ::1 at 2025-08-12T20:25:12.785Z
