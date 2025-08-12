@@ -625,7 +625,7 @@ router.use(authenticateAPI);
           id: `corpusitem_${item.item_id}`,
           label: L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`,
           ...convertIntegers(item),
-          type: 'name'
+          type: 'corpusitem'
         };
         nodes.push(itemNode);
         nodeMap.set(itemNode.id, itemNode);
@@ -776,7 +776,7 @@ router.use(authenticateAPI);
             id: `corpusitem_${targetNode.item_id}`,
             label: L2 === 'off' ? targetNode[L1] : `${targetNode[L1]} / ${targetNode[L2]}`,
             ...convertIntegers(targetNode),
-            type: 'name' // corpus items use 'name' type
+            type: 'corpusitem' // corpus items
           };
           nodes.push(corpusItemNode);
           nodeMap.set(corpusItemNode.id, corpusItemNode);
@@ -2236,7 +2236,14 @@ router.get('/inspect/:nodeType/:nodeId', async (req, res) => {
     
     // Validate node type
     const validNodeTypes = ['Root', 'Word', 'Form', 'CorpusItem'];
-    const capitalizedNodeType = nodeType.charAt(0).toUpperCase() + nodeType.slice(1).toLowerCase();
+    // Map input node types to proper case
+    const nodeTypeMap = {
+      'root': 'Root',
+      'word': 'Word', 
+      'form': 'Form',
+      'corpusitem': 'CorpusItem'
+    };
+    const capitalizedNodeType = nodeTypeMap[nodeType.toLowerCase()] || nodeType;
     
     if (!validNodeTypes.includes(capitalizedNodeType)) {
       return res.status(400).json({ 
