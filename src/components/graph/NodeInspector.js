@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import '../../styles/node-inspector.css';
+import '../../styles/info-bubble.css';
 
 const NodeInspector = ({ nodeData, onClose }) => {
   if (!nodeData) return null;
