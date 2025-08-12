@@ -3,6 +3,9 @@ import axios from 'axios';
 // // // Create an Axios instance with the base URL for the API
 const api = axios.create({
   baseURL: 'https://theoption.life/api',
+  headers: {
+    'Authorization': 'Bearer REDACTED_API_KEY',
+  },
 });
 
 // const api = axios.create({
