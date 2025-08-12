@@ -123,7 +123,7 @@ const Search = () => {
   return (
     <div>
       <MiniMenu />
-      <h2>Root Search</h2>
+      <h2>Positional Root Search</h2>
 
       {/* Dropdown menus */}
 <div className="button-row" style={{ marginBottom: '10px' }}>

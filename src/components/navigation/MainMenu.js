@@ -36,7 +36,7 @@ const MainMenu = () => {
         <div className="icon-item" onClick={() => handleNavigation('/sandbox')}>
           <FontAwesomeIcon icon={faSearch} className="icon" />
           <span>
-            Advanced Root Search
+            Positional Root Search
           </span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/lisan-lab')}>
