@@ -1,16 +1,19 @@
 import axios from 'axios';
 
 // // // Create an Axios instance with the base URL for the API
+// const api = axios.create({
+//   baseURL: 'https://theoption.life/api',
+//   headers: {
+//     'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
+//   },
+// });
+
 const api = axios.create({
-  baseURL: 'https://theoption.life/api',
+  baseURL: 'http://localhost:5001/api',
   headers: {
-    'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
+    'Authorization': 'Bearer localhost-dev-key-123',
   },
 });
-
-// const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
-// });
 
 
 // Helper function to convert Neo4j integers to regular numbers
@@ -507,4 +510,15 @@ export const reportNodeIssue = async (nodeId, nodeType, issue) => {
       resolve(`Issue reported for ${nodeType} node (ID: ${nodeId}): ${issue}. Issue tracking system will be implemented here.`);
     }, 500);
   });
+};
+
+// Node Inspector - Get comprehensive node information
+export const inspectNode = async (nodeType, nodeId) => {
+  try {
+    const response = await api.get(`/inspect/${nodeType}/${nodeId}`);
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error inspecting node:', error);
+    throw error;
+  }
 };

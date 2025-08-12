@@ -625,7 +625,7 @@ router.use(authenticateAPI);
           id: `corpusitem_${item.item_id}`,
           label: L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`,
           ...convertIntegers(item),
-          type: 'name'
+          type: 'corpusitem'
         };
         nodes.push(itemNode);
         nodeMap.set(itemNode.id, itemNode);
@@ -776,7 +776,7 @@ router.use(authenticateAPI);
             id: `corpusitem_${targetNode.item_id}`,
             label: L2 === 'off' ? targetNode[L1] : `${targetNode[L1]} / ${targetNode[L2]}`,
             ...convertIntegers(targetNode),
-            type: 'name' // corpus items use 'name' type
+            type: 'corpusitem' // corpus items
           };
           nodes.push(corpusItemNode);
           nodeMap.set(corpusItemNode.id, corpusItemNode);
@@ -2222,6 +2222,139 @@ router.use(authenticateAPI);
 
 // API Authentication middleware
 router.use(authenticateAPI);
+  }
+});
+
+// API Authentication middleware
+router.use(authenticateAPI);
+
+// Node Inspector - Get comprehensive node information
+router.get('/inspect/:nodeType/:nodeId', async (req, res) => {
+  try {
+    const { nodeType, nodeId } = req.params;
+    const session = req.driver.session();
+    
+    // Validate node type
+    const validNodeTypes = ['Root', 'Word', 'Form', 'CorpusItem'];
+    // Map input node types to proper case
+    const nodeTypeMap = {
+      'root': 'Root',
+      'word': 'Word', 
+      'form': 'Form',
+      'corpusitem': 'CorpusItem'
+    };
+    const capitalizedNodeType = nodeTypeMap[nodeType.toLowerCase()] || nodeType;
+    
+    if (!validNodeTypes.includes(capitalizedNodeType)) {
+      return res.status(400).json({ 
+        error: `Invalid node type: ${nodeType}. Valid types: ${validNodeTypes.join(', ')}` 
+      });
+    }
+    
+    // Determine the ID property name based on node type
+    let idProperty;
+    switch (capitalizedNodeType) {
+      case 'Root': idProperty = 'root_id'; break;
+      case 'Word': idProperty = 'word_id'; break;
+      case 'Form': idProperty = 'form_id'; break;
+      case 'CorpusItem': idProperty = 'item_id'; break;
+    }
+    
+    // Query to get node properties and relationship counts
+    const query = `
+      MATCH (n:${capitalizedNodeType} {${idProperty}: toInteger($nodeId)})
+      
+      // Get all node properties
+      WITH n, keys(n) as propertyKeys
+      
+      // Get relationship counts by type and direction
+      OPTIONAL MATCH (n)-[r]->(target)
+      WITH n, propertyKeys, type(r) as outRelType, count(target) as outCount
+      WITH n, propertyKeys, collect({type: outRelType, direction: 'outgoing', count: outCount}) as outgoingRels
+      
+      OPTIONAL MATCH (source)-[r]->(n)
+      WITH n, propertyKeys, outgoingRels, type(r) as inRelType, count(source) as inCount
+      WITH n, propertyKeys, outgoingRels, collect({type: inRelType, direction: 'incoming', count: inCount}) as incomingRels
+      
+      // Get connected node type counts
+      OPTIONAL MATCH (n)-[:HAS_WORD]->(w:Word)
+      WITH n, propertyKeys, outgoingRels, incomingRels, count(w) as wordCount
+      
+      OPTIONAL MATCH (n)-[:HAS_FORM]->(f:Form)
+      WITH n, propertyKeys, outgoingRels, incomingRels, wordCount, count(f) as formCount
+      
+      OPTIONAL MATCH (n)<-[:HAS_WORD]-(r:Root)
+      WITH n, propertyKeys, outgoingRels, incomingRels, wordCount, formCount, count(r) as rootCount
+      
+      OPTIONAL MATCH (n)-[:HAS_RADICAL]->(rp:RadicalPosition)
+      WITH n, propertyKeys, outgoingRels, incomingRels, wordCount, formCount, rootCount, count(rp) as radicalCount
+      
+      OPTIONAL MATCH (n)-[:BELONGS_TO]->(c:Corpus)
+      WITH n, propertyKeys, outgoingRels, incomingRels, wordCount, formCount, rootCount, radicalCount, count(c) as corpusCount
+      
+      RETURN n, 
+             propertyKeys,
+             outgoingRels + incomingRels as relationships,
+             {
+               words: wordCount,
+               forms: formCount, 
+               roots: rootCount,
+               radicals: radicalCount,
+               corpora: corpusCount
+             } as connectedCounts
+    `;
+    
+    const result = await session.run(query, { nodeId: parseInt(nodeId) });
+    
+    if (result.records.length === 0) {
+      return res.status(404).json({ 
+        error: `No ${capitalizedNodeType} found with ID: ${nodeId}` 
+      });
+    }
+    
+    const record = result.records[0];
+    const node = record.get('n').properties;
+    const propertyKeys = record.get('propertyKeys');
+    const relationships = record.get('relationships');
+    const connectedCounts = record.get('connectedCounts');
+    
+    // Convert Neo4j integers and organize data
+    const nodeData = convertIntegers(node);
+    const relationshipData = convertIntegers(relationships.filter(r => r.type !== null));
+    const connectedData = convertIntegers(connectedCounts);
+    
+    // Organize properties by type
+    const organizedProperties = {};
+    propertyKeys.forEach(key => {
+      const value = nodeData[key];
+      organizedProperties[key] = {
+        value: value,
+        type: typeof value,
+        isEmpty: value === null || value === undefined || value === ''
+      };
+    });
+    
+    await session.close();
+    
+    res.json({
+      nodeType: capitalizedNodeType,
+      nodeId: parseInt(nodeId),
+      properties: organizedProperties,
+      relationships: relationshipData,
+      connectedNodeCounts: connectedData,
+      summary: {
+        totalProperties: propertyKeys.length,
+        totalRelationships: relationshipData.reduce((sum, r) => sum + r.count, 0),
+        totalConnectedNodes: Object.values(connectedData).reduce((sum, count) => sum + count, 0)
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error in node inspection:', error);
+    res.status(500).json({ 
+      error: 'Error inspecting node',
+      message: error.message 
+    });
   }
 });
 

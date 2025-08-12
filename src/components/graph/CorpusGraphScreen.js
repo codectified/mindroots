@@ -35,7 +35,7 @@ const CorpusGraphScreen = () => {
         setGraphData({ nodes: response.nodes, links: response.links });
   
         // Extract available languages from the corpus item node
-        const corpusItemNode = response.nodes.find(n => n.type === 'name');
+        const corpusItemNode = response.nodes.find(n => n.type === 'corpusitem');
         const languages = ['arabic', 'english'];
         if (corpusItemNode?.transliteration) languages.push('transliteration');
         setAvailableLanguages(languages);
