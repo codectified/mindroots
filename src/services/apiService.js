@@ -508,3 +508,14 @@ export const reportNodeIssue = async (nodeId, nodeType, issue) => {
     }, 500);
   });
 };
+
+// Node Inspector - Get comprehensive node information
+export const inspectNode = async (nodeType, nodeId) => {
+  try {
+    const response = await api.get(`/inspect/${nodeType}/${nodeId}`);
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error inspecting node:', error);
+    throw error;
+  }
+};

@@ -4,6 +4,7 @@ import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import { useShowLinks } from '../selectors/ShowLinksToggle';
 import NodeContextMenu from './NodeContextMenu';
+import NodeInspector from './NodeInspector';
 import * as d3 from 'd3';
 
 const GraphVisualization = ({ data, onNodeClick }) => {
@@ -12,7 +13,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const [simulation, setSimulation] = useState(null);
 
   const { isAdvancedMode } = useAdvancedMode();
-  const { contextMenu, setContextMenu, handleContextMenuAction } = useGraphData();
+  const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
   const { wordShadeMode } = useWordShade();
   const { showLinks, showLinkLabels } = useShowLinks();
 
@@ -40,6 +41,11 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const handleCloseContextMenu = useCallback(() => {
     setContextMenu(null);
   }, [setContextMenu]);
+
+  // Close node inspector handler
+  const handleCloseInspector = useCallback(() => {
+    setNodeInspectorData(null);
+  }, [setNodeInspectorData]);
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
@@ -300,6 +306,14 @@ const GraphVisualization = ({ data, onNodeClick }) => {
           position={contextMenu.position}
           onClose={handleCloseContextMenu}
           onAction={handleMenuAction}
+        />
+      )}
+      
+      {/* Render node inspector */}
+      {nodeInspectorData && (
+        <NodeInspector
+          nodeData={nodeInspectorData}
+          onClose={handleCloseInspector}
         />
       )}
     </div>
