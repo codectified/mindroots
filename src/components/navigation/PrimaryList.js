@@ -8,7 +8,7 @@ import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated
 import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import HighlightController from '../selectors/HighlightController';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
 const PrimaryList = () => {
   const navigate = useNavigate();
@@ -102,37 +102,58 @@ const PrimaryList = () => {
   return (
     <div>
       <MiniMenu />
-      <h1>{corpusName}</h1>
-
-      {/* Text Settings - moved from MiniMenu since they're only relevant here */}
-      <div className="text-settings-section" style={{ 
+      {/* Consolidated Header with Text Settings */}
+      <div className="page-header" style={{ 
         marginBottom: '20px', 
-        border: '1px solid #ddd', 
-        borderRadius: '8px',
-        backgroundColor: '#f9f9f9'
+        padding: '15px 20px', 
+        border: '1px solid #a8d5a8', 
+        borderRadius: '12px',
+        backgroundColor: '#f8fdf8',
+        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
       }}>
-        <div 
-          onClick={() => setShowTextSettings(!showTextSettings)}
-          style={{ 
-            padding: '15px', 
-            cursor: 'pointer',
-            borderBottom: showTextSettings ? '1px solid #ddd' : 'none',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between'
-          }}
-        >
-          <h3 style={{ margin: '0', fontSize: '16px', color: '#333' }}>Text Settings</h3>
-          <FontAwesomeIcon 
-            icon={showTextSettings ? faChevronUp : faChevronDown} 
-            style={{ color: '#666' }}
-          />
+        <div style={{ 
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          marginBottom: showTextSettings ? '15px' : '0'
+        }}>
+          <h1 style={{ 
+            margin: '0', 
+            fontSize: '24px', 
+            color: '#2d5a2d',
+            fontWeight: '600'
+          }}>
+            {corpusName}
+          </h1>
+          <button 
+            onClick={() => setShowTextSettings(!showTextSettings)}
+            style={{ 
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              padding: '8px 12px',
+              borderRadius: '6px',
+              transition: 'background-color 0.2s',
+              backgroundColor: showTextSettings ? '#e8f5e8' : 'transparent'
+            }}
+            onMouseEnter={(e) => e.target.style.backgroundColor = '#e8f5e8'}
+            onMouseLeave={(e) => e.target.style.backgroundColor = showTextSettings ? '#e8f5e8' : 'transparent'}
+          >
+            <FontAwesomeIcon 
+              icon={faEllipsisV} 
+              style={{ 
+                color: '#4a7c4a', 
+                fontSize: '18px' 
+              }}
+            />
+          </button>
         </div>
         {showTextSettings && (
           <div style={{ 
-            padding: '15px',
+            paddingTop: '15px',
+            borderTop: '1px solid #d4edd4',
             display: 'flex', 
-            gap: '20px', 
+            gap: '25px', 
             flexWrap: 'wrap', 
             alignItems: 'center' 
           }}>
