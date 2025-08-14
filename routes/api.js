@@ -109,13 +109,13 @@ router.get('/list/poetry_items', async (req, res) => {
         item.suffix AS suffix,
         toInteger(item.line_number) AS line_number,
         toInteger(item.word_position) AS word_position
-      ORDER BY item.line_number, item.word_position
+      ORDER BY item.line_number, item.item_id
     `, { corpus_id });
 
 // API Authentication middleware
 router.use(authenticateAPI);
 
-    const poetryItems = result.records.map(record => record.toObject());
+    const poetryItems = result.records.map(record => convertIntegers(record.toObject()));
     res.json(poetryItems);
   } catch (error) {
     console.error('Error fetching poetry items:', error);
@@ -2228,7 +2228,122 @@ router.use(authenticateAPI);
 // API Authentication middleware
 router.use(authenticateAPI);
 
-// Node Inspector - Get comprehensive node information
+// Node Inspector - Get comprehensive node information for corpus items
+router.get('/inspect/corpusitem/:corpusId/:itemId', async (req, res) => {
+  try {
+    const { corpusId, itemId } = req.params;
+    const session = req.driver.session();
+    
+    // Query to get corpus item properties and relationship counts
+    const query = `
+      MATCH (n:CorpusItem {corpus_id: toInteger($corpusId), item_id: toInteger($itemId)})
+      
+      // Get all node properties
+      WITH n, keys(n) as propertyKeys
+      
+      // Get relationship counts by type and direction
+      OPTIONAL MATCH (n)-[r]->(target)
+      WITH n, propertyKeys, type(r) as outRelType, count(target) as outCount
+      WITH n, propertyKeys, collect({type: outRelType, direction: 'outgoing', count: outCount}) as outgoingRels
+      
+      OPTIONAL MATCH (source)-[r]->(n)
+      WITH n, propertyKeys, outgoingRels, type(r) as inRelType, count(source) as inCount
+      WITH n, propertyKeys, outgoingRels, collect({type: inRelType, direction: 'incoming', count: inCount}) as incomingRels
+      
+      // Get connected node type counts
+      OPTIONAL MATCH (n)-[:HAS_WORD]->(w:Word)
+      WITH n, propertyKeys, outgoingRels, incomingRels, count(w) as wordCount
+      
+      OPTIONAL MATCH (n)<-[:BELONGS_TO]-(c:Corpus)
+      WITH n, propertyKeys, outgoingRels, incomingRels, wordCount, count(c) as corpusCount
+      
+      RETURN n, 
+             propertyKeys,
+             outgoingRels + incomingRels as relationships,
+             {
+               words: wordCount,
+               corpora: corpusCount
+             } as connectedCounts
+    `;
+    
+    const result = await session.run(query, { 
+      corpusId: parseInt(corpusId), 
+      itemId: parseInt(itemId) 
+    });
+    
+    if (result.records.length === 0) {
+      return res.status(404).json({ 
+        error: `No CorpusItem found with corpus_id: ${corpusId}, item_id: ${itemId}` 
+      });
+    }
+    
+    const record = result.records[0];
+    const node = record.get('n').properties;
+    const propertyKeys = record.get('propertyKeys');
+    const relationships = record.get('relationships');
+    const connectedCounts = record.get('connectedCounts');
+    
+    // Convert Neo4j integers and organize data
+    const nodeData = convertIntegers(node);
+    const relationshipData = convertIntegers(relationships.filter(r => r.type !== null));
+    const connectedData = convertIntegers(connectedCounts);
+    
+    // Organize properties by type
+    const organizedProperties = {};
+    const idProperties = ['item_id', 'corpus_id'];
+    const textProperties = ['arabic', 'english', 'transliteration'];
+    const linguisticProperties = ['lemma', 'wazn', 'part_of_speech', 'pos', 'gender', 'number', 'case', 'prefix', 'suffix'];
+    const positionProperties = ['line_number', 'word_position', 'aya_index', 'sura_index'];
+    const otherProperties = [];
+    
+    propertyKeys.forEach(key => {
+      const value = nodeData[key];
+      if (idProperties.includes(key)) {
+        if (!organizedProperties.ids) organizedProperties.ids = {};
+        organizedProperties.ids[key] = value;
+      } else if (textProperties.includes(key)) {
+        if (!organizedProperties.text) organizedProperties.text = {};
+        organizedProperties.text[key] = value;
+      } else if (linguisticProperties.includes(key)) {
+        if (!organizedProperties.linguistic) organizedProperties.linguistic = {};
+        organizedProperties.linguistic[key] = value;
+      } else if (positionProperties.includes(key)) {
+        if (!organizedProperties.position) organizedProperties.position = {};
+        organizedProperties.position[key] = value;
+      } else {
+        otherProperties.push({ key, value });
+      }
+    });
+    
+    if (otherProperties.length > 0) {
+      organizedProperties.other = otherProperties;
+    }
+    
+    await session.close();
+    
+    res.json({
+      nodeType: 'CorpusItem',
+      nodeId: `${corpusId}_${itemId}`,
+      summary: {
+        type: 'CorpusItem',
+        corpus_id: nodeData.corpus_id,
+        item_id: nodeData.item_id,
+        arabic: nodeData.arabic,
+        english: nodeData.english
+      },
+      properties: organizedProperties,
+      relationships: relationshipData,
+      connectedNodes: connectedData,
+      raw: nodeData
+    });
+    
+  } catch (error) {
+    console.error('Error in corpus item inspect endpoint:', error);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
+  }
+});
+
+// Node Inspector - Get comprehensive node information (for other node types)
 router.get('/inspect/:nodeType/:nodeId', async (req, res) => {
   try {
     const { nodeType, nodeId } = req.params;
