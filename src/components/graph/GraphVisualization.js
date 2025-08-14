@@ -230,7 +230,12 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .enter().append('text')
       .attr('x', 12)
       .attr('y', '.31em')
-      .text(d => d.label);
+      .text(d => d.label)
+      .style('pointer-events', 'none') // Make text non-clickable
+      .style('user-select', 'none')    // Prevent text selection
+      .style('-webkit-user-select', 'none')
+      .style('-moz-user-select', 'none')
+      .style('-ms-user-select', 'none');
 
     newSimulation.nodes(data.nodes).on('tick', () => {
       // Find the minimum Y value (the highest node)
