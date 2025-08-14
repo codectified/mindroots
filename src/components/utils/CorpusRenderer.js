@@ -96,7 +96,8 @@ const handleFreeformLineHighlight = (lineNumber) => {
     if (highlightVerb && item.pos === 'verb') {
       return { color: 'green'};
     }
-    if (highlightParticle && item.pos !== 'noun' && item.pos !== 'verb') {
+    // Only highlight as particle if pos property exists and is neither noun nor verb
+    if (highlightParticle && item.pos && item.pos !== 'noun' && item.pos !== 'verb') {
       return { color: 'blue'};
     }
     return {};

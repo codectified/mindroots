@@ -231,11 +231,17 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .attr('x', 12)
       .attr('y', '.31em')
       .text(d => d.label)
-      .style('pointer-events', 'none') // Make text non-clickable
-      .style('user-select', 'none')    // Prevent text selection
+      .style('pointer-events', 'auto')  // Make text clickable
+      .style('cursor', 'pointer')       // Show pointer cursor
+      .style('user-select', 'none')     // Prevent text selection
       .style('-webkit-user-select', 'none')
       .style('-moz-user-select', 'none')
-      .style('-ms-user-select', 'none');
+      .style('-ms-user-select', 'none')
+      .on('click', handleNodeClick)     // Add click handler to text
+      .call(d3.drag()                   // Add drag behavior to text as well
+        .on('start', dragstarted)
+        .on('drag', dragged)
+        .on('end', dragended));
 
     newSimulation.nodes(data.nodes).on('tick', () => {
       // Find the minimum Y value (the highest node)
