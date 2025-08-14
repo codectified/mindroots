@@ -43,6 +43,25 @@ export const fetchQuranItems = async (corpusId, surahIndex) => {
   }
 };
 
+// Optimized Quran items fetch with aya range support
+export const fetchQuranItemsRange = async (corpusId, surahIndex, startAya = null, endAya = null) => {
+  try {
+    const params = { 
+      corpus_id: corpusId, 
+      sura_index: surahIndex 
+    };
+    
+    if (startAya !== null) params.start_aya = startAya;
+    if (endAya !== null) params.end_aya = endAya;
+    
+    const response = await api.get('/list/quran_items_range', { params });
+    return response.data.map(item => convertIntegers(item));
+  } catch (error) {
+    console.error('Error fetching Quran items range:', error);
+    throw error;
+  }
+};
+
 // Fetches aya count for a given surah
 export const fetchAyaCount = async (surahIndex) => {
   try {

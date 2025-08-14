@@ -80,6 +80,58 @@ router.use(authenticateAPI);
   }
 });
 
+// Optimized endpoint for Quran items with aya range support
+router.get('/list/quran_items_range', async (req, res) => {
+  const { corpus_id, sura_index, start_aya, end_aya } = req.query;
+  if (!corpus_id || !sura_index) {
+    return res.status(400).send('Missing required parameters: corpus_id, sura_index');
+  }
+
+  const session = req.driver.session();
+  try {
+    let query = `
+      MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id), sura_index: toInteger($sura_index)})
+    `;
+    
+    let params = { corpus_id, sura_index };
+    
+    // Add aya range filtering if specified
+    if (start_aya && end_aya) {
+      query += ` WHERE item.aya_index >= toInteger($start_aya) AND item.aya_index <= toInteger($end_aya)`;
+      params.start_aya = start_aya;
+      params.end_aya = end_aya;
+    } else if (start_aya) {
+      query += ` WHERE item.aya_index >= toInteger($start_aya)`;
+      params.start_aya = start_aya;
+    } else if (end_aya) {
+      query += ` WHERE item.aya_index <= toInteger($end_aya)`;
+      params.end_aya = end_aya;
+    }
+    
+    query += `
+      RETURN 
+        item.arabic AS arabic, 
+        item.transliteration AS transliteration, 
+        toInteger(item.item_id) AS item_id,
+        toInteger(item.aya_index) AS aya_index,
+        item.english AS english,
+        item.part_of_speech AS pos,
+        item.gender AS gender,
+        toInteger(item.sura_index) AS sura_index
+      ORDER BY item.aya_index, item.item_id
+    `;
+
+    const result = await session.run(query, params);
+    const quranItems = result.records.map(record => convertIntegers(record.toObject()));
+    res.json(quranItems);
+  } catch (error) {
+    console.error('Error fetching Quran items with range:', error);
+    res.status(500).send('Error fetching Quran items with range');
+  } finally {
+    await session.close();
+  }
+});
+
 // API Authentication middleware
 router.use(authenticateAPI);
 
