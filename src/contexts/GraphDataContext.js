@@ -92,12 +92,12 @@ export const GraphDataProvider = ({ children }) => {
         }
       }
   
-      console.log(`Node ${node.id} (${node.node_type}, classification: ${node.classification}) included: ${includeNode}`);
+      console.log(`Node ${node?.id || 'undefined'} (${node?.node_type || 'undefined'}, classification: ${node?.classification || 'undefined'}) included: ${includeNode}`);
       return includeNode;
     });
   
     // Step 2: Create a Set of IDs for nodes that remain after filtering
-    const remainingNodeIds = new Set(filteredNodes.map(node => node.id));
+    const remainingNodeIds = new Set(filteredNodes.map(node => node?.id).filter(Boolean));
     console.log("Remaining Node IDs after filtering:", Array.from(remainingNodeIds));
   
     // Step 3: Filter links to include only those that connect two nodes that remain
@@ -171,8 +171,8 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     const newNodes = normalizeNodes(rawNodes);
 
     // Filter out duplicate nodes based on node ID
-    const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
-    const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+    const currentNodeIds = new Set(graphData.nodes.map(n => n?.id).filter(Boolean));
+    const filteredNewNodes = newNodes.filter(node => node?.id && !currentNodeIds.has(node.id));
     
     // Filter out duplicate links
     const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
@@ -180,7 +180,7 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
 
     console.log(`Adding ${filteredNewNodes.length} new nodes and ${filteredNewLinks.length} new links`);
     console.log('Current node IDs:', Array.from(currentNodeIds));
-    console.log('New node IDs being added:', filteredNewNodes.map(n => n.id));
+    console.log('New node IDs being added:', filteredNewNodes.map(n => n?.id).filter(Boolean));
 
     setGraphData(prev => ({
       nodes: [...prev.nodes, ...filteredNewNodes],
@@ -239,8 +239,8 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     const newNodes = normalizeNodes(rawNodes);
 
     // Filter out duplicate nodes based on node ID
-    const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
-    const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+    const currentNodeIds = new Set(graphData.nodes.map(n => n?.id).filter(Boolean));
+    const filteredNewNodes = newNodes.filter(node => node?.id && !currentNodeIds.has(node.id));
     
     // Filter out duplicate links
     const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
@@ -248,7 +248,7 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
 
     console.log(`Adding ${filteredNewNodes.length} new nodes and ${filteredNewLinks.length} new links`);
     console.log('Current node IDs:', Array.from(currentNodeIds));
-    console.log('New node IDs being added:', filteredNewNodes.map(n => n.id));
+    console.log('New node IDs being added:', filteredNewNodes.map(n => n?.id).filter(Boolean));
 
     setGraphData(prev => ({
       nodes: [...prev.nodes, ...filteredNewNodes],
@@ -296,8 +296,8 @@ const handleWordToCorpusItemExpansion = async (node, L1, L2, contextFilter, posi
     const newNodes = normalizeNodes(rawNodes);
 
     // Filter out duplicate nodes based on node ID
-    const currentNodeIds = new Set(graphData.nodes.map(n => n.id));
-    const filteredNewNodes = newNodes.filter(node => !currentNodeIds.has(node.id));
+    const currentNodeIds = new Set(graphData.nodes.map(n => n?.id).filter(Boolean));
+    const filteredNewNodes = newNodes.filter(node => node?.id && !currentNodeIds.has(node.id));
     
     // Filter out duplicate links
     const currentLinkIds = new Set(graphData.links.map(link => `${link.source}-${link.target}-${link.type || ''}`));
@@ -338,7 +338,7 @@ const handleWordNodeClick = async (
 ) => {
   try {
     const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
-    const nodeKey = node.id;
+    const nodeKey = node?.id;
     
     // Get current click state for this word (default to 0)
     const currentClickState = wordClickStates[nodeKey] || 0;
@@ -416,7 +416,7 @@ const handleWordNodeClick = async (
       const hasCorpusItems = graphData.links.some(link => {
         const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
         const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-        return (sourceId === node.id || targetId === node.id) && 
+        return (sourceId === node?.id || targetId === node?.id) && 
                (link.type === 'USED_IN' || link.type === 'APPEARS_IN');
       });
       
@@ -442,7 +442,7 @@ const handleWordNodeClick = async (
     // Reset click state on error
     setWordClickStates(prev => ({
       ...prev,
-      [node.id]: 0
+      [node?.id]: 0
     }));
   }
 };
@@ -668,14 +668,14 @@ const handleContextMenuAction = async (action, node) => {
           const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
           const targetId = typeof link.target === 'object' ? link.target.id : link.target;
           
-          if (sourceId === node.id) {
+          if (sourceId === node?.id) {
             nodeIdsToRemove.add(targetId);
           }
         });
         
         // Remove the identified nodes and their links
         setGraphData(prev => ({
-          nodes: prev.nodes.filter(n => !nodeIdsToRemove.has(n.id)),
+          nodes: prev.nodes.filter(n => n?.id && !nodeIdsToRemove.has(n.id)),
           links: prev.links.filter(link => {
             const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
             const targetId = typeof link.target === 'object' ? link.target.id : link.target;
