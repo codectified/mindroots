@@ -513,9 +513,13 @@ export const reportNodeIssue = async (nodeId, nodeType, issue) => {
 };
 
 // Node Inspector - Get comprehensive node information
-export const inspectNode = async (nodeType, nodeId) => {
+export const inspectNode = async (nodeType, nodeId, corpusId = null) => {
   try {
-    const response = await api.get(`/inspect/${nodeType}/${nodeId}`);
+    let url = `/inspect/${nodeType}/${nodeId}`;
+    if (nodeType === 'corpusitem' && corpusId) {
+      url = `/inspect/${nodeType}/${corpusId}/${nodeId}`;
+    }
+    const response = await api.get(url);
     return convertIntegers(response.data);
   } catch (error) {
     console.error('Error inspecting node:', error);

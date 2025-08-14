@@ -32,7 +32,7 @@ const CorpusRenderer = ({
     if (!freeformMode) return;
   
     const updatedItems = items.map((currentItem) =>
-      currentItem.item_id.low === item.item_id.low
+      currentItem.item_id === item.item_id
         ? {
             ...currentItem,
             isFreeformHighlighted: !currentItem.isFreeformHighlighted, // Toggle highlight
@@ -69,11 +69,11 @@ const handleFreeformLineHighlight = (lineNumber) => {
   if (!freeformMode) return;
 
   const isLineCurrentlyHighlighted = items
-    .filter((item) => item.line_number.low === lineNumber)
+    .filter((item) => item.line_number === lineNumber)
     .every((item) => item.isFreeformHighlighted);
 
   const updatedItems = items.map((item) =>
-    item.line_number.low === lineNumber
+    item.line_number === lineNumber
       ? {
           ...item,
           isFreeformHighlighted: !isLineCurrentlyHighlighted, // Toggle highlight
@@ -147,7 +147,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   }}
                 >
                   {ayaItems.map((item, index) => (
-                    <React.Fragment key={item.item_id.low}>
+                    <React.Fragment key={item.item_id}>
                       <span
                         onClick={() => handleSelectCorpusItem(item)} // Render graph visualization
                         style={{
@@ -204,7 +204,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
   const renderPoetry = () => {
     // Group items by line_number
     const lines = items.reduce((acc, item) => {
-      const lineNumber = item.line_number.low; // Use the `low` property directly
+      const lineNumber = item.line_number;
       if (!acc[lineNumber]) {
         acc[lineNumber] = [];
       }
@@ -234,9 +234,9 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 }}
               >
                 {lineItems
-                  .sort((a, b) => a.word_position.low - b.word_position.low) // Sort words within each line
+                  .sort((a, b) => a.item_id - b.item_id) // Sort words within each line by item_id
                   .map((item, index) => (
-                    <React.Fragment key={item.item_id.low}>
+                    <React.Fragment key={item.item_id}>
                       <span
                         onClick={() => handleSelectCorpusItem(item)} // Render graph visualization
                         style={{
