@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 
@@ -21,6 +21,8 @@ const CorpusRenderer = ({
   setSurah,
   setAya,
   ayaCount,
+  ayahsPerPage,
+  setAyahsPerPage,
   L1,
   L2,
   handleSelectCorpusItem,
@@ -156,39 +158,73 @@ const handleFreeformLineHighlight = (lineNumber) => {
               </div>
             )}
             
-            <div className="aya-navigation" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-              <button 
-                onClick={() => setAya(Math.max(1, currentStartAya - 1))}
-                disabled={currentStartAya <= 1}
-                className="nav-button"
-                style={{ 
-                  padding: '5px 10px', 
-                  border: '1px solid #ccc', 
-                  borderRadius: '4px',
-                  backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#fff',
-                  cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer'
-                }}
-              >
-                ← Previous Aya
-              </button>
+            <div className="ayah-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+              <div className="ayahs-per-page-control" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <label htmlFor="ayahs-per-page" style={{ fontSize: '14px' }}>Ayahs per page:</label>
+                <input 
+                  id="ayahs-per-page"
+                  type="number" 
+                  min="1" 
+                  max="50" 
+                  value={ayahsPerPage}
+                  onChange={(e) => setAyahsPerPage(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
+                  style={{ 
+                    width: '60px', 
+                    padding: '4px', 
+                    border: '1px solid #ccc', 
+                    borderRadius: '4px',
+                    fontSize: '14px'
+                  }}
+                />
+              </div>
               
-              <span className="current-aya" style={{ minWidth: '100px', textAlign: 'center' }}>
-                Current: Aya {aya || currentStartAya}
-              </span>
-              
-              <button 
-                onClick={() => setAya(currentEndAya + 1)}
-                className="nav-button"
-                style={{ 
-                  padding: '5px 10px', 
-                  border: '1px solid #ccc', 
-                  borderRadius: '4px',
-                  backgroundColor: '#fff',
-                  cursor: 'pointer'
-                }}
-              >
-                Next Aya →
-              </button>
+              <div className="aya-navigation" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button 
+                  onClick={() => setAya(Math.max(1, currentStartAya - ayahsPerPage))}
+                  disabled={currentStartAya <= 1}
+                  className="nav-button"
+                  style={{ 
+                    padding: '8px 12px', 
+                    border: '1px solid #007cba', 
+                    borderRadius: '4px',
+                    backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#007cba',
+                    color: currentStartAya <= 1 ? '#999' : '#fff',
+                    cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  ← Previous {ayahsPerPage}
+                </button>
+                
+                <span className="current-aya" style={{ 
+                  minWidth: '120px', 
+                  textAlign: 'center',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#333'
+                }}>
+                  Ayahs {currentStartAya}-{currentEndAya}
+                </span>
+                
+                <button 
+                  onClick={() => setAya(currentEndAya + 1)}
+                  disabled={currentEndAya >= (ayaCount || 286)}
+                  className="nav-button"
+                  style={{ 
+                    padding: '8px 12px', 
+                    border: '1px solid #007cba', 
+                    borderRadius: '4px',
+                    backgroundColor: currentEndAya >= (ayaCount || 286) ? '#f5f5f5' : '#007cba',
+                    color: currentEndAya >= (ayaCount || 286) ? '#999' : '#fff',
+                    cursor: currentEndAya >= (ayaCount || 286) ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500'
+                  }}
+                >
+                  Next {ayahsPerPage} →
+                </button>
+              </div>
             </div>
           </div>
         </div>

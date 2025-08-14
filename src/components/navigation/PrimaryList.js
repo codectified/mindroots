@@ -5,6 +5,8 @@ import MiniMenu from './MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated rendering component
+import TextLayoutToggle from '../selectors/TextLayoutSelector';
+import HighlightController from '../selectors/HighlightController';
 
 const PrimaryList = () => {
   const navigate = useNavigate();
@@ -14,6 +16,7 @@ const PrimaryList = () => {
   const [surah, setSurah] = useState(1); // Default to Surah 1 for Quran
   const [aya, setAya] = useState(0); // Default to Aya 0 (all Ayas)
   const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
+  const [ayahsPerPage, setAyahsPerPage] = useState(10); // Track ayahs per page
   const { L1, L2 } = useScript();
   const { handleSelectCorpusItem } = useCorpus();
 
@@ -34,11 +37,11 @@ const PrimaryList = () => {
           let quranData;
           
           if (aya === 0) {
-            // Fetch limited range for performance - default to first 10 ayat
-            const endAya = Math.min(10, ayaCount || 10);
+            // Fetch first page of ayat - using ayahsPerPage setting
+            const endAya = Math.min(ayahsPerPage, ayaCount || ayahsPerPage);
             quranData = await fetchQuranItemsRange(corpusId, surah, 1, endAya);
           } else {
-            // Fetch specific aya or small range around it
+            // Fetch specific aya and some context around it for better UX
             const startAya = Math.max(1, aya - 2);
             const endAya = Math.min(ayaCount || aya + 2, aya + 2);
             quranData = await fetchQuranItemsRange(corpusId, surah, startAya, endAya);
@@ -71,7 +74,7 @@ const PrimaryList = () => {
     };
   
     fetchData();
-  }, [corpusId, surah, aya, L1]);
+  }, [corpusId, surah, aya, ayahsPerPage, L1]);
 
   useEffect(() => {
     if (corpusId === '2') { // Fetch Aya count when Surah changes (for Quran)
@@ -98,6 +101,21 @@ const PrimaryList = () => {
       <MiniMenu />
       <h1>{corpusName}</h1>
 
+      {/* Text Settings - moved from MiniMenu since they're only relevant here */}
+      <div className="text-settings-section" style={{ 
+        marginBottom: '20px', 
+        padding: '15px', 
+        border: '1px solid #ddd', 
+        borderRadius: '8px',
+        backgroundColor: '#f9f9f9'
+      }}>
+        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#333' }}>Text Settings</h3>
+        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
+          <TextLayoutToggle />
+          <HighlightController />
+        </div>
+      </div>
+
       {loading && (
         <div style={{ 
           display: 'flex', 
@@ -123,6 +141,8 @@ const PrimaryList = () => {
         setSurah={setSurah}
         setAya={setAya}
         ayaCount={ayaCount}
+        ayahsPerPage={ayahsPerPage}
+        setAyahsPerPage={setAyahsPerPage}
         L1={L1}
         L2={L2}
         handleSelectCorpusItem={handleItemClick}
