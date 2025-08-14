@@ -685,8 +685,25 @@ const handleContextMenuAction = async (action, node) => {
         break;
       
       case 'summarize':
-        const nodeId = node.word_id || node.root_id || node.form_id || node.item_id;
-        const summary = await summarizeNodeContent(nodeId, node.type);
+        // Use type-specific ID selection to avoid wrong ID for corpus items
+        let summarizeNodeId;
+        switch (node.type) {
+          case 'word':
+            summarizeNodeId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+            break;
+          case 'root':
+            summarizeNodeId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+            break;
+          case 'form':
+            summarizeNodeId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+            break;
+          case 'corpusitem':
+            summarizeNodeId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+            break;
+          default:
+            summarizeNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        }
+        const summary = await summarizeNodeContent(summarizeNodeId, node.type);
         setInfoBubble({
           definition: summary,
           position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
@@ -738,9 +755,33 @@ const handleContextMenuAction = async (action, node) => {
         break;
       
       case 'inspect':
-        const inspectNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        // Use type-specific ID selection to avoid wrong ID for corpus items
+        let inspectNodeId;
+        switch (node.type) {
+          case 'word':
+            inspectNodeId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+            break;
+          case 'root':
+            inspectNodeId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+            break;
+          case 'form':
+            inspectNodeId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+            break;
+          case 'corpusitem':
+            inspectNodeId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+            break;
+          default:
+            inspectNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        }
         try {
-          const inspectionData = await inspectNode(node.type, inspectNodeId);
+          // For corpus items, we need to pass corpus_id as well
+          let inspectionData;
+          if (node.type === 'corpusitem') {
+            const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
+            inspectionData = await inspectNode(node.type, inspectNodeId, corpusId);
+          } else {
+            inspectionData = await inspectNode(node.type, inspectNodeId);
+          }
           setNodeInspectorData(inspectionData);
         } catch (error) {
           console.error('Error inspecting node:', error);
@@ -752,7 +793,24 @@ const handleContextMenuAction = async (action, node) => {
         break;
       
       case 'report':
-        const reportNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        // Use type-specific ID selection to avoid wrong ID for corpus items
+        let reportNodeId;
+        switch (node.type) {
+          case 'word':
+            reportNodeId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+            break;
+          case 'root':
+            reportNodeId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+            break;
+          case 'form':
+            reportNodeId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+            break;
+          case 'corpusitem':
+            reportNodeId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+            break;
+          default:
+            reportNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
+        }
         const reportResult = await reportNodeIssue(reportNodeId, node.type, 'User reported issue via context menu');
         setInfoBubble({
           definition: reportResult,
