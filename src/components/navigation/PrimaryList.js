@@ -7,6 +7,8 @@ import { useCorpus } from '../../contexts/CorpusContext';
 import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated rendering component
 import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import HighlightController from '../selectors/HighlightController';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 
 const PrimaryList = () => {
   const navigate = useNavigate();
@@ -17,6 +19,7 @@ const PrimaryList = () => {
   const [aya, setAya] = useState(0); // Default to Aya 0 (all Ayas)
   const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
   const [ayahsPerPage, setAyahsPerPage] = useState(10); // Track ayahs per page
+  const [showTextSettings, setShowTextSettings] = useState(true); // Text settings collapsible state
   const { L1, L2 } = useScript();
   const { handleSelectCorpusItem } = useCorpus();
 
@@ -41,9 +44,9 @@ const PrimaryList = () => {
             const endAya = Math.min(ayahsPerPage, ayaCount || ayahsPerPage);
             quranData = await fetchQuranItemsRange(corpusId, surah, 1, endAya);
           } else {
-            // Fetch specific aya and some context around it for better UX
-            const startAya = Math.max(1, aya - 2);
-            const endAya = Math.min(ayaCount || aya + 2, aya + 2);
+            // Fetch range starting from specified aya
+            const startAya = Math.max(1, aya);
+            const endAya = Math.min(ayaCount || (startAya + ayahsPerPage - 1), startAya + ayahsPerPage - 1);
             quranData = await fetchQuranItemsRange(corpusId, surah, startAya, endAya);
           }
           
@@ -104,16 +107,39 @@ const PrimaryList = () => {
       {/* Text Settings - moved from MiniMenu since they're only relevant here */}
       <div className="text-settings-section" style={{ 
         marginBottom: '20px', 
-        padding: '15px', 
         border: '1px solid #ddd', 
         borderRadius: '8px',
         backgroundColor: '#f9f9f9'
       }}>
-        <h3 style={{ margin: '0 0 15px 0', fontSize: '16px', color: '#333' }}>Text Settings</h3>
-        <div style={{ display: 'flex', gap: '20px', flexWrap: 'wrap', alignItems: 'center' }}>
-          <TextLayoutToggle />
-          <HighlightController />
+        <div 
+          onClick={() => setShowTextSettings(!showTextSettings)}
+          style={{ 
+            padding: '15px', 
+            cursor: 'pointer',
+            borderBottom: showTextSettings ? '1px solid #ddd' : 'none',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}
+        >
+          <h3 style={{ margin: '0', fontSize: '16px', color: '#333' }}>Text Settings</h3>
+          <FontAwesomeIcon 
+            icon={showTextSettings ? faChevronUp : faChevronDown} 
+            style={{ color: '#666' }}
+          />
         </div>
+        {showTextSettings && (
+          <div style={{ 
+            padding: '15px',
+            display: 'flex', 
+            gap: '20px', 
+            flexWrap: 'wrap', 
+            alignItems: 'center' 
+          }}>
+            <TextLayoutToggle />
+            <HighlightController />
+          </div>
+        )}
       </div>
 
       {loading && (

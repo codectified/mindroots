@@ -229,7 +229,15 @@ const handleFreeformLineHighlight = (lineNumber) => {
           </div>
         </div>
   
-        <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
+        <div style={{ 
+          whiteSpace: 'pre-wrap', 
+          textAlign: layout === 'prose' ? 'justify' : 'center', 
+          direction: 'rtl',
+          maxWidth: layout === 'prose' ? '800px' : 'none',
+          margin: layout === 'prose' ? '0 auto' : '0',
+          padding: layout === 'prose' ? '0 20px' : '0',
+          lineHeight: layout === 'line-by-line' ? '2.5' : '1.8'
+        }}>
           {surahNumber !== 9 && (
             <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
           )}
@@ -280,7 +288,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   ﴿{ayaIndex}﴾
                 </span>
   
-                {layout === 'line-by-line' && <br />}
+                {layout === 'line-by-line' ? <br /> : ' '}
               </React.Fragment>
             );
           })}
