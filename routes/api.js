@@ -2288,53 +2288,30 @@ router.get('/inspect/corpusitem/:corpusId/:itemId', async (req, res) => {
     const relationshipData = convertIntegers(relationships.filter(r => r.type !== null));
     const connectedData = convertIntegers(connectedCounts);
     
-    // Organize properties by type
+    // Organize properties in the format expected by NodeInspector
     const organizedProperties = {};
-    const idProperties = ['item_id', 'corpus_id'];
-    const textProperties = ['arabic', 'english', 'transliteration'];
-    const linguisticProperties = ['lemma', 'wazn', 'part_of_speech', 'pos', 'gender', 'number', 'case', 'prefix', 'suffix'];
-    const positionProperties = ['line_number', 'word_position', 'aya_index', 'sura_index'];
-    const otherProperties = [];
-    
     propertyKeys.forEach(key => {
       const value = nodeData[key];
-      if (idProperties.includes(key)) {
-        if (!organizedProperties.ids) organizedProperties.ids = {};
-        organizedProperties.ids[key] = value;
-      } else if (textProperties.includes(key)) {
-        if (!organizedProperties.text) organizedProperties.text = {};
-        organizedProperties.text[key] = value;
-      } else if (linguisticProperties.includes(key)) {
-        if (!organizedProperties.linguistic) organizedProperties.linguistic = {};
-        organizedProperties.linguistic[key] = value;
-      } else if (positionProperties.includes(key)) {
-        if (!organizedProperties.position) organizedProperties.position = {};
-        organizedProperties.position[key] = value;
-      } else {
-        otherProperties.push({ key, value });
-      }
+      organizedProperties[key] = {
+        value: value,
+        type: typeof value,
+        isEmpty: value === null || value === undefined || value === ''
+      };
     });
-    
-    if (otherProperties.length > 0) {
-      organizedProperties.other = otherProperties;
-    }
     
     await session.close();
     
     res.json({
       nodeType: 'CorpusItem',
       nodeId: `${corpusId}_${itemId}`,
-      summary: {
-        type: 'CorpusItem',
-        corpus_id: nodeData.corpus_id,
-        item_id: nodeData.item_id,
-        arabic: nodeData.arabic,
-        english: nodeData.english
-      },
       properties: organizedProperties,
       relationships: relationshipData,
-      connectedNodes: connectedData,
-      raw: nodeData
+      connectedNodeCounts: connectedData,
+      summary: {
+        totalProperties: propertyKeys.length,
+        totalRelationships: relationshipData.reduce((sum, r) => sum + r.count, 0),
+        totalConnectedNodes: Object.values(connectedData).reduce((sum, count) => sum + count, 0)
+      }
     });
     
   } catch (error) {
