@@ -151,9 +151,9 @@ const handleFreeformLineHighlight = (lineNumber) => {
             {totalAyasInRange > 0 && (
               <div className="aya-info" style={{ fontSize: '14px', color: '#666' }}>
                 <span className="aya-range-info">
-                  Showing Ayat {currentStartAya}
-                  {currentEndAya !== currentStartAya ? `-${currentEndAya}` : ''} 
-                  ({totalAyasInRange} verse{totalAyasInRange !== 1 ? 's' : ''})
+                  Showing ayat {currentStartAya}
+                  {currentEndAya !== currentStartAya ? `-${currentEndAya}` : ''}{' '}
+                  out of {ayaCount || 286} total
                 </span>
               </div>
             )}
@@ -250,7 +250,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 {/* Words within the AYA */}
                 <span
                   style={{
-                    display: 'inline-block',
+                    display: layout === 'prose' ? 'inline' : 'inline-block',
                     backgroundColor: isAyaHighlighted ? ayaItems[0].highlightColor : 'transparent',
                     borderRadius: '5px',
                     padding: '2px',
@@ -270,10 +270,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                       {index < ayaItems.length - 1 && ' '} {/* Add space between words */}
                     </React.Fragment>
                   ))}
-                </span>
-  
-                {/* AYA Marker */}
-                <span
+                </span><span
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent word-level logic
                     freeformMode && handleFreeformAyaHighlight(parseInt(ayaIndex, 10));
@@ -283,12 +280,11 @@ const handleFreeformLineHighlight = (lineNumber) => {
                     color: 'gray',
                     fontWeight: 'bold',
                     marginLeft: '5px',
+                    marginRight: layout === 'prose' ? '8px' : '5px', // Add space after ayah marker in prose
                   }}
                 >
                   ﴿{ayaIndex}﴾
-                </span>
-  
-                {layout === 'line-by-line' ? <br /> : ' '}
+                </span>{layout === 'line-by-line' && <br />}
               </React.Fragment>
             );
           })}
