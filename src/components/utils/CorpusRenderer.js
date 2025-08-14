@@ -134,12 +134,38 @@ const handleFreeformLineHighlight = (lineNumber) => {
 
     return (
       <div>
-        <div className="quran-header" style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px' }}>
-          <h2>{surah}. {SURAH_NAMES[surah] || `Surah ${surah}`}</h2>
+        <div className="quran-header" style={{ 
+          marginBottom: '20px', 
+          padding: '20px', 
+          border: '1px solid #a8d5a8', 
+          borderRadius: '12px',
+          backgroundColor: '#f8fdf8',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+        }}>
+          <h2 style={{ 
+            margin: '0 0 15px 0', 
+            fontSize: '20px', 
+            color: '#2d5a2d',
+            fontWeight: '600'
+          }}>
+            {surah}. {SURAH_NAMES[surah] || `Surah ${surah}`}
+          </h2>
           <div className="quran-controls" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
             <div className="surah-selector">
               <label htmlFor="surah-select">Select Surah: </label>
-              <select id="surah-select" value={surah} onChange={(e) => setSurah(e.target.value)}>
+              <select 
+                id="surah-select" 
+                value={surah} 
+                onChange={(e) => setSurah(e.target.value)}
+                style={{
+                  padding: '6px 10px',
+                  border: '1px solid #a8d5a8',
+                  borderRadius: '6px',
+                  backgroundColor: '#fff',
+                  fontSize: '14px',
+                  color: '#2d5a2d'
+                }}
+              >
                 {Array.from({ length: 114 }, (_, i) => i + 1).map((sura) => (
                   <option key={sura} value={sura}>
                     {sura}. {SURAH_NAMES[sura] || `Surah ${sura}`}
@@ -170,10 +196,12 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   onChange={(e) => setAyahsPerPage(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
                   style={{ 
                     width: '60px', 
-                    padding: '4px', 
-                    border: '1px solid #ccc', 
-                    borderRadius: '4px',
-                    fontSize: '14px'
+                    padding: '6px', 
+                    border: '1px solid #a8d5a8', 
+                    borderRadius: '6px',
+                    backgroundColor: '#fff',
+                    fontSize: '14px',
+                    color: '#2d5a2d'
                   }}
                 />
               </div>
@@ -185,13 +213,14 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   className="nav-button"
                   style={{ 
                     padding: '8px 12px', 
-                    border: '1px solid #007cba', 
-                    borderRadius: '4px',
-                    backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#007cba',
+                    border: '1px solid #4a7c4a', 
+                    borderRadius: '6px',
+                    backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#4a7c4a',
                     color: currentStartAya <= 1 ? '#999' : '#fff',
                     cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer',
                     fontSize: '14px',
-                    fontWeight: '500'
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   ← Previous {ayahsPerPage}
@@ -213,13 +242,14 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   className="nav-button"
                   style={{ 
                     padding: '8px 12px', 
-                    border: '1px solid #007cba', 
-                    borderRadius: '4px',
-                    backgroundColor: currentEndAya >= (ayaCount || 286) ? '#f5f5f5' : '#007cba',
+                    border: '1px solid #4a7c4a', 
+                    borderRadius: '6px',
+                    backgroundColor: currentEndAya >= (ayaCount || 286) ? '#f5f5f5' : '#4a7c4a',
                     color: currentEndAya >= (ayaCount || 286) ? '#999' : '#fff',
                     cursor: currentEndAya >= (ayaCount || 286) ? 'not-allowed' : 'pointer',
                     fontSize: '14px',
-                    fontWeight: '500'
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
                   }}
                 >
                   Next {ayahsPerPage} →
