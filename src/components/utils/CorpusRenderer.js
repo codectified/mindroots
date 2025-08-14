@@ -1,6 +1,15 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
+
+// Basic Surah names mapping (first 20 for demonstration)
+const SURAH_NAMES = {
+  1: "Al-Fatiha", 2: "Al-Baqara", 3: "Al-Imran", 4: "An-Nisa", 5: "Al-Maida",
+  6: "Al-An'am", 7: "Al-A'raf", 8: "Al-Anfal", 9: "At-Tawba", 10: "Yunus",
+  11: "Hud", 12: "Yusuf", 13: "Ar-Ra'd", 14: "Ibrahim", 15: "Al-Hijr",
+  16: "An-Nahl", 17: "Al-Isra", 18: "Al-Kahf", 19: "Maryam", 20: "Ta-Ha"
+  // TODO: Add remaining 94 surah names
+};
 
 const CorpusRenderer = ({
   corpusId,
@@ -12,6 +21,8 @@ const CorpusRenderer = ({
   setSurah,
   setAya,
   ayaCount,
+  ayahsPerPage,
+  setAyahsPerPage,
   L1,
   L2,
   handleSelectCorpusItem,
@@ -106,7 +117,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
 
   const renderQuran = () => {
     const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
-    const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index.low) : null);
+    const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : null);
   
     // Group items by AYA index
     const groupedByAya = items.reduce((acc, item) => {
@@ -115,19 +126,148 @@ const handleFreeformLineHighlight = (lineNumber) => {
       return acc;
     }, {});
   
+    // Get current aya range info
+    const ayaNumbers = Object.keys(groupedByAya).map(Number).sort((a, b) => a - b);
+    const currentStartAya = ayaNumbers.length > 0 ? ayaNumbers[0] : 1;
+    const currentEndAya = ayaNumbers.length > 0 ? ayaNumbers[ayaNumbers.length - 1] : 1;
+    const totalAyasInRange = ayaNumbers.length;
+
     return (
       <div>
-        <h2>Surah {surah}</h2>
-        <label htmlFor="surah-select">Select Surah: </label>
-        <select id="surah-select" value={surah} onChange={(e) => setSurah(e.target.value)}>
-          {Array.from({ length: 114 }, (_, i) => i + 1).map((sura) => (
-            <option key={sura} value={sura}>
-              {sura}
-            </option>
-          ))}
-        </select>
+        <div className="quran-header" style={{ 
+          marginBottom: '20px', 
+          padding: '20px', 
+          border: '1px solid #a8d5a8', 
+          borderRadius: '12px',
+          backgroundColor: '#f8fdf8',
+          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
+        }}>
+          <h2 style={{ 
+            margin: '0 0 15px 0', 
+            fontSize: '20px', 
+            color: '#2d5a2d',
+            fontWeight: '600'
+          }}>
+            {surah}. {SURAH_NAMES[surah] || `Surah ${surah}`}
+          </h2>
+          <div className="quran-controls" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="surah-selector">
+              <label htmlFor="surah-select">Select Surah: </label>
+              <select 
+                id="surah-select" 
+                value={surah} 
+                onChange={(e) => setSurah(e.target.value)}
+                style={{
+                  padding: '6px 10px',
+                  border: '1px solid #a8d5a8',
+                  borderRadius: '6px',
+                  backgroundColor: '#fff',
+                  fontSize: '14px',
+                  color: '#2d5a2d'
+                }}
+              >
+                {Array.from({ length: 114 }, (_, i) => i + 1).map((sura) => (
+                  <option key={sura} value={sura}>
+                    {sura}. {SURAH_NAMES[sura] || `Surah ${sura}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {totalAyasInRange > 0 && (
+              <div className="aya-info" style={{ fontSize: '14px', color: '#666' }}>
+                <span className="aya-range-info">
+                  Showing ayat {currentStartAya}
+                  {currentEndAya !== currentStartAya ? `-${currentEndAya}` : ''}{' '}
+                  out of {ayaCount || 286} total
+                </span>
+              </div>
+            )}
+            
+            <div className="ayah-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
+              <div className="ayahs-per-page-control" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+                <label htmlFor="ayahs-per-page" style={{ fontSize: '14px' }}>Ayahs per page:</label>
+                <input 
+                  id="ayahs-per-page"
+                  type="number" 
+                  min="1" 
+                  max="50" 
+                  value={ayahsPerPage}
+                  onChange={(e) => setAyahsPerPage(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
+                  style={{ 
+                    width: '60px', 
+                    padding: '6px', 
+                    border: '1px solid #a8d5a8', 
+                    borderRadius: '6px',
+                    backgroundColor: '#fff',
+                    fontSize: '14px',
+                    color: '#2d5a2d'
+                  }}
+                />
+              </div>
+              
+              <div className="aya-navigation" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                <button 
+                  onClick={() => setAya(Math.max(1, currentStartAya - ayahsPerPage))}
+                  disabled={currentStartAya <= 1}
+                  className="nav-button"
+                  style={{ 
+                    padding: '8px 12px', 
+                    border: '1px solid #4a7c4a', 
+                    borderRadius: '6px',
+                    backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#4a7c4a',
+                    color: currentStartAya <= 1 ? '#999' : '#fff',
+                    cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ← Previous {ayahsPerPage}
+                </button>
+                
+                <span className="current-aya" style={{ 
+                  minWidth: '120px', 
+                  textAlign: 'center',
+                  fontSize: '14px',
+                  fontWeight: '500',
+                  color: '#333'
+                }}>
+                  Ayahs {currentStartAya}-{currentEndAya}
+                </span>
+                
+                <button 
+                  onClick={() => setAya(currentEndAya + 1)}
+                  disabled={currentEndAya >= (ayaCount || 286)}
+                  className="nav-button"
+                  style={{ 
+                    padding: '8px 12px', 
+                    border: '1px solid #4a7c4a', 
+                    borderRadius: '6px',
+                    backgroundColor: currentEndAya >= (ayaCount || 286) ? '#f5f5f5' : '#4a7c4a',
+                    color: currentEndAya >= (ayaCount || 286) ? '#999' : '#fff',
+                    cursor: currentEndAya >= (ayaCount || 286) ? 'not-allowed' : 'pointer',
+                    fontSize: '14px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Next {ayahsPerPage} →
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
   
-        <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
+        <div style={{ 
+          whiteSpace: 'pre-wrap', 
+          textAlign: layout === 'prose' ? 'justify' : 'center', 
+          direction: 'rtl',
+          maxWidth: layout === 'prose' ? '800px' : 'none',
+          margin: layout === 'prose' ? '0 auto' : '0',
+          padding: layout === 'prose' ? '0 20px' : '0',
+          lineHeight: layout === 'line-by-line' ? '2.5' : '1.8'
+        }}>
           {surahNumber !== 9 && (
             <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
           )}
@@ -140,7 +280,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 {/* Words within the AYA */}
                 <span
                   style={{
-                    display: 'inline-block',
+                    display: layout === 'prose' ? 'inline' : 'inline-block',
                     backgroundColor: isAyaHighlighted ? ayaItems[0].highlightColor : 'transparent',
                     borderRadius: '5px',
                     padding: '2px',
@@ -160,10 +300,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                       {index < ayaItems.length - 1 && ' '} {/* Add space between words */}
                     </React.Fragment>
                   ))}
-                </span>
-  
-                {/* AYA Marker */}
-                <span
+                </span><span
                   onClick={(e) => {
                     e.stopPropagation(); // Prevent word-level logic
                     freeformMode && handleFreeformAyaHighlight(parseInt(ayaIndex, 10));
@@ -173,12 +310,11 @@ const handleFreeformLineHighlight = (lineNumber) => {
                     color: 'gray',
                     fontWeight: 'bold',
                     marginLeft: '5px',
+                    marginRight: layout === 'prose' ? '8px' : '5px', // Add space after ayah marker in prose
                   }}
                 >
                   ﴿{ayaIndex}﴾
-                </span>
-  
-                {layout === 'line-by-line' && <br />}
+                </span>{layout === 'line-by-line' && <br />}
               </React.Fragment>
             );
           })}

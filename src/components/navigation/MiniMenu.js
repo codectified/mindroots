@@ -4,8 +4,6 @@ import { faGlobe, faChevronDown, faChevronUp, faBook, faMapMarked, faSearch, faH
 import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
-import HighlightController from '../selectors/HighlightController';
-import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import FilterController from '../selectors/FilterController';
 import WordShadeSelector from '../selectors/WordShadeSelector';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
@@ -19,7 +17,6 @@ const MiniMenu = () => {
   const navigate = useNavigate();
   const { isAdvancedMode } = useAdvancedMode();
   const [selectedOption, setSelectedOption] = useState(null);
-  const [showTextSettings, setShowTextSettings] = useState(false);
   const [setIsGraphMode] = useState(false); // Toggle for Graph/Table mode
   const [showFilterSettings, setShowFilterSettings] = useState(false);
   const [showContextSettings, setShowContextSettings] = useState(false);
@@ -120,21 +117,6 @@ const MiniMenu = () => {
                 </>
               )}
 
-              {/* 6. Text - moved to bottom */}
-              <div
-                className="collapsible-section"
-                onClick={() => setShowTextSettings((prev) => !prev)}
-                style={{ cursor: 'pointer', marginBottom: '10px' }}
-              >
-                Text
-                <FontAwesomeIcon icon={showTextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
-              </div>
-              {showTextSettings && (
-                <>
-                  <TextLayoutToggle />
-                  <HighlightController />
-                </>
-              )}
             </>
           )}
   
