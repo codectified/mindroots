@@ -2,6 +2,15 @@ import React from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 
+// Basic Surah names mapping (first 20 for demonstration)
+const SURAH_NAMES = {
+  1: "Al-Fatiha", 2: "Al-Baqara", 3: "Al-Imran", 4: "An-Nisa", 5: "Al-Maida",
+  6: "Al-An'am", 7: "Al-A'raf", 8: "Al-Anfal", 9: "At-Tawba", 10: "Yunus",
+  11: "Hud", 12: "Yusuf", 13: "Ar-Ra'd", 14: "Ibrahim", 15: "Al-Hijr",
+  16: "An-Nahl", 17: "Al-Isra", 18: "Al-Kahf", 19: "Maryam", 20: "Ta-Ha"
+  // TODO: Add remaining 94 surah names
+};
+
 const CorpusRenderer = ({
   corpusId,
   corpusType,
@@ -106,7 +115,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
 
   const renderQuran = () => {
     const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
-    const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index.low) : null);
+    const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : null);
   
     // Group items by AYA index
     const groupedByAya = items.reduce((acc, item) => {
@@ -115,17 +124,74 @@ const handleFreeformLineHighlight = (lineNumber) => {
       return acc;
     }, {});
   
+    // Get current aya range info
+    const ayaNumbers = Object.keys(groupedByAya).map(Number).sort((a, b) => a - b);
+    const currentStartAya = ayaNumbers.length > 0 ? ayaNumbers[0] : 1;
+    const currentEndAya = ayaNumbers.length > 0 ? ayaNumbers[ayaNumbers.length - 1] : 1;
+    const totalAyasInRange = ayaNumbers.length;
+
     return (
       <div>
-        <h2>Surah {surah}</h2>
-        <label htmlFor="surah-select">Select Surah: </label>
-        <select id="surah-select" value={surah} onChange={(e) => setSurah(e.target.value)}>
-          {Array.from({ length: 114 }, (_, i) => i + 1).map((sura) => (
-            <option key={sura} value={sura}>
-              {sura}
-            </option>
-          ))}
-        </select>
+        <div className="quran-header" style={{ marginBottom: '20px', padding: '15px', border: '1px solid #ddd', borderRadius: '8px' }}>
+          <h2>{surah}. {SURAH_NAMES[surah] || `Surah ${surah}`}</h2>
+          <div className="quran-controls" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <div className="surah-selector">
+              <label htmlFor="surah-select">Select Surah: </label>
+              <select id="surah-select" value={surah} onChange={(e) => setSurah(e.target.value)}>
+                {Array.from({ length: 114 }, (_, i) => i + 1).map((sura) => (
+                  <option key={sura} value={sura}>
+                    {sura}. {SURAH_NAMES[sura] || `Surah ${sura}`}
+                  </option>
+                ))}
+              </select>
+            </div>
+            
+            {totalAyasInRange > 0 && (
+              <div className="aya-info" style={{ fontSize: '14px', color: '#666' }}>
+                <span className="aya-range-info">
+                  Showing Ayat {currentStartAya}
+                  {currentEndAya !== currentStartAya ? `-${currentEndAya}` : ''} 
+                  ({totalAyasInRange} verse{totalAyasInRange !== 1 ? 's' : ''})
+                </span>
+              </div>
+            )}
+            
+            <div className="aya-navigation" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <button 
+                onClick={() => setAya(Math.max(1, currentStartAya - 1))}
+                disabled={currentStartAya <= 1}
+                className="nav-button"
+                style={{ 
+                  padding: '5px 10px', 
+                  border: '1px solid #ccc', 
+                  borderRadius: '4px',
+                  backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#fff',
+                  cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer'
+                }}
+              >
+                ← Previous Aya
+              </button>
+              
+              <span className="current-aya" style={{ minWidth: '100px', textAlign: 'center' }}>
+                Current: Aya {aya || currentStartAya}
+              </span>
+              
+              <button 
+                onClick={() => setAya(currentEndAya + 1)}
+                className="nav-button"
+                style={{ 
+                  padding: '5px 10px', 
+                  border: '1px solid #ccc', 
+                  borderRadius: '4px',
+                  backgroundColor: '#fff',
+                  cursor: 'pointer'
+                }}
+              >
+                Next Aya →
+              </button>
+            </div>
+          </div>
+        </div>
   
         <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
           {surahNumber !== 9 && (

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { fetchQuranItems, fetchAyaCount, fetchCorpusItems, fetchPoetryItems, fetchProseItems } from '../../services/apiService';
+import { fetchQuranItems, fetchQuranItemsRange, fetchAyaCount, fetchCorpusItems, fetchPoetryItems, fetchProseItems } from '../../services/apiService';
 import MiniMenu from './MiniMenu';
 import { useScript } from '../../contexts/ScriptContext';
 import { useCorpus } from '../../contexts/CorpusContext';
@@ -10,6 +10,7 @@ const PrimaryList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [items, setItems] = useState([]);
+  const [loading, setLoading] = useState(false);
   const [surah, setSurah] = useState(1); // Default to Surah 1 for Quran
   const [aya, setAya] = useState(0); // Default to Aya 0 (all Ayas)
   const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
@@ -24,14 +25,26 @@ const PrimaryList = () => {
 
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(true);
       console.log('Fetching data for corpus ID:', corpusId);
   
       if (corpusId === '2') { // Quran
         try {
           console.log('Fetching Quran items...');
-          const quranData = await fetchQuranItems(corpusId, surah);
-          const filteredData = aya === 0 ? quranData : quranData.filter(item => item.aya_index === aya);
-          setItems(filteredData);
+          let quranData;
+          
+          if (aya === 0) {
+            // Fetch limited range for performance - default to first 10 ayat
+            const endAya = Math.min(10, ayaCount || 10);
+            quranData = await fetchQuranItemsRange(corpusId, surah, 1, endAya);
+          } else {
+            // Fetch specific aya or small range around it
+            const startAya = Math.max(1, aya - 2);
+            const endAya = Math.min(ayaCount || aya + 2, aya + 2);
+            quranData = await fetchQuranItemsRange(corpusId, surah, startAya, endAya);
+          }
+          
+          setItems(quranData);
         } catch (error) {
           console.error('Error fetching Quran items:', error);
         }
@@ -54,6 +67,7 @@ const PrimaryList = () => {
       } else {
         console.error('Unrecognized corpus ID:', corpusId);
       }
+      setLoading(false);
     };
   
     fetchData();
@@ -84,8 +98,22 @@ const PrimaryList = () => {
       <MiniMenu />
       <h1>{corpusName}</h1>
 
-      {/* Use CorpusRenderer to handle rendering based on corpus type */}
-      <CorpusRenderer
+      {loading && (
+        <div style={{ 
+          display: 'flex', 
+          justifyContent: 'center', 
+          alignItems: 'center', 
+          padding: '20px',
+          fontSize: '16px',
+          color: '#666'
+        }}>
+          Loading... Please wait.
+        </div>
+      )}
+
+      {!loading && (
+        /* Use CorpusRenderer to handle rendering based on corpus type */
+        <CorpusRenderer
         corpusId={corpusId}
         corpusType={corpusType}
         items={items}
@@ -99,6 +127,7 @@ const PrimaryList = () => {
         L2={L2}
         handleSelectCorpusItem={handleItemClick}
       />
+      )}
     </div>
   );
 };
