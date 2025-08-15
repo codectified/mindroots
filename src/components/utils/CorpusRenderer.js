@@ -165,15 +165,25 @@ const handleFreeformLineHighlight = (lineNumber) => {
               {/* Quick navigation buttons */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                 <button 
-                  onClick={() => setAya(Math.max(1, currentStartAya - ayahsPerPage))}
-                  disabled={currentStartAya <= 1}
+                  onClick={() => {
+                    if (currentStartAya <= 1) {
+                      // Go to previous surah
+                      if (surah > 1) {
+                        setSurah(surah - 1);
+                        setAya(-1); // Will load from the end of previous surah
+                      }
+                    } else {
+                      setAya(Math.max(1, currentStartAya - ayahsPerPage));
+                    }
+                  }}
+                  disabled={surah <= 1 && currentStartAya <= 1}
                   style={{ 
                     padding: '6px 10px', 
                     border: '1px solid #4a7c4a', 
                     borderRadius: '6px',
-                    backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#4a7c4a',
-                    color: currentStartAya <= 1 ? '#999' : '#fff',
-                    cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer',
+                    backgroundColor: (surah <= 1 && currentStartAya <= 1) ? '#f5f5f5' : '#4a7c4a',
+                    color: (surah <= 1 && currentStartAya <= 1) ? '#999' : '#fff',
+                    cursor: (surah <= 1 && currentStartAya <= 1) ? 'not-allowed' : 'pointer',
                     fontSize: '12px',
                     fontWeight: '500',
                     transition: 'all 0.2s ease'
@@ -183,15 +193,25 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 </button>
                 
                 <button 
-                  onClick={() => setAya(currentEndAya + 1)}
-                  disabled={currentEndAya >= (ayaCount || 286)}
+                  onClick={() => {
+                    if (currentEndAya >= (ayaCount || 286)) {
+                      // Go to next surah
+                      if (surah < 114) {
+                        setSurah(surah + 1);
+                        setAya(0); // Will load from the beginning of next surah
+                      }
+                    } else {
+                      setAya(currentEndAya + 1);
+                    }
+                  }}
+                  disabled={surah >= 114 && currentEndAya >= (ayaCount || 286)}
                   style={{ 
                     padding: '6px 10px', 
                     border: '1px solid #4a7c4a', 
                     borderRadius: '6px',
-                    backgroundColor: currentEndAya >= (ayaCount || 286) ? '#f5f5f5' : '#4a7c4a',
-                    color: currentEndAya >= (ayaCount || 286) ? '#999' : '#fff',
-                    cursor: currentEndAya >= (ayaCount || 286) ? 'not-allowed' : 'pointer',
+                    backgroundColor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#f5f5f5' : '#4a7c4a',
+                    color: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#999' : '#fff',
+                    cursor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? 'not-allowed' : 'pointer',
                     fontSize: '12px',
                     fontWeight: '500',
                     transition: 'all 0.2s ease'
@@ -287,16 +307,26 @@ const handleFreeformLineHighlight = (lineNumber) => {
               
               <div className="aya-navigation" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                 <button 
-                  onClick={() => setAya(Math.max(1, currentStartAya - ayahsPerPage))}
-                  disabled={currentStartAya <= 1}
+                  onClick={() => {
+                    if (currentStartAya <= 1) {
+                      // Go to previous surah
+                      if (surah > 1) {
+                        setSurah(surah - 1);
+                        setAya(-1); // Will load from the end of previous surah
+                      }
+                    } else {
+                      setAya(Math.max(1, currentStartAya - ayahsPerPage));
+                    }
+                  }}
+                  disabled={surah <= 1 && currentStartAya <= 1}
                   className="nav-button"
                   style={{ 
                     padding: '8px 12px', 
                     border: '1px solid #4a7c4a', 
                     borderRadius: '6px',
-                    backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#4a7c4a',
-                    color: currentStartAya <= 1 ? '#999' : '#fff',
-                    cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer',
+                    backgroundColor: (surah <= 1 && currentStartAya <= 1) ? '#f5f5f5' : '#4a7c4a',
+                    color: (surah <= 1 && currentStartAya <= 1) ? '#999' : '#fff',
+                    cursor: (surah <= 1 && currentStartAya <= 1) ? 'not-allowed' : 'pointer',
                     fontSize: '14px',
                     fontWeight: '500',
                     transition: 'all 0.2s ease'
@@ -316,16 +346,26 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 </span>
                 
                 <button 
-                  onClick={() => setAya(currentEndAya + 1)}
-                  disabled={currentEndAya >= (ayaCount || 286)}
+                  onClick={() => {
+                    if (currentEndAya >= (ayaCount || 286)) {
+                      // Go to next surah
+                      if (surah < 114) {
+                        setSurah(surah + 1);
+                        setAya(0); // Will load from the beginning of next surah
+                      }
+                    } else {
+                      setAya(currentEndAya + 1);
+                    }
+                  }}
+                  disabled={surah >= 114 && currentEndAya >= (ayaCount || 286)}
                   className="nav-button"
                   style={{ 
                     padding: '8px 12px', 
                     border: '1px solid #4a7c4a', 
                     borderRadius: '6px',
-                    backgroundColor: currentEndAya >= (ayaCount || 286) ? '#f5f5f5' : '#4a7c4a',
-                    color: currentEndAya >= (ayaCount || 286) ? '#999' : '#fff',
-                    cursor: currentEndAya >= (ayaCount || 286) ? 'not-allowed' : 'pointer',
+                    backgroundColor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#f5f5f5' : '#4a7c4a',
+                    color: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#999' : '#fff',
+                    cursor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? 'not-allowed' : 'pointer',
                     fontSize: '14px',
                     fontWeight: '500',
                     transition: 'all 0.2s ease'

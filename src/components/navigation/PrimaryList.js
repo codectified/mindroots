@@ -43,6 +43,11 @@ const PrimaryList = () => {
             // Fetch first page of ayat - using ayahsPerPage setting
             const endAya = Math.min(ayahsPerPage, ayaCount || ayahsPerPage);
             quranData = await fetchQuranItemsRange(corpusId, surah, 1, endAya);
+          } else if (aya < 0) {
+            // Special case: coming from next surah, start from the end
+            const startAya = Math.max(1, (ayaCount || 286) - ayahsPerPage + 1);
+            const endAya = ayaCount || 286;
+            quranData = await fetchQuranItemsRange(corpusId, surah, startAya, endAya);
           } else {
             // Fetch range starting from specified aya
             const startAya = Math.max(1, aya);
