@@ -19,7 +19,7 @@ const PrimaryList = () => {
   const [aya, setAya] = useState(0); // Default to Aya 0 (all Ayas)
   const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
   const [ayahsPerPage, setAyahsPerPage] = useState(10); // Track ayahs per page
-  const [showTextSettings, setShowTextSettings] = useState(true); // Text settings collapsible state
+  const [showTextSettings, setShowTextSettings] = useState(false); // Text settings collapsed by default
   const { L1, L2 } = useScript();
   const { handleSelectCorpusItem } = useCorpus();
 

@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
 // Basic Surah names mapping (first 20 for demonstration)
 const SURAH_NAMES = {
@@ -27,6 +29,7 @@ const CorpusRenderer = ({
   L2,
   handleSelectCorpusItem,
 }) => {
+  const [showQuranControls, setShowQuranControls] = useState(false); // Quran controls collapsed by default
   const {
     highlightGender,
     highlightVerb,
@@ -136,21 +139,97 @@ const handleFreeformLineHighlight = (lineNumber) => {
       <div>
         <div className="quran-header" style={{ 
           marginBottom: '20px', 
-          padding: '20px', 
           border: '1px solid #a8d5a8', 
           borderRadius: '12px',
           backgroundColor: '#f8fdf8',
           boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
         }}>
-          <h2 style={{ 
-            margin: '0 0 15px 0', 
-            fontSize: '20px', 
-            color: '#2d5a2d',
-            fontWeight: '600'
+          {/* Collapsed header with surah name and nav buttons */}
+          <div style={{ 
+            padding: '15px 20px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            borderBottom: showQuranControls ? '1px solid #d4edd4' : 'none'
           }}>
-            {surah}. {SURAH_NAMES[surah] || `Surah ${surah}`}
-          </h2>
-          <div className="quran-controls" style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+            <h2 style={{ 
+              margin: '0', 
+              fontSize: '20px', 
+              color: '#2d5a2d',
+              fontWeight: '600'
+            }}>
+              {surah}. {SURAH_NAMES[surah] || `Surah ${surah}`}
+            </h2>
+            
+            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+              {/* Quick navigation buttons */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <button 
+                  onClick={() => setAya(Math.max(1, currentStartAya - ayahsPerPage))}
+                  disabled={currentStartAya <= 1}
+                  style={{ 
+                    padding: '6px 10px', 
+                    border: '1px solid #4a7c4a', 
+                    borderRadius: '6px',
+                    backgroundColor: currentStartAya <= 1 ? '#f5f5f5' : '#4a7c4a',
+                    color: currentStartAya <= 1 ? '#999' : '#fff',
+                    cursor: currentStartAya <= 1 ? 'not-allowed' : 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  ← Prev
+                </button>
+                
+                <button 
+                  onClick={() => setAya(currentEndAya + 1)}
+                  disabled={currentEndAya >= (ayaCount || 286)}
+                  style={{ 
+                    padding: '6px 10px', 
+                    border: '1px solid #4a7c4a', 
+                    borderRadius: '6px',
+                    backgroundColor: currentEndAya >= (ayaCount || 286) ? '#f5f5f5' : '#4a7c4a',
+                    color: currentEndAya >= (ayaCount || 286) ? '#999' : '#fff',
+                    cursor: currentEndAya >= (ayaCount || 286) ? 'not-allowed' : 'pointer',
+                    fontSize: '12px',
+                    fontWeight: '500',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  Next →
+                </button>
+              </div>
+              
+              {/* Three dots to expand full controls */}
+              <button 
+                onClick={() => setShowQuranControls(!showQuranControls)}
+                style={{ 
+                  background: 'none',
+                  border: 'none',
+                  cursor: 'pointer',
+                  padding: '8px 12px',
+                  borderRadius: '6px',
+                  transition: 'background-color 0.2s',
+                  backgroundColor: showQuranControls ? '#e8f5e8' : 'transparent'
+                }}
+                onMouseEnter={(e) => e.target.style.backgroundColor = '#e8f5e8'}
+                onMouseLeave={(e) => e.target.style.backgroundColor = showQuranControls ? '#e8f5e8' : 'transparent'}
+              >
+                <FontAwesomeIcon 
+                  icon={faEllipsisV} 
+                  style={{ 
+                    color: '#4a7c4a', 
+                    fontSize: '16px' 
+                  }}
+                />
+              </button>
+            </div>
+          </div>
+
+          {/* Expanded controls */}
+          {showQuranControls && (
+            <div className="quran-controls" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
             <div className="surah-selector">
               <label htmlFor="surah-select">Select Surah: </label>
               <select 
@@ -256,7 +335,8 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 </button>
               </div>
             </div>
-          </div>
+            </div>
+          )}
         </div>
   
         <div style={{ 
