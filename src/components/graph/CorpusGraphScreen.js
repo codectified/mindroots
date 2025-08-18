@@ -3,7 +3,7 @@ import GraphVisualization from './GraphVisualization';
 import { expandGraph } from '../../services/apiService';
 import MiniMenu from '../navigation/MiniMenu';
 import MainMenu from '../navigation/MainMenu';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
@@ -13,7 +13,7 @@ import InfoBubble from '../layout/InfoBubble';
 
 
 const CorpusGraphScreen = () => {
-  const { L1, L2 } = useScript();
+  const { L1, L2 } = useLanguage();
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
