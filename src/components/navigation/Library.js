@@ -3,12 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { fetchCorpora } from '../../services/apiService';
 import MiniMenu from './MiniMenu';
 import { useCorpus } from '../../contexts/CorpusContext';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const ArticlesAndReferences = () => {
   const navigate = useNavigate();
   const { handleSelectCorpus } = useCorpus(); // Use context to store the selected corpus
-  const { L1, L2 } = useScript(); // Get L1 and L2 from context
+  const { L1, L2 } = useLanguage(); // Get L1 and L2 from context
   const [corpora, setCorpora] = useState([]);
   const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
 
@@ -22,6 +22,7 @@ const ArticlesAndReferences = () => {
           const sampleCorpus = data[0];
           const languages = ['arabic', 'english'];
           if (sampleCorpus.transliteration) languages.push('transliteration');
+          if (sampleCorpus.sem) languages.push('sem');
           setAvailableLanguages(languages);
         }
       } catch (error) {
@@ -34,7 +35,7 @@ const ArticlesAndReferences = () => {
   const handleSelect = (corpus) => {
     console.log('Selected corpus in ArticlesAndReferences:', corpus);
     handleSelectCorpus(corpus);
-    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english)}`);
+    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english || corpus.arabic)}`);
   };
 
   // Separate corpora by type
