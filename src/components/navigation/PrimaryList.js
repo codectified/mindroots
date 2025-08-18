@@ -62,7 +62,7 @@ const PrimaryList = () => {
       } else if (corpusId === '1') { // 99 Names
         try {
           console.log('Fetching corpus items for 99 Names...');
-          const listData = await fetchCorpusItems(corpusId, L1);
+          const listData = await fetchCorpusItems(corpusId, L1, L2);
           setItems(listData);
         } catch (error) {
           console.error('Error fetching corpus items:', error);

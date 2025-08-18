@@ -42,7 +42,8 @@ const formatSimpleData = (records) => {
     item_id: record.get('item_id'),
     arabic: record.get('arabic'),
     english: record.get('english'),
-    transliteration: record.get('transliteration')
+    transliteration: record.get('transliteration'),
+    sem: record.get('sem')
   }));
 };
 
@@ -62,6 +63,7 @@ router.get('/list/quran_items', async (req, res) => {
         toInteger(item.item_id) AS item_id,   /* Convert item_id */
         toInteger(item.aya_index) AS aya_index, /* Convert aya_index */
         item.english AS english,
+        item.sem AS sem,
         item.part_of_speech AS pos,
         item.gender AS gender
       ORDER BY item.aya_index
@@ -115,6 +117,7 @@ router.get('/list/quran_items_range', async (req, res) => {
         toInteger(item.item_id) AS item_id,
         toInteger(item.aya_index) AS aya_index,
         item.english AS english,
+        item.sem AS sem,
         item.part_of_speech AS pos,
         item.gender AS gender,
         toInteger(item.sura_index) AS sura_index
@@ -150,6 +153,7 @@ router.get('/list/poetry_items', async (req, res) => {
       RETURN 
         item.arabic AS arabic,
         item.transliteration AS transliteration,
+        item.sem AS sem,
         toInteger(item.item_id) AS item_id,  /* Convert item_id */
         item.lemma AS lemma,
         item.wazn AS wazn,
@@ -192,7 +196,7 @@ router.get('/list/corpus_items', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
-      RETURN item.arabic AS arabic, item.transliteration AS transliteration, item.item_id AS item_id, item.english AS english
+      RETURN item.arabic AS arabic, item.transliteration AS transliteration, item.item_id AS item_id, item.english AS english, item.sem AS sem
       LIMIT 100
     `, { corpus_id });
 
@@ -460,13 +464,14 @@ router.get('/list/corpora', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (corpus:Corpus)
-      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english, corpus.corpusType AS corpusType
+      RETURN corpus.corpus_id AS id, corpus.arabic AS arabic, corpus.english AS english, corpus.sem AS sem, corpus.corpusType AS corpusType
     `);
 
     const corpora = result.records.map(record => ({
       id: convertIntegers(record.get('id')),
       arabic: record.get('arabic'),
       english: record.get('english'),
+      sem: record.get('sem'),
       corpusType: record.get('corpusType')
     }));
 
