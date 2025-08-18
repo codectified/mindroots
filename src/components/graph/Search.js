@@ -3,7 +3,7 @@ import { useDisplayMode } from '../../contexts/DisplayModeContext';
 import NodesTable from './NodesTable';
 import GraphVisualization from './GraphVisualization';
 import { fetchRoots, fetchCombinateRoots, fetchExtendedRootsNew } from '../../services/apiService'; // New distinct search functions
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
 import MiniMenu from '../navigation/MiniMenu';
@@ -16,7 +16,7 @@ const arabicLetters = [
 
 const Search = () => {
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
-  const { L1, L2 } = useScript();
+  const { L1, L2 } = useLanguage();
   const { displayMode } = useDisplayMode();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [r1, setR1] = useState('');

@@ -13,7 +13,7 @@ import Search from './components/graph/Search';
 import MarkdownRenderer from './components/utils/MarkdownRenderer';
 import Layout from './components/layout/Layout';
 
-import { ScriptProvider } from './contexts/ScriptContext';
+import { LanguageProvider } from './contexts/LanguageContext';
 import { ContextFilterProvider } from './contexts/ContextFilterContext';
 import { CorpusProvider } from './contexts/CorpusContext';
 import { FilterProvider } from './contexts/FilterContext';
@@ -27,6 +27,7 @@ import { DisplayModeProvider } from './contexts/DisplayModeContext';
 import { AdvancedModeProvider } from './contexts/AdvancedModeContext';
 import { ShowLinksProvider } from './components/selectors/ShowLinksToggle';
 import { FormFilterProvider } from './contexts/FormFilterContext';
+import { SemiticLanguageFilterProvider } from './contexts/SemiticLanguageFilterContext';
 
 import './styles/base.css';
 import './styles/buttons.css';
@@ -49,7 +50,7 @@ const App = () => {
     <SettingsProvider>
     <TextLayoutProvider>
     <HighlightProvider>
-    <ScriptProvider>
+    <LanguageProvider>
     <WordShadeProvider>
 
     <FilterProvider>
@@ -58,7 +59,8 @@ const App = () => {
           <ContextFilterProvider>
             <ShowLinksProvider>
               <FormFilterProvider>
-                <GraphDataProvider>
+                <SemiticLanguageFilterProvider>
+                  <GraphDataProvider>
               <Router basename="/">
                 <Routes>
                 <Route path="/"
@@ -96,7 +98,8 @@ const App = () => {
 
                 </Routes>
               </Router>
-                </GraphDataProvider>
+                  </GraphDataProvider>
+                </SemiticLanguageFilterProvider>
               </FormFilterProvider>
             </ShowLinksProvider>
           </ContextFilterProvider>
@@ -105,7 +108,7 @@ const App = () => {
       </FilterProvider>
       </WordShadeProvider>
 
-    </ScriptProvider>
+    </LanguageProvider>
     </HighlightProvider>
     </TextLayoutProvider>
     </SettingsProvider>

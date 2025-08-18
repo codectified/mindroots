@@ -3,12 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { fetchCorpora } from '../../services/apiService';
 import MiniMenu from './MiniMenu';
 import { useCorpus } from '../../contexts/CorpusContext';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const ArticlesAndReferences = () => {
   const navigate = useNavigate();
   const { handleSelectCorpus } = useCorpus(); // Use context to store the selected corpus
-  const { L1, L2 } = useScript(); // Get L1 and L2 from context
+  const { L1, L2 } = useLanguage(); // Get L1 and L2 from context
   const [corpora, setCorpora] = useState([]);
   const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
 
