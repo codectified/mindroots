@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchQuranItems, fetchQuranItemsRange, fetchAyaCount, fetchCorpusItems, fetchPoetryItems, fetchProseItems } from '../../services/apiService';
 import MiniMenu from './MiniMenu';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated rendering component
 import TextLayoutToggle from '../selectors/TextLayoutSelector';
@@ -20,7 +20,7 @@ const PrimaryList = () => {
   const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
   const [ayahsPerPage, setAyahsPerPage] = useState(10); // Track ayahs per page
   const [showTextSettings, setShowTextSettings] = useState(false); // Text settings collapsed by default
-  const { L1, L2 } = useScript();
+  const { L1, L2 } = useLanguage();
   const { handleSelectCorpusItem } = useCorpus();
 
   const queryParams = new URLSearchParams(location.search);
@@ -62,7 +62,7 @@ const PrimaryList = () => {
       } else if (corpusId === '1') { // 99 Names
         try {
           console.log('Fetching corpus items for 99 Names...');
-          const listData = await fetchCorpusItems(corpusId, L1);
+          const listData = await fetchCorpusItems(corpusId, L1, L2);
           setItems(listData);
         } catch (error) {
           console.error('Error fetching corpus items:', error);

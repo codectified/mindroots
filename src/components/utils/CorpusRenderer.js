@@ -415,7 +415,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                           ...getWordStyle(item),
                         }}
                       >
-                        {item.arabic}
+                        {L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`}
                       </span>
                       {index < ayaItems.length - 1 && ' '} {/* Add space between words */}
                     </React.Fragment>
@@ -500,7 +500,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
                           ...getWordStyle(item),
                         }}
                       >
-                        {item.arabic}
+                        {L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`}
                       </span>
                       {index < lineItems.length - 1 && " "} {/* Add space between words */}
                     </React.Fragment>

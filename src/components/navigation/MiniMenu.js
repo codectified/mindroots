@@ -5,6 +5,7 @@ import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
 import FilterController from '../selectors/FilterController';
+import SemiticLanguageFilter from '../selectors/SemiticLanguageFilter';
 import WordShadeSelector from '../selectors/WordShadeSelector';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import ModeSelector from '../selectors/ModeSelector';
@@ -114,6 +115,7 @@ const MiniMenu = () => {
               {showFilterSettings && (
                 <>
                   <FilterController />
+                  <SemiticLanguageFilter />
                 </>
               )}
 
