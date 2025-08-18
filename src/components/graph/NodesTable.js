@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { getNodeColor } from '../utils/nodeColoring';
 import InfoBubble from '../layout/InfoBubble';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeInfoBubble }) => {
   const [expandedNodes, setExpandedNodes] = useState({});
+  const { L1, L2 } = useLanguage();
 
   // Collect root nodes for top-level rows
   const rootNodes = graphData.nodes.filter((n) => n.type === 'root');
@@ -47,8 +49,8 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
                   onClick={(e) => handleRootRowClick(root, e)}
                   style={{ cursor: 'pointer', borderBottom: '1px solid #eee', color }}
                 >
-                  <td style={{ padding: '8px' }}>{root.arabic ?? '(no Arabic)'}</td>
-                  <td style={{ padding: '8px' }}>{root.english ?? '(no English)'}</td>
+                  <td style={{ padding: '8px' }}>{L2 === 'off' ? (root[L1] ?? `(no ${L1})`) : `${root[L1] ?? `(no ${L1})`} / ${root[L2] ?? `(no ${L2})`}`}</td>
+                  <td style={{ padding: '8px' }}>{/* Second column removed for cleaner layout */}</td>
                 </tr>
 
                 {/* Child word rows (only if expanded) */}
@@ -69,8 +71,8 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
                           color: wordColor,
                         }}
                       >
-                        <td style={{ padding: '8px 8px 8px 40px' }}>{word.arabic ?? '(no Arabic)'}</td>
-                        <td style={{ padding: '8px' }}>{word.english ?? '(no English)'}</td>
+                        <td style={{ padding: '8px 8px 8px 40px' }}>{L2 === 'off' ? (word[L1] ?? `(no ${L1})`) : `${word[L1] ?? `(no ${L1})`} / ${word[L2] ?? `(no ${L2})`}`}</td>
+                        <td style={{ padding: '8px' }}>{/* Second column removed for cleaner layout */}</td>
                       </tr>
                     );
                   })}

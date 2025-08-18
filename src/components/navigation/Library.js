@@ -22,6 +22,7 @@ const ArticlesAndReferences = () => {
           const sampleCorpus = data[0];
           const languages = ['arabic', 'english'];
           if (sampleCorpus.transliteration) languages.push('transliteration');
+          if (sampleCorpus.sem) languages.push('sem');
           setAvailableLanguages(languages);
         }
       } catch (error) {
@@ -34,7 +35,7 @@ const ArticlesAndReferences = () => {
   const handleSelect = (corpus) => {
     console.log('Selected corpus in ArticlesAndReferences:', corpus);
     handleSelectCorpus(corpus);
-    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english)}`);
+    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english || corpus.arabic)}`);
   };
 
   // Separate corpora by type
