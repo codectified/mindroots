@@ -6,14 +6,14 @@ import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
 import formsContent from '../../content/forms.md';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import InfoBubble from '../layout/InfoBubble';
 
 const Explore = () => {
-  const { L1, L2 } = useScript();
+  const { L1, L2 } = useLanguage();
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();

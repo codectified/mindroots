@@ -11,9 +11,10 @@ import {
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
 import { useFilter } from './FilterContext'; // Import the filter context
-import { useScript } from './ScriptContext'; // Import the script context for language settings
+import { useLanguage } from './LanguageContext'; // Import the language context for language settings
 import { useFormFilter } from './FormFilterContext'; // Import the form filter context
 import { useContextFilter } from './ContextFilterContext'; // Import the context filter context
+import { useSemiticLanguageFilter } from './SemiticLanguageFilterContext'; // Import the Semitic language filter context
 
 
 
@@ -53,16 +54,18 @@ export const GraphDataProvider = ({ children }) => {
   const [nodeInspectorData, setNodeInspectorData] = useState(null); // State for node inspector
 
   const { limit } = useNodeLimit();
-  const { L1, L2 } = useScript(); // Get current language settings
+  const { L1, L2 } = useLanguage(); // Get current language settings
   const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
   const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); // Access context filter
+  const { selectedSemiticLanguages } = useSemiticLanguageFilter(); // Access Semitic language filter
 
   // Function to filter Word nodes, Form nodes, and remove associated links
   const applyFilter = (nodes, links) => {
     console.log("Filter word types:", filterWordTypes);
     console.log("Hide form nodes:", hideFormNodes);
     console.log("Selected form classifications:", selectedFormClassifications);
+    console.log("Selected Semitic languages:", selectedSemiticLanguages);
   
     const filteredNodes = nodes.filter(node => {
       const isWordNode = node.node_type === 'Word';
@@ -88,6 +91,15 @@ export const GraphDataProvider = ({ children }) => {
         const selectedClassificationsNormalized = selectedFormClassifications.map(c => c.toLowerCase());
         console.log(`Checking form node ${node.id}: classification="${nodeClassification}", selectedFormClassifications=[${selectedFormClassifications.join(', ')}], includes=${selectedClassificationsNormalized.includes(nodeClassificationNormalized)}`);
         if (!nodeClassification || !selectedClassificationsNormalized.includes(nodeClassificationNormalized)) {
+          includeNode = false;
+        }
+      }
+      
+      // Apply Semitic language filter (only for word nodes)
+      if (isWordNode && selectedSemiticLanguages.length > 0) {
+        const nodeSemiticLanguage = node.sem_lang;
+        if (!nodeSemiticLanguage || !selectedSemiticLanguages.includes(nodeSemiticLanguage)) {
+          console.log(`Filtering out word node ${node.id}: sem_lang="${nodeSemiticLanguage}" not in [${selectedSemiticLanguages.join(', ')}]`);
           includeNode = false;
         }
       }

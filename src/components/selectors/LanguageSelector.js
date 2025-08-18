@@ -1,9 +1,9 @@
 import React from 'react';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 
 const LanguageSelector = () => {
-  const { L1, setL1, L2, setL2 } = useScript();
+  const { L1, setL1, L2, setL2 } = useLanguage();
   const { isAdvancedMode } = useAdvancedMode();
 
   return (
@@ -16,7 +16,7 @@ const LanguageSelector = () => {
             value={L1}
             onChange={(e) => setL1(e.target.value)}
           >
-            <option value="arabic">Arabic</option>
+            <option value="sem">Semitic</option>
             <option value="english">English</option>
           </select>
         </div>
@@ -31,7 +31,7 @@ const LanguageSelector = () => {
               onChange={(e) => setL2(e.target.value)}
             >
               <option value="off">Off</option>
-              <option value="arabic">Arabic</option>
+              <option value="sem">Semitic</option>
               <option value="english">English</option>
             </select>
           </div>

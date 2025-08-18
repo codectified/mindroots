@@ -1,11 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { fetchMarkdownFiles } from '../../services/apiService';
 
 const DynamicMarkdownRenderer = ({ baseFolder }) => {
   const [contents, setContents] = useState([]);
-  const { L1, setL1 } = useScript();
+  const { L1, setL1 } = useLanguage();
 
   useEffect(() => {
     const fetchAllFilesContent = async () => {
