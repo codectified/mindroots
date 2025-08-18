@@ -1,12 +1,12 @@
 import React, { useEffect } from 'react';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
-import { useScript } from '../../contexts/ScriptContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 
 const ContextShiftSelector = () => {
   const { contextFilterRoot, setContextFilterRoot, contextFilterForm, setContextFilterForm } = useContextFilter();
   const { corpora } = useCorpus();
-  const { L1, L2 } = useScript();
+  const { L1, L2 } = useLanguage();
 
   const handleContextFilterChange = (event) => {
     const { name, value } = event.target;
