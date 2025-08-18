@@ -7,25 +7,21 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
   const [expandedNodes, setExpandedNodes] = useState({});
   const { L1, L2 } = useLanguage();
 
-  // Collect root nodes for top-level rows
-  const rootNodes = graphData.nodes.filter((n) => n.type === 'root');
+  // Collect all nodes that have semantic or text properties to display
+  const displayableNodes = graphData.nodes.filter((n) => 
+    n.sem || n.arabic || n.english
+  ).sort((a, b) => {
+    // Sort by type priority: corpusitem first, then root, then word, then others
+    const typeOrder = { corpusitem: 0, root: 1, word: 2 };
+    const aOrder = typeOrder[a.type] ?? 3;
+    const bOrder = typeOrder[b.type] ?? 3;
+    if (aOrder !== bOrder) return aOrder - bOrder;
+    // Secondary sort by dataSize or id
+    return (b.dataSize || 0) - (a.dataSize || 0) || (a.id - b.id);
+  });
 
-  const handleRootRowClick = (root, event) => {
-    onNodeClick(root, event);
-    setExpandedNodes((prev) => ({
-      ...prev,
-      [root.id]: !prev[root.id],
-    }));
-  };
-
-  const handleWordRowClick = (word, event) => {
-    onNodeClick(word, event);
-  };
-
-  const getChildWords = (root) => {
-    return graphData.nodes
-      .filter((n) => n.type === 'word' && n.root_id === root.root_id)
-      .sort((a, b) => (b.dataSize || 0) - (a.dataSize || 0)); // Sort by dataSize descending
+  const handleNodeRowClick = (node, event) => {
+    onNodeClick(node, event);
   };
 
   return (
@@ -33,50 +29,33 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #ccc' }}>
-            <th style={{ padding: '8px', textAlign: 'left' }}>Arabic</th>
+            <th style={{ padding: '8px', textAlign: 'left' }}>Semantic</th>
             <th style={{ padding: '8px', textAlign: 'left' }}>English</th>
           </tr>
         </thead>
         <tbody>
-          {rootNodes.map((root) => {
-            const isExpanded = expandedNodes[root.id];
-            const color = getNodeColor(root, wordShadeMode);
+          {displayableNodes.map((node) => {
+            const color = getNodeColor(node, wordShadeMode);
+            const nodeTypeStyle = {
+              corpusitem: { background: '#f0f8ff' },
+              root: { background: '#fff' },
+              word: { background: '#f9f9f9' },
+            };
 
             return (
-              <React.Fragment key={root.id}>
-                {/* Root row */}
-                <tr
-                  onClick={(e) => handleRootRowClick(root, e)}
-                  style={{ cursor: 'pointer', borderBottom: '1px solid #eee', color }}
-                >
-                  <td style={{ padding: '8px' }}>{L2 === 'off' ? (root[L1] ?? `(no ${L1})`) : `${root[L1] ?? `(no ${L1})`} / ${root[L2] ?? `(no ${L2})`}`}</td>
-                  <td style={{ padding: '8px' }}>{/* Second column removed for cleaner layout */}</td>
-                </tr>
-
-                {/* Child word rows (only if expanded) */}
-                {isExpanded &&
-                  getChildWords(root).map((word) => {
-                    const wordColor = getNodeColor(word, wordShadeMode);
-                    return (
-                      <tr
-                        key={word.id}
-                        onClick={(e) => {
-                          e.stopPropagation(); // Prevent root row click
-                          handleWordRowClick(word, e);
-                        }}
-                        style={{
-                          background: '#f9f9f9',
-                          borderBottom: '1px solid #eee',
-                          cursor: 'pointer',
-                          color: wordColor,
-                        }}
-                      >
-                        <td style={{ padding: '8px 8px 8px 40px' }}>{L2 === 'off' ? (word[L1] ?? `(no ${L1})`) : `${word[L1] ?? `(no ${L1})`} / ${word[L2] ?? `(no ${L2})`}`}</td>
-                        <td style={{ padding: '8px' }}>{/* Second column removed for cleaner layout */}</td>
-                      </tr>
-                    );
-                  })}
-              </React.Fragment>
+              <tr
+                key={node.id}
+                onClick={(e) => handleNodeRowClick(node, e)}
+                style={{ 
+                  cursor: 'pointer', 
+                  borderBottom: '1px solid #eee', 
+                  color,
+                  ...(nodeTypeStyle[node.type] || {})
+                }}
+              >
+                <td style={{ padding: '8px' }}>{node.sem ?? node.arabic ?? '(no semantic)'}</td>
+                <td style={{ padding: '8px' }}>{node.english ?? '(no english)'}</td>
+              </tr>
             );
           })}
         </tbody>
