@@ -40,7 +40,7 @@ const Acknowledgements = () => {
       <section>
         <h2>Amer Abbas — Qur'an Foundation</h2>
         <p>
-          Special acknowledgement to Amr Abbas and the{' '}
+          Special acknowledgement to Amer Abbas and the{' '}
           <a href="https://quran.com/" target="_blank" rel="noopener noreferrer">
             Qur'an Foundation
           </a>{' '}
