@@ -2,7 +2,7 @@
 
 ---
 
-## 🧠 CEO-Level Priority Summary
+## 🧠 Top-Level Priority Summary
 
 **Primary Goal**
 - Finish and secure GraphRAG system (GPT + Neo4j interface)
