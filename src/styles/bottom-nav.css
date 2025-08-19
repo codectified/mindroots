@@ -1,0 +1,186 @@
+/* bottom-nav.css */
+/* ============================================
+   Bottom Navigation Bar - Non-Occluding Frame
+   ============================================ */
+
+/* Bottom Navigation Container */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: rgba(40, 40, 40, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* Navigation Sections */
+.nav-section {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.nav-left, .nav-right {
+  flex: 1;
+}
+
+.nav-center {
+  flex: 0 0 auto;
+}
+
+.nav-right {
+  justify-content: flex-end;
+}
+
+/* Standard Navigation Buttons */
+.nav-button {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.nav-button.active {
+  background: rgba(75, 150, 225, 0.7);
+  border-color: rgba(75, 150, 225, 1);
+}
+
+/* MindRoots Center Button */
+.mindroots-nav-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.mindroots-nav-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mindroots-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+/* Settings Panel */
+.bottom-settings-panel {
+  position: fixed;
+  bottom: 70px; /* Above bottom nav */
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(15px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  max-height: 50vh;
+  overflow-y: auto;
+  z-index: 999;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.settings-content {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Content Spacing */
+body {
+  padding-bottom: 70px; /* Space for bottom nav */
+}
+
+.overlay {
+  padding-bottom: 0; /* Remove bottom padding since nav provides spacing */
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .bottom-nav {
+    padding: 0 15px;
+    height: 65px;
+  }
+  
+  .nav-button {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .mindroots-nav-button {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .nav-section {
+    gap: 12px;
+  }
+  
+  .bottom-settings-panel {
+    bottom: 65px;
+  }
+  
+  body {
+    padding-bottom: 65px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottom-nav {
+    padding: 0 10px;
+    height: 60px;
+  }
+  
+  .nav-button {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+  
+  .mindroots-nav-button {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .nav-section {
+    gap: 10px;
+  }
+  
+  .bottom-settings-panel {
+    bottom: 60px;
+  }
+  
+  body {
+    padding-bottom: 60px;
+  }
+}
