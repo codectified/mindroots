@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import MiniMenu from '../navigation/MiniMenu';
 
 const Acknowledgements = () => {
   const [licenseNoticesExpanded, setLicenseNoticesExpanded] = useState(false);
@@ -10,7 +9,6 @@ const Acknowledgements = () => {
 
   return (
     <div className="about-page">
-      <MiniMenu />
 
       <h1>Acknowledgements</h1>
 

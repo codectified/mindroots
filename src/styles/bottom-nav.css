@@ -1,0 +1,220 @@
+/* bottom-nav.css */
+/* ============================================
+   Bottom Navigation Bar - Non-Occluding Frame
+   ============================================ */
+
+/* Bottom Navigation Container */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 70px;
+  background: rgba(40, 40, 40, 0.95);
+  backdrop-filter: blur(10px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 20px;
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  gap: 2px; /* Tiny gap between all elements */
+  transition: all 0.3s ease;
+}
+
+/* Collapsed state - default - only MindRoots button */
+.bottom-nav.collapsed {
+  height: 60px;
+  padding: 0;
+  gap: 0;
+}
+
+/* Expanded state - all buttons visible */
+.bottom-nav.expanded {
+  height: 70px;
+  padding: 0 20px;
+  gap: 2px;
+}
+
+/* Navigation Sections */
+.nav-section {
+  display: flex;
+  align-items: center;
+  gap: 1px; /* 1px gap within sections */
+}
+
+/* Remove flex stretching - let sections size naturally */
+
+/* Standard Navigation Buttons */
+.nav-button {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 18px;
+  transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: translateY(-2px);
+}
+
+.nav-button.active {
+  background: rgba(75, 150, 225, 0.7);
+  border-color: rgba(75, 150, 225, 1);
+}
+
+/* MindRoots Center Button */
+.mindroots-nav-button {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #fff;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  position: relative;
+  padding: 2px; /* Add padding to prevent image stretching */
+}
+
+.mindroots-nav-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.3);
+}
+
+.mindroots-icon {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 50%;
+  display: block;
+}
+
+/* Settings Panel */
+.bottom-settings-panel {
+  position: fixed;
+  bottom: 70px; /* Above bottom nav */
+  left: 0;
+  right: 0;
+  background: rgba(255, 255, 255, 0.97);
+  backdrop-filter: blur(15px);
+  border-top: 1px solid rgba(0, 0, 0, 0.1);
+  max-height: 50vh;
+  overflow-y: auto;
+  z-index: 999;
+  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.15);
+}
+
+.settings-content {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* Collapsible Section Styling */
+.collapsible-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333;
+  font-weight: 600;
+  user-select: none;
+}
+
+.collapsible-section:hover {
+  background: rgba(0, 0, 0, 0.05);
+  margin: 0 -10px;
+  padding: 8px 10px !important;
+  border-radius: 4px;
+}
+
+/* Content Spacing */
+body {
+  padding-bottom: 70px; /* Space for bottom nav */
+}
+
+.overlay {
+  padding-bottom: 0; /* Remove bottom padding since nav provides spacing */
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+  .bottom-nav {
+    padding: 0 15px;
+    height: 65px;
+  }
+  
+  .nav-button {
+    width: 40px;
+    height: 40px;
+    font-size: 16px;
+  }
+  
+  .mindroots-nav-button {
+    width: 50px;
+    height: 50px;
+  }
+  
+  .bottom-nav.expanded {
+    gap: 1px; /* Even closer spacing on mobile */
+  }
+  
+  .nav-section {
+    gap: 1px; /* 1px within sections on mobile */
+  }
+  
+  .bottom-settings-panel {
+    bottom: 65px;
+  }
+  
+  body {
+    padding-bottom: 65px;
+  }
+}
+
+@media (max-width: 480px) {
+  .bottom-nav {
+    padding: 0 10px;
+    height: 60px;
+  }
+  
+  .nav-button {
+    width: 35px;
+    height: 35px;
+    font-size: 14px;
+  }
+  
+  .mindroots-nav-button {
+    width: 45px;
+    height: 45px;
+  }
+  
+  .bottom-nav.expanded {
+    gap: 1px; /* 1px spacing on small mobile */
+  }
+  
+  .nav-section {
+    gap: 1px; /* 1px within sections on small mobile */
+  }
+  
+  .bottom-settings-panel {
+    bottom: 60px;
+  }
+  
+  body {
+    padding-bottom: 60px;
+  }
+}
