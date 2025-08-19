@@ -17,6 +17,7 @@ const BottomNav = () => {
   const location = useLocation();
   const { isAdvancedMode } = useAdvancedMode();
   const [showSettings, setShowSettings] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false); // Default collapsed
   const [showFilterSettings, setShowFilterSettings] = useState(false);
   const [showContextSettings, setShowContextSettings] = useState(false);
   const [showOtherSettings, setShowOtherSettings] = useState(false);
@@ -37,7 +38,7 @@ const BottomNav = () => {
     setShowSettings(!showSettings);
   };
 
-  // Double-tap handler for MindReach button
+  // Single-tap expands/collapses, double-tap goes home
   const handleMindRootsClick = (e) => {
     e.preventDefault();
     tapCount.current += 1;
@@ -45,8 +46,8 @@ const BottomNav = () => {
     if (tapCount.current === 1) {
       tapTimeout.current = setTimeout(() => {
         tapCount.current = 0;
-        // Single tap - do nothing or could collapse settings
-        if (showSettings) setShowSettings(false);
+        // Single tap - toggle expansion
+        setIsExpanded(!isExpanded);
       }, 300);
     } else if (tapCount.current === 2) {
       clearTimeout(tapTimeout.current);
@@ -138,56 +139,58 @@ const BottomNav = () => {
       )}
 
       {/* Bottom Navigation Bar */}
-      <div className="bottom-nav">
-        {/* Left: Settings + Library */}
-        <div className="nav-section nav-left">
-          <button 
-            className={`nav-button ${showSettings ? 'active' : ''}`} 
-            onClick={handleSettingsToggle}
-            title="Settings"
-          >
-            <FontAwesomeIcon icon={faGlobe} />
-          </button>
-          <button 
-            className="nav-button" 
-            onClick={() => handleNavigation('/corpus-menu')}
-            title="Corpus Library"
-          >
-            <FontAwesomeIcon icon={faBook} />
-          </button>
-        </div>
+      <div className={`bottom-nav ${isExpanded ? 'expanded' : 'collapsed'}`}>
+        {/* Left buttons - only show when expanded */}
+        {isExpanded && (
+          <div className="nav-section nav-left">
+            <button 
+              className={`nav-button ${showSettings ? 'active' : ''}`} 
+              onClick={handleSettingsToggle}
+              title="Settings"
+            >
+              <FontAwesomeIcon icon={faGlobe} />
+            </button>
+            <button 
+              className="nav-button" 
+              onClick={() => handleNavigation('/corpus-menu')}
+              title="Corpus Library"
+            >
+              <FontAwesomeIcon icon={faBook} />
+            </button>
+          </div>
+        )}
 
-        {/* Center: MindRoots button */}
-        <div className="nav-section nav-center">
-          <button
-            className="mindroots-nav-button"
-            onClick={handleMindRootsClick}
-            onMouseDown={handleMouseDown}
-            onMouseUp={handleMouseUp}
-            onMouseLeave={handleMouseUp}
-            title="Double-tap for Home"
-          >
-            <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="MindRoots" className="mindroots-icon" />
-          </button>
-        </div>
+        {/* Center: MindRoots button - always visible */}
+        <button
+          className="mindroots-nav-button"
+          onClick={handleMindRootsClick}
+          onMouseDown={handleMouseDown}
+          onMouseUp={handleMouseUp}
+          onMouseLeave={handleMouseUp}
+          title="Tap to expand, Double-tap for Home"
+        >
+          <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="MindRoots" className="mindroots-icon" />
+        </button>
 
-        {/* Right: Explore + Search */}
-        <div className="nav-section nav-right">
-          <button 
-            className="nav-button" 
-            onClick={() => handleNavigation('/start')}
-            title="Graph Exploration"
-          >
-            <FontAwesomeIcon icon={faMapMarked} />
-          </button>
-          <button 
-            className="nav-button" 
-            onClick={() => handleNavigation('/sandbox')}
-            title="Positional Root Search"
-          >
-            <FontAwesomeIcon icon={faSearch} />
-          </button>
-        </div>
+        {/* Right buttons - only show when expanded */}
+        {isExpanded && (
+          <div className="nav-section nav-right">
+            <button 
+              className="nav-button" 
+              onClick={() => handleNavigation('/start')}
+              title="Graph Exploration"
+            >
+              <FontAwesomeIcon icon={faMapMarked} />
+            </button>
+            <button 
+              className="nav-button" 
+              onClick={() => handleNavigation('/sandbox')}
+              title="Positional Root Search"
+            >
+              <FontAwesomeIcon icon={faSearch} />
+            </button>
+          </div>
+        )}
       </div>
     </>
   );
