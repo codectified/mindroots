@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { fetchCorpora } from '../../services/apiService';
-import MiniMenu from './MiniMenu';
 import { useCorpus } from '../../contexts/CorpusContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 
@@ -45,7 +44,6 @@ const ArticlesAndReferences = () => {
 
   return (
     <div className="corpus-library-container">
-      <MiniMenu />
       
       <div className="corpus-library-header">
         <h1 className="library-title">Corpus Library</h1>
