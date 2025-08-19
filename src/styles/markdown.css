@@ -105,9 +105,225 @@
   font-family: 'Courier New', Courier, monospace; /* Ensure code has a monospaced font */
 }
 
-/* Markdown Page / Mindroots (light mode) */
-.markdown-page,
-.markdown-mindroots {
+/* Markdown Page / Mindroots (light mode) - Improved Typography */
+.markdown-page {
   background: white;
   color: black;
+  min-height: 100vh;
+}
+
+.markdown-mindroots {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 40px 30px;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+  line-height: 1.7;
+  color: #333;
+  background-color: #fff;
+}
+
+/* Headings for markdown pages */
+.markdown-mindroots h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  margin-bottom: 2rem;
+  margin-top: 0;
+  color: #1a1a1a;
+  letter-spacing: -0.025em;
+}
+
+.markdown-mindroots h2 {
+  font-size: 1.875rem;
+  font-weight: 600;
+  margin-top: 3rem;
+  margin-bottom: 1.5rem;
+  color: #1a1a1a;
+  letter-spacing: -0.02em;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0.5rem;
+}
+
+.markdown-mindroots h3 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  margin-top: 2.5rem;
+  margin-bottom: 1rem;
+  color: #374151;
+}
+
+.markdown-mindroots h4 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-top: 2rem;
+  margin-bottom: 1rem;
+  color: #4b5563;
+}
+
+.markdown-mindroots h5 {
+  font-size: 1.125rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #6b7280;
+}
+
+.markdown-mindroots h6 {
+  font-size: 1rem;
+  font-weight: 600;
+  margin-top: 1.5rem;
+  margin-bottom: 0.75rem;
+  color: #6b7280;
+}
+
+/* Paragraphs */
+.markdown-mindroots p {
+  margin-bottom: 1.5rem;
+  font-size: 1.1rem;
+  text-align: left;
+}
+
+/* Links */
+.markdown-mindroots a {
+  color: #2563eb;
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  transition: color 0.2s ease;
+}
+
+.markdown-mindroots a:hover {
+  color: #1d4ed8;
+  text-decoration-thickness: 2px;
+}
+
+/* Lists - Override the existing styles */
+.markdown-mindroots ul,
+.markdown-mindroots ol {
+  margin-bottom: 1.5rem;
+  margin-left: 0;
+  padding-left: 1.5rem;
+}
+
+.markdown-mindroots ul li,
+.markdown-mindroots ol li {
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+.markdown-mindroots ul {
+  list-style-type: disc;
+}
+
+.markdown-mindroots ol {
+  list-style-type: decimal;
+}
+
+.markdown-mindroots li ul,
+.markdown-mindroots li ol {
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+/* Blockquotes */
+.markdown-mindroots blockquote {
+  border-left: 4px solid #e5e7eb;
+  padding-left: 1.5rem;
+  margin: 1.5rem 0;
+  color: #6b7280;
+  font-style: italic;
+}
+
+/* Code */
+.markdown-mindroots code {
+  background-color: #f1f5f9;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-family: 'SF Mono', Monaco, Inconsolata, 'Roboto Mono', Consolas, 'Courier New', monospace;
+  font-size: 0.875rem;
+  color: #374151;
+}
+
+.markdown-mindroots pre {
+  background-color: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 1.5rem;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.markdown-mindroots pre code {
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+
+/* Tables */
+.markdown-mindroots table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1.5rem 0;
+}
+
+.markdown-mindroots th,
+.markdown-mindroots td {
+  border: 1px solid #e5e7eb;
+  padding: 0.75rem;
+  text-align: left;
+}
+
+.markdown-mindroots th {
+  background-color: #f9fafb;
+  font-weight: 600;
+}
+
+/* Horizontal Rule */
+.markdown-mindroots hr {
+  border: none;
+  height: 1px;
+  background-color: #e5e7eb;
+  margin: 3rem 0;
+}
+
+/* Images */
+.markdown-mindroots img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 8px;
+  margin: 1.5rem 0;
+}
+
+/* Mobile responsiveness for markdown pages */
+@media (max-width: 768px) {
+  .markdown-mindroots {
+    padding: 24px 20px;
+    max-width: 100%;
+  }
+  
+  .markdown-mindroots h1 {
+    font-size: 2rem;
+  }
+  
+  .markdown-mindroots h2 {
+    font-size: 1.5rem;
+  }
+  
+  .markdown-mindroots h3 {
+    font-size: 1.25rem;
+  }
+  
+  .markdown-mindroots p,
+  .markdown-mindroots li {
+    font-size: 1rem;
+  }
+}
+
+/* Tablet adjustments for markdown pages */
+@media (max-width: 1024px) and (min-width: 769px) {
+  .markdown-mindroots {
+    padding: 32px 24px;
+  }
 }
