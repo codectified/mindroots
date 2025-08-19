@@ -6,8 +6,8 @@ import { fetchRoots, fetchCombinateRoots, fetchExtendedRootsNew } from '../../se
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
-import MiniMenu from '../navigation/MiniMenu';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
+import DisplayModeSelector from '../selectors/DisplayModeSelector';
 
 const arabicLetters = [
   'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض',
@@ -122,8 +122,10 @@ const Search = () => {
 
   return (
     <div>
-      <MiniMenu />
-      <h2>Positional Root Search</h2>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+        <h2>Positional Root Search</h2>
+        <DisplayModeSelector />
+      </div>
 
       {/* Dropdown menus */}
 <div className="button-row" style={{ marginBottom: '10px' }}>

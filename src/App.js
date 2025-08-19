@@ -35,6 +35,7 @@ import './styles/lists.css';
 import './styles/main-menu.css';
 import './styles/icon-grid.css';
 import './styles/menu.css';
+import './styles/bottom-nav.css';
 import './styles/language-toggle.css';
 import './styles/info-bubble.css';
 import './styles/node-context-menu.css';
