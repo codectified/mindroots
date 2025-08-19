@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faBook, faMapMarked, faSearch, faHome, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faBook, faMapMarked, faSearch, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
