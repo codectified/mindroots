@@ -57,6 +57,9 @@ const MainMenu = () => {
           <li>
             <Link to="/project-overview">Project Overview</Link>
           </li>
+          <li>
+            <Link to="/acknowledgements">Acknowledgements</Link>
+          </li>
         </ul>
       </div>
 

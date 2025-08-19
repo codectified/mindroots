@@ -42,6 +42,7 @@ import './styles/markdown.css';
 import './styles/content.css';
 import './styles/media-queries.css';
 import LisanLab from './components/staticPages/LisanLab';
+import Acknowledgements from './components/staticPages/Acknowledgements';
 
 const App = () => {
   return (
@@ -94,6 +95,7 @@ const App = () => {
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />
                   <Route path="/lisan-lab" element={<Layout><LisanLab /></Layout>} />
                   <Route path="/lisan-lab/reports" element={<Layout><MarkdownRenderer filePath="/mindroots/lisanlab-reports/lisanlab-reports.md" /></Layout>}/>
+                  <Route path="/acknowledgements" element={<Layout><Acknowledgements /></Layout>} />
                   
 
                 </Routes>
