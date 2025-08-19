@@ -1,7 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faBook, faMapMarked, faSearch, faHome } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faBook, faMapMarked, faSearch, faHome, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
@@ -17,6 +17,9 @@ const BottomNav = () => {
   const location = useLocation();
   const { isAdvancedMode } = useAdvancedMode();
   const [showSettings, setShowSettings] = useState(false);
+  const [showFilterSettings, setShowFilterSettings] = useState(false);
+  const [showContextSettings, setShowContextSettings] = useState(false);
+  const [showOtherSettings, setShowOtherSettings] = useState(false);
   const holdTimeout = useRef(null);
   const tapCount = useRef(0);
   const tapTimeout = useRef(null);
@@ -78,21 +81,56 @@ const BottomNav = () => {
               <ModeSelector />
             </div>
 
-            {/* Advanced mode controls */}
+            {/* Advanced mode controls with proper groupings */}
             {isAdvancedMode && (
               <>
-                <div style={{ marginBottom: '15px' }}>
-                  <ShowLinksToggle />
-                  <NodeLimitSlider />
-                  <WordShadeSelector />
+                {/* General Section */}
+                <div
+                  className="collapsible-section"
+                  onClick={() => setShowOtherSettings((prev) => !prev)}
+                  style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
+                >
+                  <strong>General</strong>
+                  <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
                 </div>
-                <div style={{ marginBottom: '15px' }}>
-                  <ContextShiftSelector />
+                {showOtherSettings && (
+                  <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
+                    <ShowLinksToggle />
+                    <NodeLimitSlider />
+                    <WordShadeSelector />
+                  </div>
+                )}
+                
+                {/* Contexts Section */}
+                <div
+                  className="collapsible-section"
+                  onClick={() => setShowContextSettings((prev) => !prev)}
+                  style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
+                >
+                  <strong>Contexts</strong>
+                  <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
                 </div>
-                <div>
-                  <FilterController />
-                  <SemiticLanguageFilter />
+                {showContextSettings && (
+                  <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
+                    <ContextShiftSelector />
+                  </div>
+                )}
+        
+                {/* Filters Section */}
+                <div
+                  className="collapsible-section"
+                  onClick={() => setShowFilterSettings((prev) => !prev)}
+                  style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
+                >
+                  <strong>Filters</strong>
+                  <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
                 </div>
+                {showFilterSettings && (
+                  <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
+                    <FilterController />
+                    <SemiticLanguageFilter />
+                  </div>
+                )}
               </>
             )}
           </div>

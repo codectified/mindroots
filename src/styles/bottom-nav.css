@@ -80,6 +80,7 @@
   overflow: hidden;
   transition: all 0.3s ease;
   position: relative;
+  padding: 2px; /* Add padding to prevent image stretching */
 }
 
 .mindroots-nav-button:hover {
@@ -91,7 +92,9 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+  object-position: center;
   border-radius: 50%;
+  display: block;
 }
 
 /* Settings Panel */
@@ -113,6 +116,23 @@
   padding: 20px;
   max-width: 800px;
   margin: 0 auto;
+}
+
+/* Collapsible Section Styling */
+.collapsible-section {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  color: #333;
+  font-weight: 600;
+  user-select: none;
+}
+
+.collapsible-section:hover {
+  background: rgba(0, 0, 0, 0.05);
+  margin: 0 -10px;
+  padding: 8px 10px !important;
+  border-radius: 4px;
 }
 
 /* Content Spacing */
