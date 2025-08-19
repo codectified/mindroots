@@ -1,7 +1,6 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { expandGraph } from '../../services/apiService';
-import MiniMenu from '../navigation/MiniMenu';
 import MainMenu from '../navigation/MainMenu';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
@@ -63,7 +62,6 @@ const CorpusGraphScreen = () => {
   if (!selectedCorpus || !selectedCorpusItem) {
     return (
       <div>
-        <MiniMenu />
         <MainMenu />
       </div>
     );
@@ -71,7 +69,6 @@ const CorpusGraphScreen = () => {
 
   return (
     <div>
-      <MiniMenu />
       <div className="navigation-buttons">
         <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
           <FontAwesomeIcon icon={faArrowLeft} />

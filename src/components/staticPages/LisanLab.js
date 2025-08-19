@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import MiniMenu from '../navigation/MiniMenu';
 import lisanlabContent from '../../content/lisanlab.md';
 
 const LisanLab = () => {
@@ -17,7 +16,6 @@ const LisanLab = () => {
 
   return (
     <div className="about-page">
-      <MiniMenu />
 
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>

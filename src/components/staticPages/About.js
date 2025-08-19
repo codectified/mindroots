@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import ReactMarkdown from 'react-markdown';
-import MiniMenu from '../navigation/MiniMenu';
 import aboutContent from '../../content/about.md';
 
 const About = () => {
@@ -20,7 +19,6 @@ const About = () => {
 
   return (
     <div className="about-page">
-      <MiniMenu />
 
       <ReactMarkdown>{beforeImage}</ReactMarkdown>
 

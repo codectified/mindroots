@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { executeQuery } from '../../services/apiService';
-import MiniMenu from '../navigation/MiniMenu';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
@@ -405,7 +404,6 @@ const Explore = () => {
 
   return (
     <div className="start">
-      <MiniMenu />
 
       <h2>Ontological Knowledge Graph Exploration</h2>
 

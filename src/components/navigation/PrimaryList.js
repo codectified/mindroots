@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchQuranItems, fetchQuranItemsRange, fetchAyaCount, fetchCorpusItems, fetchPoetryItems, fetchProseItems } from '../../services/apiService';
-import MiniMenu from './MiniMenu';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated rendering component
@@ -82,7 +81,7 @@ const PrimaryList = () => {
     };
   
     fetchData();
-  }, [corpusId, surah, aya, ayahsPerPage, L1]);
+  }, [corpusId, surah, aya, ayahsPerPage, L1, L2]);
 
   useEffect(() => {
     if (corpusId === '2') { // Fetch Aya count when Surah changes (for Quran)
@@ -106,7 +105,6 @@ const PrimaryList = () => {
 
   return (
     <div>
-      <MiniMenu />
       {/* Consolidated Header with Text Settings */}
       <div className="page-header" style={{ 
         marginBottom: '20px', 
