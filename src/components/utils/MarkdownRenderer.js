@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import Markdown from 'markdown-to-jsx';
-import MiniMenu from '../navigation/MiniMenu';
 
 const CustomListItem = ({ children }) => {
   // Removed the 'color' property to allow inherited or global styling.
@@ -22,7 +21,6 @@ const MarkdownRenderer = ({ filePath }) => {
 
   return (
     <div className="markdown-page">
-      <MiniMenu />
       <div className="markdown-mindroots">
         <Markdown
           options={{
