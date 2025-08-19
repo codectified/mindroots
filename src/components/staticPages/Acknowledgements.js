@@ -38,6 +38,17 @@ const Acknowledgements = () => {
       </section>
 
       <section>
+        <h2>Amer Abbas — Qur'an Foundation</h2>
+        <p>
+          Special acknowledgement to Amr Abbas and the{' '}
+          <a href="https://quran.com/" target="_blank" rel="noopener noreferrer">
+            Qur'an Foundation
+          </a>{' '}
+          team for their ongoing stewardship of Quran.com and related projects, continuing vital work after the passing of Kais Dukes.
+        </p>
+      </section>
+
+      <section>
         <h2>Glenn Stevens — Semitic Roots</h2>
         <p>
           Acknowledgement to Glenn Stevens for comparative Semitic resources informing our non-Arabic data, available at{' '}
@@ -80,7 +91,24 @@ const Acknowledgements = () => {
           for generously sharing Arabic source data; we look forward to deeper collaboration.
         </p>
         <p>
-          [Inference] Turath.io is likely the best search tool for Arabic texts.
+          [Inference] Turath.io is likely the most comprehensive and effective search tool for Arabic texts.
+        </p>
+      </section>
+
+      <section>
+        <h2>Joshua Beneventi — Mashraba Community</h2>
+        <p>
+          Acknowledgement to Joshua Beneventi, founder of the Mashraba community. Support from the Mashraba community has been invaluable.
+        </p>
+      </section>
+
+      <section>
+        <h3>Special Mentions</h3>
+        <p>
+          <strong>Lisa White & Dr. Mohamed Shaltout — Rooted in the Body:</strong> Authors of Rooted in the Body, a helpful resource on Arabic morphology that informed aspects of this work.
+        </p>
+        <p>
+          <strong>Suzanne Pinckney Stetkevich:</strong> Scholar of Arabic literature and poetics whose works helped shape the theoretical background for Mindroots.
         </p>
       </section>
 
