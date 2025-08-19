@@ -14,31 +14,37 @@
   backdrop-filter: blur(10px);
   border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
   align-items: center;
   padding: 0 20px;
   z-index: 1000;
   box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.2);
+  gap: 2px; /* Tiny gap between all elements */
+  transition: all 0.3s ease;
+}
+
+/* Collapsed state - default - only MindRoots button */
+.bottom-nav.collapsed {
+  height: 60px;
+  padding: 0;
+  gap: 0;
+}
+
+/* Expanded state - all buttons visible */
+.bottom-nav.expanded {
+  height: 70px;
+  padding: 0 20px;
+  gap: 2px;
 }
 
 /* Navigation Sections */
 .nav-section {
   display: flex;
   align-items: center;
-  gap: 15px;
+  gap: 1px; /* 1px gap within sections */
 }
 
-.nav-left, .nav-right {
-  flex: 1;
-}
-
-.nav-center {
-  flex: 0 0 auto;
-}
-
-.nav-right {
-  justify-content: flex-end;
-}
+/* Remove flex stretching - let sections size naturally */
 
 /* Standard Navigation Buttons */
 .nav-button {
@@ -162,8 +168,12 @@ body {
     height: 50px;
   }
   
+  .bottom-nav.expanded {
+    gap: 1px; /* Even closer spacing on mobile */
+  }
+  
   .nav-section {
-    gap: 12px;
+    gap: 1px; /* 1px within sections on mobile */
   }
   
   .bottom-settings-panel {
@@ -192,8 +202,12 @@ body {
     height: 45px;
   }
   
+  .bottom-nav.expanded {
+    gap: 1px; /* 1px spacing on small mobile */
+  }
+  
   .nav-section {
-    gap: 10px;
+    gap: 1px; /* 1px within sections on small mobile */
   }
   
   .bottom-settings-panel {
