@@ -1,11 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { getNodeColor } from '../utils/nodeColoring';
 import InfoBubble from '../layout/InfoBubble';
+import NodeContextMenu from './NodeContextMenu';
+import NodeInspector from './NodeInspector';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useGraphData } from '../../contexts/GraphDataContext';
 
 const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeInfoBubble }) => {
   const [expandedNodes, setExpandedNodes] = useState({});
   const { L1, L2 } = useLanguage();
+  const { isAdvancedMode } = useAdvancedMode();
+  const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
 
   // Collect all nodes that have semantic or text properties to display
   const displayableNodes = graphData.nodes.filter((n) => 
@@ -20,9 +26,35 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
     return (b.dataSize || 0) - (a.dataSize || 0) || (a.id - b.id);
   });
 
-  const handleNodeRowClick = (node, event) => {
-    onNodeClick(node, event);
-  };
+  // Enhanced click handler that checks for advanced mode (matches GraphVisualization)
+  const handleNodeRowClick = useCallback((node, event) => {
+    if (isAdvancedMode) {
+      // In advanced mode, show context menu
+      const position = {
+        x: event.pageX,
+        y: event.pageY
+      };
+      setContextMenu({ node, position });
+    } else {
+      // In guided mode, use original behavior
+      onNodeClick(node, event);
+    }
+  }, [isAdvancedMode, onNodeClick, setContextMenu]);
+
+  // Context menu action handler
+  const handleMenuAction = useCallback((action, node) => {
+    handleContextMenuAction(action, node);
+  }, [handleContextMenuAction]);
+
+  // Close context menu handler
+  const handleCloseContextMenu = useCallback(() => {
+    setContextMenu(null);
+  }, [setContextMenu]);
+
+  // Close node inspector handler
+  const handleCloseInspector = useCallback(() => {
+    setNodeInspectorData(null);
+  }, [setNodeInspectorData]);
 
   return (
     <>
@@ -71,6 +103,24 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
             top: `${infoBubble.position.y}px`,
             left: `${infoBubble.position.x}px`,
           }}
+        />
+      )}
+
+      {/* Context menu for advanced mode */}
+      {contextMenu && (
+        <NodeContextMenu
+          node={contextMenu.node}
+          position={contextMenu.position}
+          onAction={handleMenuAction}
+          onClose={handleCloseContextMenu}
+        />
+      )}
+
+      {/* Node inspector */}
+      {nodeInspectorData && (
+        <NodeInspector
+          data={nodeInspectorData}
+          onClose={handleCloseInspector}
         />
       )}
     </>
