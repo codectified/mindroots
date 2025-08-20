@@ -19,7 +19,9 @@ const Acknowledgements = () => {
           <a href="https://lexicon.quranic-research.net/index.html" target="_blank" rel="noopener noreferrer">
             Lane's Arabic–English Lexicon
           </a>
-          . Original XML files for Lane's Lexicon were provided by the Tufts University Perseus Project (Arabic collection) and are undergoing manual and automated verification processes.
+          . Original XML files for Lane's Lexicon were provided by the           <a href="https://www.perseus.tufts.edu/" target="_blank" rel="noopener noreferrer">
+            Perseus Project at Tufts University
+          </a> and are undergoing manual and automated verification processes.
         </p>
       </section>
 
@@ -33,7 +35,7 @@ const Acknowledgements = () => {
           (morphology and syntax) has been foundational to this project.
         </p>
         <p style={{ fontStyle: 'italic' }}>
-          In memoriam: Dr. Kais Dukes — may his work continue to benefit learners and researchers.
+          In memoriam: Dr. Kais Dukes — may his reward work continue to benefit learners and researchers.
         </p>
       </section>
 
@@ -54,32 +56,10 @@ const Acknowledgements = () => {
           Acknowledgement to Glenn Stevens for comparative Semitic resources informing our non-Arabic data, available at{' '}
           <a href="http://www.semiticroots.net/index.php/language" target="_blank" rel="noopener noreferrer">
             Semitic Roots
-          </a>
-          .
+          </a> where you can also find information about their Facebook group.
         </p>
       </section>
 
-      <section>
-        <h2>Tufts University — Perseus Project</h2>
-        <p>
-          Original Lane's Lexicon XML (Arabic collection) provided by the{' '}
-          <a href="https://www.perseus.tufts.edu/" target="_blank" rel="noopener noreferrer">
-            Perseus Project at Tufts University
-          </a>
-          .
-        </p>
-      </section>
-
-      <section>
-        <h2>Hans Wehr — A Dictionary of Modern Written Arabic</h2>
-        <p>
-          Referenced as a standard modern Arabic lexicographic resource. More information available on{' '}
-          <a href="https://en.wikipedia.org/wiki/Hans_Wehr_dictionary" target="_blank" rel="noopener noreferrer">
-            Wikipedia
-          </a>
-          .
-        </p>
-      </section>
 
       <section>
         <h2>Turath.io</h2>
@@ -91,7 +71,7 @@ const Acknowledgements = () => {
           for generously sharing Arabic source data; we look forward to deeper collaboration.
         </p>
         <p>
-          [Inference] Turath.io is likely the most comprehensive and effective search tool for Arabic texts.
+          Turath.io is one of the most comprehensive and effective search tools for Arabic texts.
         </p>
       </section>
 
@@ -105,7 +85,9 @@ const Acknowledgements = () => {
       <section>
         <h3>Special Mentions</h3>
         <p>
-          <strong>Lisa White & Dr. Mohamed Shaltout — Rooted in the Body:</strong> Authors of Rooted in the Body, a helpful resource on Arabic morphology that informed aspects of this work.
+          <strong>Lisa J White & Dr. Mohamed Shaltout —</strong> Author and Illustrator of           <a href="https://aucpress.com/9789774169779/" target="_blank" rel="noopener noreferrer">
+            Rooted in the Body
+          </a>, a wonderful and inspiring resource on Arabic morphology very much in the spirit of this work and its related research.
         </p>
         <p>
           <strong>Suzanne Pinckney Stetkevich:</strong> Scholar of Arabic literature and poetics whose works helped shape the theoretical background for Mindroots.
