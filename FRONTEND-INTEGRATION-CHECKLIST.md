@@ -14,7 +14,7 @@
 // const api = axios.create({
 //   baseURL: 'https://theoption.life/api',
 //   headers: {
-//     'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
+//     'Authorization': 'Bearer [LEGACY_API_KEY]',
 //   },
 // });
 
