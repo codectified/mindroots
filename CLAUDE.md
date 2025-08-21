@@ -530,7 +530,7 @@ const api = axios.create({
 // const api = axios.create({
 //   baseURL: 'https://theoption.life/api',
 //   headers: {
-//     'Authorization': 'Bearer REDACTED_API_KEY',
+//     'Authorization': 'Bearer [LEGACY_API_KEY]',
 //   },
 // });
 ```

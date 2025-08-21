@@ -141,6 +141,45 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
   
   try {
     const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+    const rootNodeId = node?.id;
+    
+    // Check if this root is already expanded (has connected word nodes)
+    const connectedWordIds = new Set();
+    graphData.links.forEach(link => {
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      
+      // If this root is the source and target is a word, or vice versa
+      if (link.type === 'HAS_WORD') {
+        if (sourceId === rootNodeId) {
+          connectedWordIds.add(targetId);
+        }
+      }
+    });
+    
+    const isExpanded = connectedWordIds.size > 0;
+    console.log(`Root ${rootNodeId} expansion status: ${isExpanded ? 'expanded' : 'collapsed'}, connected words: ${connectedWordIds.size}`);
+    
+    if (isExpanded) {
+      // COLLAPSE: Remove connected words and their links
+      console.log('Collapsing root - removing connected words');
+      
+      setGraphData(prev => ({
+        nodes: prev.nodes.filter(n => !connectedWordIds.has(n?.id)),
+        links: prev.links.filter(link => {
+          const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+          const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+          
+          // Remove links that connect to any of the words we're removing
+          return !connectedWordIds.has(sourceId) && !connectedWordIds.has(targetId);
+        })
+      }));
+      
+      return; // Exit early - no expansion needed
+    }
+    
+    // EXPAND: Root is not expanded, proceed with normal expansion
+    console.log('Expanding root - fetching words');
     const options = { L1, L2, limit: 100 };
     
     // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
@@ -209,6 +248,45 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
   
   try {
     const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
+    const formNodeId = node?.id;
+    
+    // Check if this form is already expanded (has connected word nodes)
+    const connectedWordIds = new Set();
+    graphData.links.forEach(link => {
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      
+      // For form->word relationships, form can be target (word->form) or source depending on link direction
+      if (link.type === 'HAS_FORM') {
+        if (targetId === formNodeId) {
+          connectedWordIds.add(sourceId); // word is source, form is target
+        }
+      }
+    });
+    
+    const isExpanded = connectedWordIds.size > 0;
+    console.log(`Form ${formNodeId} expansion status: ${isExpanded ? 'expanded' : 'collapsed'}, connected words: ${connectedWordIds.size}`);
+    
+    if (isExpanded) {
+      // COLLAPSE: Remove connected words and their links
+      console.log('Collapsing form - removing connected words');
+      
+      setGraphData(prev => ({
+        nodes: prev.nodes.filter(n => !connectedWordIds.has(n?.id)),
+        links: prev.links.filter(link => {
+          const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+          const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+          
+          // Remove links that connect to any of the words we're removing
+          return !connectedWordIds.has(sourceId) && !connectedWordIds.has(targetId);
+        })
+      }));
+      
+      return; // Exit early - no expansion needed
+    }
+    
+    // EXPAND: Form is not expanded, proceed with normal expansion
+    console.log('Expanding form - fetching words');
     const options = { L1, L2, limit };
     
     // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
