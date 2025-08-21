@@ -439,6 +439,8 @@ router.use(authenticateAPI);
     const formattedRoots = roots.map(root => {
       return {
         ...root,
+        id: `root_${Number(root.root_id?.low !== undefined ? root.root_id.low : root.root_id)}`,
+        type: 'root',
         label: script === 'both' ? `${root.arabic} / ${root.english}` : root[script]
       };
     });
@@ -490,13 +492,15 @@ router.use(authenticateAPI);
 
 // Consolidated expansion route
 router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
-  const { sourceType, sourceId, targetType } = req.params;
-  const { L1, L2, corpus_id, limit = 25 } = req.query;
+  const { sourceType, targetType } = req.params;
+  const { L1, L2 } = req.query;
   
-  console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, limitType: typeof limit });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+  // Fix type coercion and integer normalization
+  const sourceId = parseInt(req.params.sourceId, 10);
+  const corpus_id = req.query.corpus_id ? parseInt(req.query.corpus_id, 10) : null;
+  const limit = parseInt(req.query.limit || 25, 10);
+  
+  console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, sourceIdType: typeof sourceId, corpusIdType: typeof corpus_id, limitType: typeof limit });
   
   const session = req.driver.session();
   
@@ -516,14 +520,14 @@ router.use(authenticateAPI);
           MATCH (root:Root {root_id: toInteger($sourceId)})-[:HAS_WORD]->(word:Word)
           MATCH (corpus:Corpus {corpus_id: toInteger($corpus_id)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word)
           OPTIONAL MATCH (word)-[:ETYM]->(etym:Word)
-          RETURN root, word, etym
+          RETURN DISTINCT root, word, etym
           LIMIT toInteger($limit)
         `;
       } else {
         query = `
           MATCH (root:Root {root_id: toInteger($sourceId)})-[:HAS_WORD]->(word:Word)
           OPTIONAL MATCH (word)-[:ETYM]->(etym:Word)
-          RETURN root, word, etym
+          RETURN DISTINCT root, word, etym
           LIMIT toInteger($limit)
         `;
       }
@@ -532,13 +536,13 @@ router.use(authenticateAPI);
         query = `
           MATCH (form:Form {form_id: toInteger($sourceId)})<-[:HAS_FORM]-(word:Word)
           MATCH (corpus:Corpus {corpus_id: toInteger($corpus_id)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word)
-          RETURN form, word
+          RETURN DISTINCT form, word
           LIMIT toInteger($limit)
         `;
       } else {
         query = `
           MATCH (form:Form {form_id: toInteger($sourceId)})<-[:HAS_FORM]-(word:Word)
-          RETURN form, word
+          RETURN DISTINCT form, word
           LIMIT toInteger($limit)
         `;
       }
@@ -556,7 +560,7 @@ router.use(authenticateAPI);
         OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
         OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
         OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
-        RETURN item, collect(DISTINCT word) as words, collect(DISTINCT root) as roots, collect(DISTINCT form) as forms
+        RETURN DISTINCT item, word, root, form
       `;
     } else if (sourceType === 'word' && targetType === 'corpusitem') {
       // NEW: Word -> CorpusItem expansion
@@ -565,14 +569,14 @@ router.use(authenticateAPI);
         query = `
           MATCH (word:Word {word_id: toInteger($sourceId)})
           MATCH (word)<-[:HAS_WORD]-(item:CorpusItem)-[:BELONGS_TO]->(corpus:Corpus {corpus_id: toInteger($corpus_id)})
-          RETURN word, item
+          RETURN DISTINCT word, item
           LIMIT toInteger($limit)
         `;
       } else {
         query = `
           MATCH (word:Word {word_id: toInteger($sourceId)})
           MATCH (word)<-[:HAS_WORD]-(item:CorpusItem)
-          RETURN word, item
+          RETURN DISTINCT word, item
           LIMIT toInteger($limit)
         `;
       }
@@ -582,7 +586,7 @@ router.use(authenticateAPI);
       query = `
         MATCH (word:Word {word_id: toInteger($sourceId)})
         MATCH (word)<-[:HAS_WORD]-(root:Root)
-        RETURN word, root
+        RETURN DISTINCT word, root
         LIMIT toInteger($limit)
       `;
     } else if (sourceType === 'word' && targetType === 'form') {
@@ -591,7 +595,7 @@ router.use(authenticateAPI);
       query = `
         MATCH (word:Word {word_id: toInteger($sourceId)})
         MATCH (word)-[:HAS_FORM]->(form:Form)
-        RETURN word, form
+        RETURN DISTINCT word, form
         LIMIT toInteger($limit)
       `;
     } else {
@@ -618,6 +622,13 @@ router.use(authenticateAPI);
     const nodes = [];
     const links = [];
     const nodeMap = new Map();
+    const linkIds = new Set(); // Separate set for link deduplication
+    
+    // Helper function for canonical ID generation: ${type}_${Number(idProp)}
+    const getCanonicalId = (type, idValue) => {
+      const numericId = idValue?.low !== undefined ? idValue.low : idValue;
+      return `${type}_${Number(numericId)}`;
+    };
     
     console.log(`Query returned ${result.records.length} records`);
     
@@ -669,145 +680,108 @@ router.use(authenticateAPI);
     }
     
     if (sourceType === 'corpusitem' && targetType === 'word') {
-      // Handle corpus item expansion using collect pattern
-      const record = result.records[0];
-      const item = record.get('item')?.properties;
-      const words = record.get('words') || [];
-      const roots = record.get('roots') || [];
-      const forms = record.get('forms') || [];
-      
-      // Add the corpus item node
-      if (item) {
-        const itemNode = {
-          id: `corpusitem_${item.item_id}`,
-          label: L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`,
-          ...convertIntegers(item),
-          type: 'corpusitem'
-        };
-        nodes.push(itemNode);
-        nodeMap.set(itemNode.id, itemNode);
-      }
-      
-      // Add word nodes and links
-      words.forEach(wordObj => {
-        if (wordObj && wordObj.properties) {
-          const word = wordObj.properties;
-          const wordNode = {
-            id: `word_${word.word_id}`,
-            label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
-            ...convertIntegers(word),
-            type: 'word'
-          };
-          
-          if (!nodeMap.has(wordNode.id)) {
+      // Handle corpus item expansion using individual records (FIXED: no more cartesian product)
+      result.records.forEach(record => {
+        const item = record.get('item')?.properties;
+        const word = record.get('word')?.properties;
+        const root = record.get('root')?.properties;
+        const form = record.get('form')?.properties;
+        
+        // Add the corpus item node
+        if (item) {
+          const itemId = getCanonicalId('corpusitem', item.item_id);
+          if (!nodeMap.has(itemId)) {
+            const itemNode = {
+              id: itemId,
+              label: L2 === 'off' ? item[L1] : `${item[L1]} / ${item[L2]}`,
+              ...convertIntegers(item),
+              type: 'corpusitem'
+            };
+            nodes.push(itemNode);
+            nodeMap.set(itemId, itemNode);
+          }
+        }
+        
+        // Add word node and corpus item -> word link
+        if (word) {
+          const wordId = getCanonicalId('word', word.word_id);
+          if (!nodeMap.has(wordId)) {
+            const wordNode = {
+              id: wordId,
+              label: L2 === 'off' ? word[L1] : `${word[L1]} / ${word[L2]}`,
+              ...convertIntegers(word),
+              type: 'word'
+            };
             nodes.push(wordNode);
-            nodeMap.set(wordNode.id, wordNode);
-            
-            // Add link from corpus item to word
-            if (item) {
+            nodeMap.set(wordId, wordNode);
+          }
+          
+          // Add link from corpus item to word (only if both exist in this record)
+          if (item) {
+            const linkId = `${getCanonicalId('corpusitem', item.item_id)}-${getCanonicalId('word', word.word_id)}`;
+            if (!linkIds.has(linkId)) {
               links.push({
-                source: `corpusitem_${item.item_id}`,
-                target: `word_${word.word_id}`,
-                type: 'HAS_WORD'
-              });
-
-// API Authentication middleware
-router.use(authenticateAPI);
-            }
-          }
-        }
-      });
-
-// API Authentication middleware
-router.use(authenticateAPI);
-      
-      // Add root nodes and links
-      roots.forEach(rootObj => {
-        if (rootObj && rootObj.properties) {
-          const root = rootObj.properties;
-          const rootNode = {
-            id: `root_${root.root_id}`,
-            label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-            ...convertIntegers(root),
-            type: 'root'
-          };
-          
-          if (!nodeMap.has(rootNode.id)) {
-            nodes.push(rootNode);
-            nodeMap.set(rootNode.id, rootNode);
-          }
-        }
-      });
-
-// API Authentication middleware
-router.use(authenticateAPI);
-      
-      // Add form nodes and links
-      forms.forEach(formObj => {
-        if (formObj && formObj.properties) {
-          const form = formObj.properties;
-          const formNode = {
-            id: `form_${form.form_id}`,
-            label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
-            ...convertIntegers(form),
-            type: 'form'
-          };
-          
-          if (!nodeMap.has(formNode.id)) {
-            nodes.push(formNode);
-            nodeMap.set(formNode.id, formNode);
-          }
-        }
-      });
-
-// API Authentication middleware
-router.use(authenticateAPI);
-      
-      // Add links between words and their roots/forms
-      words.forEach(wordObj => {
-        if (wordObj && wordObj.properties) {
-          const word = wordObj.properties;
-          const wordId = `word_${word.word_id}`;
-          
-          // Find matching roots and forms for this word
-          roots.forEach(rootObj => {
-            if (rootObj && rootObj.properties) {
-              const root = rootObj.properties;
-              links.push({
-                source: `root_${root.root_id}`,
+                source: getCanonicalId('corpusitem', item.item_id),
                 target: wordId,
                 type: 'HAS_WORD'
               });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+              linkIds.add(linkId); // Track link to prevent duplicates
             }
-          });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+          }
+        }
+        
+        // Add root node and root -> word link (only for the specific word in this record)
+        if (root && word) {
+          const rootId = getCanonicalId('root', root.root_id);
+          if (!nodeMap.has(rootId)) {
+            const rootNode = {
+              id: rootId,
+              label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
+              ...convertIntegers(root),
+              type: 'root'
+            };
+            nodes.push(rootNode);
+            nodeMap.set(rootId, rootNode);
+          }
           
-          forms.forEach(formObj => {
-            if (formObj && formObj.properties) {
-              const form = formObj.properties;
-              links.push({
-                source: wordId,
-                target: `form_${form.form_id}`,
-                type: 'HAS_FORM'
-              });
-
-// API Authentication middleware
-router.use(authenticateAPI);
-            }
-          });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+          // Add link from root to word (only for this specific word)
+          const linkId = `${getCanonicalId('root', root.root_id)}-${getCanonicalId('word', word.word_id)}`;
+          if (!linkIds.has(linkId)) {
+            links.push({
+              source: rootId,
+              target: getCanonicalId('word', word.word_id),
+              type: 'HAS_WORD'
+            });
+            linkIds.add(linkId); // Track link to prevent duplicates
+          }
+        }
+        
+        // Add form node and word -> form link (only for the specific word in this record)
+        if (form && word) {
+          const formId = getCanonicalId('form', form.form_id);
+          if (!nodeMap.has(formId)) {
+            const formNode = {
+              id: formId,
+              label: L2 === 'off' ? form[L1] : `${form[L1]} / ${form[L2]}`,
+              ...convertIntegers(form),
+              type: 'form'
+            };
+            nodes.push(formNode);
+            nodeMap.set(formId, formNode);
+          }
+          
+          // Add link from word to form (only for this specific word)
+          const linkId = `${getCanonicalId('word', word.word_id)}-${getCanonicalId('form', form.form_id)}`;
+          if (!linkIds.has(linkId)) {
+            links.push({
+              source: getCanonicalId('word', word.word_id),
+              target: formId,
+              type: 'HAS_FORM'
+            });
+            linkIds.add(linkId); // Track link to prevent duplicates
+          }
         }
       });
-
-// API Authentication middleware
-router.use(authenticateAPI);
       
     } else if (sourceType === 'word' && targetType === 'corpusitem') {
       // Handle word to corpus item expansion
@@ -839,11 +813,15 @@ router.use(authenticateAPI);
           nodeMap.set(corpusItemNode.id, corpusItemNode);
           
           // Create link from word to corpus item
-          links.push({
-            source: `word_${sourceNode.word_id}`,
-            target: `corpusitem_${targetNode.item_id}`,
-            type: 'USED_IN'
-          });
+          const linkId = `word_${sourceNode.word_id}-corpusitem_${targetNode.item_id}`;
+          if (!linkIds.has(linkId)) {
+            links.push({
+              source: `word_${sourceNode.word_id}`,
+              target: `corpusitem_${targetNode.item_id}`,
+              type: 'USED_IN'
+            });
+            linkIds.add(linkId);
+          }
 
 // API Authentication middleware
 router.use(authenticateAPI);
@@ -884,23 +862,25 @@ router.use(authenticateAPI);
           
           // Create appropriate link
           if (targetType === 'root') {
-            links.push({
-              source: `${targetType}_${targetNode[`${targetType}_id`]}`,
-              target: `word_${sourceNode.word_id}`,
-              type: 'HAS_WORD'
-            });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+            const linkId = `root_${targetNode.root_id}-word_${sourceNode.word_id}`;
+            if (!linkIds.has(linkId)) {
+              links.push({
+                source: `${targetType}_${targetNode[`${targetType}_id`]}`,
+                target: `word_${sourceNode.word_id}`,
+                type: 'HAS_WORD'
+              });
+              linkIds.add(linkId);
+            }
           } else if (targetType === 'form') {
-            links.push({
-              source: `word_${sourceNode.word_id}`,
-              target: `${targetType}_${targetNode[`${targetType}_id`]}`,
-              type: 'HAS_FORM'
-            });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+            const linkId = `word_${sourceNode.word_id}-form_${targetNode.form_id}`;
+            if (!linkIds.has(linkId)) {
+              links.push({
+                source: `word_${sourceNode.word_id}`,
+                target: `${targetType}_${targetNode[`${targetType}_id`]}`,
+                type: 'HAS_FORM'
+              });
+              linkIds.add(linkId);
+            }
           }
         }
       });
@@ -937,23 +917,25 @@ router.use(authenticateAPI);
           
           // Create appropriate link based on relationship type
           if (sourceType === 'root' && targetType === 'word') {
-            links.push({
-              source: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
-              target: `${targetType}_${targetNode[`${targetType}_id`]}`,
-              type: 'HAS_WORD'
-            });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+            const linkId = `root_${sourceNode.root_id}-word_${targetNode.word_id}`;
+            if (!linkIds.has(linkId)) {
+              links.push({
+                source: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
+                target: `${targetType}_${targetNode[`${targetType}_id`]}`,
+                type: 'HAS_WORD'
+              });
+              linkIds.add(linkId);
+            }
           } else if (sourceType === 'form' && targetType === 'word') {
-            links.push({
-              source: `${targetType}_${targetNode[`${targetType}_id`]}`,
-              target: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
-              type: 'HAS_FORM'
-            });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+            const linkId = `word_${targetNode.word_id}-form_${sourceNode.form_id}`;
+            if (!linkIds.has(linkId)) {
+              links.push({
+                source: `${targetType}_${targetNode[`${targetType}_id`]}`,
+                target: `${sourceType}_${sourceNode[`${sourceType}_id`]}`,
+                type: 'HAS_FORM'
+              });
+              linkIds.add(linkId);
+            }
           }
         }
         
@@ -977,17 +959,14 @@ router.use(authenticateAPI);
             }
             
             // Add ETYM link
-            const linkId = `${sourceWordId}->${etymNodeId}`;
-            if (!nodeMap.has(linkId)) {
+            const linkId = `${sourceWordId}-${etymNodeId}`;
+            if (!linkIds.has(linkId)) {
               links.push({
                 source: sourceWordId,
                 target: etymNodeId,
                 type: 'ETYM'
               });
-
-// API Authentication middleware
-router.use(authenticateAPI);
-              nodeMap.set(linkId, true); // Track link to avoid duplicates
+              linkIds.add(linkId);
             }
           }
         }
@@ -1530,10 +1509,13 @@ router.get('/rootbyletters', async (req, res) => {
     if (result.records.length > 0) {
       const roots = result.records.map((rec) => {
         const props = rec.get('root').properties;
+        const convertedProps = convertIntegers(props);
         return {
-          ...props,
-          label: L2 === 'off' ? props[L1] : `${props[L1]} / ${props[L2]}`,
-          root_id: props.root_id,
+          ...convertedProps,
+          id: `root_${Number(convertedProps.root_id?.low !== undefined ? convertedProps.root_id.low : convertedProps.root_id)}`,
+          type: 'root',
+          label: L2 === 'off' ? convertedProps[L1] : `${convertedProps[L1]} / ${convertedProps[L2]}`,
+          root_id: convertedProps.root_id,
         };
       });
 
@@ -1587,10 +1569,13 @@ router.get('/geminate-roots', async (req, res) => {
     if (result.records.length > 0) {
       const roots = result.records.map(record => {
         const root = record.get('root').properties;
+        const convertedRoot = convertIntegers(root);
         return {
-          ...root,
-          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-          root_id: root.root_id,
+          ...convertedRoot,
+          id: `root_${Number(convertedRoot.root_id?.low !== undefined ? convertedRoot.root_id.low : convertedRoot.root_id)}`,
+          type: 'root',
+          label: L2 === 'off' ? convertedRoot[L1] : `${convertedRoot[L1]} / ${convertedRoot[L2]}`,
+          root_id: convertedRoot.root_id,
         };
       });
 
@@ -1662,10 +1647,13 @@ router.get('/triliteral-roots', async (req, res) => {
     if (result.records.length > 0) {
       const roots = result.records.map((record) => {
         const root = record.get('root').properties;
+        const convertedRoot = convertIntegers(root);
         return {
-          ...root,
-          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-          root_id: root.root_id,
+          ...convertedRoot,
+          id: `root_${Number(convertedRoot.root_id?.low !== undefined ? convertedRoot.root_id.low : convertedRoot.root_id)}`,
+          type: 'root',
+          label: L2 === 'off' ? convertedRoot[L1] : `${convertedRoot[L1]} / ${convertedRoot[L2]}`,
+          root_id: convertedRoot.root_id,
         };
       });
 
@@ -1732,10 +1720,13 @@ router.get('/extended-roots', async (req, res) => {
     if (result.records.length > 0) {
       const roots = result.records.map(record => {
         const root = record.get('root').properties;
+        const convertedRoot = convertIntegers(root);
         return {
-          ...root,
-          label: L2 === 'off' ? root[L1] : `${root[L1]} / ${root[L2]}`,
-          root_id: root.root_id,
+          ...convertedRoot,
+          id: `root_${Number(convertedRoot.root_id?.low !== undefined ? convertedRoot.root_id.low : convertedRoot.root_id)}`,
+          type: 'root',
+          label: L2 === 'off' ? convertedRoot[L1] : `${convertedRoot[L1]} / ${convertedRoot[L2]}`,
+          root_id: convertedRoot.root_id,
         };
       });
 
@@ -2067,6 +2058,8 @@ router.use(authenticateAPI);
       const convertedRoot = convertIntegers(root);
       return {
         ...convertedRoot,
+        id: `root_${Number(convertedRoot.root_id?.low !== undefined ? convertedRoot.root_id.low : convertedRoot.root_id)}`,
+        type: 'root',
         label: L2 === 'off' ? convertedRoot[L1] : `${convertedRoot[L1]} / ${convertedRoot[L2]}`
       };
     });
@@ -2161,6 +2154,8 @@ router.use(authenticateAPI);
       const convertedRoot = convertIntegers(root);
       return {
         ...convertedRoot,
+        id: `root_${Number(convertedRoot.root_id?.low !== undefined ? convertedRoot.root_id.low : convertedRoot.root_id)}`,
+        type: 'root',
         label: L2 === 'off' ? convertedRoot[L1] : `${convertedRoot[L1]} / ${convertedRoot[L2]}`
       };
     });
@@ -2252,6 +2247,8 @@ router.use(authenticateAPI);
       const convertedRoot = convertIntegers(root);
       return {
         ...convertedRoot,
+        id: `root_${Number(convertedRoot.root_id?.low !== undefined ? convertedRoot.root_id.low : convertedRoot.root_id)}`,
+        type: 'root',
         label: L2 === 'off' ? convertedRoot[L1] : `${convertedRoot[L1]} / ${convertedRoot[L2]}`
       };
     });
