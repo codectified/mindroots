@@ -357,8 +357,25 @@ const handleWordNodeClick = async (
     console.log(`Word node ${nodeKey} click state: ${currentClickState}`);
 
     if (currentClickState === 0) {
-      // FIRST CLICK: Expand to root node(s)
-      console.log('First click: expanding to root');
+      // FIRST CLICK: Show InfoBubble with definitions (what users expect first)
+      console.log('First click: showing definitions');
+      
+      const definitions = node.properties?.definitions ||
+        await fetchLaneEntry(wordId, L1, L2);
+      setInfoBubble({
+        definition: definitions,
+        position,
+      });
+      
+      // Update click state to 1
+      setWordClickStates(prev => ({
+        ...prev,
+        [nodeKey]: 1
+      }));
+      
+    } else if (currentClickState === 1) {
+      // SECOND CLICK: Expand to root node(s)
+      console.log('Second click: expanding to root');
       
       // Check if the corresponding root is already displayed
       const alreadyHasRoot = graphData.nodes.some(
@@ -396,23 +413,6 @@ const handleWordNodeClick = async (
           console.error('Word to root expansion failed during 3-click progression:', error);
         }
       }
-      
-      // Update click state to 1
-      setWordClickStates(prev => ({
-        ...prev,
-        [nodeKey]: 1
-      }));
-      
-    } else if (currentClickState === 1) {
-      // SECOND CLICK: Show InfoBubble with definitions
-      console.log('Second click: showing definitions');
-      
-      const definitions = node.properties?.definitions ||
-        await fetchLaneEntry(wordId, L1, L2);
-      setInfoBubble({
-        definition: definitions,
-        position,
-      });
       
       // Update click state to 2
       setWordClickStates(prev => ({
