@@ -24,6 +24,14 @@ Every word has a root and a form—just as every person has both an external for
 
 
 ---
+
+## License
+
+This work is licensed under the [Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License](http://creativecommons.org/licenses/by-nc-sa/4.0/). 
+
+You are free to share and adapt this work for non-commercial purposes with proper attribution.
+
+---
 Privacy Notice
 
 This application does not collect or store any personal data. Any queries submitted through the chatbot are processed anonymously and used solely to generate responses. No user information is saved, tracked, or shared.
