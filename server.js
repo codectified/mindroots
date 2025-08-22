@@ -1,3 +1,11 @@
+/*
+ * MindRoots - Arabic Morphology Visualization Tool
+ * Copyright (c) 2024 MindRoots Project
+ * 
+ * This work is licensed under the Creative Commons Attribution-NonCommercial-ShareAlike 4.0 International License.
+ * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
+ */
+
 require('dotenv').config(); // Load environment variables
 
 const express = require('express');
