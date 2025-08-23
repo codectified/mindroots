@@ -303,7 +303,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick, showLinks, showLinkLabels]);
+  }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode]);
 
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
