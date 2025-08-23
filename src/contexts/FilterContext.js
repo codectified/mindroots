@@ -1,5 +1,5 @@
 // ../contexts/FilterContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext } from 'react';
 import { useAdvancedMode } from './AdvancedModeContext';
 
 const FilterContext = createContext();
