@@ -1,15 +1,13 @@
 // ../contexts/FilterContext.js
-import React, { createContext, useState, useContext, useEffect } from 'react';
-import { useAdvancedMode } from './AdvancedModeContext';
+import React, { createContext, useState, useContext } from 'react';
 
 const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
-  const { isAdvancedMode } = useAdvancedMode();
   
   // Default word types selected
   const [filterWordTypes, setFilterWordTypes] = useState([
-    'phrase', 'verb', 'noun', 'unclassified',
+    'phrase', 'verb', 'noun',
   ]); // All selected by default
   const [hideFormNodes, setHideFormNodes] = useState(false); // Form nodes shown by default in both modes
 
