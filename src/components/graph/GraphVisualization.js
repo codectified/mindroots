@@ -40,6 +40,69 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     return metrics;
   }, [layoutMode]);
 
+  // Stage 1: Label positioning helpers
+  const computeLabelAnchor = useCallback((node, width, height) => {
+    const nodeRadius = node.type === 'word' ? 
+      (node.dataSize === 0 ? 1 : Math.max(4, Math.min(12, Math.log(node.dataSize || 1) * 2))) : 10;
+    
+    // Calculate angle from graph center
+    const centerX = width / 2;
+    const centerY = height / 2;
+    const dx = node.x - centerX;
+    const dy = node.y - centerY;
+    const angle = Math.atan2(dy, dx);
+    
+    // Offset label anchor 14px from node edge
+    const labelOffset = 14;
+    const totalOffset = nodeRadius + labelOffset;
+    
+    return {
+      x: node.x + Math.cos(angle) * totalOffset,
+      y: node.y + Math.sin(angle) * totalOffset,
+      nodeRadius: nodeRadius
+    };
+  }, []);
+
+  // Stage 1: One-shot label separation
+  const separateLabels = useCallback((labelAnchors, maxIterations = 15, maxNudge = 5) => {
+    const anchors = [...labelAnchors]; // Copy to avoid mutation
+    
+    for (let iter = 0; iter < maxIterations; iter++) {
+      let moved = false;
+      
+      for (let i = 0; i < anchors.length; i++) {
+        for (let j = i + 1; j < anchors.length; j++) {
+          const a1 = anchors[i];
+          const a2 = anchors[j];
+          
+          const dx = a2.x - a1.x;
+          const dy = a2.y - a1.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          const minDistance = 24; // Minimum distance between label centers
+          
+          if (distance < minDistance && distance > 0) {
+            const overlap = minDistance - distance;
+            const moveDistance = Math.min(overlap / 2, maxNudge);
+            
+            const nx = dx / distance;
+            const ny = dy / distance;
+            
+            a1.x -= nx * moveDistance;
+            a1.y -= ny * moveDistance;
+            a2.x += nx * moveDistance;
+            a2.y += ny * moveDistance;
+            
+            moved = true;
+          }
+        }
+      }
+      
+      if (!moved) break; // Early termination if no overlaps
+    }
+    
+    return anchors;
+  }, []);
+
   // Enhanced click handler that checks for advanced mode
   const handleNodeClick = useCallback((event, d) => {
     if (isAdvancedMode) {
@@ -231,65 +294,127 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .style('pointer-events', 'none')
       .style('font-family', 'Noto Sans, sans-serif') : null;
 
-    // Append nodes with custom color logic and size based on dataSize only for Word nodes
-    const node = zoomLayer.append('g')
-      .attr('class', 'nodes')
-      .selectAll('circle')
+    // Stage 1: Append nodes with enhanced hit areas
+    const nodeGroup = zoomLayer.append('g').attr('class', 'nodes');
+    
+    const nodeElements = nodeGroup.selectAll('g')
       .data(data.nodes)
-      .enter().append('circle')
-      // Adjust node radius based on dataSize, only for Word nodes
+      .enter().append('g')
+      .attr('class', 'node-group');
+
+    // Visual node circles
+    const node = nodeElements.append('circle')
+      .attr('class', 'visual-node')
       .attr('r', d => {
         if (d.type === 'word') {
-          if (d.dataSize === 0) return 1; // Very small size for zero data size
-          return sizeScale(d.dataSize);    // Use log scale for Word nodes
+          if (d.dataSize === 0) return 1;
+          return sizeScale(d.dataSize);
         }
-        return 10; // Default size for non-Word nodes
+        return 10;
       })
-      .attr('fill', d => getColor(d)) // Use the getColor function
+      .attr('fill', d => getColor(d));
+
+    // Stage 1: Invisible hit area circles for small nodes
+    const hitArea = nodeElements.append('circle')
+      .attr('class', 'hit-area')
+      .attr('r', d => {
+        const visualRadius = d.type === 'word' ? 
+          (d.dataSize === 0 ? 1 : sizeScale(d.dataSize)) : 10;
+        return Math.max(visualRadius, 16); // Minimum 16px hit radius
+      })
+      .attr('fill', 'transparent')
+      .attr('pointer-events', 'all')
+      .style('cursor', 'pointer');
+
+    // Apply interactions to hit areas
+    hitArea
       .call(d3.drag()
         .on('start', dragstarted)
         .on('drag', dragged)
         .on('end', dragended))
       .on('click', handleNodeClick);
 
-    // Add node labels
+    // Add tooltips to visual nodes
     node.append('title').text(d => d.label);
 
-    const text = zoomLayer.append('g')
-      .attr('class', 'labels')
-      .selectAll('text')
-      .data(data.nodes)
-      .enter().append('text')
-      .attr('x', 12)
-      .attr('y', '.31em')
-      .text(d => d.label)
-      .style('pointer-events', 'auto')  // Make text clickable
-      .style('cursor', 'pointer')       // Show pointer cursor
-      .style('user-select', 'none')     // Prevent text selection
-      .style('-webkit-user-select', 'none')
-      .style('-moz-user-select', 'none')
-      .style('-ms-user-select', 'none')
-      .on('click', handleNodeClick)     // Add click handler to text
-      .call(d3.drag()                   // Add drag behavior to text as well
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended));
+    // Stage 1: Advanced label rendering with anchors, separation, and adaptive visibility
+    const labelGroup = zoomLayer.append('g').attr('class', 'labels');
+    
+    // Compute label anchors for all nodes
+    const labelAnchors = data.nodes.map(node => ({
+      node: node,
+      ...computeLabelAnchor(node, width, height)
+    }));
+    
+    // Apply one-shot separation to avoid overlaps
+    const separatedAnchors = separateLabels(labelAnchors);
+    
+    // Create label elements with white halos
+    const labelElements = labelGroup.selectAll('g')
+      .data(separatedAnchors)
+      .enter().append('g')
+      .attr('class', 'label-group');
+      
+    // Stage 1: White halo background
+    const labelHalo = labelElements.append('text')
+      .attr('class', 'label-halo')
+      .text(d => d.node.label)
+      .style('font-family', 'Noto Sans, sans-serif')
+      .style('font-size', '12px')
+      .style('font-weight', '500')
+      .style('text-anchor', 'middle')
+      .style('dominant-baseline', 'central')
+      .style('fill', 'white')
+      .style('stroke', 'white')
+      .style('stroke-width', '3px')
+      .style('stroke-linejoin', 'round')
+      .style('pointer-events', 'none')
+      .style('user-select', 'none');
+      
+    // Foreground label text
+    const labelText = labelElements.append('text')
+      .attr('class', 'label-text')
+      .text(d => d.node.label)
+      .style('font-family', 'Noto Sans, sans-serif')
+      .style('font-size', '12px')
+      .style('font-weight', '500')
+      .style('text-anchor', 'middle')
+      .style('dominant-baseline', 'central')
+      .style('fill', '#333')
+      .style('pointer-events', 'auto')
+      .style('cursor', 'pointer')
+      .style('user-select', 'none')
+      .on('click', (event, d) => handleNodeClick(event, d.node));
 
     newSimulation.nodes(data.nodes).on('tick', () => {
       // Find the minimum Y value (the highest node)
       const minY = d3.min(data.nodes, d => d.y);
-
-      // Shift all nodes upwards by the difference between minY and a desired top position
-      const topOffset = height / 7;  // A small offset from the top of the screen
+      const topOffset = height / 7;
       const shiftY = topOffset - minY;
 
-      // Apply the shift
-      node.attr('cx', d => d.x)
-        .attr('cy', d => d.y + shiftY);
+      // Update node group positions
+      nodeElements.attr('transform', d => `translate(${d.x}, ${d.y + shiftY})`);
 
-      text.attr('x', d => d.x)
-        .attr('y', d => d.y + shiftY);
+      // Stage 1: Update label positions with current zoom level for adaptive visibility
+      const currentTransform = d3.zoomTransform(svg.node());
+      const zoomScale = currentTransform.k;
+      
+      labelElements.attr('transform', (d, i) => {
+        // Recompute label anchor based on current node position
+        const nodeData = d.node;
+        const anchor = computeLabelAnchor(nodeData, width, height);
+        return `translate(${anchor.x}, ${anchor.y + shiftY})`;
+      });
+      
+      // Stage 1: Adaptive visibility based on zoom level
+      const labelVisibility = zoomScale < 0.6 ? 0 : 
+                             zoomScale < 0.7 ? (zoomScale - 0.6) / 0.1 * 0.3 :
+                             zoomScale < 0.9 ? 0.3 + (zoomScale - 0.7) / 0.2 * 0.7 : 1;
+      
+      labelHalo.style('opacity', labelVisibility);
+      labelText.style('opacity', labelVisibility);
 
+      // Update link positions
       link.attr('x1', d => d.source.x)
         .attr('y1', d => d.source.y + shiftY)
         .attr('x2', d => d.target.x)
@@ -335,7 +460,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode, logGraphMetrics]);
+  }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode, logGraphMetrics, computeLabelAnchor, separateLabels]);
 
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
