@@ -81,7 +81,7 @@ const PrimaryList = () => {
     };
   
     fetchData();
-  }, [corpusId, surah, aya, ayahsPerPage, L1, L2]);
+  }, [corpusId, surah, aya, ayahsPerPage, L1, L2, ayaCount]);
 
   useEffect(() => {
     if (corpusId === '2') { // Fetch Aya count when Surah changes (for Quran)
