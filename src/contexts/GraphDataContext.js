@@ -15,6 +15,7 @@ import { useLanguage } from './LanguageContext'; // Import the language context 
 import { useFormFilter } from './FormFilterContext'; // Import the form filter context
 import { useContextFilter } from './ContextFilterContext'; // Import the context filter context
 import { useSemiticLanguageFilter } from './SemiticLanguageFilterContext'; // Import the Semitic language filter context
+import { useAdvancedMode } from './AdvancedModeContext'; // Import the advanced mode context
 
 
 
@@ -59,6 +60,7 @@ export const GraphDataProvider = ({ children }) => {
   const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); // Access context filter
   const { selectedSemiticLanguages } = useSemiticLanguageFilter(); // Access Semitic language filter
+  const { isAdvancedMode } = useAdvancedMode(); // Access advanced mode state
 
   // Function to filter Word nodes, Form nodes, and remove associated links
   const applyFilter = (nodes, links) => {
@@ -550,6 +552,13 @@ const handleNodeClick = async (
   corpusId,
   event
 ) => {
+  // In advanced mode, don't execute guided mode expansion logic
+  // The GraphVisualization component handles advanced mode by showing context menu only
+  if (isAdvancedMode) {
+    console.log('Advanced mode detected - skipping guided mode node expansion logic');
+    return;
+  }
+  
   // Always capture the true click point
   const position = {
     x: event.pageX,
