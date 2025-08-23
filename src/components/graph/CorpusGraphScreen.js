@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useCallback } from 'react';
 import GraphVisualization from './GraphVisualization';
 import { expandGraph } from '../../services/apiService';
 import MainMenu from '../navigation/MainMenu';
@@ -16,7 +16,6 @@ const CorpusGraphScreen = () => {
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
   const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
-  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
 
 
 
@@ -33,14 +32,8 @@ const CorpusGraphScreen = () => {
         // Use the response directly - it already has the correct structure
         setGraphData({ nodes: response.nodes, links: response.links });
   
-        // Extract available languages from the corpus item node
-        const corpusItemNode = response.nodes.find(n => n.type === 'corpusitem');
-        const languages = ['arabic', 'english'];
-        if (corpusItemNode?.transliteration) languages.push('transliteration');
-        setAvailableLanguages(languages);
       } else {
         setGraphData({ nodes: [], links: [] });
-        setAvailableLanguages(['arabic', 'english']);
       }
     }
   }, [selectedCorpusItem, selectedCorpus, L1, L2, setGraphData]);
