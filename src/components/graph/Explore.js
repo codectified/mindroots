@@ -85,9 +85,6 @@ const Explore = () => {
   };
 
 
-  const closeInfoBubble = () => {
-    setInfoBubble(null);
-  };
 
   const exampleQueries = {
     words: `

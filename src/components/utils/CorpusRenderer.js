@@ -41,22 +41,6 @@ const CorpusRenderer = ({
 
   
 
-  // Toggles freeform highlight state for an item
-  const handleFreeformHighlight = (item) => {
-    if (!freeformMode) return;
-  
-    const updatedItems = items.map((currentItem) =>
-      currentItem.item_id === item.item_id
-        ? {
-            ...currentItem,
-            isFreeformHighlighted: !currentItem.isFreeformHighlighted, // Toggle highlight
-            highlightColor: !currentItem.isFreeformHighlighted ? highlightColor : currentItem.highlightColor, // Preserve color
-          }
-        : currentItem // Leave other items unchanged
-    );
-  
-    setItems(updatedItems);
-  };
 
   const handleFreeformAyaHighlight = (ayaIndex) => {
     if (!freeformMode) return;
@@ -531,16 +515,6 @@ const handleFreeformLineHighlight = (lineNumber) => {
     );
   };
 
-  const renderProse = () => (
-    <div>
-      <h2>Prose</h2>
-      {items.map((item) => (
-        <p key={item.item_id} style={getWordStyle(item)}>
-          {layout === 'line-by-line' ? `${item.line_number}. ${item.text}` : item.text}
-        </p>
-      ))}
-    </div>
-  );
 
   return (
     <div>
