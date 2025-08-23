@@ -9,7 +9,7 @@ const ArticlesAndReferences = () => {
   const { handleSelectCorpus } = useCorpus(); // Use context to store the selected corpus
   const { L1, L2 } = useLanguage(); // Get L1 and L2 from context
   const [corpora, setCorpora] = useState([]);
-  const [availableLanguages, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
+  const [, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
 
   useEffect(() => {
     const fetchCorporaData = async () => {
