@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { fetchCorpora } from '../../services/apiService';
 import { useCorpus } from '../../contexts/CorpusContext';
 import { useLanguage } from '../../contexts/LanguageContext';
