@@ -1,11 +1,9 @@
 // ../contexts/FilterContext.js
 import React, { createContext, useState, useContext } from 'react';
-import { useAdvancedMode } from './AdvancedModeContext';
 
 const FilterContext = createContext();
 
 export const FilterProvider = ({ children }) => {
-  const { isAdvancedMode } = useAdvancedMode();
   
   // Default word types selected
   const [filterWordTypes, setFilterWordTypes] = useState([
