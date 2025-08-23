@@ -3,13 +3,11 @@ import React from 'react';
 import { useFilter } from '../../contexts/FilterContext';
 import { useWordShade } from '../../contexts/WordShadeContext';
 import { useFormFilter } from '../../contexts/FormFilterContext';
-import { useGraphData } from '../../contexts/GraphDataContext';
 
 const FilterController = () => {
   const { filterWordTypes, toggleWordType, hideFormNodes, toggleHideFormNodes } = useFilter();
   const { wordShadeMode } = useWordShade();
   const { selectedFormClassifications, setSelectedFormClassifications } = useFormFilter();
-  const { graphData } = useGraphData();
 
   // Hardcoded available classifications - always show these three options and always clickable
   // All normalized to proper case for display
