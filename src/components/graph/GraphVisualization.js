@@ -11,11 +11,34 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const svgRef = useRef();
   const containerRef = useRef();
   const [simulation, setSimulation] = useState(null);
+  
+  // Stage 0: Layout mode and zoom persistence
+  const [layoutMode, setLayoutMode] = useState('force'); // 'force' | 'computed'
+  const lastTransform = useRef(null); // Persist zoom transform
 
   const { isAdvancedMode } = useAdvancedMode();
   const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
   const { wordShadeMode } = useWordShade();
   const { showLinks, showLinkLabels } = useShowLinks();
+
+  // Stage 0: Metrics logging function
+  const logGraphMetrics = useCallback((nodes) => {
+    const wordNodes = nodes.filter(n => n.type === 'word');
+    const dataSizes = wordNodes.map(n => n.dataSize || 0).filter(s => s > 0);
+    
+    const metrics = {
+      totalNodes: nodes.length,
+      wordNodes: wordNodes.length,
+      labels: nodes.filter(n => n.label).length,
+      avgDataSize: dataSizes.length > 0 ? (dataSizes.reduce((a, b) => a + b, 0) / dataSizes.length).toFixed(2) : 0,
+      minDataSize: dataSizes.length > 0 ? Math.min(...dataSizes) : 0,
+      maxDataSize: dataSizes.length > 0 ? Math.max(...dataSizes) : 0,
+      layoutMode: layoutMode
+    };
+    
+    console.log('📊 Graph Metrics:', metrics);
+    return metrics;
+  }, [layoutMode]);
 
   // Enhanced click handler that checks for advanced mode
   const handleNodeClick = useCallback((event, d) => {
@@ -53,6 +76,9 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       return;
     }
 
+    // Stage 0: Log metrics
+    logGraphMetrics(data.nodes);
+
     const svg = d3.select(svgRef.current);
 
     if (simulation) {
@@ -66,14 +92,20 @@ const GraphVisualization = ({ data, onNodeClick }) => {
 
     const { width, height } = containerRef.current.getBoundingClientRect();
 
-    // Set up zoom and pan behavior once
+    // Stage 0: Set up zoom with persistence
     const zoom = d3.zoom()
       .scaleExtent([0.1, 5]) // Set zoom limits
       .on('zoom', (event) => {
-        zoomLayer.attr('transform', event.transform); // Apply zoom and pan
+        zoomLayer.attr('transform', event.transform);
+        lastTransform.current = event.transform; // Persist transform
       });
 
-    svg.call(zoom); // Bind zoom behavior to the SVG element
+    svg.call(zoom);
+    
+    // Stage 0: Restore previous zoom if it exists
+    if (lastTransform.current) {
+      svg.call(zoom.transform, lastTransform.current);
+    }
 
     // Custom node color function based on type and word_type
 
@@ -303,7 +335,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode]);
+  }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode, logGraphMetrics]);
 
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
