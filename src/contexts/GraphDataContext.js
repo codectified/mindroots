@@ -143,7 +143,7 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
     const rootNodeId = node?.id;
     
-    // Check if this root is already expanded (has connected word nodes)
+    // Check currently displayed words connected to this root
     const connectedWordIds = new Set();
     graphData.links.forEach(link => {
       const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
@@ -157,12 +157,13 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
       }
     });
     
-    const isExpanded = connectedWordIds.size > 0;
-    console.log(`Root ${rootNodeId} expansion status: ${isExpanded ? 'expanded' : 'collapsed'}, connected words: ${connectedWordIds.size}`);
+    const currentlyDisplayedWords = connectedWordIds.size;
+    console.log(`Root ${rootNodeId} currently displaying: ${currentlyDisplayedWords} words`);
     
-    if (isExpanded) {
-      // COLLAPSE: Remove connected words and their links
-      console.log('Collapsing root - removing connected words');
+    // Simple threshold logic: collapse if more than 2 words are displayed
+    if (currentlyDisplayedWords > 2) {
+      // COLLAPSE: More than 2 words displayed, so collapse them
+      console.log('Collapsing root - more than 2 words are currently displayed');
       
       setGraphData(prev => ({
         nodes: prev.nodes.filter(n => !connectedWordIds.has(n?.id)),
@@ -175,11 +176,11 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
         })
       }));
       
-      return; // Exit early - no expansion needed
+      return; // Exit early - collapse complete
     }
     
-    // EXPAND: Root is not expanded, proceed with normal expansion
-    console.log('Expanding root - fetching words');
+    // EXPAND: Either no words or 2 or fewer words displayed, expand to show more
+    console.log('Expanding root - fetching more words');
     const options = { L1, L2, limit: 100 };
     
     // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
@@ -250,7 +251,7 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
     const formNodeId = node?.id;
     
-    // Check if this form is already expanded (has connected word nodes)
+    // Check currently displayed words connected to this form
     const connectedWordIds = new Set();
     graphData.links.forEach(link => {
       const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
@@ -264,12 +265,13 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
       }
     });
     
-    const isExpanded = connectedWordIds.size > 0;
-    console.log(`Form ${formNodeId} expansion status: ${isExpanded ? 'expanded' : 'collapsed'}, connected words: ${connectedWordIds.size}`);
+    const currentlyDisplayedWords = connectedWordIds.size;
+    console.log(`Form ${formNodeId} currently displaying: ${currentlyDisplayedWords} words`);
     
-    if (isExpanded) {
-      // COLLAPSE: Remove connected words and their links
-      console.log('Collapsing form - removing connected words');
+    // Simple threshold logic: collapse if more than 2 words are displayed
+    if (currentlyDisplayedWords > 2) {
+      // COLLAPSE: More than 2 words displayed, so collapse them
+      console.log('Collapsing form - more than 2 words are currently displayed');
       
       setGraphData(prev => ({
         nodes: prev.nodes.filter(n => !connectedWordIds.has(n?.id)),
@@ -282,11 +284,11 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
         })
       }));
       
-      return; // Exit early - no expansion needed
+      return; // Exit early - collapse complete
     }
     
-    // EXPAND: Form is not expanded, proceed with normal expansion
-    console.log('Expanding form - fetching words');
+    // EXPAND: Either no words or 2 or fewer words displayed, expand to show more
+    console.log('Expanding form - fetching more words');
     const options = { L1, L2, limit };
     
     // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
