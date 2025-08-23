@@ -178,7 +178,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
       {/* Node inspector */}
       {nodeInspectorData && (
         <NodeInspector
-          data={nodeInspectorData}
+          nodeData={nodeInspectorData}
           onClose={handleCloseInspector}
         />
       )}
