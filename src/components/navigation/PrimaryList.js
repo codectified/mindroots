@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { fetchQuranItems, fetchQuranItemsRange, fetchAyaCount, fetchCorpusItems, fetchPoetryItems, fetchProseItems } from '../../services/apiService';
+import { fetchQuranItemsRange, fetchAyaCount, fetchCorpusItems, fetchPoetryItems } from '../../services/apiService';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated rendering component
@@ -81,7 +81,7 @@ const PrimaryList = () => {
     };
   
     fetchData();
-  }, [corpusId, surah, aya, ayahsPerPage, L1, L2]);
+  }, [corpusId, surah, aya, ayahsPerPage, L1, L2, ayaCount]);
 
   useEffect(() => {
     if (corpusId === '2') { // Fetch Aya count when Surah changes (for Quran)
