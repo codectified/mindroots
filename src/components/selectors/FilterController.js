@@ -25,7 +25,6 @@ const FilterController = () => {
     phrase: '#FFCCCC',
     verb: '#FF6666',
     noun: '#CC0000',
-    unclassified: '#660000',
     form: '#007bff',
   };
 
@@ -33,7 +32,6 @@ const FilterController = () => {
     phrase: '#000000', // Black for all word nodes in ontological mode
     verb: '#000000',
     noun: '#000000',
-    unclassified: '#000000',
     form: '#007bff', // Form nodes always blue
   };
 
@@ -51,7 +49,7 @@ const FilterController = () => {
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        {['phrase', 'verb', 'noun', 'unclassified'].map((type) => (
+        {['phrase', 'verb', 'noun'].map((type) => (
           <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
             <input
               type="checkbox"
