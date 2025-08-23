@@ -7,7 +7,7 @@ export const FilterProvider = ({ children }) => {
   
   // Default word types selected
   const [filterWordTypes, setFilterWordTypes] = useState([
-    'phrase', 'verb', 'noun', 'unclassified',
+    'phrase', 'verb', 'noun',
   ]); // All selected by default
   const [hideFormNodes, setHideFormNodes] = useState(false); // Form nodes shown by default in both modes
 
