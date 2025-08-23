@@ -1,15 +1,12 @@
-import React, { useState, useCallback } from 'react';
+import React, { useCallback } from 'react';
 import { getNodeColor } from '../utils/nodeColoring';
 import InfoBubble from '../layout/InfoBubble';
 import NodeContextMenu from './NodeContextMenu';
 import NodeInspector from './NodeInspector';
-import { useLanguage } from '../../contexts/LanguageContext';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 
 const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeInfoBubble }) => {
-  const [expandedNodes, setExpandedNodes] = useState({});
-  const { L1, L2 } = useLanguage();
   const { isAdvancedMode } = useAdvancedMode();
   const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
 
@@ -181,7 +178,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
       {/* Node inspector */}
       {nodeInspectorData && (
         <NodeInspector
-          data={nodeInspectorData}
+          nodeData={nodeInspectorData}
           onClose={handleCloseInspector}
         />
       )}

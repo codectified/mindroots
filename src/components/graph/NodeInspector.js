@@ -69,7 +69,6 @@ const NodeInspector = ({ nodeData, onClose }) => {
               {Object.entries(properties).map(([key, prop]) => (
                 <div key={key} className="property-row">
                   <div className="property-key">{key}</div>
-                  <div className="property-type">{prop.type}</div>
                   <div className="property-value">
                     {formatPropertyValue(prop)}
                   </div>
