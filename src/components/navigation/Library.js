@@ -9,7 +9,6 @@ const ArticlesAndReferences = () => {
   const { handleSelectCorpus } = useCorpus(); // Use context to store the selected corpus
   const { L1, L2 } = useLanguage(); // Get L1 and L2 from context
   const [corpora, setCorpora] = useState([]);
-  const [, setAvailableLanguages] = useState(['arabic', 'english']); // Default languages
 
   useEffect(() => {
     const fetchCorporaData = async () => {
@@ -17,13 +16,6 @@ const ArticlesAndReferences = () => {
         const data = await fetchCorpora();
         setCorpora(data);
 
-        if (data.length > 0) {
-          const sampleCorpus = data[0];
-          const languages = ['arabic', 'english'];
-          if (sampleCorpus.transliteration) languages.push('transliteration');
-          if (sampleCorpus.sem) languages.push('sem');
-          setAvailableLanguages(languages);
-        }
       } catch (error) {
         console.error('Error fetching corpora:', error);
       }
