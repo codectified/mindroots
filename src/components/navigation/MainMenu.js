@@ -10,8 +10,9 @@ import {
 import { 
   faInstagram, 
   faLinkedin, 
-  faYoutube 
-} from '@fortawesome/free-brands-svg-icons'; // Import YouTube icon
+  faYoutube,
+  faGithub
+} from '@fortawesome/free-brands-svg-icons'; // Import social media icons
 
 const MainMenu = () => {
   const navigate = useNavigate();
@@ -74,6 +75,9 @@ const MainMenu = () => {
           </a>
           <a href="https://www.https://www.youtube.com/@codectified" target="_blank" rel="noopener noreferrer" className="social-icon">
             <FontAwesomeIcon icon={faYoutube} />
+          </a>
+          <a href="https://github.com/codectified/mindroots" target="_blank" rel="noopener noreferrer" className="social-icon">
+            <FontAwesomeIcon icon={faGithub} />
           </a>
         </div>
       </div>
