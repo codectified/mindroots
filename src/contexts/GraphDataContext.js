@@ -374,7 +374,7 @@ const handleWordToCorpusItemExpansion = async (node, L1, L2, contextFilter, posi
       throw new Error('Invalid response format from expandGraph');
     }
 
-    const { nodes: rawNodes, links: newLinks, info } = result;
+    const { nodes: rawNodes, links: newLinks } = result;
     
     // Handle empty results - no InfoBubble needed
     if (rawNodes.length === 0) {
