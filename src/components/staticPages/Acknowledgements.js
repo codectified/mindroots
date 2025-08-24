@@ -35,7 +35,7 @@ const Acknowledgements = () => {
           (morphology and syntax) has been foundational to this project.
         </p>
         <p style={{ fontStyle: 'italic' }}>
-          In memoriam: Dr. Kais Dukes — may his reward work continue to benefit learners and researchers.
+          In memoriam: Dr. Kais Dukes — may his work continue to benefit learners and researchers.
         </p>
       </section>
 
@@ -85,7 +85,7 @@ const Acknowledgements = () => {
       <section>
         <h3>Special Mentions</h3>
         <p>
-          <strong>Lisa J White & Dr. Mohamed Shaltout —</strong> Author and Illustrator of           <a href="https://aucpress.com/9789774169779/" target="_blank" rel="noopener noreferrer">
+          <strong>Lisa J. White & Dr. Mahmoud Shaltout —</strong> Author and Illustrator of           <a href="https://aucpress.com/9789774169779/" target="_blank" rel="noopener noreferrer">
             Rooted in the Body
           </a>, a wonderful and inspiring resource on Arabic morphology very much in the spirit of this work and its related research.
         </p>
