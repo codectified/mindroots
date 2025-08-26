@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState, useCallback, useMemo } from 'react';
 import { useWordShade } from '../../contexts/WordShadeContext';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
@@ -13,8 +13,30 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const [simulation, setSimulation] = useState(null);
   
   // Stage 0: Layout mode and zoom persistence
-  const [layoutMode, setLayoutMode] = useState('force'); // 'force' | 'computed'
+  const [layoutMode] = useState('force'); // 'force' | 'computed'
+  const [enableOrbitalMode, setEnableOrbitalMode] = useState(false); // Stage 2: Feature flag
   const lastTransform = useRef(null); // Persist zoom transform
+
+  // Stage 2: Orbital positioning configuration (memoized to prevent re-renders)
+  const ORBITAL_CONFIG = useMemo(() => ({
+    anchors: {
+      root: { x: 0.65, y: 0.45 },  // RIGHT side anchor
+      form: { x: 0.35, y: 0.45 }   // LEFT side anchor (will be distributed for multiple forms)
+    },
+    wedges: {
+      root: { min: -60, max: 60 },     // Upward-starting RIGHT wedge
+      form: { min: 120, max: 240 }     // Upward-starting LEFT wedge
+    },
+    orbits: {
+      verbs: { inner: 140, outer: 240 }, // Push verbs further out to avoid collisions
+      nouns: { inner: 290, outer: 450 }  // Push nouns even further out
+    },
+    packing: {
+      ringSpacingMultiplier: 2.5,  // Dramatically more space between rings
+      marginPx: 45,                // Much larger margins for labels + breathing room
+      minAngularSeparation: 25     // Minimum degrees between nodes in same ring
+    }
+  }), []);
 
   const { isAdvancedMode } = useAdvancedMode();
   const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
@@ -102,6 +124,201 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     
     return anchors;
   }, []);
+
+  // Stage 2: Orbital positioning helpers
+  const getNodeRadius = useCallback((node) => {
+    if (node.type === 'word') {
+      if (node.dataSize === 0) return 1;
+      return Math.max(4, Math.min(12, Math.log(node.dataSize || 1) * 2));
+    }
+    return 10;
+  }, []);
+
+  const shouldUseOrbitalPositioning = useCallback((data) => {
+    // Use orbital positioning when we have clear parent-child relationships
+    // For now, enable it when we have both root/form nodes and word nodes
+    const hasRootOrForm = data.nodes.some(n => n.type === 'root' || n.type === 'form');
+    const hasWords = data.nodes.some(n => n.type === 'word');
+    return enableOrbitalMode && hasRootOrForm && hasWords;
+  }, [enableOrbitalMode]);
+
+  const buildParentChildMap = useCallback((nodes, links) => {
+    const parentMap = new Map(); // childId -> parentNode
+    
+    links.forEach(link => {
+      const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
+      const targetId = typeof link.target === 'object' ? link.target.id : link.target;
+      
+      // Find the actual node objects
+      const sourceNode = nodes.find(n => n.id === sourceId);
+      const targetNode = nodes.find(n => n.id === targetId);
+      
+      if (sourceNode && targetNode) {
+        // Root/Form -> Word relationships
+        if ((sourceNode.type === 'root' || sourceNode.type === 'form') && targetNode.type === 'word') {
+          parentMap.set(targetId, sourceNode);
+        }
+      }
+    });
+    
+    return parentMap;
+  }, []);
+
+  const computeOrbitalPositions = useCallback((data, width, height) => {
+    if (!shouldUseOrbitalPositioning(data)) {
+      return new Map(); // Return empty map if not using orbital positioning
+    }
+
+    const parentChildMap = buildParentChildMap(data.nodes, data.links);
+    const positionMap = new Map(); // nodeId -> {x, y, ...metadata}
+    
+    // Group words by parent and POS type
+    const groupedNodes = new Map(); // "parentId:posType" -> [nodes]
+    
+    data.nodes.forEach(node => {
+      if (node.type === 'word') {
+        const parent = parentChildMap.get(node.id);
+        if (parent) {
+          const wordType = node.word_type || 'noun';
+          const key = `${parent.id}:${wordType}`;
+          
+          if (!groupedNodes.has(key)) {
+            groupedNodes.set(key, []);
+          }
+          groupedNodes.get(key).push(node);
+        }
+      } else if (node.type === 'root' || node.type === 'form') {
+        // Position anchor nodes with special handling for multiple forms
+        const config = ORBITAL_CONFIG;
+        const baseAnchor = config.anchors[node.type];
+        
+        if (node.type === 'form') {
+          // Count total form nodes and distribute them vertically
+          const formNodes = data.nodes.filter(n => n.type === 'form');
+          const formIndex = formNodes.findIndex(f => f.id === node.id);
+          const totalForms = formNodes.length;
+          
+          let yOffset = 0;
+          if (totalForms > 1) {
+            // Distribute forms vertically around the base anchor
+            const spacing = 0.15; // 15% of height between forms
+            const totalSpacing = (totalForms - 1) * spacing;
+            const startY = baseAnchor.y - (totalSpacing / 2);
+            yOffset = (startY + formIndex * spacing) - baseAnchor.y;
+          }
+          
+          positionMap.set(node.id, {
+            x: baseAnchor.x * width,
+            y: (baseAnchor.y + yOffset) * height,
+            isAnchor: true,
+            formIndex: formIndex
+          });
+        } else {
+          // Root nodes use base anchor
+          positionMap.set(node.id, {
+            x: baseAnchor.x * width,
+            y: baseAnchor.y * height,
+            isAnchor: true
+          });
+        }
+      }
+    });
+    
+    // Sort each group deterministically and calculate orbital positions
+    groupedNodes.forEach((nodes, key) => {
+      const [parentId, posType] = key.split(':');
+      const parent = data.nodes.find(n => n.id === parentId);
+      
+      if (!parent) return;
+      
+      // Sort nodes deterministically
+      const sortedNodes = [...nodes].sort((a, b) => (a.id || '').localeCompare(b.id || ''));
+      
+      const config = ORBITAL_CONFIG;
+      
+      // Get the actual positioned anchor for this parent (important for distributed forms)
+      const parentPosition = positionMap.get(parent.id);
+      const anchor = parentPosition ? 
+        { x: parentPosition.x, y: parentPosition.y } :
+        {
+          x: config.anchors[parent.type].x * width,
+          y: config.anchors[parent.type].y * height
+        };
+      
+      const isVerb = posType === 'verb';
+      const orbit = isVerb ? config.orbits.verbs : config.orbits.nouns;
+      const wedge = config.wedges[parent.type];
+      const wedgeSpan = wedge.max - wedge.min;
+      
+      // Special handling for small node counts
+      if (sortedNodes.length === 1) {
+        // Single node: place at a nice angle, not horizontally
+        const singleNodeAngle = parent.type === 'root' ? -20 : 200; // Slight upward angle
+        const singleNodeRadius = isVerb ? orbit.inner : orbit.inner + 50; // Modest distance
+        const angle = singleNodeAngle * (Math.PI / 180);
+        
+        const x = anchor.x + Math.cos(angle) * singleNodeRadius;
+        const y = anchor.y + Math.sin(angle) * singleNodeRadius;
+        
+        positionMap.set(sortedNodes[0].id, {
+          x, y, angle: singleNodeAngle, ring: 0,
+          orbit: isVerb ? 'verbs' : 'nouns',
+          parent: parent.type
+        });
+        return; // Skip the rest of the ring packing logic
+      }
+
+      // Calculate ring parameters with dramatically increased label-aware spacing
+      const maxNodeDiameter = Math.max(...sortedNodes.map(n => getNodeRadius(n) * 2));
+      const labelSpaceEstimate = 80; // Larger estimate for label + halo space
+      const totalNodeSpace = maxNodeDiameter + labelSpaceEstimate + config.packing.marginPx;
+      const ringSpacing = config.packing.ringSpacingMultiplier * totalNodeSpace;
+      const radiusRange = orbit.outer - orbit.inner;
+      const numRings = Math.max(1, Math.floor(radiusRange / ringSpacing));
+      
+      // Distribute nodes more evenly across rings
+      const nodesPerRing = Math.ceil(sortedNodes.length / numRings);
+      
+      // Position each node in its ring
+      sortedNodes.forEach((node, index) => {
+        const ringIndex = Math.floor(index / nodesPerRing);
+        const radius = orbit.inner + (ringIndex * ringSpacing);
+        
+        const positionInRing = index % nodesPerRing;
+        const currentRingSize = Math.min(nodesPerRing, sortedNodes.length - ringIndex * nodesPerRing);
+        
+        // STRICT wedge boundary enforcement - never allow overflow
+        const edgePadding = 10; // Degrees of padding from wedge edges  
+        const wedgeUsable = wedgeSpan - (edgePadding * 2);
+        const maxAngularStep = wedgeUsable / Math.max(1, currentRingSize);
+        
+        // Force nodes to fit within wedge, even if they're crowded
+        const angularStep = Math.min(
+          config.packing.minAngularSeparation, // Preferred spacing
+          maxAngularStep // Maximum allowed to stay in wedge
+        );
+        
+        const startAngle = wedge.min + edgePadding;
+        const angle = (startAngle + (positionInRing * angularStep)) * (Math.PI / 180);
+        
+        // Double-check: clamp angle to never exceed wedge boundaries
+        const minAngleRad = (wedge.min + edgePadding) * (Math.PI / 180);
+        const maxAngleRad = (wedge.max - edgePadding) * (Math.PI / 180);
+        const clampedAngle = Math.max(minAngleRad, Math.min(maxAngleRad, angle));
+        
+        const x = anchor.x + Math.cos(clampedAngle) * radius;
+        const y = anchor.y + Math.sin(clampedAngle) * radius;
+        
+        positionMap.set(node.id, {
+          x, y, angle: clampedAngle * (180 / Math.PI), ring: ringIndex, 
+          orbit: isVerb ? 'verbs' : 'nouns',
+          parent: parent.type
+        });
+      });
+    });
+    
+    return positionMap;
+  }, [ORBITAL_CONFIG, getNodeRadius, shouldUseOrbitalPositioning, buildParentChildMap]);
 
   // Enhanced click handler that checks for advanced mode
   const handleNodeClick = useCallback((event, d) => {
@@ -206,32 +423,66 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .range([4, 12]) // Small nodes start at 4px, largest ones capped at 12px
       .clamp(true); // Ensure that sizes stay within the range
 
-    // Set up the force simulation with adjusted charge and link forces
+    // Stage 2: Conditional orbital positioning setup
+    const orbitalPositions = computeOrbitalPositions(data, width, height);
+    const useOrbital = orbitalPositions.size > 0;
+    
+    if (useOrbital) {
+      console.log('🌌 Using orbital positioning for', orbitalPositions.size, 'nodes');
+      
+      // Apply orbital positions to nodes
+      data.nodes.forEach(node => {
+        const orbitalPos = orbitalPositions.get(node.id);
+        if (orbitalPos) {
+          node.fx = orbitalPos.x; // Fix positions
+          node.fy = orbitalPos.y;
+          node.orbitalData = orbitalPos; // Store metadata
+        }
+      });
+    } else {
+      // Clear any fixed positions for force simulation
+      data.nodes.forEach(node => {
+        node.fx = null;
+        node.fy = null;
+        node.orbitalData = null;
+      });
+    }
+
+    // Set up the force simulation with conditional behavior
     const newSimulation = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links)
         .id(d => d.id)
-        .distance(50) // Adjusted to spread nodes farther apart
+        .distance(useOrbital ? 30 : 50) // Shorter links in orbital mode
       )
       .force('charge', d3.forceManyBody()
-        .strength(d => d.type === 'word' ? -350 * sizeScale(d.dataSize) : -100)
+        .strength(d => {
+          if (useOrbital && d.fx !== null) return 0; // No charge for fixed orbital nodes
+          return d.type === 'word' ? -350 * sizeScale(d.dataSize) : -100;
+        })
       )
-      .force('center', d3.forceCenter(width / 2, height / 2))
-      .force('x', d3.forceX(d => {
+      .force('center', useOrbital ? null : d3.forceCenter(width / 2, height / 2))
+      .force('x', useOrbital ? null : d3.forceX(d => {
         if (d.type === 'corpusitem') return width / 2;
         if (d.type === 'form') return width / 4;
         if (d.type === 'root') return (3 * width) / 4;;
         if (d.type === 'word') return width / 2;
         return width / 2;
       }).strength(1))
-      .force('y', d3.forceY(d => {
+      .force('y', useOrbital ? null : d3.forceY(d => {
         if (d.type === 'corpusitem') return height / 9; // Shift up
         if (d.type === 'form' || d.type === 'root') return height / 3; // Shift up
         if (d.type === 'word') return height / 2; // Shift up
         return height / 3; // Default to a higher position
       }).strength(1))
-      .force('collide', d3.forceCollide(d => d.type === 'word' ? sizeScale(d.dataSize) + 15 : 50)) // Sets collision radius: 'word' nodes vary based on size; others have fixed radius (10).
-      .alphaDecay(0.02) // Alpha decay for stability
-      .velocityDecay(0.992); // Adjusted velocity decay
+      .force('collide', d3.forceCollide(d => {
+        if (d.type === 'word') {
+          // Much larger collision radius for word nodes to account for labels
+          return sizeScale(d.dataSize) + 35; // Increased from 20 to 35
+        }
+        return 70; // Increased collision space for anchor nodes too
+      }))
+      .alphaDecay(useOrbital ? 0.05 : 0.02) // Gentler settling in orbital mode
+      .velocityDecay(useOrbital ? 0.9 : 0.992); // Even stronger damping for smoother movement
 
     // Append links with enhanced styling based on relationship type
     const link = zoomLayer.append('g')
@@ -460,10 +711,32 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       window.removeEventListener('resize', handleResize);
       if (newSimulation) newSimulation.stop();
     };
-  }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode, logGraphMetrics, computeLabelAnchor, separateLabels]);
+  }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode, logGraphMetrics, computeLabelAnchor, separateLabels, computeOrbitalPositions, buildParentChildMap, getNodeRadius, shouldUseOrbitalPositioning]); // Note: 'simulation' excluded to prevent infinite re-renders
 
   return (
     <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
+      {/* Stage 2: Temporary orbital mode toggle for testing */}
+      <div style={{ 
+        position: 'absolute', 
+        top: '10px', 
+        left: '10px', 
+        zIndex: 1001,
+        background: 'rgba(0,0,0,0.7)',
+        color: 'white',
+        padding: '8px 12px',
+        borderRadius: '6px',
+        fontSize: '12px'
+      }}>
+        <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+          <input 
+            type="checkbox" 
+            checked={enableOrbitalMode} 
+            onChange={(e) => setEnableOrbitalMode(e.target.checked)}
+          />
+          🌌 Orbital Mode (Stage 2)
+        </label>
+      </div>
+      
       <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
       
       
