@@ -28,8 +28,9 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       form: { min: 120, max: 240 }     // Upward-starting LEFT wedge
     },
     orbits: {
-      verbs: { inner: 120, outer: 200 }, // Restore closer, tighter spacing like form nodes had
-      nouns: { inner: 250, outer: 350 }  // Keep noun distances for potential future use
+      verbs: { inner: 120, outer: 200 },   // Innermost: verbs
+      nouns: { inner: 230, outer: 330 },   // Middle: nouns  
+      phrases: { inner: 360, outer: 460 }  // Outermost: phrases
     },
     packing: {
       ringSpacingMultiplier: 2.0,  // Moderate space between rings
@@ -256,9 +257,18 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       // Select orbit based on parent type and grouping
       let orbit;
       if (parent.type === 'root') {
-        // Root nodes: Use POS-based orbital separation
-        const isVerb = groupType === 'verb';
-        orbit = isVerb ? config.orbits.verbs : config.orbits.nouns;
+        // Root nodes: Use POS-based orbital separation (verbs/nouns/phrases)
+        switch (groupType) {
+          case 'verb':
+            orbit = config.orbits.verbs;   // Innermost
+            break;
+          case 'phrase':
+            orbit = config.orbits.phrases; // Outermost
+            break;
+          default: // 'noun' and anything else
+            orbit = config.orbits.nouns;   // Middle
+            break;
+        }
       } else {
         // Form nodes: All words use inner orbit (verbs band)
         orbit = config.orbits.verbs;
@@ -276,9 +286,16 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         const x = anchor.x + Math.cos(angle) * singleNodeRadius;
         const y = anchor.y + Math.sin(angle) * singleNodeRadius;
         
-        const orbitName = parent.type === 'root' ? 
-          (groupType === 'verb' ? 'verbs' : 'nouns') : 
-          'all_words';
+        let orbitName;
+        if (parent.type === 'root') {
+          switch (groupType) {
+            case 'verb': orbitName = 'verbs'; break;
+            case 'phrase': orbitName = 'phrases'; break;
+            default: orbitName = 'nouns'; break;
+          }
+        } else {
+          orbitName = 'all_words';
+        }
         
         positionMap.set(sortedNodes[0].id, {
           x, y, angle: singleNodeAngle, ring: 0,
@@ -329,9 +346,16 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         const x = anchor.x + Math.cos(clampedAngle) * radius;
         const y = anchor.y + Math.sin(clampedAngle) * radius;
         
-        const orbitName = parent.type === 'root' ? 
-          (groupType === 'verb' ? 'verbs' : 'nouns') : 
-          'all_words';
+        let orbitName;
+        if (parent.type === 'root') {
+          switch (groupType) {
+            case 'verb': orbitName = 'verbs'; break;
+            case 'phrase': orbitName = 'phrases'; break;
+            default: orbitName = 'nouns'; break;
+          }
+        } else {
+          orbitName = 'all_words';
+        }
         
         positionMap.set(node.id, {
           x, y, angle: clampedAngle * (180 / Math.PI), ring: ringIndex, 
