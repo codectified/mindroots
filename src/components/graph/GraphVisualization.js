@@ -28,13 +28,13 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       form: { min: 120, max: 240 }     // Upward-starting LEFT wedge
     },
     orbits: {
-      verbs: { inner: 140, outer: 240 }, // Push verbs further out to avoid collisions
-      nouns: { inner: 290, outer: 450 }  // Push nouns even further out
+      verbs: { inner: 120, outer: 200 }, // Restore closer, tighter spacing like form nodes had
+      nouns: { inner: 250, outer: 350 }  // Keep noun distances for potential future use
     },
     packing: {
-      ringSpacingMultiplier: 2.5,  // Dramatically more space between rings
-      marginPx: 45,                // Much larger margins for labels + breathing room
-      minAngularSeparation: 25     // Minimum degrees between nodes in same ring
+      ringSpacingMultiplier: 2.0,  // Moderate space between rings
+      marginPx: 30,                // Reasonable margins for labels
+      minAngularSeparation: 15     // More reasonable angular separation
     }
   }), []);
 
@@ -179,8 +179,16 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       if (node.type === 'word') {
         const parent = parentChildMap.get(node.id);
         if (parent) {
-          const wordType = node.word_type || 'noun';
-          const key = `${parent.id}:${wordType}`;
+          // Different logic for root vs form nodes
+          let key;
+          if (parent.type === 'root') {
+            // Root nodes: Separate by POS (verbs inner orbit, nouns outer orbit)
+            const wordType = node.word_type || 'noun';
+            key = `${parent.id}:${wordType}`;
+          } else {
+            // Form nodes: All words together (this was working perfectly)
+            key = `${parent.id}:all_words`;
+          }
           
           if (!groupedNodes.has(key)) {
             groupedNodes.set(key, []);
@@ -226,7 +234,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     
     // Sort each group deterministically and calculate orbital positions
     groupedNodes.forEach((nodes, key) => {
-      const [parentId, posType] = key.split(':');
+      const [parentId, groupType] = key.split(':');
       const parent = data.nodes.find(n => n.id === parentId);
       
       if (!parent) return;
@@ -245,8 +253,16 @@ const GraphVisualization = ({ data, onNodeClick }) => {
           y: config.anchors[parent.type].y * height
         };
       
-      const isVerb = posType === 'verb';
-      const orbit = isVerb ? config.orbits.verbs : config.orbits.nouns;
+      // Select orbit based on parent type and grouping
+      let orbit;
+      if (parent.type === 'root') {
+        // Root nodes: Use POS-based orbital separation
+        const isVerb = groupType === 'verb';
+        orbit = isVerb ? config.orbits.verbs : config.orbits.nouns;
+      } else {
+        // Form nodes: All words use inner orbit (verbs band)
+        orbit = config.orbits.verbs;
+      }
       const wedge = config.wedges[parent.type];
       const wedgeSpan = wedge.max - wedge.min;
       
@@ -254,15 +270,19 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       if (sortedNodes.length === 1) {
         // Single node: place at a nice angle, not horizontally
         const singleNodeAngle = parent.type === 'root' ? -20 : 200; // Slight upward angle
-        const singleNodeRadius = isVerb ? orbit.inner : orbit.inner + 50; // Modest distance
+        const singleNodeRadius = orbit.inner; // Use inner orbit distance
         const angle = singleNodeAngle * (Math.PI / 180);
         
         const x = anchor.x + Math.cos(angle) * singleNodeRadius;
         const y = anchor.y + Math.sin(angle) * singleNodeRadius;
         
+        const orbitName = parent.type === 'root' ? 
+          (groupType === 'verb' ? 'verbs' : 'nouns') : 
+          'all_words';
+        
         positionMap.set(sortedNodes[0].id, {
           x, y, angle: singleNodeAngle, ring: 0,
-          orbit: isVerb ? 'verbs' : 'nouns',
+          orbit: orbitName,
           parent: parent.type
         });
         return; // Skip the rest of the ring packing logic
@@ -309,9 +329,13 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         const x = anchor.x + Math.cos(clampedAngle) * radius;
         const y = anchor.y + Math.sin(clampedAngle) * radius;
         
+        const orbitName = parent.type === 'root' ? 
+          (groupType === 'verb' ? 'verbs' : 'nouns') : 
+          'all_words';
+        
         positionMap.set(node.id, {
           x, y, angle: clampedAngle * (180 / Math.PI), ring: ringIndex, 
-          orbit: isVerb ? 'verbs' : 'nouns',
+          orbit: orbitName,
           parent: parent.type
         });
       });
