@@ -45,21 +45,13 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const getOrganizedProperties = (properties) => {
     const entries = Object.entries(properties);
     
-    // Define priority order for better context when reviewing fields like wazn
+    // Simple priority order as requested
     const priorityOrder = [
-      // Core identification
-      'arabic', 'english', 'sem', 'transliteration',
-      // Morphological context (important for wazn validation)
-      'wazn', 'form', 'itype', 'classification',
-      // Root context (helps with wazn judgment)
-      'root_id', 'word_type', 'subclass',
-      // Definitions (context for validation)
-      'definitions', 'english_2', 'spanish', 'urdu',
-      // Technical fields
-      'word_id', 'entry_id', 'key', 'node_type',
-      // Less critical fields at the end
-      'arabic_normalized', 'arabic_no_diacritics', 'bw_arabic', 'forms',
-      'sem_lang', 'dataSize'
+      'arabic', 'wazn', 'english', 'spanish', 'urdu', 'transliteration', 
+      'definitions', 'hanswehr_entry',
+      // IDs
+      'word_id', 'root_id', 'entry_id', 'item_id', 'corpus_id'
+      // Everything else will be added after
     ];
     
     // Separate into priority and remaining fields
