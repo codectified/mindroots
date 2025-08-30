@@ -1,11 +1,43 @@
-import React from 'react';
+import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
 import '../../styles/info-bubble.css';
 
-const NodeInspector = ({ nodeData, onClose }) => {
+const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   if (!nodeData) return null;
 
   const { nodeType, nodeId, properties, relationships, connectedNodeCounts, summary } = nodeData;
+  
+  // Navigation state
+  const [navigationStatus, setNavigationStatus] = useState({ loading: false, message: '' });
+  
+  // Target fields for validation and editing
+  const validationFields = ['english', 'wazn', 'spanish', 'urdu', 'classification'];
+  
+  // State for editable field values
+  const [fieldValues, setFieldValues] = useState(() => {
+    const initial = {};
+    validationFields.forEach(field => {
+      initial[field] = properties[field]?.value || '';
+    });
+    return initial;
+  });
+  
+  // State for validation counts
+  const [validationData, setValidationData] = useState(() => {
+    const initial = {};
+    validationFields.forEach(field => {
+      const validatedCount = properties[`${field}_validated_count`]?.value || 0;
+      const dislikeCount = properties[`${field}_dislike_count`]?.value || 0;
+      const locked = validatedCount >= 1;
+      
+      initial[field] = {
+        validated_count: validatedCount,
+        dislike_count: dislikeCount,
+        locked: locked
+      };
+    });
+    return initial;
+  });
 
   // Helper to format property values
   const formatPropertyValue = (prop) => {
@@ -32,13 +64,132 @@ const NodeInspector = ({ nodeData, onClose }) => {
   const getDirectionIcon = (direction) => {
     return direction === 'outgoing' ? '→' : '←';
   };
+  
+  // Handle field value changes
+  const handleFieldChange = (field, value) => {
+    if (!validationData[field].locked) {
+      setFieldValues(prev => ({ ...prev, [field]: value }));
+    }
+  };
+  
+  // Handle approve action
+  const handleApprove = async (field) => {
+    const value = fieldValues[field]?.trim();
+    
+    // Block approving empty values
+    if (!value) {
+      alert('Cannot approve an empty value.');
+      return;
+    }
+    
+    // Special validation for wazn field
+    if (field === 'wazn' && value) {
+      // Check if it contains at least one Arabic character
+      const hasArabic = /[\u0600-\u06FF]/.test(value);
+      if (!hasArabic) {
+        alert('Wazn field must contain at least one Arabic character.');
+        return;
+      }
+    }
+    
+    // Update validation counts - first approve locks the field
+    setValidationData(prev => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        validated_count: prev[field].validated_count + 1,
+        locked: true
+      }
+    }));
+    
+    // TODO: Make API call to update the backend
+    console.log(`Approved field ${field} with value: ${value}`);
+  };
+  
+  // Handle dislike action
+  const handleDislike = async (field) => {
+    // Update dislike count (never unlocks the field)
+    setValidationData(prev => ({
+      ...prev,
+      [field]: {
+        ...prev[field],
+        dislike_count: prev[field].dislike_count + 1
+      }
+    }));
+    
+    // TODO: Make API call to update the backend
+    console.log(`Disliked field ${field}`);
+  };
+  
+  // Handle navigation (previous/next)
+  const handleNavigation = async (direction) => {
+    if (!onNavigate) return;
+    
+    setNavigationStatus({ loading: true, message: '' });
+    
+    try {
+      const success = await onNavigate(nodeType, nodeId, direction, properties.corpus_id?.value);
+      if (!success) {
+        setNavigationStatus({ 
+          loading: false, 
+          message: `No ${direction === 'previous' ? 'previous' : 'next'} node found`
+        });
+        
+        // Clear message after 3 seconds
+        setTimeout(() => {
+          setNavigationStatus({ loading: false, message: '' });
+        }, 3000);
+      } else {
+        setNavigationStatus({ loading: false, message: '' });
+      }
+    } catch (error) {
+      console.error('Navigation error:', error);
+      setNavigationStatus({ 
+        loading: false, 
+        message: 'Navigation failed. Please try again.'
+      });
+      
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        setNavigationStatus({ loading: false, message: '' });
+      }, 3000);
+    }
+  };
 
   const inspector = (
     <div className="node-inspector-overlay">
       <div className="node-inspector">
         <div className="node-inspector-header">
-          <h2>{nodeType} Inspector</h2>
-          <div className="node-id">ID: {nodeId}</div>
+          <div className="header-left">
+            <h2>{nodeType} Inspector</h2>
+            <div className="node-id">ID: {nodeId}</div>
+          </div>
+          
+          {/* Navigation controls for Word and CorpusItem nodes */}
+          {(nodeType === 'Word' || nodeType === 'corpusitem') && onNavigate && (
+            <div className="navigation-controls">
+              {navigationStatus.message && (
+                <span className="navigation-message">{navigationStatus.message}</span>
+              )}
+              <button
+                onClick={() => handleNavigation('previous')}
+                disabled={navigationStatus.loading}
+                className="nav-button"
+                title={`Previous ${nodeType === 'Word' ? 'word' : 'item'}`}
+              >
+                ← Prev
+              </button>
+              <button
+                onClick={() => handleNavigation('next')}
+                disabled={navigationStatus.loading}
+                className="nav-button"
+                title={`Next ${nodeType === 'Word' ? 'word' : 'item'}`}
+              >
+                Next →
+              </button>
+            </div>
+          )}
+          
           <button className="close-button" onClick={onClose}>×</button>
         </div>
 
@@ -76,6 +227,70 @@ const NodeInspector = ({ nodeData, onClose }) => {
               ))}
             </div>
           </section>
+
+          {/* Validation Fields Section */}
+          {validationFields.some(field => properties[field]) && (
+            <section className="inspector-section">
+              <h3>Validate & Edit</h3>
+              <div className="validation-fields">
+                {validationFields.map(field => {
+                  // Only show fields that exist on the node
+                  if (!properties[field]) return null;
+                  
+                  const validation = validationData[field];
+                  const value = fieldValues[field];
+                  const isEmpty = !value?.trim();
+                  
+                  return (
+                    <div key={field} className="validation-field">
+                      <div className="validation-field-header">
+                        <label className="field-label">{field}</label>
+                        <div className="validation-counters">
+                          <span className="approve-counter">
+                            👍 {validation.validated_count}
+                          </span>
+                          <span className="dislike-counter">
+                            👎 {validation.dislike_count}
+                          </span>
+                          {validation.locked && <span className="locked-indicator">🔒</span>}
+                        </div>
+                      </div>
+                      
+                      <div className="validation-field-content">
+                        <input
+                          type="text"
+                          value={value}
+                          onChange={(e) => handleFieldChange(field, e.target.value)}
+                          disabled={validation.locked}
+                          className={`validation-input ${validation.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
+                          placeholder={`Enter ${field}...`}
+                        />
+                        
+                        <div className="validation-buttons">
+                          <button
+                            onClick={() => handleApprove(field)}
+                            disabled={isEmpty || validation.locked}
+                            className="approve-button"
+                            title={isEmpty ? "Cannot approve empty value" : (validation.locked ? "Field is locked" : "Approve this value")}
+                          >
+                            👍 Approve
+                          </button>
+                          
+                          <button
+                            onClick={() => handleDislike(field)}
+                            className="dislike-button"
+                            title="Dislike this field"
+                          >
+                            👎 Dislike
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </section>
+          )}
 
           {/* Relationships Section */}
           <section className="inspector-section">
