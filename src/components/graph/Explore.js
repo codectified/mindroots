@@ -491,7 +491,7 @@ const Explore = () => {
       {infoBubble && (
         <InfoBubble
           className="info-bubble"
-          definition={infoBubble.definition}
+          nodeData={infoBubble.nodeData || { definitions: infoBubble.definition }}
           onClose={() => setInfoBubble(null)}
           style={{
             top: `${infoBubble.position.y}px`,
