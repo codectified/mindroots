@@ -2504,8 +2504,225 @@ router.get('/inspect/:nodeType/:nodeId', async (req, res) => {
   }
 });
 
-// API Authentication middleware
-router.use(authenticateAPI);
+// Navigation endpoints for NodeInspector
+router.get('/navigate/word/:wordId/:direction', async (req, res) => {
+  const session = req.driver.session();
+  const { wordId, direction } = req.params;
+  
+  try {
+    const modifier = direction === 'next' ? 1 : -1;
+    const targetId = parseInt(wordId) + modifier;
+    
+    const query = `
+      MATCH (w:Word) 
+      WHERE toInteger(w.word_id) = $targetId
+      RETURN w
+    `;
+    
+    const result = await session.run(query, { targetId });
+    
+    if (result.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+    
+    // If word exists, get full inspection data
+    const wordNode = result.records[0].get('w');
+    const nodeId = wordNode.identity.toNumber();
+    
+    // Reuse the inspection logic
+    const inspectQuery = `
+      MATCH (n) WHERE id(n) = $nodeId
+      OPTIONAL MATCH (n)-[r]-(connected)
+      RETURN n, 
+             type(r) as rel_type, 
+             startNode(r) = n as is_outgoing,
+             count(connected) as rel_count,
+             labels(connected)[0] as connected_type
+    `;
+    
+    const inspectResult = await session.run(inspectQuery, { nodeId });
+    
+    // Process inspection data (same logic as /inspect endpoint)
+    const nodeData = inspectResult.records[0].get('n');
+    const nodeProperties = nodeData.properties;
+    const nodeLabels = nodeData.labels;
+    
+    const propertyKeys = Object.keys(nodeProperties);
+    const properties = {};
+    
+    propertyKeys.forEach(key => {
+      const value = nodeProperties[key];
+      const isEmpty = value === null || value === undefined || value === '';
+      properties[key] = {
+        value: convertIntegers(value),
+        type: isEmpty ? 'empty' : typeof value,
+        isEmpty
+      };
+    });
+    
+    // Process relationships
+    const relationshipMap = new Map();
+    const connectedNodeTypes = {};
+    
+    inspectResult.records.forEach(record => {
+      const relType = record.get('rel_type');
+      const isOutgoing = record.get('is_outgoing');
+      const relCount = record.get('rel_count');
+      const connectedType = record.get('connected_type');
+      
+      if (relType) {
+        const direction = isOutgoing ? 'outgoing' : 'incoming';
+        const key = `${relType}_${direction}`;
+        
+        if (!relationshipMap.has(key)) {
+          relationshipMap.set(key, { type: relType, direction, count: 0 });
+        }
+        relationshipMap.get(key).count += relCount.toNumber();
+        
+        if (connectedType) {
+          connectedNodeTypes[connectedType.toLowerCase()] = (connectedNodeTypes[connectedType.toLowerCase()] || 0) + relCount.toNumber();
+        }
+      }
+    });
+    
+    const relationships = Array.from(relationshipMap.values());
+    
+    res.json({
+      nodeData: {
+        nodeType: nodeLabels[0],
+        nodeId: convertIntegers(nodeProperties.word_id || nodeId),
+        properties,
+        relationships,
+        connectedNodeCounts: connectedNodeTypes,
+        summary: {
+          totalProperties: propertyKeys.length,
+          totalRelationships: relationships.reduce((sum, r) => sum + r.count, 0),
+          totalConnectedNodes: Object.values(connectedNodeTypes).reduce((sum, count) => sum + count, 0)
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error navigating word:', error);
+    res.status(500).json({ 
+      error: 'Error navigating to adjacent word',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
 
+router.get('/navigate/corpusitem/:corpusId/:itemId/:direction', async (req, res) => {
+  const session = req.driver.session();
+  const { corpusId, itemId, direction } = req.params;
+  
+  try {
+    const modifier = direction === 'next' ? 1 : -1;
+    const targetId = parseInt(itemId) + modifier;
+    
+    const query = `
+      MATCH (c:CorpusItem) 
+      WHERE toInteger(c.corpus_id) = $corpusId 
+      AND toInteger(c.item_id) = $targetId
+      RETURN c
+    `;
+    
+    const result = await session.run(query, { 
+      corpusId: parseInt(corpusId), 
+      targetId 
+    });
+    
+    if (result.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+    
+    // If corpus item exists, get full inspection data
+    const corpusItemNode = result.records[0].get('c');
+    const nodeId = corpusItemNode.identity.toNumber();
+    
+    // Reuse the inspection logic
+    const inspectQuery = `
+      MATCH (n) WHERE id(n) = $nodeId
+      OPTIONAL MATCH (n)-[r]-(connected)
+      RETURN n, 
+             type(r) as rel_type, 
+             startNode(r) = n as is_outgoing,
+             count(connected) as rel_count,
+             labels(connected)[0] as connected_type
+    `;
+    
+    const inspectResult = await session.run(inspectQuery, { nodeId });
+    
+    // Process inspection data (same logic as /inspect endpoint)
+    const nodeData = inspectResult.records[0].get('n');
+    const nodeProperties = nodeData.properties;
+    const nodeLabels = nodeData.labels;
+    
+    const propertyKeys = Object.keys(nodeProperties);
+    const properties = {};
+    
+    propertyKeys.forEach(key => {
+      const value = nodeProperties[key];
+      const isEmpty = value === null || value === undefined || value === '';
+      properties[key] = {
+        value: convertIntegers(value),
+        type: isEmpty ? 'empty' : typeof value,
+        isEmpty
+      };
+    });
+    
+    // Process relationships
+    const relationshipMap = new Map();
+    const connectedNodeTypes = {};
+    
+    inspectResult.records.forEach(record => {
+      const relType = record.get('rel_type');
+      const isOutgoing = record.get('is_outgoing');
+      const relCount = record.get('rel_count');
+      const connectedType = record.get('connected_type');
+      
+      if (relType) {
+        const direction = isOutgoing ? 'outgoing' : 'incoming';
+        const key = `${relType}_${direction}`;
+        
+        if (!relationshipMap.has(key)) {
+          relationshipMap.set(key, { type: relType, direction, count: 0 });
+        }
+        relationshipMap.get(key).count += relCount.toNumber();
+        
+        if (connectedType) {
+          connectedNodeTypes[connectedType.toLowerCase()] = (connectedNodeTypes[connectedType.toLowerCase()] || 0) + relCount.toNumber();
+        }
+      }
+    });
+    
+    const relationships = Array.from(relationshipMap.values());
+    
+    res.json({
+      nodeData: {
+        nodeType: nodeLabels[0],
+        nodeId: convertIntegers(nodeProperties.item_id || nodeId),
+        properties,
+        relationships,
+        connectedNodeCounts: connectedNodeTypes,
+        summary: {
+          totalProperties: propertyKeys.length,
+          totalRelationships: relationships.reduce((sum, r) => sum + r.count, 0),
+          totalConnectedNodes: Object.values(connectedNodeTypes).reduce((sum, count) => sum + count, 0)
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error navigating corpus item:', error);
+    res.status(500).json({ 
+      error: 'Error navigating to adjacent corpus item',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
 
 module.exports = router;

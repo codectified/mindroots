@@ -8,7 +8,7 @@ import { useGraphData } from '../../contexts/GraphDataContext';
 
 const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeInfoBubble }) => {
   const { isAdvancedMode } = useAdvancedMode();
-  const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
+  const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData, handleNodeNavigation } = useGraphData();
 
   // Collect all nodes that have semantic or text properties to display
   const displayableNodes = graphData.nodes.filter((n) => 
@@ -180,6 +180,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
         <NodeInspector
           nodeData={nodeInspectorData}
           onClose={handleCloseInspector}
+          onNavigate={handleNodeNavigation}
         />
       )}
     </>
