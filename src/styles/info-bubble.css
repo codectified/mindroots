@@ -522,7 +522,34 @@
 }
 
 /* ============================================
-   Validation Fields Section Styles
+   Integrated Validation in Properties Styles
+   ============================================ */
+
+.validation-property {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.validation-property .validation-input-container {
+  flex: 1;
+}
+
+.validation-property .validation-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.validation-property .validation-counters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 0.75rem;
+}
+
+/* ============================================
+   Legacy Validation Fields Section Styles
    ============================================ */
 
 .validation-table {
