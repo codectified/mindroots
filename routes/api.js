@@ -2510,16 +2510,26 @@ router.get('/navigate/word/:wordId/:direction', async (req, res) => {
   const { wordId, direction } = req.params;
   
   try {
-    const modifier = direction === 'next' ? 1 : -1;
-    const targetId = parseInt(wordId) + modifier;
+    const currentId = parseInt(wordId);
     
-    const query = `
-      MATCH (w:Word) 
-      WHERE toInteger(w.word_id) = $targetId
-      RETURN w
-    `;
+    // Find the next/previous word that actually exists
+    const query = direction === 'next' 
+      ? `
+        MATCH (w:Word) 
+        WHERE toInteger(w.word_id) > $currentId
+        RETURN w
+        ORDER BY toInteger(w.word_id) ASC
+        LIMIT 1
+      `
+      : `
+        MATCH (w:Word) 
+        WHERE toInteger(w.word_id) < $currentId
+        RETURN w
+        ORDER BY toInteger(w.word_id) DESC
+        LIMIT 1
+      `;
     
-    const result = await session.run(query, { targetId });
+    const result = await session.run(query, { currentId });
     
     if (result.records.length === 0) {
       return res.status(404).json({ error: 'Node not found' });
@@ -2618,19 +2628,31 @@ router.get('/navigate/corpusitem/:corpusId/:itemId/:direction', async (req, res)
   const { corpusId, itemId, direction } = req.params;
   
   try {
-    const modifier = direction === 'next' ? 1 : -1;
-    const targetId = parseInt(itemId) + modifier;
+    const currentId = parseInt(itemId);
+    const currentCorpusId = parseInt(corpusId);
     
-    const query = `
-      MATCH (c:CorpusItem) 
-      WHERE toInteger(c.corpus_id) = $corpusId 
-      AND toInteger(c.item_id) = $targetId
-      RETURN c
-    `;
+    // Find the next/previous corpus item that actually exists, scoped to corpus_id
+    const query = direction === 'next' 
+      ? `
+        MATCH (c:CorpusItem) 
+        WHERE toInteger(c.corpus_id) = $corpusId
+        AND toInteger(c.item_id) > $currentId
+        RETURN c
+        ORDER BY toInteger(c.item_id) ASC
+        LIMIT 1
+      `
+      : `
+        MATCH (c:CorpusItem) 
+        WHERE toInteger(c.corpus_id) = $corpusId
+        AND toInteger(c.item_id) < $currentId
+        RETURN c
+        ORDER BY toInteger(c.item_id) DESC
+        LIMIT 1
+      `;
     
     const result = await session.run(query, { 
-      corpusId: parseInt(corpusId), 
-      targetId 
+      corpusId: currentCorpusId, 
+      currentId 
     });
     
     if (result.records.length === 0) {
