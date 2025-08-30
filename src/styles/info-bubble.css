@@ -302,6 +302,13 @@
   justify-content: space-between;
 }
 
+.property-key > div:first-child {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
 /* Inline approve button in property key */
 .inline-approve {
   margin-left: 8px;
@@ -541,10 +548,17 @@
     gap: 6px;
   }
   
+  .property-key > div:first-child {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  
   .inline-approve {
-    margin-left: 0;
-    margin-top: 4px;
-    align-self: flex-start;
+    margin-left: 8px;
+    margin-top: 0;
+    flex-shrink: 0;
   }
   
   .relationship-row {
@@ -658,6 +672,9 @@
 
 .validation-input-container {
   flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .validation-input {
