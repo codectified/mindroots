@@ -1,6 +1,5 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import { useGraphData } from '../../contexts/GraphDataContext';
 import '../../styles/node-context-menu.css';
 
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
