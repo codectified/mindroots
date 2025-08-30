@@ -191,22 +191,22 @@
 }
 
 .nav-button {
-  background: #007bff;
+  background: #2c3e50;
   color: white;
-  border: 1px solid #0056b3;
+  border: 1px solid #1a252f;
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s;
-  font-weight: 500;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
 }
 
 .nav-button:hover:not(:disabled) {
-  background: #0056b3;
+  background: #34495e;
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
 }
 
 .nav-button:disabled {
