@@ -49,6 +49,41 @@
   transform: scale(1.2);
 }
 
+/* Collapsible sections for InfoBubble */
+.info-section {
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.info-section summary {
+  background-color: #f5f5f5;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px 4px 0 0;
+  user-select: none;
+}
+
+.info-section summary:hover {
+  background-color: #e8e8e8;
+}
+
+.info-section[open] summary {
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 4px 4px 0 0;
+}
+
+.info-content {
+  padding: 15px;
+  background-color: white;
+}
+
+.info-content p {
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Mobile styles for larger info bubble */
 @media (max-width: 768px) {
   .info-bubble {

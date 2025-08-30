@@ -261,11 +261,11 @@ const Search = () => {
       )}
 
       {/* InfoBubble */}
-{/* Only render the “global” InfoBubble when in graph mode */}
+{/* Only render the "global" InfoBubble when in graph mode */}
 {displayMode === 'graph' && infoBubble && (
   <InfoBubble
     className="info-bubble"
-    definition={infoBubble.definition}
+    nodeData={infoBubble.nodeData || { definitions: infoBubble.definition }}
     onClose={closeInfoBubble}
     style={{
       top: `${infoBubble.position.y}px`,
