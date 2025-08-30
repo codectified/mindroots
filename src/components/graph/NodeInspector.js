@@ -130,7 +130,20 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     setNavigationStatus({ loading: true, message: '' });
     
     try {
-      const success = await onNavigate(nodeType, nodeId, direction, properties.corpus_id?.value);
+      // Extract the actual numeric ID for different node types
+      let actualId;
+      if (nodeType === 'Word') {
+        actualId = properties.word_id?.value || nodeId;
+      } else if (nodeType === 'corpusitem' || nodeType === 'CorpusItem') {
+        actualId = properties.item_id?.value || nodeId;
+      } else {
+        actualId = nodeId;
+      }
+      
+      // Extract corpus_id for corpus items
+      const corpusId = properties.corpus_id?.value;
+      
+      const success = await onNavigate(nodeType, actualId, direction, corpusId);
       if (!success) {
         setNavigationStatus({ 
           loading: false, 
@@ -234,7 +247,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           {validationFields.some(field => properties[field]) && (
             <section className="inspector-section">
               <h3>Validate & Edit</h3>
-              <div className="validation-fields">
+              <div className="validation-table">
                 {validationFields.map(field => {
                   // Only show fields that exist on the node
                   if (!properties[field]) return null;
@@ -244,46 +257,44 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                   const isEmpty = !value?.trim();
                   
                   return (
-                    <div key={field} className="validation-field">
-                      <div className="validation-field-header">
-                        <label className="field-label">{field}</label>
+                    <div key={field} className="validation-row">
+                      <div className="validation-key">
+                        <span className="field-name">{field}</span>
                         <div className="validation-counters">
-                          <span className="approve-counter">
-                            👍 {validation.validated_count}
-                          </span>
-                          <span className="dislike-counter">
-                            👎 {validation.dislike_count}
-                          </span>
+                          <span className="approve-counter">👍 {validation.validated_count}</span>
+                          <span className="dislike-counter">👎 {validation.dislike_count}</span>
                           {validation.locked && <span className="locked-indicator">🔒</span>}
                         </div>
                       </div>
                       
-                      <div className="validation-field-content">
-                        <input
-                          type="text"
-                          value={value}
-                          onChange={(e) => handleFieldChange(field, e.target.value)}
-                          disabled={validation.locked}
-                          className={`validation-input ${validation.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
-                          placeholder={`Enter ${field}...`}
-                        />
+                      <div className="validation-value">
+                        <div className="validation-input-container">
+                          <input
+                            type="text"
+                            value={value}
+                            onChange={(e) => handleFieldChange(field, e.target.value)}
+                            disabled={validation.locked}
+                            className={`validation-input ${validation.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
+                            placeholder={`Enter ${field}...`}
+                          />
+                        </div>
                         
-                        <div className="validation-buttons">
+                        <div className="validation-actions">
                           <button
                             onClick={() => handleApprove(field)}
                             disabled={isEmpty || validation.locked}
-                            className="approve-button"
+                            className="validation-action-btn approve-btn"
                             title={isEmpty ? "Cannot approve empty value" : (validation.locked ? "Field is locked" : "Approve this value")}
                           >
-                            👍 Approve
+                            👍
                           </button>
                           
                           <button
                             onClick={() => handleDislike(field)}
-                            className="dislike-button"
+                            className="validation-action-btn dislike-btn"
                             title="Dislike this field"
                           >
-                            👎 Dislike
+                            👎
                           </button>
                         </div>
                       </div>
