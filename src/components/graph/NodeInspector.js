@@ -8,7 +8,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const [navigationStatus, setNavigationStatus] = useState({ loading: false, message: '' });
   
   // Target fields for validation and editing
-  const validationFields = ['english', 'wazn', 'spanish', 'urdu', 'classification'];
+  const validationFields = ['english', 'wazn', 'spanish', 'urdu', 'classification', 'transliteration'];
   
   // State for editable field values
   const [fieldValues, setFieldValues] = useState(() => {
