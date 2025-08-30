@@ -157,6 +157,7 @@
   align-items: center;
   gap: 12px;
   flex: 1;
+  flex-wrap: wrap;
 }
 
 .node-inspector-header h2 {
@@ -192,24 +193,28 @@
 .nav-button {
   background: #007bff;
   color: white;
-  border: none;
+  border: 1px solid #0056b3;
   padding: 6px 12px;
   border-radius: 4px;
   font-size: 0.875rem;
   cursor: pointer;
   transition: all 0.2s;
   font-weight: 500;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .nav-button:hover:not(:disabled) {
   background: #0056b3;
   transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
 }
 
 .nav-button:disabled {
   background: #6c757d;
+  border-color: #6c757d;
   cursor: not-allowed;
   opacity: 0.6;
+  box-shadow: none;
 }
 
 .node-inspector-content {
