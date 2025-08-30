@@ -6,7 +6,6 @@ import '../../styles/node-context-menu.css';
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
-  const { corpusItemEntries, rootEntries } = useGraphData();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -74,15 +73,8 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
 
     switch (nodeType) {
       case 'root':
-        // Check if entry exists for this root
-        const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
-        const hasRootEntry = rootEntries[rootId] !== null && rootEntries[rootId] !== undefined;
-        
-        if (hasRootEntry) {
-          options.push({ label: 'Entry', action: 'root-entry' });
-        }
-        
         options.push(
+          { label: 'More info', action: 'more-info' },
           { label: 'Expand', action: 'expand' },
           { label: 'Collapse', action: 'collapse' },
           { label: 'Inspect Node', action: 'inspect' },
@@ -91,14 +83,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         break;
       case 'word':
         options.push(
-          { 
-            label: 'Entries', 
-            action: 'entries',
-            submenu: [
-              { label: 'Lane', action: 'lane-entry' },
-              { label: 'Hans Wehr', action: 'hanswehr-entry' }
-            ]
-          },
+          { label: 'More info', action: 'more-info' },
           { 
             label: 'Expand', 
             action: 'expand',
@@ -114,6 +99,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         break;
       case 'form':
         options.push(
+          { label: 'More info', action: 'more-info' },
           { label: 'Expand', action: 'expand' },
           { label: 'Collapse', action: 'collapse' },
           { label: 'Inspect Node', action: 'inspect' },
@@ -121,22 +107,15 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         );
         break;
       case 'corpusitem': // corpus item nodes
-        // Check if entry exists for this corpus item
-        const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
-        const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
-        const entryKey = `${corpusId}_${corpusItemId}`;
-        const hasEntry = corpusItemEntries[entryKey] !== null && corpusItemEntries[entryKey] !== undefined;
-        
-        if (hasEntry) {
-          options.push({ label: 'Entry', action: 'corpus-item-entry' });
-        }
         options.push(
+          { label: 'More info', action: 'more-info' },
           { label: 'Inspect Node', action: 'inspect' },
           { label: 'Report Issue', action: 'report' }
         );
         break;
       default:
         options.push(
+          { label: 'More info', action: 'more-info' },
           { label: 'Inspect Node', action: 'inspect' },
           { label: 'Report Issue', action: 'report' }
         );
