@@ -13,7 +13,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   const [simulation, setSimulation] = useState(null);
 
   const { isAdvancedMode } = useAdvancedMode();
-  const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData } = useGraphData();
+  const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData, handleNodeNavigation } = useGraphData();
   const { wordShadeMode } = useWordShade();
   const { showLinks, showLinkLabels } = useShowLinks();
 
@@ -325,6 +325,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         <NodeInspector
           nodeData={nodeInspectorData}
           onClose={handleCloseInspector}
+          onNavigate={handleNodeNavigation}
         />
       )}
     </div>
