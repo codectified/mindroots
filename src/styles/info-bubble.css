@@ -49,6 +49,41 @@
   transform: scale(1.2);
 }
 
+/* Collapsible sections for InfoBubble */
+.info-section {
+  margin-bottom: 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 4px;
+}
+
+.info-section summary {
+  background-color: #f5f5f5;
+  padding: 10px;
+  cursor: pointer;
+  font-weight: bold;
+  border-radius: 4px 4px 0 0;
+  user-select: none;
+}
+
+.info-section summary:hover {
+  background-color: #e8e8e8;
+}
+
+.info-section[open] summary {
+  border-bottom: 1px solid #e0e0e0;
+  border-radius: 4px 4px 0 0;
+}
+
+.info-content {
+  padding: 15px;
+  background-color: white;
+}
+
+.info-content p {
+  margin: 0;
+  line-height: 1.5;
+}
+
 /* Mobile styles for larger info bubble */
 @media (max-width: 768px) {
   .info-bubble {
@@ -112,8 +147,17 @@
   padding: 16px 20px;
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   position: relative;
+}
+
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex: 1;
+  flex-wrap: wrap;
 }
 
 .node-inspector-header h2 {
@@ -130,6 +174,47 @@
   font-size: 0.875rem;
   font-family: monospace;
   color: #6c757d;
+}
+
+/* Navigation Controls */
+.navigation-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.navigation-message {
+  font-size: 0.875rem;
+  color: #6c757d;
+  font-style: italic;
+  margin-right: 8px;
+}
+
+.nav-button {
+  background: #2c3e50 !important;
+  color: white !important;
+  border: 1px solid #1a252f !important;
+  padding: 6px 12px;
+  border-radius: 4px;
+  font-size: 0.875rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 600;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.nav-button:hover:not(:disabled) {
+  background: #34495e;
+  transform: translateY(-1px);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+}
+
+.nav-button:disabled {
+  background: #6c757d;
+  border-color: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+  box-shadow: none;
 }
 
 .node-inspector-content {
@@ -196,7 +281,7 @@
 
 .property-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 3fr;
+  grid-template-columns: 2fr 1fr 5fr;
   background: white;
   min-height: 44px;
 }
@@ -228,7 +313,8 @@
 .property-value {
   font-family: monospace;
   font-size: 0.9rem;
-  word-break: break-all;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .empty-value {
@@ -376,7 +462,10 @@
   background: #f8f9fa;
   border-top: 1px solid #dee2e6;
   padding: 16px 20px;
-  text-align: right;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
 }
 
 .close-button-footer {
@@ -392,6 +481,34 @@
 
 .close-button-footer:hover {
   background: #5a6268;
+}
+
+.save-changes-btn {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.save-changes-btn:hover:not(:disabled) {
+  background: #0056b3;
+}
+
+.save-changes-btn:disabled {
+  background: #6c757d;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.save-status-message {
+  font-size: 0.875rem;
+  color: #495057;
+  font-weight: 500;
+  flex: 1;
 }
 
 /* Mobile Responsiveness for Node Inspector */
@@ -437,5 +554,199 @@
   
   .connected-nodes-grid {
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+  }
+}
+
+/* ============================================
+   Integrated Validation in Properties Styles
+   ============================================ */
+
+.validation-property {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.validation-property .validation-input-container {
+  flex: 1;
+}
+
+.validation-property .validation-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ============================================
+   Legacy Validation Fields Section Styles
+   ============================================ */
+
+.validation-table {
+  display: grid;
+  gap: 1px;
+  background: #dee2e6;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.validation-row {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  background: white;
+  min-height: 60px;
+}
+
+.validation-key,
+.validation-value {
+  padding: 12px;
+  display: flex;
+  align-items: center;
+}
+
+.validation-key {
+  background: #f8f9fa;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.field-name {
+  font-weight: 500;
+  color: #2c3e50;
+  font-family: monospace;
+  font-size: 0.9rem;
+  text-transform: capitalize;
+}
+
+.validation-counters {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.approve-counter,
+.dislike-counter {
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 2px 4px;
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.approve-counter {
+  color: #6c757d;
+}
+
+.dislike-counter {
+  color: #6c757d;
+}
+
+.locked-indicator {
+  font-size: 0.9rem;
+  color: #6c757d;
+}
+
+.validation-value {
+  gap: 12px;
+  justify-content: space-between;
+}
+
+.validation-input-container {
+  flex: 1;
+}
+
+.validation-input {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: monospace;
+  transition: all 0.2s;
+}
+
+.validation-input:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
+}
+
+.validation-input.locked {
+  background-color: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-color: #dee2e6;
+}
+
+.validation-input.empty {
+  border-color: #ffc107;
+  background-color: #fff3cd;
+}
+
+.validation-actions {
+  display: flex;
+  gap: 4px;
+}
+
+.validation-action-btn {
+  min-width: 40px;
+  height: 32px;
+  padding: 4px 8px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.approve-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.approve-btn:hover:not(:disabled) {
+  background-color: #5a6268;
+  transform: scale(1.05);
+}
+
+.approve-btn:disabled {
+  background-color: #adb5bd;
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+.dislike-btn {
+  background-color: #6c757d;
+  color: white;
+}
+
+.dislike-btn:hover:not(:disabled) {
+  background-color: #5a6268;
+  transform: scale(1.05);
+}
+
+/* Mobile responsive validation fields */
+@media (max-width: 768px) {
+  .validation-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .validation-key {
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .validation-value {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+  
+  .validation-actions {
+    justify-content: center;
   }
 }

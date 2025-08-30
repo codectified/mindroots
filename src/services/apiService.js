@@ -545,3 +545,41 @@ export const inspectNode = async (nodeType, nodeId, corpusId = null) => {
     throw error;
   }
 };
+
+// Navigation functions for NodeInspector
+export const navigateToAdjacentNode = async (nodeType, nodeId, direction, corpusId = null) => {
+  try {
+    let url;
+    if (nodeType === 'Word' || nodeType === 'word') {
+      // For word nodes, navigate by word_id ±1
+      url = `/navigate/word/${nodeId}/${direction}`;
+    } else if (nodeType === 'corpusitem') {
+      // For corpus items, navigate by item_id ±1 scoped to corpus_id
+      if (!corpusId) {
+        throw new Error('Corpus ID required for corpus item navigation');
+      }
+      url = `/navigate/corpusitem/${corpusId}/${nodeId}/${direction}`;
+    } else {
+      throw new Error(`Navigation not supported for node type: ${nodeType}`);
+    }
+    
+    const response = await api.get(url);
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error navigating to adjacent node:', error);
+    throw error;
+  }
+};
+
+// Update validation fields for a node
+export const updateValidationFields = async (nodeType, nodeId, updates) => {
+  try {
+    const response = await api.post(`/update-validation/${nodeType}/${nodeId}`, {
+      updates
+    });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error updating validation fields:', error);
+    throw error;
+  }
+};

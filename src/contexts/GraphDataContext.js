@@ -7,7 +7,8 @@ import {
   expandGraph,
   summarizeNodeContent,
   reportNodeIssue,
-  inspectNode
+  inspectNode,
+  navigateToAdjacentNode
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
 import { useFilter } from './FilterContext'; // Import the filter context
@@ -919,11 +920,94 @@ const handleContextMenuAction = async (action, node) => {
         });
         break;
       
+      case 'more-info':
+        // Fetch comprehensive node info for InfoBubble with collapsible sections
+        try {
+          let nodeInfoData = {};
+          
+          // Get node-specific ID
+          let nodeId;
+          switch (node.type) {
+            case 'word':
+              nodeId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+              // Fetch Lane and Hans Wehr entries for word nodes
+              try {
+                const laneEntry = await fetchLaneEntry(nodeId);
+                if (laneEntry) nodeInfoData.definitions = laneEntry;
+              } catch (error) {
+                console.error('Error fetching Lane entry:', error);
+              }
+              
+              try {
+                const hansWehrEntry = await fetchHansWehrEntry(nodeId);
+                if (hansWehrEntry) nodeInfoData.hanswehr_entry = hansWehrEntry;
+              } catch (error) {
+                console.error('Error fetching Hans Wehr entry:', error);
+              }
+              break;
+              
+            case 'root':
+              nodeId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+              // Check if root entry exists in cache
+              const cachedRootEntry = rootEntries[nodeId];
+              if (cachedRootEntry) {
+                nodeInfoData.entry = cachedRootEntry;
+              }
+              break;
+              
+            case 'corpusitem':
+              const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+              const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
+              const entryKey = `${corpusId}_${corpusItemId}`;
+              // Check if corpus item entry exists in cache
+              const cachedCorpusEntry = corpusItemEntries[entryKey];
+              if (cachedCorpusEntry) {
+                nodeInfoData.entry = cachedCorpusEntry;
+              }
+              break;
+              
+            default:
+              // For other node types, just include basic info
+              break;
+          }
+          
+          // Set the InfoBubble with the fetched data
+          setInfoBubble({
+            nodeData: nodeInfoData,
+            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+          });
+        } catch (error) {
+          console.error('Error fetching node info:', error);
+          setInfoBubble({
+            nodeData: null,
+            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+          });
+        }
+        break;
+      
       default:
         console.warn('Unknown action:', action);
     }
   } catch (error) {
     console.error('Error handling context menu action:', error);
+  }
+};
+
+// Handle navigation to adjacent nodes
+const handleNodeNavigation = async (nodeType, nodeId, direction, corpusId = null) => {
+  try {
+    const navigationResult = await navigateToAdjacentNode(nodeType, nodeId, direction, corpusId);
+    
+    if (navigationResult && navigationResult.nodeData) {
+      // Replace the current inspector data with the new node data
+      setNodeInspectorData(navigationResult.nodeData);
+      return true; // Success
+    } else {
+      return false; // No adjacent node found
+    }
+  } catch (error) {
+    console.error('Error navigating to adjacent node:', error);
+    throw error; // Let the component handle the error
   }
 };
 
@@ -946,7 +1030,8 @@ const handleContextMenuAction = async (action, node) => {
       rootEntries,
       handleContextMenuAction,
       nodeInspectorData,
-      setNodeInspectorData
+      setNodeInspectorData,
+      handleNodeNavigation
     }}>
       {children}
     </GraphDataContext.Provider>
