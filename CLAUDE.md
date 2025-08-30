@@ -441,7 +441,124 @@ After any changes:
 
 ---
 
-## 🔍 Node Inspector Feature (Latest)
+## 🎨 UI Overhaul & Validation System (August 30, 2025)
+
+### Complete Interface Redesign
+- **Branch**: `contextmenuoverhaul`
+- **Purpose**: Streamlined user experience with integrated validation workflow
+- **Status**: Production-ready, thoroughly tested
+
+### Key Changes
+
+#### **1. Context Menu Simplification**
+- **Before**: Complex "Entries" submenu with multiple options
+- **After**: Single "More info" action that opens InfoBubble
+- **Files**: `src/components/graph/NodeContextMenu.js`
+- **Result**: Cleaner, more intuitive right-click experience
+
+#### **2. InfoBubble Enhancement**
+- **Feature**: Collapsible sections for Lane, Hans Wehr, and Notes
+- **Implementation**: HTML `<details>` elements with custom styling
+- **Files**: `src/components/layout/InfoBubble.js`, `src/styles/info-bubble.css`
+- **Mobile**: Responsive design with touch-friendly interactions
+
+#### **3. Node Inspector Validation System**
+- **Core Feature**: Inline editing for 6 linguistic fields
+- **Editable Fields**: english, wazn, spanish, urdu, classification, transliteration
+- **Workflow**: Edit → Approve → Lock → Continue approving
+- **Backend**: Full persistence with spam protection
+
+#### **4. Navigation System**
+- **Arrow Navigation**: `←` and `→` buttons for Word and CorpusItem nodes
+- **Backend**: Robust sequencing queries handle ID gaps gracefully
+- **Position**: Located next to node ID in header for logical grouping
+- **Contrast**: Dark buttons with white arrows for visibility
+
+### Validation System Architecture
+
+#### **Frontend State Management**
+```javascript
+// Three key state objects in NodeInspector:
+fieldValues:     { wazn: "فَعَلَ", english: "to prepare" }
+validationData:  { wazn: { validated_count: 3, locked: true } }
+pendingUpdates:  { wazn: { value: "فَعَلَ", approve: true } }
+```
+
+#### **Backend Persistence**
+- **Endpoint**: `POST /update-validation/:nodeType/:nodeId`
+- **Database**: Updates node properties + creates Approval audit trail
+- **Security**: IP-based 24-hour spam protection per field
+- **Files**: `routes/api.js` (lines 2750-2862), `src/services/apiService.js`
+
+#### **Database Schema (Tested)**
+```cypher
+// Updated node with validation counter
+(:Word {
+  wazn: "فَعَلَ",
+  wazn_validated_count: 3,
+  english: "to prepare oneself"
+})
+
+// Approval audit trail
+-[:APPROVED_BY]->(:Approval {
+  field: "wazn",
+  ip: "192.168.1.1", 
+  timestamp: datetime(),
+  value: "فَعَلَ"
+})
+```
+
+### Property Display Order
+**Optimized for validation context:**
+1. `arabic` - Source text for reference
+2. `wazn` - Morphological pattern (EDITABLE 👍)
+3. `english` - English translation (EDITABLE 👍)
+4. `spanish` - Spanish translation (EDITABLE 👍)
+5. `urdu` - Urdu translation (EDITABLE 👍)
+6. `transliteration` - Romanization (EDITABLE 👍)
+7. `definitions` - Lane's Lexicon context
+8. `hanswehr_entry` - Hans Wehr context
+9. **IDs** - word_id, root_id, etc.
+10. **Technical fields** - Everything else
+
+### User Experience Flow
+1. **Context Menu**: Right-click → "More info" opens InfoBubble
+2. **InfoBubble**: Click sections to expand Lane/Hans Wehr definitions
+3. **Node Inspector**: "Inspect Node" shows full data with edit capabilities
+4. **Edit Fields**: Type in editable fields → "Save Changes" appears
+5. **Approve**: Click 👍 button → counter increments, field locks after first approval
+6. **Navigate**: Use ← → arrows to browse through words/corpus items
+7. **Save**: Click "Save Changes" → all updates persist to Neo4j database
+
+### Testing Commands (Localhost)
+```bash
+# Test validation update
+curl -X POST "http://localhost:5001/api/update-validation/word/16089" \
+     -H "Authorization: Bearer localhost-dev-key-123" \
+     -H "Content-Type: application/json" \
+     -d '{"updates": {"wazn": {"value": "فَعَلَ", "approve": true}}}'
+
+# Test navigation
+curl "http://localhost:5001/api/navigate/word/16089/next" \
+     -H "Authorization: Bearer localhost-dev-key-123"
+
+# Check approval audit trail
+curl -X POST "http://localhost:5001/api/execute-query" \
+     -H "Authorization: Bearer localhost-dev-key-123" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "MATCH (n:Word)-[:APPROVED_BY]->(a:Approval) WHERE n.word_id = 16089 RETURN a"}'
+```
+
+### Production Deployment Checklist
+1. **Switch API URL**: Comment localhost, uncomment production in `apiService.js`
+2. **Git Workflow**: Follow critical merge sequence (rebase master first!)
+3. **Build**: Use memory flags for 1GB server constraint
+4. **Test**: Verify validation system works with production API key
+5. **Monitor**: Check pm2 logs for any approval/navigation errors
+
+---
+
+## 🔍 Node Inspector Feature (Legacy Documentation)
 
 ### Feature Overview
 - **Date Added**: August 12, 2025
