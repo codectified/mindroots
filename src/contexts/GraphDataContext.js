@@ -7,7 +7,8 @@ import {
   expandGraph,
   summarizeNodeContent,
   reportNodeIssue,
-  inspectNode
+  inspectNode,
+  navigateToAdjacentNode
 } from '../services/apiService';
 import { useNodeLimit } from './NodeLimitContext'; 
 import { useFilter } from './FilterContext'; // Import the filter context
@@ -992,6 +993,24 @@ const handleContextMenuAction = async (action, node) => {
   }
 };
 
+// Handle navigation to adjacent nodes
+const handleNodeNavigation = async (nodeType, nodeId, direction, corpusId = null) => {
+  try {
+    const navigationResult = await navigateToAdjacentNode(nodeType, nodeId, direction, corpusId);
+    
+    if (navigationResult && navigationResult.nodeData) {
+      // Replace the current inspector data with the new node data
+      setNodeInspectorData(navigationResult.nodeData);
+      return true; // Success
+    } else {
+      return false; // No adjacent node found
+    }
+  } catch (error) {
+    console.error('Error navigating to adjacent node:', error);
+    throw error; // Let the component handle the error
+  }
+};
+
   return (
     <GraphDataContext.Provider value={{
       graphData: filteredGraphData,
@@ -1011,7 +1030,8 @@ const handleContextMenuAction = async (action, node) => {
       rootEntries,
       handleContextMenuAction,
       nodeInspectorData,
-      setNodeInspectorData
+      setNodeInspectorData,
+      handleNodeNavigation
     }}>
       {children}
     </GraphDataContext.Provider>
