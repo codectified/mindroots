@@ -276,7 +276,7 @@
 
 .property-row {
   display: grid;
-  grid-template-columns: 2fr 1fr 3fr;
+  grid-template-columns: 2fr 1fr 5fr;
   background: white;
   min-height: 44px;
 }
@@ -308,7 +308,8 @@
 .property-value {
   font-family: monospace;
   font-size: 0.9rem;
-  word-break: break-all;
+  word-break: break-word;
+  overflow-wrap: break-word;
 }
 
 .empty-value {
@@ -577,11 +578,11 @@
 }
 
 .approve-counter {
-  color: #28a745;
+  color: #6c757d;
 }
 
 .dislike-counter {
-  color: #dc3545;
+  color: #6c757d;
 }
 
 .locked-indicator {
@@ -645,28 +646,28 @@
 }
 
 .approve-btn {
-  background-color: #28a745;
+  background-color: #6c757d;
   color: white;
 }
 
 .approve-btn:hover:not(:disabled) {
-  background-color: #218838;
+  background-color: #5a6268;
   transform: scale(1.05);
 }
 
 .approve-btn:disabled {
-  background-color: #6c757d;
+  background-color: #adb5bd;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
 .dislike-btn {
-  background-color: #dc3545;
+  background-color: #6c757d;
   color: white;
 }
 
 .dislike-btn:hover:not(:disabled) {
-  background-color: #c82333;
+  background-color: #5a6268;
   transform: scale(1.05);
 }
 
