@@ -524,47 +524,55 @@
    Validation Fields Section Styles
    ============================================ */
 
-.validation-fields {
+.validation-table {
   display: grid;
-  gap: 20px;
+  gap: 1px;
+  background: #dee2e6;
+  border-radius: 6px;
+  overflow: hidden;
 }
 
-.validation-field {
-  border: 1px solid #e0e0e0;
-  border-radius: 8px;
-  padding: 16px;
-  background: #fafafa;
+.validation-row {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  background: white;
+  min-height: 60px;
 }
 
-.validation-field-header {
+.validation-key,
+.validation-value {
+  padding: 12px;
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
 }
 
-.field-label {
-  font-weight: 600;
+.validation-key {
+  background: #f8f9fa;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.field-name {
+  font-weight: 500;
   color: #2c3e50;
+  font-family: monospace;
+  font-size: 0.9rem;
   text-transform: capitalize;
-  font-size: 1rem;
 }
 
 .validation-counters {
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 8px;
 }
 
 .approve-counter,
 .dislike-counter {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
   font-weight: 500;
-  padding: 2px 6px;
-  border-radius: 12px;
+  padding: 2px 4px;
+  border-radius: 8px;
   background: rgba(255, 255, 255, 0.7);
 }
 
@@ -577,29 +585,33 @@
 }
 
 .locked-indicator {
-  font-size: 1.1rem;
+  font-size: 0.9rem;
   color: #6c757d;
 }
 
-.validation-field-content {
-  display: grid;
+.validation-value {
   gap: 12px;
+  justify-content: space-between;
+}
+
+.validation-input-container {
+  flex: 1;
 }
 
 .validation-input {
   width: 100%;
-  padding: 10px 12px;
-  border: 2px solid #e0e0e0;
-  border-radius: 6px;
-  font-size: 1rem;
-  font-family: inherit;
+  padding: 8px 10px;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  font-family: monospace;
   transition: all 0.2s;
 }
 
 .validation-input:focus {
   outline: none;
   border-color: #007bff;
-  box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.1);
 }
 
 .validation-input.locked {
@@ -614,69 +626,67 @@
   background-color: #fff3cd;
 }
 
-.validation-buttons {
+.validation-actions {
   display: flex;
-  gap: 12px;
+  gap: 4px;
 }
 
-.approve-button,
-.dislike-button {
-  padding: 8px 16px;
+.validation-action-btn {
+  width: 32px;
+  height: 32px;
   border: none;
-  border-radius: 6px;
-  font-size: 0.875rem;
-  font-weight: 500;
+  border-radius: 4px;
   cursor: pointer;
   transition: all 0.2s;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  font-size: 0.875rem;
 }
 
-.approve-button {
+.approve-btn {
   background-color: #28a745;
   color: white;
 }
 
-.approve-button:hover:not(:disabled) {
+.approve-btn:hover:not(:disabled) {
   background-color: #218838;
-  transform: translateY(-1px);
+  transform: scale(1.05);
 }
 
-.approve-button:disabled {
+.approve-btn:disabled {
   background-color: #6c757d;
   cursor: not-allowed;
   opacity: 0.6;
 }
 
-.dislike-button {
+.dislike-btn {
   background-color: #dc3545;
   color: white;
 }
 
-.dislike-button:hover:not(:disabled) {
+.dislike-btn:hover:not(:disabled) {
   background-color: #c82333;
-  transform: translateY(-1px);
+  transform: scale(1.05);
 }
 
 /* Mobile responsive validation fields */
 @media (max-width: 768px) {
-  .validation-field-header {
+  .validation-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .validation-key {
+    border-bottom: 1px solid #e9ecef;
+  }
+  
+  .validation-value {
     flex-direction: column;
-    align-items: flex-start;
+    align-items: stretch;
     gap: 8px;
   }
   
-  .validation-counters {
-    align-self: flex-end;
-  }
-  
-  .validation-buttons {
-    flex-direction: column;
-  }
-  
-  .approve-button,
-  .dislike-button {
+  .validation-actions {
     justify-content: center;
   }
 }
