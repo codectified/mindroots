@@ -2761,8 +2761,8 @@ router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid node type' });
     }
     
-    // Get the node first to verify it exists
-    const nodeQuery = `MATCH (n:${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}) WHERE id(n) = $nodeId OR n.${nodeType}_id = $nodeId RETURN n`;
+    // Get the node first to verify it exists - use only the property-based lookup
+    const nodeQuery = `MATCH (n:${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}) WHERE n.${nodeType}_id = $nodeId RETURN n`;
     const nodeResult = await session.run(nodeQuery, { nodeId: parseInt(nodeId) });
     
     if (nodeResult.records.length === 0) {
