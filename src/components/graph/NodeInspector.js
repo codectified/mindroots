@@ -298,7 +298,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                   className="nav-button"
                   title={`Previous ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
                 >
-                  ← Prev
+                  ←
                 </button>
                 <button
                   onClick={() => handleNavigation('next')}
@@ -306,7 +306,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                   className="nav-button"
                   title={`Next ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
                 >
-                  Next →
+                  →
                 </button>
               </div>
             )}
