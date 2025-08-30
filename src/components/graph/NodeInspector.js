@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { updateValidationFields } from '../../services/apiService';
 import '../../styles/info-bubble.css';
@@ -40,6 +40,36 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const [hasChanges, setHasChanges] = useState(false);
   const [pendingUpdates, setPendingUpdates] = useState({});
   const [saveStatus, setSaveStatus] = useState({ saving: false, message: '' });
+
+  // Reset field states when nodeData changes (navigation)
+  useEffect(() => {
+    if (!nodeData || !nodeData.properties) return;
+    
+    // Reset field values to new node's data
+    const newFieldValues = {};
+    validationFields.forEach(field => {
+      newFieldValues[field] = nodeData.properties[field]?.value || '';
+    });
+    setFieldValues(newFieldValues);
+    
+    // Reset validation data to new node's data
+    const newValidationData = {};
+    validationFields.forEach(field => {
+      const validatedCount = nodeData.properties[`${field}_validated_count`]?.value || 0;
+      const locked = validatedCount >= 1;
+      
+      newValidationData[field] = {
+        validated_count: validatedCount,
+        locked: locked
+      };
+    });
+    setValidationData(newValidationData);
+    
+    // Clear any pending changes when navigating
+    setPendingUpdates({});
+    setHasChanges(false);
+    setSaveStatus({ saving: false, message: '' });
+  }, [nodeData]);
 
   if (!nodeData) return null;
 
@@ -347,20 +377,20 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                 
                 return (
                   <div key={key} className="property-row">
-                    <div className="property-key">{key}</div>
-                    <div className="property-type">
-                      {isValidatable ? (
-                        <button
-                          onClick={() => handleApprove(key)}
-                          disabled={isEmpty}
-                          className="validation-action-btn approve-btn"
-                          title={isEmpty ? "Cannot approve empty value" : "Approve this value"}
-                        >
-                          👍 {validation?.validated_count || 0}
-                        </button>
-                      ) : (
-                        prop.type
-                      )}
+                    <div className="property-key">
+                      <div>
+                        {key}
+                        {isValidatable && (
+                          <button
+                            onClick={() => handleApprove(key)}
+                            disabled={isEmpty}
+                            className="validation-action-btn approve-btn inline-approve"
+                            title={isEmpty ? "Cannot approve empty value" : "Approve this value"}
+                          >
+                            👍 {validation?.validated_count || 0}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="property-value">
                       {formatPropertyValue(prop, key)}
