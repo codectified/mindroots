@@ -285,32 +285,32 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           <div className="header-left">
             <h2>{nodeType} Inspector</h2>
             <div className="node-id">ID: {nodeId}</div>
+            
+            {/* Navigation controls for Word and CorpusItem nodes */}
+            {(nodeType === 'Word' || nodeType === 'word' || nodeType === 'corpusitem' || nodeType === 'CorpusItem') && onNavigate && (
+              <div className="navigation-controls">
+                {navigationStatus.message && (
+                  <span className="navigation-message">{navigationStatus.message}</span>
+                )}
+                <button
+                  onClick={() => handleNavigation('previous')}
+                  disabled={navigationStatus.loading}
+                  className="nav-button"
+                  title={`Previous ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
+                >
+                  ← Prev
+                </button>
+                <button
+                  onClick={() => handleNavigation('next')}
+                  disabled={navigationStatus.loading}
+                  className="nav-button"
+                  title={`Next ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
+                >
+                  Next →
+                </button>
+              </div>
+            )}
           </div>
-          
-          {/* Navigation controls for Word and CorpusItem nodes */}
-          {(nodeType === 'Word' || nodeType === 'word' || nodeType === 'corpusitem' || nodeType === 'CorpusItem') && onNavigate && (
-            <div className="navigation-controls">
-              {navigationStatus.message && (
-                <span className="navigation-message">{navigationStatus.message}</span>
-              )}
-              <button
-                onClick={() => handleNavigation('previous')}
-                disabled={navigationStatus.loading}
-                className="nav-button"
-                title={`Previous ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
-              >
-                ← Prev
-              </button>
-              <button
-                onClick={() => handleNavigation('next')}
-                disabled={navigationStatus.loading}
-                className="nav-button"
-                title={`Next ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
-              >
-                Next →
-              </button>
-            </div>
-          )}
           
           <button className="close-button" onClick={onClose}>×</button>
         </div>
