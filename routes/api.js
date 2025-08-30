@@ -2504,8 +2504,352 @@ router.get('/inspect/:nodeType/:nodeId', async (req, res) => {
   }
 });
 
-// API Authentication middleware
-router.use(authenticateAPI);
+// Navigation endpoints for NodeInspector
+router.get('/navigate/word/:wordId/:direction', async (req, res) => {
+  const session = req.driver.session();
+  const { wordId, direction } = req.params;
+  
+  try {
+    const currentId = parseInt(wordId);
+    
+    // Find the next/previous word that actually exists
+    const query = direction === 'next' 
+      ? `
+        MATCH (w:Word) 
+        WHERE toInteger(w.word_id) > $currentId
+        RETURN w
+        ORDER BY toInteger(w.word_id) ASC
+        LIMIT 1
+      `
+      : `
+        MATCH (w:Word) 
+        WHERE toInteger(w.word_id) < $currentId
+        RETURN w
+        ORDER BY toInteger(w.word_id) DESC
+        LIMIT 1
+      `;
+    
+    const result = await session.run(query, { currentId });
+    
+    if (result.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+    
+    // If word exists, get full inspection data
+    const wordNode = result.records[0].get('w');
+    const nodeId = wordNode.identity.toNumber();
+    
+    // Reuse the inspection logic
+    const inspectQuery = `
+      MATCH (n) WHERE id(n) = $nodeId
+      OPTIONAL MATCH (n)-[r]-(connected)
+      RETURN n, 
+             type(r) as rel_type, 
+             startNode(r) = n as is_outgoing,
+             count(connected) as rel_count,
+             labels(connected)[0] as connected_type
+    `;
+    
+    const inspectResult = await session.run(inspectQuery, { nodeId });
+    
+    // Process inspection data (same logic as /inspect endpoint)
+    const nodeData = inspectResult.records[0].get('n');
+    const nodeProperties = nodeData.properties;
+    const nodeLabels = nodeData.labels;
+    
+    const propertyKeys = Object.keys(nodeProperties);
+    const properties = {};
+    
+    propertyKeys.forEach(key => {
+      const value = nodeProperties[key];
+      const isEmpty = value === null || value === undefined || value === '';
+      properties[key] = {
+        value: convertIntegers(value),
+        type: isEmpty ? 'empty' : typeof value,
+        isEmpty
+      };
+    });
+    
+    // Process relationships
+    const relationshipMap = new Map();
+    const connectedNodeTypes = {};
+    
+    inspectResult.records.forEach(record => {
+      const relType = record.get('rel_type');
+      const isOutgoing = record.get('is_outgoing');
+      const relCount = record.get('rel_count');
+      const connectedType = record.get('connected_type');
+      
+      if (relType) {
+        const direction = isOutgoing ? 'outgoing' : 'incoming';
+        const key = `${relType}_${direction}`;
+        
+        if (!relationshipMap.has(key)) {
+          relationshipMap.set(key, { type: relType, direction, count: 0 });
+        }
+        relationshipMap.get(key).count += relCount.toNumber();
+        
+        if (connectedType) {
+          connectedNodeTypes[connectedType.toLowerCase()] = (connectedNodeTypes[connectedType.toLowerCase()] || 0) + relCount.toNumber();
+        }
+      }
+    });
+    
+    const relationships = Array.from(relationshipMap.values());
+    
+    res.json({
+      nodeData: {
+        nodeType: nodeLabels[0],
+        nodeId: convertIntegers(nodeProperties.word_id || nodeId),
+        properties,
+        relationships,
+        connectedNodeCounts: connectedNodeTypes,
+        summary: {
+          totalProperties: propertyKeys.length,
+          totalRelationships: relationships.reduce((sum, r) => sum + r.count, 0),
+          totalConnectedNodes: Object.values(connectedNodeTypes).reduce((sum, count) => sum + count, 0)
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error navigating word:', error);
+    res.status(500).json({ 
+      error: 'Error navigating to adjacent word',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
 
+router.get('/navigate/corpusitem/:corpusId/:itemId/:direction', async (req, res) => {
+  const session = req.driver.session();
+  const { corpusId, itemId, direction } = req.params;
+  
+  try {
+    const currentId = parseInt(itemId);
+    const currentCorpusId = parseInt(corpusId);
+    
+    // Find the next/previous corpus item that actually exists, scoped to corpus_id
+    const query = direction === 'next' 
+      ? `
+        MATCH (c:CorpusItem) 
+        WHERE toInteger(c.corpus_id) = $corpusId
+        AND toInteger(c.item_id) > $currentId
+        RETURN c
+        ORDER BY toInteger(c.item_id) ASC
+        LIMIT 1
+      `
+      : `
+        MATCH (c:CorpusItem) 
+        WHERE toInteger(c.corpus_id) = $corpusId
+        AND toInteger(c.item_id) < $currentId
+        RETURN c
+        ORDER BY toInteger(c.item_id) DESC
+        LIMIT 1
+      `;
+    
+    const result = await session.run(query, { 
+      corpusId: currentCorpusId, 
+      currentId 
+    });
+    
+    if (result.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+    
+    // If corpus item exists, get full inspection data
+    const corpusItemNode = result.records[0].get('c');
+    const nodeId = corpusItemNode.identity.toNumber();
+    
+    // Reuse the inspection logic
+    const inspectQuery = `
+      MATCH (n) WHERE id(n) = $nodeId
+      OPTIONAL MATCH (n)-[r]-(connected)
+      RETURN n, 
+             type(r) as rel_type, 
+             startNode(r) = n as is_outgoing,
+             count(connected) as rel_count,
+             labels(connected)[0] as connected_type
+    `;
+    
+    const inspectResult = await session.run(inspectQuery, { nodeId });
+    
+    // Process inspection data (same logic as /inspect endpoint)
+    const nodeData = inspectResult.records[0].get('n');
+    const nodeProperties = nodeData.properties;
+    const nodeLabels = nodeData.labels;
+    
+    const propertyKeys = Object.keys(nodeProperties);
+    const properties = {};
+    
+    propertyKeys.forEach(key => {
+      const value = nodeProperties[key];
+      const isEmpty = value === null || value === undefined || value === '';
+      properties[key] = {
+        value: convertIntegers(value),
+        type: isEmpty ? 'empty' : typeof value,
+        isEmpty
+      };
+    });
+    
+    // Process relationships
+    const relationshipMap = new Map();
+    const connectedNodeTypes = {};
+    
+    inspectResult.records.forEach(record => {
+      const relType = record.get('rel_type');
+      const isOutgoing = record.get('is_outgoing');
+      const relCount = record.get('rel_count');
+      const connectedType = record.get('connected_type');
+      
+      if (relType) {
+        const direction = isOutgoing ? 'outgoing' : 'incoming';
+        const key = `${relType}_${direction}`;
+        
+        if (!relationshipMap.has(key)) {
+          relationshipMap.set(key, { type: relType, direction, count: 0 });
+        }
+        relationshipMap.get(key).count += relCount.toNumber();
+        
+        if (connectedType) {
+          connectedNodeTypes[connectedType.toLowerCase()] = (connectedNodeTypes[connectedType.toLowerCase()] || 0) + relCount.toNumber();
+        }
+      }
+    });
+    
+    const relationships = Array.from(relationshipMap.values());
+    
+    res.json({
+      nodeData: {
+        nodeType: nodeLabels[0],
+        nodeId: convertIntegers(nodeProperties.item_id || nodeId),
+        properties,
+        relationships,
+        connectedNodeCounts: connectedNodeTypes,
+        summary: {
+          totalProperties: propertyKeys.length,
+          totalRelationships: relationships.reduce((sum, r) => sum + r.count, 0),
+          totalConnectedNodes: Object.values(connectedNodeTypes).reduce((sum, count) => sum + count, 0)
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error navigating corpus item:', error);
+    res.status(500).json({ 
+      error: 'Error navigating to adjacent corpus item',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
+// Update validation fields for a node
+router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
+  const session = req.driver.session();
+  const { nodeType, nodeId } = req.params;
+  const { updates } = req.body; // { field_name: { value: "new_value", approve: true }, ... }
+  const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+  
+  try {
+    // Validate node type
+    const validNodeTypes = ['word', 'root', 'form', 'corpusitem'];
+    if (!validNodeTypes.includes(nodeType.toLowerCase())) {
+      return res.status(400).json({ error: 'Invalid node type' });
+    }
+    
+    // Get the node first to verify it exists - use only the property-based lookup
+    const nodeQuery = `MATCH (n:${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}) WHERE n.${nodeType}_id = $nodeId RETURN n`;
+    const nodeResult = await session.run(nodeQuery, { nodeId: parseInt(nodeId) });
+    
+    if (nodeResult.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+    
+    const node = nodeResult.records[0].get('n');
+    const actualNodeId = node.identity.toNumber();
+    
+    // Process each field update sequentially to avoid transaction conflicts
+    for (const [fieldName, updateData] of Object.entries(updates)) {
+      if (updateData.value !== undefined) {
+        // Update field value
+        const updateValueQuery = `
+          MATCH (n) WHERE id(n) = $nodeId
+          SET n.${fieldName} = $value
+          RETURN n
+        `;
+        await session.run(updateValueQuery, { 
+          nodeId: actualNodeId, 
+          value: updateData.value 
+        });
+      }
+      
+      if (updateData.approve === true) {
+        // Check for recent approval from same IP (basic spam protection)
+        const recentApprovalQuery = `
+          MATCH (n)-[:APPROVED_BY]->(approval:Approval)
+          WHERE id(n) = $nodeId 
+          AND approval.field = $fieldName 
+          AND approval.ip = $ip 
+          AND approval.timestamp > datetime() - duration('PT24H')
+          RETURN approval LIMIT 1
+        `;
+        
+        const recentResult = await session.run(recentApprovalQuery, {
+          nodeId: actualNodeId,
+          fieldName: fieldName,
+          ip: clientIP
+        });
+        
+        if (recentResult.records.length > 0) {
+          continue; // Skip this approval - IP already approved in last 24h
+        }
+        
+        // Create approval record and increment counter
+        const approvalQuery = `
+          MATCH (n) WHERE id(n) = $nodeId
+          CREATE (n)-[:APPROVED_BY]->(approval:Approval {
+            field: $fieldName,
+            ip: $ip,
+            timestamp: datetime(),
+            value: $value
+          })
+          SET n.${fieldName}_validated_count = COALESCE(n.${fieldName}_validated_count, 0) + 1
+          RETURN n
+        `;
+        
+        await session.run(approvalQuery, {
+          nodeId: actualNodeId,
+          fieldName: fieldName,
+          ip: clientIP,
+          value: updateData.value || ''
+        });
+      }
+    }
+    
+    // Return updated node data
+    const finalQuery = `MATCH (n) WHERE id(n) = $nodeId RETURN n`;
+    const finalResult = await session.run(finalQuery, { nodeId: actualNodeId });
+    const updatedNode = finalResult.records[0].get('n').properties;
+    
+    res.json({
+      success: true,
+      message: `Updated ${Object.keys(updates).length} fields`,
+      nodeData: convertIntegers(updatedNode)
+    });
+    
+  } catch (error) {
+    console.error('Error updating validation fields:', error);
+    res.status(500).json({ 
+      error: 'Error updating validation fields',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
 
 module.exports = router;

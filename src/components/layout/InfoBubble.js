@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
 import '../../styles/info-bubble.css'; // ensure your CSS is here
 
-export default function InfoBubble({ definition, onClose, style }) {
+export default function InfoBubble({ nodeData, onClose, style }) {
   const infoBubbleRef = useRef(null);
   const [centeredStyle, setCenteredStyle] = useState(style);
 
@@ -69,7 +69,46 @@ export default function InfoBubble({ definition, onClose, style }) {
           </button>
         </div>
         <div className="info-bubble-content">
-          {definition ? <p>{definition}</p> : <p>No definition available.</p>}
+          {nodeData ? (
+            <>
+              {/* Lane Dictionary Section */}
+              {nodeData.definitions && (
+                <details className="info-section">
+                  <summary>Lane</summary>
+                  <div className="info-content">
+                    <p>{nodeData.definitions}</p>
+                  </div>
+                </details>
+              )}
+              
+              {/* Hans Wehr Dictionary Section */}
+              {nodeData.hanswehr_entry && (
+                <details className="info-section">
+                  <summary>Hans Wehr</summary>
+                  <div className="info-content">
+                    <p>{nodeData.hanswehr_entry}</p>
+                  </div>
+                </details>
+              )}
+              
+              {/* Notes Section */}
+              {nodeData.entry && (
+                <details className="info-section">
+                  <summary>Notes</summary>
+                  <div className="info-content">
+                    <p>{nodeData.entry}</p>
+                  </div>
+                </details>
+              )}
+              
+              {/* Show message if no data available */}
+              {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.entry && (
+                <p>No additional information available.</p>
+              )}
+            </>
+          ) : (
+            <p>No data available.</p>
+          )}
         </div>
       </div>
     </Draggable>
