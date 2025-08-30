@@ -77,8 +77,64 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     return [...priorityFields, ...remainingFields];
   };
 
-  // Helper to format property values
-  const formatPropertyValue = (prop) => {
+  // Helper to check if a field is editable/validatable
+  const isValidationField = (fieldName) => {
+    return validationFields.includes(fieldName);
+  };
+
+  // Helper to format property values with optional validation controls
+  const formatPropertyValue = (prop, fieldName) => {
+    const isValidatable = isValidationField(fieldName);
+    const validation = isValidatable ? validationData[fieldName] : null;
+    const fieldValue = isValidatable ? fieldValues[fieldName] : null;
+
+    if (isValidatable) {
+      const isEmpty = !fieldValue?.trim();
+      
+      return (
+        <div className="validation-property">
+          <div className="validation-input-container">
+            <input
+              type="text"
+              value={fieldValue || ''}
+              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+              disabled={validation?.locked}
+              className={`validation-input ${validation?.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
+              placeholder={`Enter ${fieldName}...`}
+            />
+          </div>
+          
+          <div className="validation-actions">
+            <button
+              onClick={() => handleApprove(fieldName)}
+              disabled={isEmpty || validation?.locked}
+              className="validation-action-btn approve-btn"
+              title={isEmpty ? "Cannot approve empty value" : (validation?.locked ? "Field is locked" : "Approve this value")}
+            >
+              👍
+            </button>
+            
+            {validation?.locked && (
+              <button
+                onClick={() => handleDislike(fieldName)}
+                className="validation-action-btn dislike-btn"
+                title="Dislike this field"
+              >
+                👎
+              </button>
+            )}
+          </div>
+          
+          <div className="validation-counters">
+            <span className="approve-counter">👍 {validation?.validated_count || 0}</span>
+            <span className="dislike-counter">👎 {validation?.dislike_count || 0}</span>
+            {validation?.locked && <span className="locked-indicator">🔒</span>}
+          </div>
+        </div>
+      );
+    }
+
+    // Regular property display
     if (prop.isEmpty) {
       return <span className="empty-value">Empty</span>;
     }
@@ -273,76 +329,12 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                   <div className="property-key">{key}</div>
                   <div className="property-type">{prop.type}</div>
                   <div className="property-value">
-                    {formatPropertyValue(prop)}
+                    {formatPropertyValue(prop, key)}
                   </div>
                 </div>
               ))}
             </div>
           </section>
-
-          {/* Validation Fields Section */}
-          {validationFields.some(field => properties[field]) && (
-            <section className="inspector-section">
-              <h3>Validate & Edit</h3>
-              <div className="validation-table">
-                {validationFields.map(field => {
-                  // Only show fields that exist on the node
-                  if (!properties[field]) return null;
-                  
-                  const validation = validationData[field];
-                  const value = fieldValues[field];
-                  const isEmpty = !value?.trim();
-                  
-                  return (
-                    <div key={field} className="validation-row">
-                      <div className="validation-key">
-                        <span className="field-name">{field}</span>
-                        <div className="validation-counters">
-                          <span className="approve-counter">👍 {validation.validated_count}</span>
-                          <span className="dislike-counter">👎 {validation.dislike_count}</span>
-                          {validation.locked && <span className="locked-indicator">🔒</span>}
-                        </div>
-                      </div>
-                      
-                      <div className="validation-value">
-                        <div className="validation-input-container">
-                          <input
-                            type="text"
-                            value={value}
-                            onChange={(e) => handleFieldChange(field, e.target.value)}
-                            disabled={validation.locked}
-                            className={`validation-input ${validation.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
-                            placeholder={`Enter ${field}...`}
-                          />
-                        </div>
-                        
-                        <div className="validation-actions">
-                          <button
-                            onClick={() => handleApprove(field)}
-                            disabled={isEmpty || validation.locked}
-                            className="validation-action-btn approve-btn"
-                            title={isEmpty ? "Cannot approve empty value" : (validation.locked ? "Field is locked" : "Approve this value")}
-                          >
-                            👍
-                          </button>
-                          
-                          {validation.locked && (
-                            <button
-                              onClick={() => handleDislike(field)}
-                              className="validation-action-btn dislike-btn"
-                              title="Dislike this field"
-                            >
-                              👎
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  );
-                })}
-              </div>
-            </section>
-          )}
 
           {/* Relationships Section */}
           <section className="inspector-section">
