@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import ReactDOM from 'react-dom';
+import { updateValidationFields } from '../../services/apiService';
 import '../../styles/info-bubble.css';
 
 const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
@@ -34,6 +35,11 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     });
     return initial;
   });
+
+  // Track changes for batch saving
+  const [hasChanges, setHasChanges] = useState(false);
+  const [pendingUpdates, setPendingUpdates] = useState({});
+  const [saveStatus, setSaveStatus] = useState({ saving: false, message: '' });
 
   if (!nodeData) return null;
 
@@ -133,10 +139,17 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const handleFieldChange = (field, value) => {
     if (!validationData[field].locked) {
       setFieldValues(prev => ({ ...prev, [field]: value }));
+      
+      // Track changes for batch saving
+      setPendingUpdates(prev => ({
+        ...prev,
+        [field]: { value: value }
+      }));
+      setHasChanges(true);
     }
   };
   
-  // Handle approve action
+  // Handle approve action  
   const handleApprove = async (field) => {
     const value = fieldValues[field]?.trim();
     
@@ -166,8 +179,55 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
       }
     }));
     
-    // TODO: Make API call to update the backend
-    console.log(`Approved field ${field} with value: ${value}`);
+    // Track approval for batch saving
+    setPendingUpdates(prev => ({
+      ...prev,
+      [field]: { 
+        ...prev[field],
+        value: value,
+        approve: true 
+      }
+    }));
+    setHasChanges(true);
+  };
+  
+  // Handle save changes
+  const handleSaveChanges = async () => {
+    if (!hasChanges || Object.keys(pendingUpdates).length === 0) {
+      return;
+    }
+    
+    setSaveStatus({ saving: true, message: 'Saving changes...' });
+    
+    try {
+      const result = await updateValidationFields(nodeType.toLowerCase(), nodeId, pendingUpdates);
+      
+      // Clear pending updates
+      setPendingUpdates({});
+      setHasChanges(false);
+      
+      setSaveStatus({ 
+        saving: false, 
+        message: `✓ Saved ${Object.keys(pendingUpdates).length} changes` 
+      });
+      
+      // Clear message after 3 seconds
+      setTimeout(() => {
+        setSaveStatus({ saving: false, message: '' });
+      }, 3000);
+      
+    } catch (error) {
+      console.error('Error saving changes:', error);
+      setSaveStatus({ 
+        saving: false, 
+        message: 'Error saving changes. Please try again.' 
+      });
+      
+      // Clear error message after 5 seconds
+      setTimeout(() => {
+        setSaveStatus({ saving: false, message: '' });
+      }, 5000);
+    }
   };
   
   // Handle navigation (previous/next)
@@ -362,6 +422,20 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
         </div>
 
         <div className="node-inspector-footer">
+          {saveStatus.message && (
+            <span className="save-status-message">{saveStatus.message}</span>
+          )}
+          
+          {hasChanges && (
+            <button 
+              className="save-changes-btn" 
+              onClick={handleSaveChanges}
+              disabled={saveStatus.saving}
+            >
+              {saveStatus.saving ? 'Saving...' : 'Save Changes'}
+            </button>
+          )}
+          
           <button className="close-button-footer" onClick={onClose}>
             Close Inspector
           </button>

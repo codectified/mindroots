@@ -2747,4 +2747,109 @@ router.get('/navigate/corpusitem/:corpusId/:itemId/:direction', async (req, res)
   }
 });
 
+// Update validation fields for a node
+router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
+  const session = req.driver.session();
+  const { nodeType, nodeId } = req.params;
+  const { updates } = req.body; // { field_name: { value: "new_value", approve: true }, ... }
+  const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+  
+  try {
+    // Validate node type
+    const validNodeTypes = ['word', 'root', 'form', 'corpusitem'];
+    if (!validNodeTypes.includes(nodeType.toLowerCase())) {
+      return res.status(400).json({ error: 'Invalid node type' });
+    }
+    
+    // Get the node first to verify it exists
+    const nodeQuery = `MATCH (n:${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}) WHERE id(n) = $nodeId OR n.${nodeType}_id = $nodeId RETURN n`;
+    const nodeResult = await session.run(nodeQuery, { nodeId: parseInt(nodeId) });
+    
+    if (nodeResult.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+    
+    const node = nodeResult.records[0].get('n');
+    const actualNodeId = node.identity.toNumber();
+    
+    // Process each field update sequentially to avoid transaction conflicts
+    for (const [fieldName, updateData] of Object.entries(updates)) {
+      if (updateData.value !== undefined) {
+        // Update field value
+        const updateValueQuery = `
+          MATCH (n) WHERE id(n) = $nodeId
+          SET n.${fieldName} = $value
+          RETURN n
+        `;
+        await session.run(updateValueQuery, { 
+          nodeId: actualNodeId, 
+          value: updateData.value 
+        });
+      }
+      
+      if (updateData.approve === true) {
+        // Check for recent approval from same IP (basic spam protection)
+        const recentApprovalQuery = `
+          MATCH (n)-[:APPROVED_BY]->(approval:Approval)
+          WHERE id(n) = $nodeId 
+          AND approval.field = $fieldName 
+          AND approval.ip = $ip 
+          AND approval.timestamp > datetime() - duration('PT24H')
+          RETURN approval LIMIT 1
+        `;
+        
+        const recentResult = await session.run(recentApprovalQuery, {
+          nodeId: actualNodeId,
+          fieldName: fieldName,
+          ip: clientIP
+        });
+        
+        if (recentResult.records.length > 0) {
+          continue; // Skip this approval - IP already approved in last 24h
+        }
+        
+        // Create approval record and increment counter
+        const approvalQuery = `
+          MATCH (n) WHERE id(n) = $nodeId
+          CREATE (n)-[:APPROVED_BY]->(approval:Approval {
+            field: $fieldName,
+            ip: $ip,
+            timestamp: datetime(),
+            value: $value
+          })
+          SET n.${fieldName}_validated_count = COALESCE(n.${fieldName}_validated_count, 0) + 1
+          RETURN n
+        `;
+        
+        await session.run(approvalQuery, {
+          nodeId: actualNodeId,
+          fieldName: fieldName,
+          ip: clientIP,
+          value: updateData.value || ''
+        });
+      }
+    }
+    
+    // Return updated node data
+    const finalQuery = `MATCH (n) WHERE id(n) = $nodeId RETURN n`;
+    const finalResult = await session.run(finalQuery, { nodeId: actualNodeId });
+    const updatedNode = finalResult.records[0].get('n').properties;
+    
+    res.json({
+      success: true,
+      message: `Updated ${Object.keys(updates).length} fields`,
+      nodeData: convertIntegers(updatedNode)
+    });
+    
+  } catch (error) {
+    console.error('Error updating validation fields:', error);
+    res.status(500).json({ 
+      error: 'Error updating validation fields',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;
