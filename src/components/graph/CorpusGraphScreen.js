@@ -76,7 +76,7 @@ const CorpusGraphScreen = () => {
       {/* Render info bubble if infoBubble state is set */}
       {infoBubble && (
         <InfoBubble
-          definition={infoBubble.definition}
+          nodeData={infoBubble.nodeData || { definitions: infoBubble.definition }}
           onClose={closeInfoBubble}
           style={{
             top: `${infoBubble.position.y}px`,
