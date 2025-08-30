@@ -41,6 +41,50 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
 
   const { nodeType, nodeId, properties, relationships, connectedNodeCounts, summary } = nodeData;
 
+  // Helper to organize properties more intuitively
+  const getOrganizedProperties = (properties) => {
+    const entries = Object.entries(properties);
+    
+    // Define priority order for better context when reviewing fields like wazn
+    const priorityOrder = [
+      // Core identification
+      'arabic', 'english', 'sem', 'transliteration',
+      // Morphological context (important for wazn validation)
+      'wazn', 'form', 'itype', 'classification',
+      // Root context (helps with wazn judgment)
+      'root_id', 'word_type', 'subclass',
+      // Definitions (context for validation)
+      'definitions', 'english_2', 'spanish', 'urdu',
+      // Technical fields
+      'word_id', 'entry_id', 'key', 'node_type',
+      // Less critical fields at the end
+      'arabic_normalized', 'arabic_no_diacritics', 'bw_arabic', 'forms',
+      'sem_lang', 'dataSize'
+    ];
+    
+    // Separate into priority and remaining fields
+    const priorityFields = [];
+    const remainingFields = [];
+    
+    // Add priority fields in order
+    priorityOrder.forEach(key => {
+      const entry = entries.find(([k, _]) => k === key);
+      if (entry) {
+        priorityFields.push(entry);
+      }
+    });
+    
+    // Add any remaining fields not in priority list
+    entries.forEach(entry => {
+      if (!priorityOrder.includes(entry[0])) {
+        remainingFields.push(entry);
+      }
+    });
+    
+    // Return combined list: priority fields first, then others
+    return [...priorityFields, ...remainingFields];
+  };
+
   // Helper to format property values
   const formatPropertyValue = (prop) => {
     if (prop.isEmpty) {
@@ -132,7 +176,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     try {
       // Extract the actual numeric ID for different node types
       let actualId;
-      if (nodeType === 'Word') {
+      if (nodeType === 'Word' || nodeType === 'word') {
         actualId = properties.word_id?.value || nodeId;
       } else if (nodeType === 'corpusitem' || nodeType === 'CorpusItem') {
         actualId = properties.item_id?.value || nodeId;
@@ -181,7 +225,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           </div>
           
           {/* Navigation controls for Word and CorpusItem nodes */}
-          {(nodeType === 'Word' || nodeType === 'corpusitem') && onNavigate && (
+          {(nodeType === 'Word' || nodeType === 'word' || nodeType === 'corpusitem' || nodeType === 'CorpusItem') && onNavigate && (
             <div className="navigation-controls">
               {navigationStatus.message && (
                 <span className="navigation-message">{navigationStatus.message}</span>
@@ -190,7 +234,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                 onClick={() => handleNavigation('previous')}
                 disabled={navigationStatus.loading}
                 className="nav-button"
-                title={`Previous ${nodeType === 'Word' ? 'word' : 'item'}`}
+                title={`Previous ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
               >
                 ← Prev
               </button>
@@ -198,7 +242,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                 onClick={() => handleNavigation('next')}
                 disabled={navigationStatus.loading}
                 className="nav-button"
-                title={`Next ${nodeType === 'Word' ? 'word' : 'item'}`}
+                title={`Next ${(nodeType === 'Word' || nodeType === 'word') ? 'word' : 'item'}`}
               >
                 Next →
               </button>
@@ -232,9 +276,10 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           <section className="inspector-section">
             <h3>Properties ({Object.keys(properties).length})</h3>
             <div className="properties-table">
-              {Object.entries(properties).map(([key, prop]) => (
+              {getOrganizedProperties(properties).map(([key, prop]) => (
                 <div key={key} className="property-row">
                   <div className="property-key">{key}</div>
+                  <div className="property-type">{prop.type}</div>
                   <div className="property-value">
                     {formatPropertyValue(prop)}
                   </div>
@@ -289,13 +334,15 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                             👍
                           </button>
                           
-                          <button
-                            onClick={() => handleDislike(field)}
-                            className="validation-action-btn dislike-btn"
-                            title="Dislike this field"
-                          >
-                            👎
-                          </button>
+                          {validation.locked && (
+                            <button
+                              onClick={() => handleDislike(field)}
+                              className="validation-action-btn dislike-btn"
+                              title="Dislike this field"
+                            >
+                              👎
+                            </button>
+                          )}
                         </div>
                       </div>
                     </div>
