@@ -90,29 +90,16 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
       const isEmpty = !fieldValue?.trim();
       
       return (
-        <div className="validation-property">
-          <div className="validation-input-container">
-            <input
-              type="text"
-              value={fieldValue || ''}
-              onChange={(e) => handleFieldChange(fieldName, e.target.value)}
-              disabled={validation?.locked}
-              className={`validation-input ${validation?.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
-              placeholder={`Enter ${fieldName}...`}
-            />
-          </div>
-          
-          <div className="validation-actions">
-            <button
-              onClick={() => handleApprove(fieldName)}
-              disabled={isEmpty}
-              className="validation-action-btn approve-btn"
-              title={isEmpty ? "Cannot approve empty value" : "Approve this value"}
-            >
-              👍 {validation?.validated_count || 0}
-            </button>
-            {validation?.locked && <span className="locked-indicator">🔒</span>}
-          </div>
+        <div className="validation-input-container">
+          <input
+            type="text"
+            value={fieldValue || ''}
+            onChange={(e) => handleFieldChange(fieldName, e.target.value)}
+            disabled={validation?.locked}
+            className={`validation-input ${validation?.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
+            placeholder={`Enter ${fieldName}...`}
+          />
+          {validation?.locked && <span className="locked-indicator">🔒</span>}
         </div>
       );
     }
@@ -292,15 +279,35 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           <section className="inspector-section">
             <h3>Properties ({Object.keys(properties).length})</h3>
             <div className="properties-table">
-              {getOrganizedProperties(properties).map(([key, prop]) => (
-                <div key={key} className="property-row">
-                  <div className="property-key">{key}</div>
-                  <div className="property-type">{prop.type}</div>
-                  <div className="property-value">
-                    {formatPropertyValue(prop, key)}
+              {getOrganizedProperties(properties).map(([key, prop]) => {
+                const isValidatable = isValidationField(key);
+                const validation = isValidatable ? validationData[key] : null;
+                const fieldValue = isValidatable ? fieldValues[key] : null;
+                const isEmpty = isValidatable ? !fieldValue?.trim() : false;
+                
+                return (
+                  <div key={key} className="property-row">
+                    <div className="property-key">{key}</div>
+                    <div className="property-type">
+                      {isValidatable ? (
+                        <button
+                          onClick={() => handleApprove(key)}
+                          disabled={isEmpty}
+                          className="validation-action-btn approve-btn"
+                          title={isEmpty ? "Cannot approve empty value" : "Approve this value"}
+                        >
+                          👍 {validation?.validated_count || 0}
+                        </button>
+                      ) : (
+                        prop.type
+                      )}
+                    </div>
+                    <div className="property-value">
+                      {formatPropertyValue(prop, key)}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </section>
 
