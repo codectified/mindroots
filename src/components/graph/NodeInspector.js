@@ -3,10 +3,6 @@ import ReactDOM from 'react-dom';
 import '../../styles/info-bubble.css';
 
 const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
-  if (!nodeData) return null;
-
-  const { nodeType, nodeId, properties, relationships, connectedNodeCounts, summary } = nodeData;
-  
   // Navigation state
   const [navigationStatus, setNavigationStatus] = useState({ loading: false, message: '' });
   
@@ -15,19 +11,21 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   
   // State for editable field values
   const [fieldValues, setFieldValues] = useState(() => {
+    if (!nodeData || !nodeData.properties) return {};
     const initial = {};
     validationFields.forEach(field => {
-      initial[field] = properties[field]?.value || '';
+      initial[field] = nodeData.properties[field]?.value || '';
     });
     return initial;
   });
   
   // State for validation counts
   const [validationData, setValidationData] = useState(() => {
+    if (!nodeData || !nodeData.properties) return {};
     const initial = {};
     validationFields.forEach(field => {
-      const validatedCount = properties[`${field}_validated_count`]?.value || 0;
-      const dislikeCount = properties[`${field}_dislike_count`]?.value || 0;
+      const validatedCount = nodeData.properties[`${field}_validated_count`]?.value || 0;
+      const dislikeCount = nodeData.properties[`${field}_dislike_count`]?.value || 0;
       const locked = validatedCount >= 1;
       
       initial[field] = {
@@ -38,6 +36,10 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     });
     return initial;
   });
+
+  if (!nodeData) return null;
+
+  const { nodeType, nodeId, properties, relationships, connectedNodeCounts, summary } = nodeData;
 
   // Helper to format property values
   const formatPropertyValue = (prop) => {
