@@ -25,12 +25,10 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     const initial = {};
     validationFields.forEach(field => {
       const validatedCount = nodeData.properties[`${field}_validated_count`]?.value || 0;
-      const dislikeCount = nodeData.properties[`${field}_dislike_count`]?.value || 0;
       const locked = validatedCount >= 1;
       
       initial[field] = {
         validated_count: validatedCount,
-        dislike_count: dislikeCount,
         locked: locked
       };
     });
@@ -107,27 +105,12 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           <div className="validation-actions">
             <button
               onClick={() => handleApprove(fieldName)}
-              disabled={isEmpty || validation?.locked}
+              disabled={isEmpty}
               className="validation-action-btn approve-btn"
-              title={isEmpty ? "Cannot approve empty value" : (validation?.locked ? "Field is locked" : "Approve this value")}
+              title={isEmpty ? "Cannot approve empty value" : "Approve this value"}
             >
-              👍
+              👍 {validation?.validated_count || 0}
             </button>
-            
-            {validation?.locked && (
-              <button
-                onClick={() => handleDislike(fieldName)}
-                className="validation-action-btn dislike-btn"
-                title="Dislike this field"
-              >
-                👎
-              </button>
-            )}
-          </div>
-          
-          <div className="validation-counters">
-            <span className="approve-counter">👍 {validation?.validated_count || 0}</span>
-            <span className="dislike-counter">👎 {validation?.dislike_count || 0}</span>
             {validation?.locked && <span className="locked-indicator">🔒</span>}
           </div>
         </div>
@@ -186,33 +169,18 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
       }
     }
     
-    // Update validation counts - first approve locks the field
+    // Update validation counts - first approve locks editing but not approving
     setValidationData(prev => ({
       ...prev,
       [field]: {
         ...prev[field],
         validated_count: prev[field].validated_count + 1,
-        locked: true
+        locked: prev[field].validated_count === 0 ? true : prev[field].locked
       }
     }));
     
     // TODO: Make API call to update the backend
     console.log(`Approved field ${field} with value: ${value}`);
-  };
-  
-  // Handle dislike action
-  const handleDislike = async (field) => {
-    // Update dislike count (never unlocks the field)
-    setValidationData(prev => ({
-      ...prev,
-      [field]: {
-        ...prev[field],
-        dislike_count: prev[field].dislike_count + 1
-      }
-    }));
-    
-    // TODO: Make API call to update the backend
-    console.log(`Disliked field ${field}`);
   };
   
   // Handle navigation (previous/next)
