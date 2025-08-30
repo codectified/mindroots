@@ -378,17 +378,19 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                 return (
                   <div key={key} className="property-row">
                     <div className="property-key">
-                      {key}
-                      {isValidatable && (
-                        <button
-                          onClick={() => handleApprove(key)}
-                          disabled={isEmpty}
-                          className="validation-action-btn approve-btn inline-approve"
-                          title={isEmpty ? "Cannot approve empty value" : "Approve this value"}
-                        >
-                          👍 {validation?.validated_count || 0}
-                        </button>
-                      )}
+                      <div>
+                        {key}
+                        {isValidatable && (
+                          <button
+                            onClick={() => handleApprove(key)}
+                            disabled={isEmpty}
+                            className="validation-action-btn approve-btn inline-approve"
+                            title={isEmpty ? "Cannot approve empty value" : "Approve this value"}
+                          >
+                            👍 {validation?.validated_count || 0}
+                          </button>
+                        )}
+                      </div>
                     </div>
                     <div className="property-value">
                       {formatPropertyValue(prop, key)}
