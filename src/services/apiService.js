@@ -570,3 +570,16 @@ export const navigateToAdjacentNode = async (nodeType, nodeId, direction, corpus
     throw error;
   }
 };
+
+// Update validation fields for a node
+export const updateValidationFields = async (nodeType, nodeId, updates) => {
+  try {
+    const response = await api.post(`/update-validation/${nodeType}/${nodeId}`, {
+      updates
+    });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error updating validation fields:', error);
+    throw error;
+  }
+};
