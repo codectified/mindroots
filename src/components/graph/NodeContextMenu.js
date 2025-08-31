@@ -48,12 +48,16 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
       };
     } else {
       // Desktop: Center on cursor position
+      // Coordinates are already absolute (pageX/pageY) from NodesTable, no scroll adjustment needed
       const cursorCenteredLeft = position.x - menuWidth / 2;
       const cursorCenteredTop = position.y - menuHeight / 2;
       
-      // Keep within viewport bounds
+      // Get scroll position for viewport bounds checking
+      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
+      
+      // Keep within current viewport bounds (absolute positioning)
       const finalLeft = Math.max(margin, Math.min(cursorCenteredLeft, viewportWidth - menuWidth - margin));
-      const finalTop = Math.max(margin, Math.min(cursorCenteredTop, viewportHeight - menuHeight - margin));
+      const finalTop = Math.max(scrollY + margin, Math.min(cursorCenteredTop, scrollY + viewportHeight - menuHeight - margin));
 
       return {
         left: `${finalLeft}px`,
