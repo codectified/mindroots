@@ -93,8 +93,8 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
 
   // Context menu action handler
   const handleMenuAction = useCallback((action, node) => {
-    handleContextMenuAction(action, node);
-  }, [handleContextMenuAction]);
+    handleContextMenuAction(action, node, contextMenu?.position);
+  }, [handleContextMenuAction, contextMenu]);
 
   // Close context menu handler
   const handleCloseContextMenu = useCallback(() => {

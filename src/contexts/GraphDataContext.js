@@ -660,7 +660,7 @@ const setContextMenuWithPrefetch = async (contextMenuData) => {
 };
 
 // Context menu action handlers
-const handleContextMenuAction = async (action, node) => {
+const handleContextMenuAction = async (action, node, position = null) => {
   try {
     switch (action) {
       case 'expand':
@@ -974,13 +974,13 @@ const handleContextMenuAction = async (action, node) => {
           // Set the InfoBubble with the fetched data
           setInfoBubble({
             nodeData: nodeInfoData,
-            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+            position: position || { x: window.innerWidth / 2, y: window.innerHeight / 2 }
           });
         } catch (error) {
           console.error('Error fetching node info:', error);
           setInfoBubble({
             nodeData: null,
-            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+            position: position || { x: window.innerWidth / 2, y: window.innerHeight / 2 }
           });
         }
         break;
