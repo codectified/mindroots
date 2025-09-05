@@ -55,19 +55,45 @@ router.get('/list/quran_items', async (req, res) => {
 
   const session = req.driver.session();
   try {
-    const result = await session.run(`
-      MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id), sura_index: toInteger($sura_index)})
-      RETURN 
-        item.arabic AS arabic, 
-        item.transliteration AS transliteration, 
-        toInteger(item.item_id) AS item_id,   /* Convert item_id */
-        toInteger(item.aya_index) AS aya_index, /* Convert aya_index */
-        item.english AS english,
-        item.sem AS sem,
-        item.part_of_speech AS pos,
-        item.gender AS gender
-      ORDER BY item.aya_index
-    `, { corpus_id, sura_index });
+    // Handle different corpus schemas
+    let result;
+    if (corpus_id === '2') {
+      // Corpus 2: Hierarchical IDs (surah:ayah:word) with s1_ prefixed properties
+      result = await session.run(`
+        MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
+        WITH item, split(item.item_id, ':') as parts
+        WHERE toInteger(parts[0]) = toInteger($sura_index)
+        RETURN 
+          item.sem AS arabic,  /* Use sem as full word display */
+          item.transliteration AS transliteration, 
+          item.item_id AS item_id,
+          toInteger(parts[1]) AS aya_index,
+          item.english AS english,
+          item.sem AS sem,
+          item.s1_tag AS pos,
+          item.gender AS gender,
+          toInteger(parts[0]) AS surah,
+          toInteger(parts[1]) AS ayah,
+          toInteger(parts[2]) AS word
+        ORDER BY toInteger(parts[1]), toInteger(parts[2])
+      `, { corpus_id, sura_index });
+    } else {
+      // Corpus 1 & 3: Sequential integer IDs - just return all items (no sura filtering)
+      result = await session.run(`
+        MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
+        RETURN 
+          item.arabic AS arabic, 
+          item.transliteration AS transliteration, 
+          toInteger(item.item_id) AS item_id,
+          0 AS aya_index,  /* Default aya_index */
+          item.english AS english,
+          item.sem AS sem,
+          item.part_of_speech AS pos,
+          item.gender AS gender
+        ORDER BY item.item_id
+        LIMIT 50
+      `, { corpus_id });
+    }
 
 // API Authentication middleware
 router.use(authenticateAPI);
@@ -91,38 +117,63 @@ router.get('/list/quran_items_range', async (req, res) => {
 
   const session = req.driver.session();
   try {
-    let query = `
-      MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id), sura_index: toInteger($sura_index)})
-    `;
+    let query, params = { corpus_id, sura_index };
     
-    let params = { corpus_id, sura_index };
-    
-    // Add aya range filtering if specified
-    if (start_aya && end_aya) {
-      query += ` WHERE item.aya_index >= toInteger($start_aya) AND item.aya_index <= toInteger($end_aya)`;
-      params.start_aya = start_aya;
-      params.end_aya = end_aya;
-    } else if (start_aya) {
-      query += ` WHERE item.aya_index >= toInteger($start_aya)`;
-      params.start_aya = start_aya;
-    } else if (end_aya) {
-      query += ` WHERE item.aya_index <= toInteger($end_aya)`;
-      params.end_aya = end_aya;
+    if (corpus_id === '2') {
+      // Corpus 2: Hierarchical IDs (surah:ayah:word)
+      query = `
+        MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
+        WITH item, split(item.item_id, ':') as parts
+        WHERE toInteger(parts[0]) = toInteger($sura_index)
+      `;
+      
+      // Add aya range filtering if specified  
+      if (start_aya && end_aya) {
+        query += ` AND toInteger(parts[1]) >= toInteger($start_aya) AND toInteger(parts[1]) <= toInteger($end_aya)`;
+        params.start_aya = start_aya;
+        params.end_aya = end_aya;
+      } else if (start_aya) {
+        query += ` AND toInteger(parts[1]) >= toInteger($start_aya)`;
+        params.start_aya = start_aya;
+      } else if (end_aya) {
+        query += ` AND toInteger(parts[1]) <= toInteger($end_aya)`;
+        params.end_aya = end_aya;
+      }
+      
+      query += `
+        RETURN 
+          item.sem AS arabic,  /* Use sem for full word display */
+          item.transliteration AS transliteration, 
+          item.item_id AS item_id,
+          toInteger(parts[1]) AS aya_index,
+          item.english AS english,
+          item.sem AS sem,
+          item.s1_tag AS pos,
+          item.gender AS gender,
+          toInteger(parts[0]) AS sura_index,
+          toInteger(parts[0]) AS surah,
+          toInteger(parts[1]) AS ayah,
+          toInteger(parts[2]) AS word
+        ORDER BY toInteger(parts[1]), toInteger(parts[2])
+      `;
+    } else {
+      // Corpus 1 & 3: Sequential integer IDs - no sura/aya structure
+      query = `
+        MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
+        RETURN 
+          item.arabic AS arabic, 
+          item.transliteration AS transliteration, 
+          toInteger(item.item_id) AS item_id,
+          0 AS aya_index,  /* Default aya_index */
+          item.english AS english,
+          item.sem AS sem,
+          item.part_of_speech AS pos,
+          item.gender AS gender,
+          toInteger($corpus_id) AS sura_index
+        ORDER BY item.item_id
+        LIMIT 50
+      `;
     }
-    
-    query += `
-      RETURN 
-        item.arabic AS arabic, 
-        item.transliteration AS transliteration, 
-        toInteger(item.item_id) AS item_id,
-        toInteger(item.aya_index) AS aya_index,
-        item.english AS english,
-        item.sem AS sem,
-        item.part_of_speech AS pos,
-        item.gender AS gender,
-        toInteger(item.sura_index) AS sura_index
-      ORDER BY item.aya_index, item.item_id
-    `;
 
     const result = await session.run(query, params);
     const quranItems = result.records.map(record => convertIntegers(record.toObject()));
@@ -2628,31 +2679,48 @@ router.get('/navigate/corpusitem/:corpusId/:itemId/:direction', async (req, res)
   const { corpusId, itemId, direction } = req.params;
   
   try {
-    const currentId = parseInt(itemId);
     const currentCorpusId = parseInt(corpusId);
     
-    // Find the next/previous corpus item that actually exists, scoped to corpus_id
+    // Parse hierarchical ID: surah:ayah:word
+    const [currentSurah, currentAyah, currentWord] = itemId.split(':').map(Number);
+    
+    // Find the next/previous corpus item by hierarchical ordering
+    // Parse the current item's hierarchical position from item_id
     const query = direction === 'next' 
       ? `
         MATCH (c:CorpusItem) 
         WHERE toInteger(c.corpus_id) = $corpusId
-        AND toInteger(c.item_id) > $currentId
+        WITH c, split(c.item_id, ':') as parts
+        WITH c, toInteger(parts[0]) as surah, toInteger(parts[1]) as ayah, toInteger(parts[2]) as word
+        WHERE (
+          surah > $currentSurah OR
+          (surah = $currentSurah AND ayah > $currentAyah) OR  
+          (surah = $currentSurah AND ayah = $currentAyah AND word > $currentWord)
+        )
         RETURN c
-        ORDER BY toInteger(c.item_id) ASC
+        ORDER BY surah, ayah, word
         LIMIT 1
       `
       : `
         MATCH (c:CorpusItem) 
         WHERE toInteger(c.corpus_id) = $corpusId
-        AND toInteger(c.item_id) < $currentId
+        WITH c, split(c.item_id, ':') as parts
+        WITH c, toInteger(parts[0]) as surah, toInteger(parts[1]) as ayah, toInteger(parts[2]) as word
+        WHERE (
+          surah < $currentSurah OR
+          (surah = $currentSurah AND ayah < $currentAyah) OR
+          (surah = $currentSurah AND ayah = $currentAyah AND word < $currentWord)
+        )
         RETURN c
-        ORDER BY toInteger(c.item_id) DESC
+        ORDER BY surah DESC, ayah DESC, word DESC
         LIMIT 1
       `;
     
     const result = await session.run(query, { 
       corpusId: currentCorpusId, 
-      currentId 
+      currentSurah,
+      currentAyah,
+      currentWord
     });
     
     if (result.records.length === 0) {
