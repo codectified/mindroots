@@ -474,7 +474,18 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 }}
               >
                 {lineItems
-                  .sort((a, b) => a.item_id - b.item_id) // Sort words within each line by item_id
+                  .sort((a, b) => {
+                    // Handle different ID formats by corpus
+                    if (typeof a.item_id === 'string' && a.item_id.includes(':')) {
+                      // Hierarchical IDs (Corpus 2): surah:ayah:word
+                      const [aS, aA, aW] = a.item_id.split(':').map(Number);
+                      const [bS, bA, bW] = b.item_id.split(':').map(Number);
+                      return aS - bS || aA - bA || aW - bW;
+                    } else {
+                      // Integer IDs (Corpus 1 & 3): simple numeric comparison
+                      return a.item_id - b.item_id;
+                    }
+                  }) // Sort words within each line by position
                   .map((item, index) => (
                     <React.Fragment key={item.item_id}>
                       <span
