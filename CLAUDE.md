@@ -317,7 +317,14 @@ const convertIntegers = (obj) => {
 
 ## 🚀 **Recent Major Changes**
 
-### **Root Search Overhaul (Latest)**
+### **Hierarchical ID Integration (Latest)**
+- **Date**: September 2025
+- **Impact**: Support for Corpus 2's semantic `surah:ayah:word` ID format
+- **Problem Solved**: Corpus 2 reindexing introduced hierarchical IDs that broke integer-based backend logic
+- **Architecture Decision**: Mixed ID schema with conditional handling
+- **Files Changed**: `routes/api.js` (expand/list endpoints), `CorpusRenderer.js` (sorting), `apiService.js`
+
+### **Root Search Overhaul** 
 - **Date**: Recent session
 - **Impact**: Complete rework of search functionality
 - **New Features**: 
@@ -359,6 +366,13 @@ const convertIntegers = (obj) => {
 - **Caching Layer**: Redis for frequent searches
 - **Mobile Responsive**: Touch-friendly graph interactions
 - **Batch Operations**: Multiple root searches in one request
+
+### **Architectural Debt - Mixed ID Schema**
+- **Current State**: Corpus 1&3 use integer IDs, Corpus 2 uses hierarchical IDs (`surah:ayah:word`)
+- **Code Impact**: Conditional logic in backend queries, frontend sorting, ID generation
+- **Maintenance Burden**: Every new corpus-related feature needs dual ID handling
+- **Monitoring Points**: Watch for complexity growth, consider refactoring if pattern spreads
+- **Alternative Approaches**: Legacy ID fields, full hierarchical migration, or Neo4j internal IDs
 
 ### **Technical Debt**
 - **Legacy Endpoints**: Gradually migrate old hardcoded search logic
