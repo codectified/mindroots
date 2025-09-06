@@ -546,9 +546,14 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
   const { sourceType, targetType } = req.params;
   const { L1, L2 } = req.query;
   
-  // Fix type coercion and integer normalization
-  const sourceId = parseInt(req.params.sourceId, 10);
+  // Handle different ID formats: hierarchical strings (Corpus 2) vs integers (Corpus 1,3)
+  let sourceId = req.params.sourceId;
   const corpus_id = req.query.corpus_id ? parseInt(req.query.corpus_id, 10) : null;
+  
+  // Only convert to integer for non-corpus items or non-hierarchical corpus items
+  if (sourceType !== 'corpusitem' || (sourceType === 'corpusitem' && !sourceId.includes(':'))) {
+    sourceId = parseInt(sourceId, 10);
+  }
   const limit = parseInt(req.query.limit || 25, 10);
   
   console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, sourceIdType: typeof sourceId, corpusIdType: typeof corpus_id, limitType: typeof limit });
@@ -606,8 +611,13 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
 // API Authentication middleware
 router.use(authenticateAPI);
       }
+      // Handle different corpus ID formats
+      const corpusItemQuery = typeof sourceId === 'string' 
+        ? `MATCH (item:CorpusItem {item_id: $sourceId, corpus_id: toInteger($corpus_id)})`  // Hierarchical IDs
+        : `MATCH (item:CorpusItem {item_id: toInteger($sourceId), corpus_id: toInteger($corpus_id)})`; // Integer IDs
+        
       query = `
-        MATCH (item:CorpusItem {item_id: toInteger($sourceId), corpus_id: toInteger($corpus_id)})
+        ${corpusItemQuery}
         OPTIONAL MATCH (item)-[:HAS_WORD]->(word:Word)
         OPTIONAL MATCH (word)-[:HAS_FORM]->(form:Form)
         OPTIONAL MATCH (word)<-[:HAS_WORD]-(root:Root)
@@ -678,7 +688,11 @@ router.use(authenticateAPI);
     // Helper function for canonical ID generation: ${type}_${Number(idProp)}
     const getCanonicalId = (type, idValue) => {
       const numericId = idValue?.low !== undefined ? idValue.low : idValue;
-      return `${type}_${Number(numericId)}`;
+      // Handle hierarchical IDs (keep as string) vs integer IDs (convert to number)
+      const finalId = typeof numericId === 'string' && numericId.includes(':') 
+        ? numericId  // Keep hierarchical IDs as strings
+        : Number(numericId);  // Convert integer IDs to numbers
+      return `${type}_${finalId}`;
     };
     
     console.log(`Query returned ${result.records.length} records`);
