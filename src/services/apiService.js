@@ -1,19 +1,19 @@
 import axios from 'axios';
 
 // // // Create an Axios instance with the base URL for the API
-// const api = axios.create({
-//   baseURL: 'https://theoption.life/api',
-//   headers: {
-//     'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
-//   },
-// });
-
 const api = axios.create({
-  baseURL: 'http://localhost:5001/api',
+  baseURL: 'https://theoption.life/api',
   headers: {
-    'Authorization': 'Bearer localhost-dev-key-123',
+    'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
   },
 });
+
+// const api = axios.create({
+//   baseURL: 'http://localhost:5001/api',
+//   headers: {
+//     'Authorization': 'Bearer localhost-dev-key-123',
+//   },
+// });
 
 
 // Helper function to convert Neo4j integers to regular numbers
