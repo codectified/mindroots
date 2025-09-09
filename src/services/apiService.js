@@ -553,7 +553,7 @@ export const navigateToAdjacentNode = async (nodeType, nodeId, direction, corpus
     if (nodeType === 'Word' || nodeType === 'word') {
       // For word nodes, navigate by word_id ±1
       url = `/navigate/word/${nodeId}/${direction}`;
-    } else if (nodeType === 'corpusitem') {
+    } else if (nodeType === 'corpusitem' || nodeType === 'CorpusItem') {
       // For corpus items, navigate by item_id ±1 scoped to corpus_id
       if (!corpusId) {
         throw new Error('Corpus ID required for corpus item navigation');

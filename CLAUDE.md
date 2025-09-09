@@ -388,6 +388,64 @@ const convertIntegers = (obj) => {
 **Status**: Production-ready with comprehensive search functionality
 ---
 
+## 🐛 Hierarchical ID Compatibility Fixes (September 7, 2025)
+
+### Issues Discovered & Fixed
+
+After implementing Corpus 2's hierarchical ID system (`surah:ayah:word`), several endpoints were found to be incompatible:
+
+#### **1. Node Inspector Endpoint**
+- **Issue**: `/inspect/corpusitem/:corpusId/:itemId` used `toInteger($itemId)` which failed on "76:1:1"
+- **Fix**: Added conditional logic to detect hierarchical IDs and handle them as strings
+- **Location**: `routes/api.js:2351-2400`
+
+#### **2. Corpus Item Entry Endpoint**
+- **Issue**: `/corpusitementry/:corpusId/:itemId` used `toInteger($itemId)` which failed on hierarchical IDs
+- **Fix**: Added conditional logic matching other endpoints
+- **Location**: `routes/api.js:1428-1440`
+
+### Pattern Applied
+```javascript
+// Detect hierarchical vs integer IDs
+const isHierarchicalId = itemId.includes(':');
+const isCorpus2 = parseInt(corpusId) === 2;
+
+// Conditional query generation
+const query = isHierarchicalId && isCorpus2 ? 
+  `MATCH (n:CorpusItem {corpus_id: toInteger($corpusId), item_id: $itemId})` : // String ID
+  `MATCH (n:CorpusItem {corpus_id: toInteger($corpusId), item_id: toInteger($itemId)})`; // Integer ID
+
+// Conditional parameter passing
+const result = await session.run(query, {
+  corpusId: parseInt(corpusId),
+  itemId: isHierarchicalId && isCorpus2 ? itemId : parseInt(itemId)
+});
+```
+
+### Endpoints Confirmed Working
+- ✅ `/expand` - Fixed in previous session
+- ✅ `/navigate/corpusitem` - Already supported hierarchical IDs
+- ✅ `/update-validation` - Uses node property lookup, works with both ID types
+- ✅ `/list/quran_items` - Fixed in previous session
+- ✅ `/list/quran_items_range` - Fixed in previous session
+
+### Legacy Route Warnings Added
+Added warning comments above incompatible legacy endpoints:
+- `/rootbyletters` - Uses hardcoded radical position mapping
+- `/geminate-roots` - Uses hardcoded biradical logic  
+- `/triliteral-roots` - Uses hardcoded triradical logic
+- `/extended-roots` - Uses hardcoded extended root logic
+
+These routes do not support RadicalPosition system or hierarchical IDs.
+
+### Testing Status
+- **Node Inspector**: ✅ Works for both Corpus 1&3 (integer) and Corpus 2 (hierarchical)
+- **Lane Entry**: ✅ Compatible with mixed ID formats
+- **Graph Expansion**: ✅ Knowledge graphs work for all corpus types
+- **Validation System**: ✅ Inline editing works for all corpus types
+
+---
+
 ## 🔐 API Authentication System
 
 ### Security Implementation
