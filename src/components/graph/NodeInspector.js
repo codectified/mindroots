@@ -79,11 +79,10 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const getOrganizedProperties = (properties) => {
     const entries = Object.entries(properties);
     
-    // Simple priority order as requested
+    // Reordered priority as requested: arabic, definitions, wazn, english, transliteration, urdu, spanish, then everything else
     const priorityOrder = [
-      'arabic', 'wazn', 'english', 'spanish', 'urdu', 'transliteration', 
-      'frame', 'opposite', 'metaphor', 'dua', 'notes',
-      'definitions', 'hanswehr_entry',
+      'arabic', 'definitions', 'wazn', 'english', 'transliteration', 'urdu', 'spanish',
+      'hanswehr_entry', 'frame', 'opposite', 'metaphor', 'dua', 'notes', 'classification',
       // IDs
       'word_id', 'root_id', 'entry_id', 'item_id', 'corpus_id'
       // Everything else will be added after
@@ -180,7 +179,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     }
   };
   
-  // Handle approve action  
+  // Handle approve action - DISABLED: No longer creating approval nodes
   const handleApprove = async (field) => {
     const value = fieldValues[field]?.trim();
     
@@ -210,13 +209,12 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
       }
     }));
     
-    // Track approval for batch saving
+    // Track changes for batch saving - NO LONGER CREATING APPROVAL NODES
     setPendingUpdates(prev => ({
       ...prev,
       [field]: { 
-        ...prev[field],
-        value: value,
-        approve: true 
+        value: value
+        // Removed: approve: true - no more approval node creation
       }
     }));
     setHasChanges(true);
@@ -351,25 +349,6 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
         </div>
 
         <div className="node-inspector-content">
-          {/* Summary Section */}
-          <section className="inspector-section">
-            <h3>Summary</h3>
-            <div className="summary-grid">
-              <div className="summary-item">
-                <span className="label">Properties:</span>
-                <span className="value">{summary.totalProperties}</span>
-              </div>
-              <div className="summary-item">
-                <span className="label">Relationships:</span>
-                <span className="value">{summary.totalRelationships}</span>
-              </div>
-              <div className="summary-item">
-                <span className="label">Connected Nodes:</span>
-                <span className="value">{summary.totalConnectedNodes}</span>
-              </div>
-            </div>
-          </section>
-
           {/* Properties Section */}
           <section className="inspector-section">
             <h3>Properties ({Object.keys(properties).length})</h3>
@@ -441,6 +420,25 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
             {Object.values(connectedNodeCounts).every(count => count === 0) && (
               <div className="no-connections">No connected nodes found</div>
             )}
+          </section>
+
+          {/* Summary Section - Moved to bottom */}
+          <section className="inspector-section">
+            <h3>Summary</h3>
+            <div className="summary-grid">
+              <div className="summary-item">
+                <span className="label">Properties:</span>
+                <span className="value">{summary.totalProperties}</span>
+              </div>
+              <div className="summary-item">
+                <span className="label">Relationships:</span>
+                <span className="value">{summary.totalRelationships}</span>
+              </div>
+              <div className="summary-item">
+                <span className="label">Connected Nodes:</span>
+                <span className="value">{summary.totalConnectedNodes}</span>
+              </div>
+            </div>
           </section>
 
           {/* Raw Data Section (Collapsible) */}

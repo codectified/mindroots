@@ -2,7 +2,21 @@
 
 ## Overview
 
-The MindRoots validation system allows users to edit and approve linguistic data fields (wazn, english, spanish, urdu, classification) with backend persistence, spam protection, and approval tracking.
+The MindRoots validation system allows users to edit and approve linguistic data fields through the Node Inspector interface. **Approval node creation has been DISABLED** - the system now only updates field values and validation counters without creating audit trail nodes.
+
+## **Editable/Validatable Fields**
+The following 11 fields can be edited and validated in the Node Inspector:
+- **english** - English translation
+- **wazn** - Arabic morphological pattern 
+- **spanish** - Spanish translation
+- **urdu** - Urdu translation
+- **classification** - Linguistic classification
+- **transliteration** - Romanized form
+- **frame** - Morphological frame
+- **opposite** - Antonym/opposite meaning
+- **metaphor** - Metaphorical usage
+- **dua** - Prayer/supplication context
+- **notes** - Additional notes
 
 ## Database Structure (TESTED & VERIFIED)
 
@@ -35,56 +49,54 @@ The MindRoots validation system allows users to edit and approve linguistic data
 })
 ```
 
-### Approval Node (Created on Approval)
+### ⚠️ Approval Node Creation DISABLED
 ```cypher
-(:Word)-[:APPROVED_BY]->(:Approval {
-  field: "wazn",                       // Which field was approved
-  ip: "::1",                          // IP address of approver  
-  value: "فَعَلَ",                     // Value that was approved
-  timestamp: datetime("2025-08-30T03:51:42.377Z")  // When approved
+// PREVIOUS BEHAVIOR (No longer active):
+// (:Word)-[:APPROVED_BY]->(:Approval {...})
+
+// CURRENT BEHAVIOR: Only validation counters are updated
+(:Word {
+  word_id: 1,
+  wazn: "فَعَلَ",                      // Field value updated
+  wazn_validated_count: 1              // Counter incremented
+  // NO approval nodes created
 })
 ```
 
-### Complete Database Structure
+### Complete Database Structure (Current)
 ```cypher
-// Real structure after testing:
+// Current simplified structure:
 (:Word {word_id: 1, wazn: "فَعَلَ", wazn_validated_count: 1})
--[:APPROVED_BY]->
-(:Approval {
-  field: "wazn", 
-  ip: "::1", 
-  value: "فَعَلَ", 
-  timestamp: datetime("2025-08-30T03:51:42.377Z")
-})
+// No [:APPROVED_BY] relationships created
+// No :Approval nodes created
 ```
 
 ## API Testing Results
 
-### 1. Field Update + Approval (SUCCESS)
+### 1. Field Update + Approval (CURRENT BEHAVIOR)
 ```bash
 curl -X POST -H "Content-Type: application/json" \
      -H "Authorization: Bearer localhost-dev-key-123" \
-     -d '{"updates": {"wazn": {"value": "فَعَلَ", "approve": true}}}' \
+     -d '{"updates": {"wazn": {"value": "فَعَلَ"}}}' \
      "http://localhost:5001/api/update-validation/word/1"
 
 # Result: 
 # - wazn field updated to "فَعَلَ"  
-# - wazn_validated_count created = 1
-# - Approval node created with IP/timestamp
+# - wazn_validated_count incremented
+# - NO approval nodes created (disabled)
 ```
 
-### 2. Spam Protection Test (SUCCESS)  
+### 2. Multiple Field Updates (CURRENT BEHAVIOR)  
 ```bash
-# Same request again from same IP
 curl -X POST -H "Content-Type: application/json" \
      -H "Authorization: Bearer localhost-dev-key-123" \
-     -d '{"updates": {"wazn": {"value": "فَعَلَ", "approve": true}}}' \
+     -d '{"updates": {"english": {"value": "to prepare"}, "wazn": {"value": "فَعَلَ"}}}' \
      "http://localhost:5001/api/update-validation/word/1"
 
 # Result:
-# - wazn_validated_count STILL = 1 (not incremented)
-# - No new Approval node created
-# - IP protection working correctly
+# - Both fields updated with new values
+# - Validation counters updated as needed
+# - NO approval audit trail created
 ```
 
 ### 3. Field Value Update Only (SUCCESS)
@@ -102,11 +114,11 @@ curl -X POST -H "Content-Type: application/json" \
 
 ## Frontend Integration
 
-### Save Changes Workflow
+### Save Changes Workflow (Current)
 1. **User Edits**: Types in field → `pendingUpdates` tracks change → "Save Changes" appears
-2. **User Approves**: Clicks 👍 button → approval added to `pendingUpdates` 
+2. **User Approves**: Clicks 👍 button → validation count incremented (NO approval nodes created)
 3. **User Saves**: Clicks "Save Changes" → all changes batched to `/update-validation`
-4. **Backend Persists**: Updates Neo4j + creates Approval nodes + applies spam protection
+4. **Backend Persists**: Updates Neo4j field values + increments validation counters
 5. **UI Updates**: Clears pending changes, shows success message, hides "Save Changes"
 
 ### Field States
@@ -116,18 +128,13 @@ curl -X POST -H "Content-Type: application/json" \
 
 ## Security Features
 
-### IP-Based Spam Protection (24-hour cooldown)
+### ⚠️ IP-Based Spam Protection DISABLED
 ```cypher
-// Spam check query:
-MATCH (n)-[:APPROVED_BY]->(approval:Approval)
-WHERE id(n) = $nodeId 
-AND approval.field = $fieldName 
-AND approval.ip = $ip 
-AND approval.timestamp > datetime() - duration('PT24H')
-RETURN approval LIMIT 1
+// PREVIOUS spam protection (no longer active):
+// MATCH (n)-[:APPROVED_BY]->(approval:Approval) WHERE ...
 
-// If found: Skip approval (prevents spam)
-// If not found: Create new approval
+// CURRENT: No spam protection needed since approval nodes disabled
+// Field updates proceed normally without IP tracking
 ```
 
 ### Input Validation
@@ -154,13 +161,13 @@ RETURN approval LIMIT 1
 }
 ```
 
-**Processing Logic:**
+**Processing Logic (Current):**
 1. Validate node type and find node
-2. **Sequential Processing** (avoid transaction conflicts):
+2. **Simplified Processing**:
    - Update field values: `SET n.fieldName = $value`
-   - Check IP spam protection for approvals
-   - Create Approval nodes: `CREATE (n)-[:APPROVED_BY]->(approval:Approval {...})`
    - Increment counters: `SET n.fieldName_validated_count = COALESCE(n.fieldName_validated_count, 0) + 1`
+   - **NO approval node creation**
+   - **NO IP spam protection checks**
 3. Return updated node data
 
 **Response:**
@@ -172,19 +179,32 @@ RETURN approval LIMIT 1
 }
 ```
 
-## Field Priority Order
+## Field Display Order in Node Inspector
 
-Properties displayed in Node Inspector:
-1. **arabic** - Source text
-2. **wazn** - Morphological pattern (EDITABLE) 
-3. **english** - English translation (EDITABLE)
-4. **spanish** - Spanish translation (EDITABLE)
-5. **urdu** - Urdu translation (EDITABLE)
-6. **transliteration** - Romanized form
-7. **definitions** - Lane's Lexicon definitions
-8. **hanswehr_entry** - Hans Wehr dictionary
-9. **IDs** - word_id, root_id, entry_id, etc.
-10. **Everything else** - Technical fields
+Properties displayed in Node Inspector (updated September 2025):
+1. **arabic** - Source text (read-only)
+2. **definitions** - Lane's Lexicon definitions (read-only)
+3. **wazn** - Morphological pattern ✏️ **EDITABLE**
+4. **english** - English translation ✏️ **EDITABLE**
+5. **transliteration** - Romanized form ✏️ **EDITABLE**
+6. **urdu** - Urdu translation ✏️ **EDITABLE**
+7. **spanish** - Spanish translation ✏️ **EDITABLE**
+8. **hanswehr_entry** - Hans Wehr dictionary (read-only)
+9. **frame** - Morphological frame ✏️ **EDITABLE**
+10. **opposite** - Antonym/opposite ✏️ **EDITABLE**
+11. **metaphor** - Metaphorical usage ✏️ **EDITABLE**
+12. **dua** - Prayer context ✏️ **EDITABLE**
+13. **notes** - Additional notes ✏️ **EDITABLE**
+14. **classification** - Linguistic classification ✏️ **EDITABLE**
+15. **IDs** - word_id, root_id, etc. (read-only)
+16. **Everything else** - Technical fields (read-only)
+
+### Section Order
+1. **Properties** (with editing capabilities)
+2. **Relationships** 
+3. **Connected Node Types**
+4. **Summary** (moved to bottom)
+5. **Raw Data (Advanced)** (collapsible)
 
 ## Files Modified
 
@@ -216,11 +236,11 @@ curl -X POST "http://localhost:5001/api/update-validation/word/1" \
      -H "Content-Type: application/json" \
      -d '{"updates": {"wazn": {"value": "فَعَلَ", "approve": true}}}'
 
-# Check approval nodes
+# Check validation counters (no approval nodes to query)
 curl -X POST "http://localhost:5001/api/execute-query" \
      -H "Authorization: Bearer localhost-dev-key-123" \
      -H "Content-Type: application/json" \
-     -d '{"query": "MATCH (n:Word)-[:APPROVED_BY]->(a:Approval) WHERE n.word_id = 1 RETURN n.arabic, a"}'
+     -d '{"query": "MATCH (n:Word) WHERE n.word_id = 1 RETURN n.wazn, n.wazn_validated_count, n.english"}'
 ```
 
 ## Next Steps / Potential Enhancements
@@ -234,6 +254,8 @@ curl -X POST "http://localhost:5001/api/execute-query" \
 
 ---
 
-**Last Updated**: August 30, 2025  
-**Status**: ✅ Fully tested and functional  
-**Commit**: `98d3377` - Complete backend validation system with Save Changes
+**Last Updated**: September 9, 2025  
+**Status**: ✅ Updated - Approval node creation disabled, field order updated  
+**Changes**: 
+- **September 2025**: Disabled approval node creation, reordered fields (arabic, definitions first), moved Summary section to bottom
+- **August 2025**: Original implementation with full approval audit trail
