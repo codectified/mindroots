@@ -1,4 +1,4 @@
-🧪Lisān Lab Session: Al-Qahhār
+🧪 Lisān Lab Session: Al-Qahhār
 
 Theme: Compulsion, Storytelling, and Divine Irresistibility
 Divine Name: Al-Qahhār (The Subduer, The Irresistible, The All-Compelling)
