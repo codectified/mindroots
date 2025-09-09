@@ -2747,48 +2747,79 @@ router.get('/navigate/corpusitem/:corpusId/:itemId/:direction', async (req, res)
   
   try {
     const currentCorpusId = parseInt(corpusId);
+    const isHierarchicalId = itemId.includes(':');
+    const isCorpus2 = currentCorpusId === 2;
     
-    // Parse hierarchical ID: surah:ayah:word
-    const [currentSurah, currentAyah, currentWord] = itemId.split(':').map(Number);
+    let query, queryParams;
     
-    // Find the next/previous corpus item by hierarchical ordering
-    // Parse the current item's hierarchical position from item_id
-    const query = direction === 'next' 
-      ? `
-        MATCH (c:CorpusItem) 
-        WHERE toInteger(c.corpus_id) = $corpusId
-        WITH c, split(c.item_id, ':') as parts
-        WITH c, toInteger(parts[0]) as surah, toInteger(parts[1]) as ayah, toInteger(parts[2]) as word
-        WHERE (
-          surah > $currentSurah OR
-          (surah = $currentSurah AND ayah > $currentAyah) OR  
-          (surah = $currentSurah AND ayah = $currentAyah AND word > $currentWord)
-        )
-        RETURN c
-        ORDER BY surah, ayah, word
-        LIMIT 1
-      `
-      : `
-        MATCH (c:CorpusItem) 
-        WHERE toInteger(c.corpus_id) = $corpusId
-        WITH c, split(c.item_id, ':') as parts
-        WITH c, toInteger(parts[0]) as surah, toInteger(parts[1]) as ayah, toInteger(parts[2]) as word
-        WHERE (
-          surah < $currentSurah OR
-          (surah = $currentSurah AND ayah < $currentAyah) OR
-          (surah = $currentSurah AND ayah = $currentAyah AND word < $currentWord)
-        )
-        RETURN c
-        ORDER BY surah DESC, ayah DESC, word DESC
-        LIMIT 1
-      `;
+    if (isHierarchicalId && isCorpus2) {
+      // Hierarchical ID logic for Corpus 2
+      const [currentSurah, currentAyah, currentWord] = itemId.split(':').map(Number);
+      
+      query = direction === 'next' 
+        ? `
+          MATCH (c:CorpusItem) 
+          WHERE toInteger(c.corpus_id) = $corpusId
+          WITH c, split(c.item_id, ':') as parts
+          WITH c, toInteger(parts[0]) as surah, toInteger(parts[1]) as ayah, toInteger(parts[2]) as word
+          WHERE (
+            surah > $currentSurah OR
+            (surah = $currentSurah AND ayah > $currentAyah) OR  
+            (surah = $currentSurah AND ayah = $currentAyah AND word > $currentWord)
+          )
+          RETURN c
+          ORDER BY surah, ayah, word
+          LIMIT 1
+        `
+        : `
+          MATCH (c:CorpusItem) 
+          WHERE toInteger(c.corpus_id) = $corpusId
+          WITH c, split(c.item_id, ':') as parts
+          WITH c, toInteger(parts[0]) as surah, toInteger(parts[1]) as ayah, toInteger(parts[2]) as word
+          WHERE (
+            surah < $currentSurah OR
+            (surah = $currentSurah AND ayah < $currentAyah) OR
+            (surah = $currentSurah AND ayah = $currentAyah AND word < $currentWord)
+          )
+          RETURN c
+          ORDER BY surah DESC, ayah DESC, word DESC
+          LIMIT 1
+        `;
+      
+      queryParams = { 
+        corpusId: currentCorpusId, 
+        currentSurah,
+        currentAyah,
+        currentWord
+      };
+      
+    } else {
+      // Integer ID logic for Corpus 1&3
+      const currentItemId = parseInt(itemId);
+      
+      query = direction === 'next' 
+        ? `
+          MATCH (c:CorpusItem) 
+          WHERE toInteger(c.corpus_id) = $corpusId AND toInteger(c.item_id) > $currentItemId
+          RETURN c
+          ORDER BY toInteger(c.item_id)
+          LIMIT 1
+        `
+        : `
+          MATCH (c:CorpusItem) 
+          WHERE toInteger(c.corpus_id) = $corpusId AND toInteger(c.item_id) < $currentItemId
+          RETURN c
+          ORDER BY toInteger(c.item_id) DESC
+          LIMIT 1
+        `;
+      
+      queryParams = { 
+        corpusId: currentCorpusId, 
+        currentItemId
+      };
+    }
     
-    const result = await session.run(query, { 
-      corpusId: currentCorpusId, 
-      currentSurah,
-      currentAyah,
-      currentWord
-    });
+    const result = await session.run(query, queryParams);
     
     if (result.records.length === 0) {
       return res.status(404).json({ error: 'Node not found' });
