@@ -16,7 +16,10 @@
       "Bash(PORT=3001 npm start)",
       "Bash(sed:*)",
       "Bash(git restore:*)",
-      "Bash(npx update-browserslist-db:*)"
+      "Bash(npx update-browserslist-db:*)",
+      "Bash(for:*)",
+      "Bash(head:*)",
+      "Bash(done)"
     ],
     "deny": []
   }
