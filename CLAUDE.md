@@ -69,34 +69,126 @@ CLAUDE.md                           # This file - your knowledge base!
 
 ---
 
-## 🔍 **Root Search System (Recently Overhauled)**
+## 🔍 **Complete Root Search System Architecture (Recently Overhauled)**
 
-### **Three Distinct Search Modes**
+### **Modern RadicalPosition-Based System** ✅ **PRODUCTION ACTIVE**
 
-#### **1. Fetch Root(s) - Position-Specific Search**
-- **Endpoint**: `GET /search-roots`
-- **Frontend**: `fetchRoots(r1, r2, r3, L1, L2)`
-- **Behavior**: Searches by exact radical position
-- **Wildcards**: `*` = any radical, `None` = biradical only
-- **Examples**:
-  - `ا - * - None` → Biradical roots with ا in position 1
-  - `ا - د - م` → Exact triradical match
+The search system uses a flexible RadicalPosition layer in Neo4j for optimal performance and extensibility.
 
-#### **2. Combinate - Permutation-Based Search**
-- **Endpoint**: `GET /search-combinate`
-- **Frontend**: `fetchCombinateRoots(r1, r2, r3, L1, L2)`
-- **Behavior**: Finds all permutations of specified radicals
-- **Examples**:
-  - `ا - د - *` → All permutations using ا and د
+#### **Database Structure**
+```cypher
+// RadicalPosition Layer (Flexible)
+(:Root {arabic: "ا-د-م"})-[:HAS_RADICAL]->(:RadicalPosition {radical: "ا", position: 1})
+(:Root {arabic: "ا-د-م"})-[:HAS_RADICAL]->(:RadicalPosition {radical: "د", position: 2})
+(:Root {arabic: "ا-د-م"})-[:HAS_RADICAL]->(:RadicalPosition {radical: "م", position: 3})
 
-#### **3. Fetch Extended - 4+ Radical Roots Only**
-- **Endpoint**: `GET /search-extended`
-- **Frontend**: `fetchExtendedRootsNew(r1, r2, r3, L1, L2)`
-- **Behavior**: Only quadriliteral+ roots
-- **Constraint**: Never returns 2-3 radical roots
+// Legacy Properties (Backward Compatibility)
+(:Root {arabic: "ا-د-م", r1: "ا", r2: "د", r3: "م"})
+```
 
-### **Legacy Support**
-The original `/radical-search` endpoint still exists and powers older functionality. Legacy functions like `fetchGeminateRoots`, `fetchTriliteralRoots` are maintained for backward compatibility.
+#### **Three Primary Search Endpoints**
+
+##### **1. Position-Specific Search** `/search-roots`
+```javascript
+// Examples:
+GET /search-roots?r1=ا&r2=*&r3=None&L1=arabic&L2=english
+// → Biradical roots with ا in position 1
+
+GET /search-roots?r1=ا&r2=د&r3=م&L1=arabic&L2=english  
+// → Exact triradical match ا-د-م
+```
+- **Wildcards**: `*` (any radical), `None` (biradical only)
+- **Logic**: Exact position matching with wildcard support
+- **Neo4j**: Uses RadicalPosition relationships
+
+##### **2. Permutation-Based Search** `/search-combinate`  
+```javascript
+// Examples:
+GET /search-combinate?r1=ا&r2=د&L1=arabic&L2=english
+// → All roots containing both ا and د in any positions
+```
+- **Behavior**: Finds all permutations regardless of position
+- **Use Case**: "I know these radicals appear but not their positions"
+- **Neo4j**: Flexible RadicalPosition matching
+
+##### **3. Extended Roots Only** `/search-extended`
+```javascript
+// Examples: 
+GET /search-extended?L1=arabic&L2=english
+// → Only returns 4+ radical roots (quadriliteral, etc.)
+```
+- **Filter**: Automatically excludes 2-3 radical roots
+- **Purpose**: Focus on complex morphological patterns
+- **Count Constraint**: `size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) >= 4`
+
+### **Advanced RadicalPosition Engine** `/radical-search` 
+```javascript
+// Advanced JSON-based query structure
+POST /radical-search
+{
+  "radicals": [
+    {"radical": "ا", "position": 1},
+    {"radical": "د", "position": 2}
+  ],
+  "searchType": "biradical_only",
+  "L1": "arabic", "L2": "english"
+}
+```
+
+### **Legacy Endpoints** ⚠️ **DEPRECATED BUT FUNCTIONAL**
+
+These endpoints use hardcoded `r1`, `r2`, `r3` properties and are marked for future migration:
+
+- `/rootbyletters` - Basic hardcoded position search  
+- `/geminate-roots` - Hardcoded biradical logic
+- `/triliteral-roots` - Hardcoded triradical logic
+- `/extended-roots` - Hardcoded extended logic
+
+**Migration Path**: Legacy endpoints will eventually be removed in favor of RadicalPosition-based equivalents.
+
+### **🔤 Orthographical Normalization (Recommended Enhancement)**
+
+#### **Current Challenge**
+RadicalPosition stores exact Arabic characters without normalization, leading to search misses:
+- User searches for `أ` but data contains `ا`
+- User searches for `ة` but data contains `ت`
+
+#### **Proposed Normalization Rules**
+```javascript
+const normalizeArabicLetter = (letter) => {
+  const normalizationMap = {
+    // Alef variants
+    'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ء': 'ا',
+    
+    // Taa variants  
+    'ة': 'ت',
+    
+    // Yaa variants
+    'ى': 'ي',
+    
+    // Waw variants
+    'ؤ': 'و',
+    
+    // Noon variants
+    'ن': 'ن'
+  };
+  
+  return normalizationMap[letter] || letter;
+};
+```
+
+#### **Implementation Points**
+- **Input Normalization**: Normalize user input before RadicalPosition queries
+- **Data Normalization**: Consider normalizing RadicalPosition.radical values
+- **Backward Compatibility**: Maintain original values for linguistic analysis
+- **Performance**: Pre-compute normalized indexes for fast lookup
+
+#### **Affected Endpoints**
+All RadicalPosition-based search endpoints would benefit:
+- `/search-roots` - Position-specific matching
+- `/search-combinate` - Permutation matching  
+- `/search-extended` - Extended root matching
+- `/radical-search` - Advanced query engine
 
 ---
 
@@ -893,4 +985,142 @@ API_KEY=localhost-dev-key-123
 - `routes/api.js`: Updated backend type validation mapping
 
 **Database Reality**: Corpus items in Neo4j have always been labeled as 'CorpusItem' nodes, not 'name' nodes. The 'name' references were legacy artifacts in the frontend code that needed cleanup.
+
+---
+
+## 📋 **Documentation Workflow & Standards**
+
+### **For Claude: Adding New Documentation**
+
+#### **1. Check Existing Documentation First**
+- **Always start with**: `DOCUMENTATION-INDEX.md` - scan all categories
+- **Check feature docs**: `docs/features/` - avoid duplicating existing feature documentation
+- **Review CLAUDE.md**: This file contains architecture and core system info
+- **Search patterns**: Use Grep to find existing documentation on the topic
+
+#### **2. Documentation File Placement Rules**
+
+**New Feature Documentation**:
+```bash
+# Location: docs/features/
+# Naming: FEATURE-NAME-DOCUMENTATION.md (uppercase with hyphens)
+# Examples:
+docs/features/VALIDATION-SYSTEM-DOCUMENTATION.md
+docs/features/RADICAL-SEARCH-INTEGRATION.md
+docs/features/NEW-FEATURE-DOCUMENTATION.md
+```
+
+**Test Results & Procedures**:
+```bash
+# Location: docs/testing/
+# Examples:
+docs/testing/BACKEND-TEST-RESULTS.md
+docs/testing/FRONTEND-INTEGRATION-CHECKLIST.md
+docs/testing/NEW-FEATURE-TESTING.md
+```
+
+**Historical/Production Changes**:
+```bash
+# Location: docs/archived/
+# Use when: Feature is deployed and stable, kept for reference
+# Examples:
+docs/archived/BACKEND-DEDUPLICATION-FIXES.md
+docs/archived/FEATURE-DEPLOYMENT-NOTES.md
+```
+
+**Development Prototypes**:
+```bash
+# Location: docs/development-prototypes/
+# Use for: Unused code, experiments, proof-of-concepts
+```
+
+#### **3. Mandatory Documentation Updates**
+
+**When working on ANY feature**:
+1. **Check DOCUMENTATION-INDEX.md** - scan relevant sections
+2. **Update CLAUDE.md** if architecture/core systems affected
+3. **Create feature doc** in `docs/features/` for substantial changes
+4. **Update DOCUMENTATION-INDEX.md** - add new file with description
+5. **Cross-reference**: Link between related documents
+
+#### **4. Documentation Content Standards**
+
+**Every feature document must include**:
+- **Date Added** and **Status**
+- **Implementation Details** with file paths and line numbers
+- **Testing Steps** or verification procedures
+- **Impact Assessment** (what changes, what doesn't)
+
+**Example Header Template**:
+```markdown
+# Feature Name Documentation
+
+**Date Added**: [Date]
+**Status**: [Development/Testing/Production-Ready]
+**Impact**: [Brief description of what this affects]
+
+## Implementation Details
+**Files Changed**: 
+- `path/to/file.js` (lines X-Y)
+- `path/to/other.js` (entire file)
+
+## Testing Verification
+[Required test steps]
+
+## Production Notes
+[Deployment considerations, if any]
+```
+
+#### **5. CLAUDE.md Update Triggers**
+
+**Always update CLAUDE.md when**:
+- New API endpoints added
+- Database schema changes
+- Authentication/security changes
+- Core architecture modifications
+- New dependencies or major library changes
+- Workflow or deployment procedure changes
+
+**Never update CLAUDE.md for**:
+- Minor UI tweaks
+- Bug fixes that don't change architecture
+- Content changes (unless they affect data structure)
+
+#### **6. Cross-Reference Maintenance**
+
+**When adding new docs**:
+- Add entry to DOCUMENTATION-INDEX.md with clear description
+- Link from relevant sections in other documents
+- Update "See also" sections where appropriate
+- Verify all internal links work after file moves/renames
+
+### **For Claude: Working on Features**
+
+#### **Pre-Development Checklist**
+1. **Read DOCUMENTATION-INDEX.md** - check if feature already documented
+2. **Search existing docs**: `grep -r "feature-keyword" docs/`
+3. **Review CLAUDE.md** for related architecture
+4. **Check for existing tests** in `docs/testing/`
+
+#### **During Development**
+- **Document as you go**: Don't wait until the end
+- **Note breaking changes** immediately
+- **Record testing steps** while they're fresh
+- **Update CLAUDE.md** for any architecture impacts
+
+#### **Post-Development**
+1. **Create feature documentation** in `docs/features/`
+2. **Update DOCUMENTATION-INDEX.md**
+3. **Add testing documentation** if needed
+4. **Update cross-references** in related docs
+5. **Consider CLAUDE.md updates** for architecture changes
+
+---
+
+*💡 **Pro Tip**: Always test both frontend and backend after changes. The graph visualization can be sensitive to data format changes, and Neo4j integer handling is a common source of bugs.*
+
+*📋 **Documentation Tip**: Always check DOCUMENTATION-INDEX.md first when working on features - existing documentation can save hours of reverse-engineering.*
+
+**Last Updated**: After documentation workflow establishment  
+**Status**: Production-ready with comprehensive search functionality and organized documentation system
 
