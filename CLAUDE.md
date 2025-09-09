@@ -443,6 +443,152 @@ These routes do not support RadicalPosition system or hierarchical IDs.
 - **Lane Entry**: ✅ Compatible with mixed ID formats
 - **Graph Expansion**: ✅ Knowledge graphs work for all corpus types
 - **Validation System**: ✅ Inline editing works for all corpus types
+- **Navigation System**: ✅ Corpus item navigation works for all ID formats
+
+## 🧭 Corpus Item Navigation System (September 7, 2025)
+
+### Complete Navigation Implementation
+
+The Node Inspector now supports full navigation for corpus items across all corpus types. This was a major enhancement as corpus items previously had no navigation capability.
+
+### Issues Resolved
+
+#### **1. Missing Navigation Logic**
+- **Problem**: Corpus items had navigation arrows but no working functionality
+- **Root Cause**: Backend navigation endpoint was hardcoded for hierarchical IDs only
+- **Impact**: No corpus item navigation worked for any corpus type
+
+#### **2. Case Sensitivity Bug**
+- **Problem**: Frontend passed `'CorpusItem'` but backend only recognized `'corpusitem'`
+- **Location**: `src/services/apiService.js:556`
+- **Fix**: Added case-insensitive checking
+
+#### **3. Neo4j Integer Handling**
+- **Problem**: `corpus_id` extraction failed for Neo4j integers `{low: X, high: Y}`
+- **Location**: `src/components/graph/NodeInspector.js:280-285`
+- **Fix**: Added proper `.low` extraction
+
+#### **4. ID Format Incompatibility** 
+- **Problem**: Backend assumed all corpus items use hierarchical IDs and tried `split(':')`
+- **Reality**: Only Corpus 2 uses hierarchical IDs; Corpus 1&3 use integers
+- **Solution**: Conditional logic for both ID formats
+
+### Technical Implementation
+
+#### **Backend Navigation Logic** (`routes/api.js:2744-2822`)
+```javascript
+const isHierarchicalId = itemId.includes(':');
+const isCorpus2 = currentCorpusId === 2;
+
+if (isHierarchicalId && isCorpus2) {
+  // Hierarchical ID navigation: surah:ayah:word semantic ordering
+  // ORDER BY surah, ayah, word / surah DESC, ayah DESC, word DESC
+} else {
+  // Integer ID navigation: simple +1/-1 logic  
+  // ORDER BY toInteger(c.item_id) / toInteger(c.item_id) DESC
+}
+```
+
+#### **Frontend ID Extraction** (`src/components/graph/NodeInspector.js:270-285`)
+```javascript
+// Extract item_id (works for both string and integer)
+actualId = properties.item_id?.value || nodeId;
+
+// Extract corpus_id with Neo4j integer handling
+let corpusId = properties.corpus_id?.value;
+if (corpusId && typeof corpusId === 'object' && 'low' in corpusId) {
+  corpusId = corpusId.low; // Convert Neo4j integer
+}
+```
+
+#### **API Service Case Handling** (`src/services/apiService.js:556`)
+```javascript
+} else if (nodeType === 'corpusitem' || nodeType === 'CorpusItem') {
+  // Supports both case variations
+}
+```
+
+### Navigation Behavior by Corpus
+
+#### **Corpus 1 & 3 (Integer IDs)**
+- **IDs**: Sequential integers (1, 2, 3, 4...)
+- **Navigation**: Simple increment/decrement
+- **Query**: `WHERE toInteger(c.item_id) > $currentItemId`
+- **Ordering**: `ORDER BY toInteger(c.item_id)`
+
+#### **Corpus 2 (Hierarchical IDs)**
+- **IDs**: Semantic format (`76:1:1`, `76:1:2`, `76:2:1`)
+- **Structure**: `surah:ayah:word`
+- **Navigation**: Multi-level semantic ordering
+- **Query**: Complex WHERE clause with surah/ayah/word comparisons
+- **Ordering**: `ORDER BY surah, ayah, word`
+
+### User Experience
+
+#### **Navigation Controls**
+- **Location**: Node Inspector header, next to node ID
+- **Buttons**: `←` (Previous) and `→` (Next) arrows
+- **Appearance**: Dark buttons with white arrows for visibility
+- **Behavior**: Updates entire Node Inspector with adjacent item
+
+#### **Navigation Flow**
+1. **User clicks arrow** → Frontend extracts `item_id` and `corpus_id`
+2. **API call made** → Backend detects ID format automatically  
+3. **Query executed** → Appropriate navigation logic applied
+4. **Result returned** → Node Inspector updates with new item data
+5. **Error handling** → "No next/previous node found" message if at boundary
+
+### Testing Verification
+
+#### **Integer ID Navigation** ✅
+```bash
+# Test: Navigate from item 2 to next in Corpus 1
+curl "/api/navigate/corpusitem/1/2/next"
+# Result: Successfully returned item 3 with full node data
+```
+
+#### **Hierarchical ID Navigation** ✅  
+```bash
+# Test: Navigate from 76:1:1 to next in Corpus 2
+curl "/api/navigate/corpusitem/2/76:1:1/next"  
+# Result: Successfully returned 76:1:2 with full node data
+```
+
+### API Endpoints
+
+#### **Navigation Endpoint**
+```javascript
+GET /navigate/corpusitem/:corpusId/:itemId/:direction
+
+// Examples:
+// /navigate/corpusitem/1/123/next        (Integer ID)
+// /navigate/corpusitem/2/76:1:1/previous (Hierarchical ID)
+
+// Response: Complete node inspection data
+{
+  "nodeData": {
+    "nodeType": "CorpusItem",
+    "nodeId": "next_id",
+    "properties": { ... },
+    "relationships": [ ... ],
+    "connectedNodeCounts": { ... }
+  }
+}
+```
+
+### Performance Considerations
+
+- **Index Requirements**: Both `(corpus_id, item_id)` should be indexed
+- **Query Optimization**: Integer queries are faster than hierarchical parsing
+- **Caching Potential**: Adjacent items could be pre-fetched
+- **Boundary Handling**: Efficient "no more items" detection
+
+### Future Enhancements
+
+- **Bulk Navigation**: Skip by N items
+- **Bookmark System**: Save navigation positions
+- **Search Integration**: Navigate to search results
+- **Mobile Gestures**: Swipe navigation support
 
 ---
 
