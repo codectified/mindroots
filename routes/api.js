@@ -1430,13 +1430,21 @@ router.get('/corpusitementry/:corpusId/:itemId', async (req, res) => {
   const session = req.driver.session();
   
   try {
-    const query = `
+    // Determine if this is a hierarchical ID (contains ':')
+    const isHierarchicalId = itemId.includes(':');
+    const isCorpus2 = parseInt(corpusId) === 2;
+    
+    const query = isHierarchicalId && isCorpus2 ? `
+      MATCH (item:CorpusItem {corpus_id: toInteger($corpusId), item_id: $itemId})
+      RETURN item.entry AS entry
+    ` : `
       MATCH (item:CorpusItem {corpus_id: toInteger($corpusId), item_id: toInteger($itemId)})
       RETURN item.entry AS entry
     `;
+    
     const result = await session.run(query, { 
       corpusId: parseInt(corpusId), 
-      itemId: parseInt(itemId) 
+      itemId: isHierarchicalId && isCorpus2 ? itemId : parseInt(itemId)
     });
 
 // API Authentication middleware
@@ -1503,6 +1511,9 @@ router.use(authenticateAPI);
 router.use(authenticateAPI);
 
 
+// LEGACY ROUTE WARNING: This endpoint is incompatible with Corpus 2 hierarchical IDs (surah:ayah:word)
+// Uses hardcoded radical position mapping and does not support the new RadicalPosition system
+// Consider migrating to /search-roots, /search-combinate, or /search-extended endpoints
 router.get('/rootbyletters', async (req, res) => {
   const { r1, r2, r3, L1, L2, searchType } = req.query;
   const session = req.driver.session();
@@ -1610,6 +1621,9 @@ router.use(authenticateAPI);
 // API Authentication middleware
 router.use(authenticateAPI);
 
+// LEGACY ROUTE WARNING: This endpoint is incompatible with Corpus 2 hierarchical IDs (surah:ayah:word)
+// Uses hardcoded biradical logic and does not support the new RadicalPosition system
+// Consider migrating to /search-roots with None wildcard for biradical searches
 router.get('/geminate-roots', async (req, res) => {
   const { r1, r2, L1, L2 } = req.query;
   const session = req.driver.session();
@@ -1671,6 +1685,9 @@ router.use(authenticateAPI);
 router.use(authenticateAPI);
 
 
+// LEGACY ROUTE WARNING: This endpoint is incompatible with Corpus 2 hierarchical IDs (surah:ayah:word)
+// Uses hardcoded triradical logic and does not support the new RadicalPosition system
+// Consider migrating to /search-roots or /search-combinate endpoints
 router.get('/triliteral-roots', async (req, res) => {
   const { r1, r2, r3, L1, L2 } = req.query;
   const session = req.driver.session();
@@ -1749,6 +1766,9 @@ router.use(authenticateAPI);
 router.use(authenticateAPI);
 
 
+// LEGACY ROUTE WARNING: This endpoint is incompatible with Corpus 2 hierarchical IDs (surah:ayah:word)
+// Uses hardcoded extended root logic and does not support the new RadicalPosition system
+// Consider migrating to /search-extended endpoint
 router.get('/extended-roots', async (req, res) => {
   const { r1, r2, r3, L1, L2 } = req.query;
   const session = req.driver.session();
@@ -2353,8 +2373,41 @@ router.get('/inspect/corpusitem/:corpusId/:itemId', async (req, res) => {
     const { corpusId, itemId } = req.params;
     const session = req.driver.session();
     
+    // Determine if this is a hierarchical ID (contains ':')
+    const isHierarchicalId = itemId.includes(':');
+    const isCorpus2 = parseInt(corpusId) === 2;
+    
     // Query to get corpus item properties and relationship counts
-    const query = `
+    const query = isHierarchicalId && isCorpus2 ? `
+      MATCH (n:CorpusItem {corpus_id: toInteger($corpusId), item_id: $itemId})
+      
+      // Get all node properties
+      WITH n, keys(n) as propertyKeys
+      
+      // Get relationship counts by type and direction
+      OPTIONAL MATCH (n)-[r]->(target)
+      WITH n, propertyKeys, type(r) as outRelType, count(target) as outCount
+      WITH n, propertyKeys, collect({type: outRelType, direction: 'outgoing', count: outCount}) as outgoingRels
+      
+      OPTIONAL MATCH (source)-[r]->(n)
+      WITH n, propertyKeys, outgoingRels, type(r) as inRelType, count(source) as inCount
+      WITH n, propertyKeys, outgoingRels, collect({type: inRelType, direction: 'incoming', count: inCount}) as incomingRels
+      
+      // Get connected node type counts
+      OPTIONAL MATCH (n)-[:HAS_WORD]->(w:Word)
+      WITH n, propertyKeys, outgoingRels, incomingRels, count(w) as wordCount
+      
+      OPTIONAL MATCH (n)<-[:BELONGS_TO]-(c:Corpus)
+      WITH n, propertyKeys, outgoingRels, incomingRels, wordCount, count(c) as corpusCount
+      
+      RETURN n, 
+             propertyKeys,
+             outgoingRels + incomingRels as relationships,
+             {
+               words: wordCount,
+               corpora: corpusCount
+             } as connectedCounts
+    ` : `
       MATCH (n:CorpusItem {corpus_id: toInteger($corpusId), item_id: toInteger($itemId)})
       
       // Get all node properties
@@ -2387,7 +2440,7 @@ router.get('/inspect/corpusitem/:corpusId/:itemId', async (req, res) => {
     
     const result = await session.run(query, { 
       corpusId: parseInt(corpusId), 
-      itemId: parseInt(itemId) 
+      itemId: isHierarchicalId && isCorpus2 ? itemId : parseInt(itemId)
     });
     
     if (result.records.length === 0) {
