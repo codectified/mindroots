@@ -277,8 +277,12 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
         actualId = nodeId;
       }
       
-      // Extract corpus_id for corpus items
-      const corpusId = properties.corpus_id?.value;
+      // Extract corpus_id for corpus items (handle Neo4j integers)
+      let corpusId = properties.corpus_id?.value;
+      // Handle Neo4j integer format {low: number, high: number}
+      if (corpusId && typeof corpusId === 'object' && 'low' in corpusId) {
+        corpusId = corpusId.low;
+      }
       
       const success = await onNavigate(nodeType, actualId, direction, corpusId);
       if (!success) {
