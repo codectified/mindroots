@@ -52,6 +52,15 @@
 - Graph & table mode compatibility
 - **Date**: August 21, 2025
 
+### [`docs/features/MOBILE-DEVELOPMENT-READINESS.md`](./docs/features/MOBILE-DEVELOPMENT-READINESS.md) 📱 **Mobile App Development**
+*Comprehensive assessment for iOS/Android mobile app development*
+- Complete codebase analysis (57 JS files, 38 components, 6,407 lines)
+- React Native vs PWA framework recommendations
+- D3.js mobile visualization strategy
+- 5-phase implementation roadmap (14-20 weeks)
+- **Date**: September 9, 2025
+- **Status**: Ready for framework selection and proof-of-concept
+
 ---
 
 ## 🧪 **Development & Testing**
