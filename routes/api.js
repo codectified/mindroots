@@ -1,6 +1,6 @@
 const express = require('express');
 const neo4j = require('neo4j-driver');
-const { authenticateAPI } = require('../middleware/auth');
+const { authenticateAPI, authenticateAdminAPI, sanitizeReadOnlyQuery } = require('../middleware/auth');
 const router = express.Router();
 
 // CORS Middleware
@@ -1234,26 +1234,218 @@ router.use(authenticateAPI);
 router.use(authenticateAPI);
 
 // Endpoint to execute Cypher queries
+// READ-ONLY Cypher query execution endpoint (PUBLIC API)
 router.post('/execute-query', async (req, res) => {
   const { query } = req.body;  
+  
+  // Validate query is read-only
+  const sanitizationResult = sanitizeReadOnlyQuery(query);
+  if (!sanitizationResult.isValid) {
+    console.log(`Blocked write operation attempt from IP: ${req.ip}, Query: ${query?.substring(0, 100)}...`);
+    return res.status(403).json({ 
+      error: sanitizationResult.error,
+      hint: 'Use /api/admin-query endpoint with admin credentials for write operations'
+    });
+  }
+  
   const session = req.driver.session();  
-
   try {
+    console.log(`Executing read-only query from IP: ${req.ip}`);
     const result = await session.run(query);
     const records = result.records.map(record => {
       const processedRecord = record.toObject();
       return convertIntegers(processedRecord);  // Ensure integers are converted
     });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+    
     res.json(records);
   } catch (error) {
-    console.error('Error executing query:', error);
+    console.error('Error executing read-only query:', error);
     res.status(500).json({ error: 'Error executing query' });
+  } finally {
+    await session.close();
+  }
+});
 
-// API Authentication middleware
-router.use(authenticateAPI);
+// FULL ACCESS Cypher query execution endpoint (ADMIN API ONLY)
+router.post('/admin-query', authenticateAdminAPI, async (req, res) => {
+  const { query } = req.body;  
+  
+  if (!query || typeof query !== 'string') {
+    return res.status(400).json({ 
+      error: 'Query must be a non-empty string' 
+    });
+  }
+  
+  const session = req.driver.session();  
+  try {
+    console.log(`Executing admin query from IP: ${req.ip}, Query: ${query.substring(0, 100)}...`);
+    const result = await session.run(query);
+    const records = result.records.map(record => {
+      const processedRecord = record.toObject();
+      return convertIntegers(processedRecord);  // Ensure integers are converted
+    });
+    
+    // Include additional metadata for admin queries
+    const responseData = {
+      records,
+      summary: {
+        totalRecords: records.length,
+        queryType: result.summary?.queryType || 'unknown',
+        counters: result.summary?.counters || {},
+        executionTime: result.summary?.resultAvailableAfter?.toNumber() || 0
+      }
+    };
+    
+    res.json(responseData);
+  } catch (error) {
+    console.error('Error executing admin query:', error);
+    res.status(500).json({ 
+      error: 'Error executing query',
+      details: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
+// SPECIALIZED ROOT ANALYSIS WRITE ENDPOINT
+// Creates structured Analysis nodes linked to Root nodes
+router.post('/write-root-analysis', async (req, res) => {
+  // Verify this is using public API key (GPT authentication)
+  if (req.authLevel !== 'public') {
+    return res.status(403).json({ 
+      error: 'This endpoint requires public GPT API key authentication' 
+    });
+  }
+
+  const { 
+    rootId, 
+    lexical_summary, 
+    semantic_path, 
+    fundamental_frame, 
+    words_expressions, 
+    poetic_references, 
+    basic_stats,
+    version 
+  } = req.body;
+
+  // Validate required parameters
+  if (!rootId || !lexical_summary) {
+    return res.status(400).json({ 
+      error: 'rootId and lexical_summary are required',
+      usage: 'POST /api/write-root-analysis with structured analysis sections',
+      requiredFields: ['rootId', 'lexical_summary'],
+      optionalFields: ['semantic_path', 'fundamental_frame', 'words_expressions', 'poetic_references', 'basic_stats', 'version']
+    });
+  }
+
+  const session = req.driver.session();
+  try {
+    // First, verify the node is actually a Root node
+    const verifyQuery = `
+      MATCH (r:Root) 
+      WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
+      RETURN r.root_id as root_id, r.arabic as arabic, r.id as id
+    `;
+    
+    const verifyResult = await session.run(verifyQuery, { rootId });
+    
+    if (verifyResult.records.length === 0) {
+      console.log(`Root analysis write failed - root not found: ${rootId}, IP: ${req.ip}`);
+      return res.status(404).json({ 
+        error: 'Root node not found',
+        rootId: rootId 
+      });
+    }
+
+    const rootRecord = verifyResult.records[0];
+    const actualRootId = rootRecord.get('root_id') || rootRecord.get('id');
+    const arabicRoot = rootRecord.get('arabic');
+
+    // Generate unique analysis ID and get next version number
+    const timestamp = new Date().toISOString();
+    const analysisId = `analysis_${actualRootId}_${Date.now()}`;
+    
+    // Check for existing analyses to determine version number
+    const versionQuery = `
+      MATCH (r:Root)-[:HAS_ANALYSIS]->(a:Analysis)
+      WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
+      RETURN MAX(a.version) as max_version
+    `;
+    
+    const versionResult = await session.run(versionQuery, { rootId });
+    const maxVersion = versionResult.records[0]?.get('max_version') || 0;
+    const nextVersion = version || (convertIntegers(maxVersion) + 1);
+
+    // Hard-coded Cypher for security - create Analysis node with structured sections
+    const writeQuery = `
+      MATCH (r:Root) 
+      WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
+      CREATE (a:Analysis {
+        id: $analysisId,
+        version: $version,
+        created: $timestamp,
+        source: "gpt-analysis",
+        ip: $ip,
+        user_edited: false,
+        validation_status: "pending",
+        
+        lexical_summary: $lexical_summary,
+        semantic_path: $semantic_path,
+        fundamental_frame: $fundamental_frame,
+        words_expressions: $words_expressions,
+        poetic_references: $poetic_references,
+        basic_stats: $basic_stats
+      })
+      CREATE (r)-[:HAS_ANALYSIS]->(a)
+      RETURN r.root_id as root_id, r.arabic as arabic, a.id as analysis_id, a.version as version
+    `;
+
+    console.log(`Creating Analysis node v${nextVersion} for root ${actualRootId} (${arabicRoot}) from IP: ${req.ip}`);
+    const writeResult = await session.run(writeQuery, { 
+      rootId,
+      analysisId,
+      version: nextVersion,
+      timestamp,
+      ip: req.ip,
+      lexical_summary: lexical_summary?.trim() || null,
+      semantic_path: semantic_path?.trim() || null,
+      fundamental_frame: fundamental_frame?.trim() || null,
+      words_expressions: words_expressions?.trim() || null,
+      poetic_references: poetic_references?.trim() || null,
+      basic_stats: basic_stats?.trim() || null
+    });
+
+    const updatedRecord = writeResult.records[0];
+    const createdAnalysisId = updatedRecord.get('analysis_id');
+    const createdVersion = updatedRecord.get('version');
+
+    res.json({
+      success: true,
+      message: 'Analysis node created successfully',
+      rootId: convertIntegers(actualRootId),
+      arabic: arabicRoot,
+      analysisId: createdAnalysisId,
+      version: convertIntegers(createdVersion),
+      timestamp: timestamp,
+      sections: {
+        lexical_summary: !!lexical_summary,
+        semantic_path: !!semantic_path,
+        fundamental_frame: !!fundamental_frame,
+        words_expressions: !!words_expressions,
+        poetic_references: !!poetic_references,
+        basic_stats: !!basic_stats
+      }
+    });
+
+    console.log(`Successfully created Analysis node ${createdAnalysisId} v${createdVersion} for root ${actualRootId}`);
+
+  } catch (error) {
+    console.error('Error creating root analysis:', error);
+    res.status(500).json({ 
+      error: 'Error creating analysis node',
+      details: error.message 
+    });
   } finally {
     await session.close();
   }
