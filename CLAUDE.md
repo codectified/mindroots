@@ -684,27 +684,77 @@ GET /navigate/corpusitem/:corpusId/:itemId/:direction
 
 ---
 
-## 🔐 API Authentication System
+## 🔐 Dual API Key Security System (Latest)
 
-### Security Implementation
-- **Date Added**: August 12, 2025
-- **Purpose**: Protect Neo4j database from bot attacks (31% malicious traffic)
-- **Method**: Bearer token authentication
+### GPT Orchestration Security Implementation
+- **Date Added**: September 12, 2025
+- **Purpose**: Secure GPT integration with read-only and admin access control
+- **Status**: ✅ IMPLEMENTED, TESTED, READY FOR PRODUCTION DEPLOYMENT
 
-### Authentication Files
-- middleware/auth.js - Authentication middleware
-- routes/api.js - Protected endpoints (28+ routes)  
-- src/services/apiService.js - Frontend auth headers
-- .env - API_KEY storage (not in git)
+### Three-Tier Authentication System
 
-### Implementation Details
-All API routes protected with authenticateAPI middleware that validates Bearer tokens against API_KEY environment variable.
+#### **1. Original Production Key (Backward Compatibility)**
+- **API_KEY**: `0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1`
+- **Usage**: Existing frontend (apiService.js) and all current endpoints
+- **Access**: Full backward-compatible access to all existing routes
 
-### Frontend Integration
-apiService.js includes Authorization header with Bearer token for all requests to https://theoption.life/api
+#### **2. Public API Key (MindRead GPT - Read-Only)**
+- **PUBLIC_API_KEY**: `9f43a3e526851607eea172265557c15b4b4a3654f61cb3b097a134c27de04f7c`
+- **Endpoint**: `POST /api/execute-query`
+- **Restrictions**: Read-only operations (MATCH, RETURN, COUNT, etc.)
+- **Blocks**: CREATE, DELETE, SET, MERGE, DROP operations
+- **GPT Usage**: MindRead GPT for safe database queries
 
-### Route Protection
-Single middleware line protects all routes: router.use(authenticateAPI)
+#### **3. Admin API Key (MindRoot GPT - Full Access)**
+- **ADMIN_API_KEY**: `68e8a950149d59496cda74a6b76a896d4a23ec1b5a4dcf87bf0ebd73acdd2030`
+- **Endpoint**: `POST /api/admin-query`
+- **Access**: Full read/write Neo4j operations
+- **Enhanced**: Detailed operation metadata in responses
+- **GPT Usage**: MindRoot GPT for full database management
+
+### Implementation Files
+- **middleware/auth.js**: Dual key authentication with query sanitization
+- **routes/api.js**: New `/execute-query` (restricted) and `/admin-query` (full access) endpoints
+- **.env**: Three API keys (original + dual system)
+- **src/services/apiService.js**: Still uses original production key
+
+### Current Development Status
+- ✅ Backend security system implemented and tested locally
+- ✅ Production API keys generated and validated with curl
+- ✅ Query sanitization blocking write operations on public endpoint
+- ✅ Enhanced admin endpoint with detailed metadata responses
+- ✅ Backward compatibility maintained for existing frontend
+- ❌ **PENDING**: Production deployment and GPT configuration
+
+### Next Steps for Production Deployment
+1. **Git push** current changes to master branch
+2. **SSH to production** and pull latest code  
+3. **Update production .env** with the three API keys from local .env
+4. **Restart PM2 services** and verify endpoints work
+5. **Configure GPTs** with appropriate keys and endpoints:
+   - MindRead GPT → PUBLIC_API_KEY + `/execute-query`
+   - MindRoot GPT → ADMIN_API_KEY + `/admin-query`
+
+### Test Commands for Production Verification
+```bash
+# Test public endpoint (should work)
+curl -X POST "https://theoption.life/api/execute-query" \
+     -H "Authorization: Bearer 9f43a3e526851607eea172265557c15b4b4a3654f61cb3b097a134c27de04f7c" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "MATCH (n:Root) RETURN n.arabic LIMIT 3"}'
+
+# Test public endpoint blocks writes (should return 403)
+curl -X POST "https://theoption.life/api/execute-query" \
+     -H "Authorization: Bearer 9f43a3e526851607eea172265557c15b4b4a3654f61cb3b097a134c27de04f7c" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "CREATE (n:TestNode) RETURN n"}'
+
+# Test admin endpoint (should work with enhanced metadata)
+curl -X POST "https://theoption.life/api/admin-query" \
+     -H "Authorization: Bearer 68e8a950149d59496cda74a6b76a896d4a23ec1b5a4dcf87bf0ebd73acdd2030" \
+     -H "Content-Type: application/json" \
+     -d '{"query": "MATCH (n:Root) RETURN count(n) as total_roots"}'
+```
 
 ---
 
