@@ -1244,7 +1244,7 @@ router.post('/execute-query', async (req, res) => {
     console.log(`Blocked write operation attempt from IP: ${req.ip}, Query: ${query?.substring(0, 100)}...`);
     return res.status(403).json({ 
       error: sanitizationResult.error,
-      hint: 'Use /api/admin-query endpoint with admin credentials for write operations'
+      hint: 'Use /api/query endpoint with admin credentials for write operations'
     });
   }
   
@@ -1267,7 +1267,7 @@ router.post('/execute-query', async (req, res) => {
 });
 
 // FULL ACCESS Cypher query execution endpoint (ADMIN API ONLY)
-router.post('/admin-query', authenticateAdminAPI, async (req, res) => {
+router.post('/query', authenticateAdminAPI, async (req, res) => {
   const { query } = req.body;  
   
   if (!query || typeof query !== 'string') {
