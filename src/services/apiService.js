@@ -4,7 +4,7 @@ import axios from 'axios';
 const api = axios.create({
   baseURL: 'https://theoption.life/api',
   headers: {
-    'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
+    'Authorization': 'Bearer 9f43a3e526851607eea172265557c15b4b4a3654f61cb3b097a134c27de04f7c',
   },
 });
 
