@@ -535,16 +535,22 @@ const query = isHierarchicalId ?
 ### Root Analysis Write Endpoint
 
 #### **Specialized Endpoint**: `/api/write-root-analysis`
-- **Purpose**: Allows GPT to write analysis entries to Root nodes
+- **Purpose**: Creates structured Analysis nodes linked to Root nodes
 - **Authentication**: Public GPT API key only (admin key rejected for security)
 - **Method**: POST
-- **Security**: Hardcoded Cypher, Root node validation, single write operation only
+- **Architecture**: Separate Analysis nodes with versioning and structured sections
 
 #### **Request Format**
 ```json
 {
   "rootId": "3",
-  "analysis": "Root analysis text here..."
+  "lexical_summary": "عَذْبٌ — sweet, pleasant (especially of water, wine, or food)...",
+  "semantic_path": "From physical sweetness to pleasantness of speech...",
+  "fundamental_frame": "Union/separation: sweetness unites and soothes...",
+  "words_expressions": "مُعَذَّبَةٌ — wine mixed with water...",
+  "poetic_references": "On water: مَاءٌ عَذْبٌ — sweet water...",
+  "basic_stats": "Total Word Nodes under ع-ذ-ب: 20+...",
+  "version": 1
 }
 ```
 
@@ -552,31 +558,71 @@ const query = isHierarchicalId ?
 ```json
 {
   "success": true,
-  "message": "Analysis written successfully",
-  "rootId": 3,
-  "arabic": "ا-ب-د",
-  "entry": "Root analysis text here..."
+  "message": "Analysis node created successfully",
+  "rootId": 5,
+  "arabic": "ا-ب-ض",
+  "analysisId": "analysis_5_1757660897912",
+  "version": 1,
+  "timestamp": "2025-09-12T07:08:17.912Z",
+  "sections": {
+    "lexical_summary": true,
+    "semantic_path": true,
+    "fundamental_frame": true,
+    "words_expressions": true,
+    "poetic_references": true,
+    "basic_stats": true
+  }
 }
 ```
 
-#### **Property Schema**: `entry`
-- **Type**: Simple string property on Root nodes
-- **Content**: Direct analysis text from GPT
-- **Behavior**: Overwrites previous entry (single analysis per root)
+#### **Analysis Node Schema**
+```cypher
+(:Root)-[:HAS_ANALYSIS]->(:Analysis {
+  id: "analysis_123",
+  version: 1,
+  created: "2025-09-12T07:08:17.912Z",
+  source: "gpt-analysis",
+  user_edited: false,
+  validation_status: "pending",
+  
+  // Structured sections
+  lexical_summary: "Concrete origin analysis...",
+  semantic_path: "Path to abstraction...",
+  fundamental_frame: "Union/separation dynamics...",
+  words_expressions: "Relevant words and expressions...",
+  poetic_references: "Poetic and idiomatic usage...",
+  basic_stats: "Statistical information..."
+})
+```
+
+#### **Version Control Features**
+- **Multiple Analyses**: Each root can have multiple Analysis nodes
+- **Auto-Versioning**: Automatically increments version numbers
+- **Historical Tracking**: All previous analyses preserved
+- **User Editing**: `user_edited` flag tracks manual modifications
+- **Validation Status**: `validation_status` for quality control
 
 #### **GPT Usage Flow**
-1. GPT issues read query: `/execute-query` to fetch root data
-2. GPT generates analysis based on root information
-3. GPT calls `/write-root-analysis` with rootId and analysis text
-4. Backend validates Root exists, writes to `entry` property
-5. Future: Browse analyses via read-only endpoint (not yet implemented)
+1. **Read Existing**: GPT queries existing analyses via `/execute-query`
+2. **Build Incrementally**: GPT can reference previous analyses to avoid repetition
+3. **Create New Version**: GPT calls `/write-root-analysis` with structured sections
+4. **Track Progress**: Backend creates versioned Analysis node
+5. **Future Enhancement**: User editing interface for Analysis nodes
+
+#### **Structured Sections (Based on Example)**
+- **lexical_summary**: Core meanings and concrete origins
+- **semantic_path**: Pathway from concrete to abstract meanings
+- **fundamental_frame**: Underlying semantic frameworks
+- **words_expressions**: Related words and expressions
+- **poetic_references**: Literary and idiomatic usage examples
+- **basic_stats**: Quantitative analysis of the root's word family
 
 #### **Security Features**
 - Only public GPT API key accepted (admin key rejected)
-- Root node existence validated before write
-- Hardcoded Cypher prevents arbitrary queries
-- IP logging for security audit trail
-- Single write operation only
+- Root node existence validated before creating Analysis
+- Hardcoded Cypher prevents arbitrary database operations
+- Version control prevents data loss
+- Separate nodes keep generated content isolated from core lexical data
 
 ---
 

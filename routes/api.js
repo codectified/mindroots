@@ -1309,7 +1309,7 @@ router.post('/admin-query', authenticateAdminAPI, async (req, res) => {
 });
 
 // SPECIALIZED ROOT ANALYSIS WRITE ENDPOINT
-// Allows only authenticated GPT requests to write analysis entries to Root nodes
+// Creates structured Analysis nodes linked to Root nodes
 router.post('/write-root-analysis', async (req, res) => {
   // Verify this is using public API key (GPT authentication)
   if (req.authLevel !== 'public') {
@@ -1318,19 +1318,24 @@ router.post('/write-root-analysis', async (req, res) => {
     });
   }
 
-  const { rootId, analysis } = req.body;
+  const { 
+    rootId, 
+    lexical_summary, 
+    semantic_path, 
+    fundamental_frame, 
+    words_expressions, 
+    poetic_references, 
+    basic_stats,
+    version 
+  } = req.body;
 
   // Validate required parameters
-  if (!rootId || !analysis) {
+  if (!rootId || !lexical_summary) {
     return res.status(400).json({ 
-      error: 'Both rootId and analysis are required',
-      usage: 'POST /api/write-root-analysis with body: { "rootId": "12345", "analysis": "analysis text" }'
-    });
-  }
-
-  if (typeof analysis !== 'string' || analysis.trim().length === 0) {
-    return res.status(400).json({ 
-      error: 'Analysis must be a non-empty string' 
+      error: 'rootId and lexical_summary are required',
+      usage: 'POST /api/write-root-analysis with structured analysis sections',
+      requiredFields: ['rootId', 'lexical_summary'],
+      optionalFields: ['semantic_path', 'fundamental_frame', 'words_expressions', 'poetic_references', 'basic_stats', 'version']
     });
   }
 
@@ -1357,37 +1362,88 @@ router.post('/write-root-analysis', async (req, res) => {
     const actualRootId = rootRecord.get('root_id') || rootRecord.get('id');
     const arabicRoot = rootRecord.get('arabic');
 
-    // Hard-coded Cypher for security - write analysis to entry property
+    // Generate unique analysis ID and get next version number
+    const timestamp = new Date().toISOString();
+    const analysisId = `analysis_${actualRootId}_${Date.now()}`;
+    
+    // Check for existing analyses to determine version number
+    const versionQuery = `
+      MATCH (r:Root)-[:HAS_ANALYSIS]->(a:Analysis)
+      WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
+      RETURN MAX(a.version) as max_version
+    `;
+    
+    const versionResult = await session.run(versionQuery, { rootId });
+    const maxVersion = versionResult.records[0]?.get('max_version') || 0;
+    const nextVersion = version || (convertIntegers(maxVersion) + 1);
+
+    // Hard-coded Cypher for security - create Analysis node with structured sections
     const writeQuery = `
       MATCH (r:Root) 
       WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
-      SET r.entry = $analysis
-      RETURN r.root_id as root_id, r.arabic as arabic, r.entry as entry
+      CREATE (a:Analysis {
+        id: $analysisId,
+        version: $version,
+        created: $timestamp,
+        source: "gpt-analysis",
+        ip: $ip,
+        user_edited: false,
+        validation_status: "pending",
+        
+        lexical_summary: $lexical_summary,
+        semantic_path: $semantic_path,
+        fundamental_frame: $fundamental_frame,
+        words_expressions: $words_expressions,
+        poetic_references: $poetic_references,
+        basic_stats: $basic_stats
+      })
+      CREATE (r)-[:HAS_ANALYSIS]->(a)
+      RETURN r.root_id as root_id, r.arabic as arabic, a.id as analysis_id, a.version as version
     `;
 
-    console.log(`Writing analysis for root ${actualRootId} (${arabicRoot}) from IP: ${req.ip}`);
+    console.log(`Creating Analysis node v${nextVersion} for root ${actualRootId} (${arabicRoot}) from IP: ${req.ip}`);
     const writeResult = await session.run(writeQuery, { 
-      rootId, 
-      analysis: analysis.trim()
+      rootId,
+      analysisId,
+      version: nextVersion,
+      timestamp,
+      ip: req.ip,
+      lexical_summary: lexical_summary?.trim() || null,
+      semantic_path: semantic_path?.trim() || null,
+      fundamental_frame: fundamental_frame?.trim() || null,
+      words_expressions: words_expressions?.trim() || null,
+      poetic_references: poetic_references?.trim() || null,
+      basic_stats: basic_stats?.trim() || null
     });
 
     const updatedRecord = writeResult.records[0];
-    const entryText = updatedRecord.get('entry');
+    const createdAnalysisId = updatedRecord.get('analysis_id');
+    const createdVersion = updatedRecord.get('version');
 
     res.json({
       success: true,
-      message: 'Analysis written successfully',
+      message: 'Analysis node created successfully',
       rootId: convertIntegers(actualRootId),
       arabic: arabicRoot,
-      entry: entryText
+      analysisId: createdAnalysisId,
+      version: convertIntegers(createdVersion),
+      timestamp: timestamp,
+      sections: {
+        lexical_summary: !!lexical_summary,
+        semantic_path: !!semantic_path,
+        fundamental_frame: !!fundamental_frame,
+        words_expressions: !!words_expressions,
+        poetic_references: !!poetic_references,
+        basic_stats: !!basic_stats
+      }
     });
 
-    console.log(`Successfully wrote analysis for root ${actualRootId}`);
+    console.log(`Successfully created Analysis node ${createdAnalysisId} v${createdVersion} for root ${actualRootId}`);
 
   } catch (error) {
-    console.error('Error writing root analysis:', error);
+    console.error('Error creating root analysis:', error);
     res.status(500).json({ 
-      error: 'Error writing analysis entry',
+      error: 'Error creating analysis node',
       details: error.message 
     });
   } finally {
