@@ -1308,6 +1308,93 @@ router.post('/admin-query', authenticateAdminAPI, async (req, res) => {
   }
 });
 
+// SPECIALIZED ROOT ANALYSIS WRITE ENDPOINT
+// Allows only authenticated GPT requests to write analysis entries to Root nodes
+router.post('/write-root-analysis', async (req, res) => {
+  // Verify this is using public API key (GPT authentication)
+  if (req.authLevel !== 'public') {
+    return res.status(403).json({ 
+      error: 'This endpoint requires public GPT API key authentication' 
+    });
+  }
+
+  const { rootId, analysis } = req.body;
+
+  // Validate required parameters
+  if (!rootId || !analysis) {
+    return res.status(400).json({ 
+      error: 'Both rootId and analysis are required',
+      usage: 'POST /api/write-root-analysis with body: { "rootId": "12345", "analysis": "analysis text" }'
+    });
+  }
+
+  if (typeof analysis !== 'string' || analysis.trim().length === 0) {
+    return res.status(400).json({ 
+      error: 'Analysis must be a non-empty string' 
+    });
+  }
+
+  const session = req.driver.session();
+  try {
+    // First, verify the node is actually a Root node
+    const verifyQuery = `
+      MATCH (r:Root) 
+      WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
+      RETURN r.root_id as root_id, r.arabic as arabic, r.id as id
+    `;
+    
+    const verifyResult = await session.run(verifyQuery, { rootId });
+    
+    if (verifyResult.records.length === 0) {
+      console.log(`Root analysis write failed - root not found: ${rootId}, IP: ${req.ip}`);
+      return res.status(404).json({ 
+        error: 'Root node not found',
+        rootId: rootId 
+      });
+    }
+
+    const rootRecord = verifyResult.records[0];
+    const actualRootId = rootRecord.get('root_id') || rootRecord.get('id');
+    const arabicRoot = rootRecord.get('arabic');
+
+    // Hard-coded Cypher for security - write analysis to entry property
+    const writeQuery = `
+      MATCH (r:Root) 
+      WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
+      SET r.entry = $analysis
+      RETURN r.root_id as root_id, r.arabic as arabic, r.entry as entry
+    `;
+
+    console.log(`Writing analysis for root ${actualRootId} (${arabicRoot}) from IP: ${req.ip}`);
+    const writeResult = await session.run(writeQuery, { 
+      rootId, 
+      analysis: analysis.trim()
+    });
+
+    const updatedRecord = writeResult.records[0];
+    const entryText = updatedRecord.get('entry');
+
+    res.json({
+      success: true,
+      message: 'Analysis written successfully',
+      rootId: convertIntegers(actualRootId),
+      arabic: arabicRoot,
+      entry: entryText
+    });
+
+    console.log(`Successfully wrote analysis for root ${actualRootId}`);
+
+  } catch (error) {
+    console.error('Error writing root analysis:', error);
+    res.status(500).json({ 
+      error: 'Error writing analysis entry',
+      details: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
 // API Authentication middleware
 router.use(authenticateAPI);
 

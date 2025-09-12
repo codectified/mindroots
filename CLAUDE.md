@@ -480,207 +480,26 @@ const convertIntegers = (obj) => {
 **Status**: Production-ready with comprehensive search functionality
 ---
 
-## 🐛 Hierarchical ID Compatibility Fixes (September 7, 2025)
+## 🐛 Mixed ID Schema Support
 
-### Issues Discovered & Fixed
+### Hierarchical vs Integer IDs
+- **Corpus 1&3**: Use integer IDs (1, 2, 3...)
+- **Corpus 2**: Uses hierarchical IDs (`surah:ayah:word`)
+- **Solution**: Conditional logic in backend queries
 
-After implementing Corpus 2's hierarchical ID system (`surah:ayah:word`), several endpoints were found to be incompatible:
-
-#### **1. Node Inspector Endpoint**
-- **Issue**: `/inspect/corpusitem/:corpusId/:itemId` used `toInteger($itemId)` which failed on "76:1:1"
-- **Fix**: Added conditional logic to detect hierarchical IDs and handle them as strings
-- **Location**: `routes/api.js:2351-2400`
-
-#### **2. Corpus Item Entry Endpoint**
-- **Issue**: `/corpusitementry/:corpusId/:itemId` used `toInteger($itemId)` which failed on hierarchical IDs
-- **Fix**: Added conditional logic matching other endpoints
-- **Location**: `routes/api.js:1428-1440`
-
-### Pattern Applied
-```javascript
-// Detect hierarchical vs integer IDs
-const isHierarchicalId = itemId.includes(':');
-const isCorpus2 = parseInt(corpusId) === 2;
-
-// Conditional query generation
-const query = isHierarchicalId && isCorpus2 ? 
-  `MATCH (n:CorpusItem {corpus_id: toInteger($corpusId), item_id: $itemId})` : // String ID
-  `MATCH (n:CorpusItem {corpus_id: toInteger($corpusId), item_id: toInteger($itemId)})`; // Integer ID
-
-// Conditional parameter passing
-const result = await session.run(query, {
-  corpusId: parseInt(corpusId),
-  itemId: isHierarchicalId && isCorpus2 ? itemId : parseInt(itemId)
-});
-```
-
-### Endpoints Confirmed Working
-- ✅ `/expand` - Fixed in previous session
-- ✅ `/navigate/corpusitem` - Already supported hierarchical IDs
-- ✅ `/update-validation` - Uses node property lookup, works with both ID types
-- ✅ `/list/quran_items` - Fixed in previous session
-- ✅ `/list/quran_items_range` - Fixed in previous session
-
-### Legacy Route Warnings Added
-Added warning comments above incompatible legacy endpoints:
-- `/rootbyletters` - Uses hardcoded radical position mapping
-- `/geminate-roots` - Uses hardcoded biradical logic  
-- `/triliteral-roots` - Uses hardcoded triradical logic
-- `/extended-roots` - Uses hardcoded extended root logic
-
-These routes do not support RadicalPosition system or hierarchical IDs.
-
-### Testing Status
-- **Node Inspector**: ✅ Works for both Corpus 1&3 (integer) and Corpus 2 (hierarchical)
-- **Lane Entry**: ✅ Compatible with mixed ID formats
-- **Graph Expansion**: ✅ Knowledge graphs work for all corpus types
-- **Validation System**: ✅ Inline editing works for all corpus types
-- **Navigation System**: ✅ Corpus item navigation works for all ID formats
-
-## 🧭 Corpus Item Navigation System (September 7, 2025)
-
-### Complete Navigation Implementation
-
-The Node Inspector now supports full navigation for corpus items across all corpus types. This was a major enhancement as corpus items previously had no navigation capability.
-
-### Issues Resolved
-
-#### **1. Missing Navigation Logic**
-- **Problem**: Corpus items had navigation arrows but no working functionality
-- **Root Cause**: Backend navigation endpoint was hardcoded for hierarchical IDs only
-- **Impact**: No corpus item navigation worked for any corpus type
-
-#### **2. Case Sensitivity Bug**
-- **Problem**: Frontend passed `'CorpusItem'` but backend only recognized `'corpusitem'`
-- **Location**: `src/services/apiService.js:556`
-- **Fix**: Added case-insensitive checking
-
-#### **3. Neo4j Integer Handling**
-- **Problem**: `corpus_id` extraction failed for Neo4j integers `{low: X, high: Y}`
-- **Location**: `src/components/graph/NodeInspector.js:280-285`
-- **Fix**: Added proper `.low` extraction
-
-#### **4. ID Format Incompatibility** 
-- **Problem**: Backend assumed all corpus items use hierarchical IDs and tried `split(':')`
-- **Reality**: Only Corpus 2 uses hierarchical IDs; Corpus 1&3 use integers
-- **Solution**: Conditional logic for both ID formats
-
-### Technical Implementation
-
-#### **Backend Navigation Logic** (`routes/api.js:2744-2822`)
+### Key Implementation Pattern
 ```javascript
 const isHierarchicalId = itemId.includes(':');
-const isCorpus2 = currentCorpusId === 2;
-
-if (isHierarchicalId && isCorpus2) {
-  // Hierarchical ID navigation: surah:ayah:word semantic ordering
-  // ORDER BY surah, ayah, word / surah DESC, ayah DESC, word DESC
-} else {
-  // Integer ID navigation: simple +1/-1 logic  
-  // ORDER BY toInteger(c.item_id) / toInteger(c.item_id) DESC
-}
+const query = isHierarchicalId ? 
+  'MATCH (n {item_id: $itemId})' :  // String ID
+  'MATCH (n {item_id: toInteger($itemId)})'; // Integer ID
 ```
 
-#### **Frontend ID Extraction** (`src/components/graph/NodeInspector.js:270-285`)
-```javascript
-// Extract item_id (works for both string and integer)
-actualId = properties.item_id?.value || nodeId;
-
-// Extract corpus_id with Neo4j integer handling
-let corpusId = properties.corpus_id?.value;
-if (corpusId && typeof corpusId === 'object' && 'low' in corpusId) {
-  corpusId = corpusId.low; // Convert Neo4j integer
-}
-```
-
-#### **API Service Case Handling** (`src/services/apiService.js:556`)
-```javascript
-} else if (nodeType === 'corpusitem' || nodeType === 'CorpusItem') {
-  // Supports both case variations
-}
-```
-
-### Navigation Behavior by Corpus
-
-#### **Corpus 1 & 3 (Integer IDs)**
-- **IDs**: Sequential integers (1, 2, 3, 4...)
-- **Navigation**: Simple increment/decrement
-- **Query**: `WHERE toInteger(c.item_id) > $currentItemId`
-- **Ordering**: `ORDER BY toInteger(c.item_id)`
-
-#### **Corpus 2 (Hierarchical IDs)**
-- **IDs**: Semantic format (`76:1:1`, `76:1:2`, `76:2:1`)
-- **Structure**: `surah:ayah:word`
-- **Navigation**: Multi-level semantic ordering
-- **Query**: Complex WHERE clause with surah/ayah/word comparisons
-- **Ordering**: `ORDER BY surah, ayah, word`
-
-### User Experience
-
-#### **Navigation Controls**
-- **Location**: Node Inspector header, next to node ID
-- **Buttons**: `←` (Previous) and `→` (Next) arrows
-- **Appearance**: Dark buttons with white arrows for visibility
-- **Behavior**: Updates entire Node Inspector with adjacent item
-
-#### **Navigation Flow**
-1. **User clicks arrow** → Frontend extracts `item_id` and `corpus_id`
-2. **API call made** → Backend detects ID format automatically  
-3. **Query executed** → Appropriate navigation logic applied
-4. **Result returned** → Node Inspector updates with new item data
-5. **Error handling** → "No next/previous node found" message if at boundary
-
-### Testing Verification
-
-#### **Integer ID Navigation** ✅
-```bash
-# Test: Navigate from item 2 to next in Corpus 1
-curl "/api/navigate/corpusitem/1/2/next"
-# Result: Successfully returned item 3 with full node data
-```
-
-#### **Hierarchical ID Navigation** ✅  
-```bash
-# Test: Navigate from 76:1:1 to next in Corpus 2
-curl "/api/navigate/corpusitem/2/76:1:1/next"  
-# Result: Successfully returned 76:1:2 with full node data
-```
-
-### API Endpoints
-
-#### **Navigation Endpoint**
-```javascript
-GET /navigate/corpusitem/:corpusId/:itemId/:direction
-
-// Examples:
-// /navigate/corpusitem/1/123/next        (Integer ID)
-// /navigate/corpusitem/2/76:1:1/previous (Hierarchical ID)
-
-// Response: Complete node inspection data
-{
-  "nodeData": {
-    "nodeType": "CorpusItem",
-    "nodeId": "next_id",
-    "properties": { ... },
-    "relationships": [ ... ],
-    "connectedNodeCounts": { ... }
-  }
-}
-```
-
-### Performance Considerations
-
-- **Index Requirements**: Both `(corpus_id, item_id)` should be indexed
-- **Query Optimization**: Integer queries are faster than hierarchical parsing
-- **Caching Potential**: Adjacent items could be pre-fetched
-- **Boundary Handling**: Efficient "no more items" detection
-
-### Future Enhancements
-
-- **Bulk Navigation**: Skip by N items
-- **Bookmark System**: Save navigation positions
-- **Search Integration**: Navigate to search results
-- **Mobile Gestures**: Swipe navigation support
+### Navigation System
+- **Integer Navigation**: Simple +1/-1 logic
+- **Hierarchical Navigation**: Semantic surah:ayah:word ordering
+- **UI**: `←` and `→` arrows in Node Inspector
+- **Endpoint**: `/navigate/corpusitem/:corpusId/:itemId/:direction`
 
 ---
 
@@ -694,67 +513,70 @@ GET /navigate/corpusitem/:corpusId/:itemId/:direction
 ### Three-Tier Authentication System
 
 #### **1. Original Production Key (Backward Compatibility)**
-- **API_KEY**: `[LEGACY_API_KEY]`
 - **Usage**: Existing frontend (apiService.js) and all current endpoints
 - **Access**: Full backward-compatible access to all existing routes
 
 #### **2. Public API Key (MindRead GPT - Read-Only)**
-- **PUBLIC_API_KEY**: `[PUBLIC_GPT_API_KEY]`
 - **Endpoint**: `POST /api/execute-query`
 - **Restrictions**: Read-only operations (MATCH, RETURN, COUNT, etc.)
 - **Blocks**: CREATE, DELETE, SET, MERGE, DROP operations
-- **GPT Usage**: MindRead GPT for safe database queries
 
 #### **3. Admin API Key (MindRoot GPT - Full Access)**
-- **ADMIN_API_KEY**: `[ADMIN_API_KEY]`
 - **Endpoint**: `POST /api/admin-query`
 - **Access**: Full read/write Neo4j operations
 - **Enhanced**: Detailed operation metadata in responses
-- **GPT Usage**: MindRoot GPT for full database management
 
 ### Implementation Files
 - **middleware/auth.js**: Dual key authentication with query sanitization
-- **routes/api.js**: New `/execute-query` (restricted) and `/admin-query` (full access) endpoints
-- **.env**: Three API keys (original + dual system)
-- **src/services/apiService.js**: Still uses original production key
+- **routes/api.js**: New `/execute-query`, `/admin-query`, and `/write-root-analysis` endpoints
+- **.env**: Contains all API keys (not in git)
+- **src/services/apiService.js**: Uses production API key
 
-### Current Development Status
-- ✅ Backend security system implemented and tested locally
-- ✅ Production API keys generated and validated with curl
-- ✅ Query sanitization blocking write operations on public endpoint
-- ✅ Enhanced admin endpoint with detailed metadata responses
-- ✅ Backward compatibility maintained for existing frontend
-- ❌ **PENDING**: Production deployment and GPT configuration
+### Root Analysis Write Endpoint
 
-### Next Steps for Production Deployment
-1. **Git push** current changes to master branch
-2. **SSH to production** and pull latest code  
-3. **Update production .env** with the three API keys from local .env
-4. **Restart PM2 services** and verify endpoints work
-5. **Configure GPTs** with appropriate keys and endpoints:
-   - MindRead GPT → PUBLIC_API_KEY + `/execute-query`
-   - MindRoot GPT → ADMIN_API_KEY + `/admin-query`
+#### **Specialized Endpoint**: `/api/write-root-analysis`
+- **Purpose**: Allows GPT to write analysis entries to Root nodes
+- **Authentication**: Public GPT API key only (admin key rejected for security)
+- **Method**: POST
+- **Security**: Hardcoded Cypher, Root node validation, single write operation only
 
-### Test Commands for Production Verification
-```bash
-# Test public endpoint (should work)
-curl -X POST "https://theoption.life/api/execute-query" \
-     -H "Authorization: Bearer [PUBLIC_GPT_API_KEY]" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "MATCH (n:Root) RETURN n.arabic LIMIT 3"}'
-
-# Test public endpoint blocks writes (should return 403)
-curl -X POST "https://theoption.life/api/execute-query" \
-     -H "Authorization: Bearer [PUBLIC_GPT_API_KEY]" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "CREATE (n:TestNode) RETURN n"}'
-
-# Test admin endpoint (should work with enhanced metadata)
-curl -X POST "https://theoption.life/api/admin-query" \
-     -H "Authorization: Bearer [ADMIN_API_KEY]" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "MATCH (n:Root) RETURN count(n) as total_roots"}'
+#### **Request Format**
+```json
+{
+  "rootId": "3",
+  "analysis": "Root analysis text here..."
+}
 ```
+
+#### **Response Format**
+```json
+{
+  "success": true,
+  "message": "Analysis written successfully",
+  "rootId": 3,
+  "arabic": "ا-ب-د",
+  "entry": "Root analysis text here..."
+}
+```
+
+#### **Property Schema**: `entry`
+- **Type**: Simple string property on Root nodes
+- **Content**: Direct analysis text from GPT
+- **Behavior**: Overwrites previous entry (single analysis per root)
+
+#### **GPT Usage Flow**
+1. GPT issues read query: `/execute-query` to fetch root data
+2. GPT generates analysis based on root information
+3. GPT calls `/write-root-analysis` with rootId and analysis text
+4. Backend validates Root exists, writes to `entry` property
+5. Future: Browse analyses via read-only endpoint (not yet implemented)
+
+#### **Security Features**
+- Only public GPT API key accepted (admin key rejected)
+- Root node existence validated before write
+- Hardcoded Cypher prevents arbitrary queries
+- IP logging for security audit trail
+- Single write operation only
 
 ---
 
@@ -801,112 +623,30 @@ After any changes:
 
 ---
 
-## 🎨 UI Overhaul & Validation System (August 30, 2025)
+## 🎨 UI & Validation System
 
-### Complete Interface Redesign
-- **Branch**: `contextmenuoverhaul`
-- **Purpose**: Streamlined user experience with integrated validation workflow
-- **Status**: Production-ready, thoroughly tested
+### Key Features
+- **Context Menu**: Simplified with "More info" action
+- **InfoBubble**: Collapsible sections for definitions
+- **Node Inspector**: Full node data with inline editing
+- **Validation**: Edit → Approve → Lock workflow
 
-### Key Changes
-
-#### **1. Context Menu Simplification**
-- **Before**: Complex "Entries" submenu with multiple options
-- **After**: Single "More info" action that opens InfoBubble
-- **Files**: `src/components/graph/NodeContextMenu.js`
-- **Result**: Cleaner, more intuitive right-click experience
-
-#### **2. InfoBubble Enhancement**
-- **Feature**: Collapsible sections for Lane, Hans Wehr, and Notes
-- **Implementation**: HTML `<details>` elements with custom styling
-- **Files**: `src/components/layout/InfoBubble.js`, `src/styles/info-bubble.css`
-- **Mobile**: Responsive design with touch-friendly interactions
-
-#### **3. Node Inspector Validation System**
-- **Core Feature**: Inline editing for 6 linguistic fields
+### Validation System
 - **Editable Fields**: english, wazn, spanish, urdu, classification, transliteration
-- **Workflow**: Edit → Approve → Lock → Continue approving
-- **Backend**: Full persistence with spam protection
-
-#### **4. Navigation System**
-- **Arrow Navigation**: `←` and `→` buttons for Word and CorpusItem nodes
-- **Backend**: Robust sequencing queries handle ID gaps gracefully
-- **Position**: Located next to node ID in header for logical grouping
-- **Contrast**: Dark buttons with white arrows for visibility
-
-### Validation System Architecture
-
-#### **Frontend State Management**
-```javascript
-// Three key state objects in NodeInspector:
-fieldValues:     { wazn: "فَعَلَ", english: "to prepare" }
-validationData:  { wazn: { validated_count: 3, locked: true } }
-pendingUpdates:  { wazn: { value: "فَعَلَ", approve: true } }
-```
-
-#### **Backend Persistence**
 - **Endpoint**: `POST /update-validation/:nodeType/:nodeId`
-- **Database**: Updates node properties + creates Approval audit trail
-- **Security**: IP-based 24-hour spam protection per field
-- **Files**: `routes/api.js` (lines 2750-2862), `src/services/apiService.js`
+- **Security**: IP-based spam protection
+- **Audit Trail**: Creates Approval nodes for tracking
 
-#### **Database Schema (Tested)**
-```cypher
-// Updated node with validation counter
-(:Word {
-  wazn: "فَعَلَ",
-  wazn_validated_count: 3,
-  english: "to prepare oneself"
-})
-
-// Approval audit trail
--[:APPROVED_BY]->(:Approval {
-  field: "wazn",
-  ip: "192.168.1.1", 
-  timestamp: datetime(),
-  value: "فَعَلَ"
-})
-```
-
-### Property Display Order
-**Optimized for validation context:**
-1. `arabic` - Source text for reference
-2. `wazn` - Morphological pattern (EDITABLE 👍)
-3. `english` - English translation (EDITABLE 👍)
-4. `spanish` - Spanish translation (EDITABLE 👍)
-5. `urdu` - Urdu translation (EDITABLE 👍)
-6. `transliteration` - Romanization (EDITABLE 👍)
-7. `definitions` - Lane's Lexicon context
-8. `hanswehr_entry` - Hans Wehr context
-9. **IDs** - word_id, root_id, etc.
-10. **Technical fields** - Everything else
-
-### User Experience Flow
-1. **Context Menu**: Right-click → "More info" opens InfoBubble
-2. **InfoBubble**: Click sections to expand Lane/Hans Wehr definitions
-3. **Node Inspector**: "Inspect Node" shows full data with edit capabilities
-4. **Edit Fields**: Type in editable fields → "Save Changes" appears
-5. **Approve**: Click 👍 button → counter increments, field locks after first approval
-6. **Navigate**: Use ← → arrows to browse through words/corpus items
-7. **Save**: Click "Save Changes" → all updates persist to Neo4j database
-
-### Testing Commands (Localhost)
+### Navigation
+- **Arrow Buttons**: `←` and `→` for Word and CorpusItem nodes
+- **Location**: Next to node ID in inspector header
+- **Endpoint**: `/navigate/:nodeType/:nodeId/:direction`
 ```bash
 # Test validation update
 curl -X POST "http://localhost:5001/api/update-validation/word/16089" \
-     -H "Authorization: Bearer localhost-dev-key-123" \
+     -H "Authorization: Bearer [DEV_KEY]" \
      -H "Content-Type: application/json" \
      -d '{"updates": {"wazn": {"value": "فَعَلَ", "approve": true}}}'
-
-# Test navigation
-curl "http://localhost:5001/api/navigate/word/16089/next" \
-     -H "Authorization: Bearer localhost-dev-key-123"
-
-# Check approval audit trail
-curl -X POST "http://localhost:5001/api/execute-query" \
-     -H "Authorization: Bearer localhost-dev-key-123" \
-     -H "Content-Type: application/json" \
-     -d '{"query": "MATCH (n:Word)-[:APPROVED_BY]->(a:Approval) WHERE n.word_id = 16089 RETURN a"}'
 ```
 
 ### Production Deployment Checklist
@@ -918,96 +658,39 @@ curl -X POST "http://localhost:5001/api/execute-query" \
 
 ---
 
-## 🔍 Node Inspector Feature (Legacy Documentation)
+## 🔍 Node Inspector
 
-### Feature Overview
-- **Date Added**: August 12, 2025
-- **Purpose**: Comprehensive node inspection showing all properties, relationships, and connections
-- **Access**: Context menu "Inspect Node" option available for all node types
+### Overview
+- **Purpose**: Comprehensive node inspection
+- **Access**: Context menu "Inspect Node" option
+- **Endpoint**: `GET /inspect/:nodeType/:nodeId`
 
-### Implementation Details
+### Features
+- **Summary Dashboard**: Properties, relationships, connections count
+- **Properties Table**: All node data with formatting
+- **Relationships**: Directional with counts
+- **Connected Nodes**: Visual grid by type
+- **Raw Data**: Collapsible JSON view
+- **Mobile Responsive**: Touch-friendly layout
 
-#### Backend Endpoint
-- **Route**: `GET /inspect/:nodeType/:nodeId`
-- **File**: `routes/api.js`
-- **Functionality**: Returns comprehensive node data including:
-  - All node properties with types and formatting
-  - All relationships (incoming/outgoing) with counts  
-  - Connected node type summaries
-  - Raw data for advanced users
-
-#### Frontend Integration
-- **API Service**: `inspectNode()` function in `src/services/apiService.js`
-- **Context Menu**: "Inspect Node" option added to all node types in `NodeContextMenu.js`
-- **UI Component**: `NodeInspector.js` - Full-screen modal with comprehensive data display
-- **Styles**: Consolidated into `src/styles/info-bubble.css` (not separate stylesheet)
-
-#### Key Features
-- **Summary Dashboard**: Total properties, relationships, connected nodes
-- **Properties Table**: All node properties with type-specific formatting and color coding
-- **Relationships Overview**: Directional relationships with counts and badges
-- **Connected Node Types**: Visual grid showing connected node type distribution
-- **Raw Data Viewer**: Collapsible JSON view for advanced inspection
-- **Mobile Responsive**: Optimized layout for mobile devices
-
-#### Technical Implementation
-```javascript
-// Context action handler in GraphDataContext.js
-case 'inspect':
-  const inspectNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
-  const inspectionData = await inspectNode(node.type, inspectNodeId);
-  setNodeInspectorData(inspectionData);
-```
-
-#### Styling Consolidation Notes
-- **Previous**: Separate `node-inspector.css` file
-- **Current**: Consolidated into existing `info-bubble.css` file
-- **Reason**: Reduce file proliferation, reuse existing modal patterns
-- **Button Styles**: Uses existing button classes from `buttons.css`
-
-### Testing Requirements
-
-#### Backend Testing
-```bash
-# Must restart backend after adding new endpoint
-node server.js
-
-# Test the inspect endpoint
-curl "http://localhost:5001/api/inspect/root/123"
-curl "http://localhost:5001/api/inspect/word/456" 
-curl "http://localhost:5001/api/inspect/form/789"
-```
-
-#### Frontend Testing
-1. **Switch to localhost**: Comment production API URL, uncomment localhost in `apiService.js`
-2. **Restart backend**: New endpoint requires server restart
-3. **Test all node types**: Right-click any node → "Inspect Node"
-4. **Verify UI components**: Summary, properties, relationships, connected nodes
-5. **Test mobile responsiveness**: Check layout on mobile devices
-6. **Close functionality**: Both X button and footer close button
-
-#### Development Workflow Notes
-- **API URL Switch**: Always switch `apiService.js` to localhost for testing
-- **Authentication Setup**: Localhost requires auth header with development key
-- **Backend Restart**: Required when adding new endpoints or environment changes
-- **Style Consolidation**: Prefer existing stylesheets over new ones
-- **Button Consistency**: Use existing button patterns for UI consistency
-
-#### Authentication Configuration
+### Technical Notes
+- **Styles**: Consolidated into `info-bubble.css`
+- **ID Extraction**: Uses `word_id || root_id || form_id || item_id`
+- **Testing**: Requires backend restart for new endpoints
 ```javascript
 // localhost development setup in apiService.js
 const api = axios.create({
   baseURL: 'http://localhost:5001/api',
   headers: {
-    'Authorization': 'Bearer localhost-dev-key-123',
+    'Authorization': 'Bearer [DEV_KEY]',
   },
 });
 
-// production setup (commented out for localhost testing)
+// production setup (uses production API key from .env)
 // const api = axios.create({
 //   baseURL: 'https://theoption.life/api',
 //   headers: {
-//     'Authorization': 'Bearer [LEGACY_API_KEY]',
+//     'Authorization': 'Bearer [PROD_KEY]',
 //   },
 // });
 ```
@@ -1020,7 +703,7 @@ NEO4J_USERNAME=neo4j
 NEO4J_PASSWORD=your-password
 
 # API authentication (required for auth middleware)
-API_KEY=localhost-dev-key-123
+API_KEY=[your-dev-key]
 ```
 
 #### Legacy Type Cleanup (August 12, 2025)
@@ -1038,132 +721,20 @@ API_KEY=localhost-dev-key-123
 
 ---
 
-## 📋 **Documentation Workflow & Standards**
+## 📋 Documentation Standards
 
-### **For Claude: Adding New Documentation**
+### File Organization
+- **Features**: `docs/features/` - New feature documentation
+- **Testing**: `docs/testing/` - Test procedures and results  
+- **Archived**: `docs/archived/` - Historical/deployed features
+- **Prototypes**: `docs/development-prototypes/` - Experimental code
 
-#### **1. Check Existing Documentation First**
-- **Always start with**: `DOCUMENTATION-INDEX.md` - scan all categories
-- **Check feature docs**: `docs/features/` - avoid duplicating existing feature documentation
-- **Review CLAUDE.md**: This file contains architecture and core system info
-- **Search patterns**: Use Grep to find existing documentation on the topic
-
-#### **2. Documentation File Placement Rules**
-
-**New Feature Documentation**:
-```bash
-# Location: docs/features/
-# Naming: FEATURE-NAME-DOCUMENTATION.md (uppercase with hyphens)
-# Examples:
-docs/features/VALIDATION-SYSTEM-DOCUMENTATION.md
-docs/features/RADICAL-SEARCH-INTEGRATION.md
-docs/features/NEW-FEATURE-DOCUMENTATION.md
-```
-
-**Test Results & Procedures**:
-```bash
-# Location: docs/testing/
-# Examples:
-docs/testing/BACKEND-TEST-RESULTS.md
-docs/testing/FRONTEND-INTEGRATION-CHECKLIST.md
-docs/testing/NEW-FEATURE-TESTING.md
-```
-
-**Historical/Production Changes**:
-```bash
-# Location: docs/archived/
-# Use when: Feature is deployed and stable, kept for reference
-# Examples:
-docs/archived/BACKEND-DEDUPLICATION-FIXES.md
-docs/archived/FEATURE-DEPLOYMENT-NOTES.md
-```
-
-**Development Prototypes**:
-```bash
-# Location: docs/development-prototypes/
-# Use for: Unused code, experiments, proof-of-concepts
-```
-
-#### **3. Mandatory Documentation Updates**
-
-**When working on ANY feature**:
-1. **Check DOCUMENTATION-INDEX.md** - scan relevant sections
-2. **Update CLAUDE.md** if architecture/core systems affected
-3. **Create feature doc** in `docs/features/` for substantial changes
-4. **Update DOCUMENTATION-INDEX.md** - add new file with description
-5. **Cross-reference**: Link between related documents
-
-#### **4. Documentation Content Standards**
-
-**Every feature document must include**:
-- **Date Added** and **Status**
-- **Implementation Details** with file paths and line numbers
-- **Testing Steps** or verification procedures
-- **Impact Assessment** (what changes, what doesn't)
-
-**Example Header Template**:
-```markdown
-# Feature Name Documentation
-
-**Date Added**: [Date]
-**Status**: [Development/Testing/Production-Ready]
-**Impact**: [Brief description of what this affects]
-
-## Implementation Details
-**Files Changed**: 
-- `path/to/file.js` (lines X-Y)
-- `path/to/other.js` (entire file)
-
-## Testing Verification
-[Required test steps]
-
-## Production Notes
-[Deployment considerations, if any]
-```
-
-#### **5. CLAUDE.md Update Triggers**
-
-**Always update CLAUDE.md when**:
-- New API endpoints added
-- Database schema changes
-- Authentication/security changes
-- Core architecture modifications
-- New dependencies or major library changes
-- Workflow or deployment procedure changes
-
-**Never update CLAUDE.md for**:
-- Minor UI tweaks
-- Bug fixes that don't change architecture
-- Content changes (unless they affect data structure)
-
-#### **6. Cross-Reference Maintenance**
-
-**When adding new docs**:
-- Add entry to DOCUMENTATION-INDEX.md with clear description
-- Link from relevant sections in other documents
-- Update "See also" sections where appropriate
-- Verify all internal links work after file moves/renames
-
-### **For Claude: Working on Features**
-
-#### **Pre-Development Checklist**
-1. **Read DOCUMENTATION-INDEX.md** - check if feature already documented
-2. **Search existing docs**: `grep -r "feature-keyword" docs/`
-3. **Review CLAUDE.md** for related architecture
-4. **Check for existing tests** in `docs/testing/`
-
-#### **During Development**
-- **Document as you go**: Don't wait until the end
-- **Note breaking changes** immediately
-- **Record testing steps** while they're fresh
-- **Update CLAUDE.md** for any architecture impacts
-
-#### **Post-Development**
-1. **Create feature documentation** in `docs/features/`
-2. **Update DOCUMENTATION-INDEX.md**
-3. **Add testing documentation** if needed
-4. **Update cross-references** in related docs
-5. **Consider CLAUDE.md updates** for architecture changes
+### Documentation Rules
+1. Check `DOCUMENTATION-INDEX.md` first
+2. Update `CLAUDE.md` for architecture changes only
+3. Create feature docs for substantial changes
+4. Include implementation details, file paths, testing steps
+5. Cross-reference related documents
 
 ---
 
