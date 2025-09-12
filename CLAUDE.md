@@ -2,6 +2,16 @@
 
 **Claude's comprehensive guide to the MindRoots Arabic morphology application**
 
+## 📚 **Documentation Index**
+**IMPORTANT**: Always check the organized documentation in `/docs/` before adding new files:
+- **Features**: `/docs/features/` - All feature documentation including GPT integration
+- **Testing**: `/docs/testing/` - Test procedures and results
+- **Deployment**: `/docs/deployment/` - Production deployment guides
+- **Archived**: `/docs/archived/` - Historical/completed feature documentation
+- **Prototypes**: `/docs/development-prototypes/` - Experimental code and concepts
+
+**🔒 SECURITY**: Never include API keys, credentials, or sensitive data in documentation files. All keys belong in `.env` files only.
+
 ---
 
 ## 📁 **Core Architecture**
