@@ -1,6 +1,6 @@
 const express = require('express');
 const neo4j = require('neo4j-driver');
-const { authenticateAPI } = require('../middleware/auth');
+const { authenticateAPI, authenticateAdminAPI, sanitizeReadOnlyQuery } = require('../middleware/auth');
 const router = express.Router();
 
 // CORS Middleware
@@ -1234,26 +1234,75 @@ router.use(authenticateAPI);
 router.use(authenticateAPI);
 
 // Endpoint to execute Cypher queries
+// READ-ONLY Cypher query execution endpoint (PUBLIC API)
 router.post('/execute-query', async (req, res) => {
   const { query } = req.body;  
+  
+  // Validate query is read-only
+  const sanitizationResult = sanitizeReadOnlyQuery(query);
+  if (!sanitizationResult.isValid) {
+    console.log(`Blocked write operation attempt from IP: ${req.ip}, Query: ${query?.substring(0, 100)}...`);
+    return res.status(403).json({ 
+      error: sanitizationResult.error,
+      hint: 'Use /api/admin-query endpoint with admin credentials for write operations'
+    });
+  }
+  
   const session = req.driver.session();  
-
   try {
+    console.log(`Executing read-only query from IP: ${req.ip}`);
     const result = await session.run(query);
     const records = result.records.map(record => {
       const processedRecord = record.toObject();
       return convertIntegers(processedRecord);  // Ensure integers are converted
     });
-
-// API Authentication middleware
-router.use(authenticateAPI);
+    
     res.json(records);
   } catch (error) {
-    console.error('Error executing query:', error);
+    console.error('Error executing read-only query:', error);
     res.status(500).json({ error: 'Error executing query' });
+  } finally {
+    await session.close();
+  }
+});
 
-// API Authentication middleware
-router.use(authenticateAPI);
+// FULL ACCESS Cypher query execution endpoint (ADMIN API ONLY)
+router.post('/admin-query', authenticateAdminAPI, async (req, res) => {
+  const { query } = req.body;  
+  
+  if (!query || typeof query !== 'string') {
+    return res.status(400).json({ 
+      error: 'Query must be a non-empty string' 
+    });
+  }
+  
+  const session = req.driver.session();  
+  try {
+    console.log(`Executing admin query from IP: ${req.ip}, Query: ${query.substring(0, 100)}...`);
+    const result = await session.run(query);
+    const records = result.records.map(record => {
+      const processedRecord = record.toObject();
+      return convertIntegers(processedRecord);  // Ensure integers are converted
+    });
+    
+    // Include additional metadata for admin queries
+    const responseData = {
+      records,
+      summary: {
+        totalRecords: records.length,
+        queryType: result.summary?.queryType || 'unknown',
+        counters: result.summary?.counters || {},
+        executionTime: result.summary?.resultAvailableAfter?.toNumber() || 0
+      }
+    };
+    
+    res.json(responseData);
+  } catch (error) {
+    console.error('Error executing admin query:', error);
+    res.status(500).json({ 
+      error: 'Error executing query',
+      details: error.message 
+    });
   } finally {
     await session.close();
   }
