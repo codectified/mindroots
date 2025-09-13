@@ -4,7 +4,7 @@ import {
   fetchHansWehrEntry,
   fetchCorpusItemEntry,
   fetchRootEntry,
-  fetchRootInfo,
+  fetchAnalysisData,
   expandGraph,
   summarizeNodeContent,
   reportNodeIssue,
@@ -922,79 +922,79 @@ const handleContextMenuAction = async (action, node, position = null) => {
         break;
       
       case 'more-info':
-        // Fetch comprehensive node info for InfoBubble with collapsible sections
+        // Simple unified approach: check for all info properties on the node
         try {
           let nodeInfoData = {};
           
-          // Get node-specific ID
-          let nodeId;
-          switch (node.type) {
-            case 'word':
-              nodeId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
-              
-              // Include Proto-Semitic gloss if available (meaning property)
-              if (node.meaning) {
-                nodeInfoData.meaning = node.meaning;
-              }
-              
-              // Fetch Lane and Hans Wehr entries for word nodes
+          // Copy all relevant properties from the node itself
+          if (node.definitions) nodeInfoData.definitions = node.definitions;
+          if (node.hanswehr_entry) nodeInfoData.hanswehr_entry = node.hanswehr_entry;
+          if (node.meaning) nodeInfoData.meaning = node.meaning;
+          if (node.entry) nodeInfoData.entry = node.entry;
+          if (node.analyses) nodeInfoData.analyses = node.analyses;
+          
+          // For word nodes, also try to fetch Lane and Hans Wehr entries if not already present
+          if (node.type === 'word') {
+            const nodeId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+            
+            if (!nodeInfoData.definitions) {
               try {
                 const laneEntry = await fetchLaneEntry(nodeId);
                 if (laneEntry) nodeInfoData.definitions = laneEntry;
               } catch (error) {
                 console.error('Error fetching Lane entry:', error);
               }
-              
+            }
+            
+            if (!nodeInfoData.hanswehr_entry) {
               try {
                 const hansWehrEntry = await fetchHansWehrEntry(nodeId);
                 if (hansWehrEntry) nodeInfoData.hanswehr_entry = hansWehrEntry;
               } catch (error) {
                 console.error('Error fetching Hans Wehr entry:', error);
               }
-              break;
-              
-            case 'root':
-              nodeId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
-              // Fetch comprehensive root information (entry + analysis)
+            }
+          }
+          
+          // For root nodes, also try to fetch cached entry or analysis data if not already present
+          if (node.type === 'root') {
+            const nodeId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
+            
+            if (!nodeInfoData.entry) {
+              const cachedRootEntry = rootEntries[nodeId];
+              if (cachedRootEntry) {
+                nodeInfoData.entry = cachedRootEntry;
+              }
+            }
+            
+            // Fetch analysis data if not already present
+            if (!nodeInfoData.analyses) {
               try {
-                const rootInfo = await fetchRootInfo(nodeId);
-                if (rootInfo) {
-                  // Include entry if available
-                  if (rootInfo.entry) {
-                    nodeInfoData.entry = rootInfo.entry;
-                  }
-                  // Include analyses if available
-                  if (rootInfo.analyses && rootInfo.analyses.length > 0) {
-                    nodeInfoData.analyses = rootInfo.analyses;
-                  }
+                const analysisData = await fetchAnalysisData('root', nodeId);
+                if (analysisData && analysisData.analyses && analysisData.analyses.length > 0) {
+                  nodeInfoData.analyses = analysisData.analyses;
                 }
               } catch (error) {
-                console.error('Error fetching root info:', error);
-                // Fallback to cached entry if API fails
-                const cachedRootEntry = rootEntries[nodeId];
-                if (cachedRootEntry) {
-                  nodeInfoData.entry = cachedRootEntry;
-                }
+                console.error('Error fetching analysis data:', error);
               }
-              break;
-              
-            case 'corpusitem':
-              const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
-              const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
-              const entryKey = `${corpusId}_${corpusItemId}`;
-              // Check if corpus item entry exists in cache
+            }
+          }
+          
+          // For corpus items, check cached entries
+          if (node.type === 'corpusitem') {
+            const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+            const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
+            const entryKey = `${corpusId}_${corpusItemId}`;
+            
+            if (!nodeInfoData.entry) {
               const cachedCorpusEntry = corpusItemEntries[entryKey];
               if (cachedCorpusEntry) {
                 nodeInfoData.entry = cachedCorpusEntry;
               }
-              break;
-              
-            default:
-              // For other node types, just include basic info
-              break;
+            }
           }
           
-          // Set the InfoBubble with the fetched data
+          // Set the InfoBubble with the collected data
           setInfoBubble({
             nodeData: nodeInfoData,
             position: position || { x: window.innerWidth / 2, y: window.innerHeight / 2 }
