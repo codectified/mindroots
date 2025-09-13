@@ -106,51 +106,80 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                 <details className="info-section">
                   <summary>Analysis</summary>
                   <div className="info-content">
-                    {nodeData.analyses.map((analysis, index) => (
-                      <div key={index} className="analysis-entry">
-                        {analysis.lexical_summary && (
-                          <div className="analysis-section">
-                            <h4>Lexical Summary</h4>
-                            <p>{analysis.lexical_summary}</p>
-                          </div>
-                        )}
-                        {analysis.semantic_path && (
-                          <div className="analysis-section">
-                            <h4>Semantic Path</h4>
-                            <p>{analysis.semantic_path}</p>
-                          </div>
-                        )}
-                        {analysis.fundamental_frame && (
-                          <div className="analysis-section">
-                            <h4>Fundamental Frame</h4>
-                            <p>{analysis.fundamental_frame}</p>
-                          </div>
-                        )}
-                        {analysis.words_expressions && (
-                          <div className="analysis-section">
-                            <h4>Words & Expressions</h4>
-                            <p>{analysis.words_expressions}</p>
-                          </div>
-                        )}
-                        {analysis.poetic_references && (
-                          <div className="analysis-section">
-                            <h4>Poetic References</h4>
-                            <p>{analysis.poetic_references}</p>
-                          </div>
-                        )}
-                        {analysis.basic_stats && (
-                          <div className="analysis-section">
-                            <h4>Basic Stats</h4>
-                            <p>{analysis.basic_stats}</p>
-                          </div>
-                        )}
-                        {analysis.version && (
-                          <div className="analysis-meta">
-                            <small>Version: {analysis.version}</small>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                    {(() => {
+                      // Sort analyses by version descending to get latest first
+                      const sortedAnalyses = [...nodeData.analyses].sort((a, b) => (b.version || 0) - (a.version || 0));
+                      const latestAnalysis = sortedAnalyses[0];
+                      const olderAnalyses = sortedAnalyses.slice(1);
+                      
+                      const renderAnalysis = (analysis, isOlder = false) => (
+                        <div className="analysis-entry">
+                          {analysis.lexical_summary && (
+                            <div className="analysis-section">
+                              <h4>Lexical Summary</h4>
+                              <p>{analysis.lexical_summary}</p>
+                            </div>
+                          )}
+                          {analysis.semantic_path && (
+                            <div className="analysis-section">
+                              <h4>Semantic Path</h4>
+                              <p>{analysis.semantic_path}</p>
+                            </div>
+                          )}
+                          {analysis.fundamental_frame && (
+                            <div className="analysis-section">
+                              <h4>Fundamental Frame</h4>
+                              <p>{analysis.fundamental_frame}</p>
+                            </div>
+                          )}
+                          {analysis.words_expressions && (
+                            <div className="analysis-section">
+                              <h4>Words & Expressions</h4>
+                              <p>{analysis.words_expressions}</p>
+                            </div>
+                          )}
+                          {analysis.poetic_references && (
+                            <div className="analysis-section">
+                              <h4>Poetic References</h4>
+                              <p>{analysis.poetic_references}</p>
+                            </div>
+                          )}
+                          {analysis.basic_stats && (
+                            <div className="analysis-section">
+                              <h4>Basic Stats</h4>
+                              <p>{analysis.basic_stats}</p>
+                            </div>
+                          )}
+                          {analysis.version && (
+                            <div className="analysis-meta">
+                              <small>{isOlder ? `Previous Version: ${analysis.version}` : `Version: ${analysis.version}`}</small>
+                            </div>
+                          )}
+                        </div>
+                      );
+                      
+                      return (
+                        <>
+                          {/* Latest analysis always visible */}
+                          {renderAnalysis(latestAnalysis, false)}
+                          
+                          {/* Older analyses in collapsible section */}
+                          {olderAnalyses.length > 0 && (
+                            <details className="older-versions-section">
+                              <summary>Previous Versions ({olderAnalyses.length})</summary>
+                              <div className="older-versions-content">
+                                {olderAnalyses.map((analysis, index) => (
+                                  <div key={`older-${index}`}>
+                                    {renderAnalysis(analysis, true)}
+                                    {index < olderAnalyses.length - 1 && <hr className="version-separator" />}
+                                  </div>
+                                ))}
+                              </div>
+                            </details>
+                          )}
+                        </>
+                      );
+                    })()}
                   </div>
                 </details>
               )}
