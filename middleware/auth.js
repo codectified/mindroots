@@ -1,6 +1,6 @@
 const authenticateAPI = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const publicKey = process.env.PUBLIC_API_KEY || process.env.API_KEY; // Fallback for backward compatibility
+  const publicKey = process.env.PUBLIC_API_KEY;
   const adminKey = process.env.ADMIN_API_KEY;
 
   if (!publicKey && !adminKey) {
