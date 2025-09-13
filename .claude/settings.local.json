@@ -20,7 +20,8 @@
       "Bash(for:*)",
       "Bash(head:*)",
       "Bash(done)",
-      "Bash(tree:*)"
+      "Bash(tree:*)",
+      "Bash(ssh:*)"
     ],
     "deny": []
   }
