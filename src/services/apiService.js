@@ -12,7 +12,7 @@ const api = axios.create({
 // const api = axios.create({
 //   baseURL: 'http://localhost:5001/api',
 //   headers: {
-//     'Authorization': 'Bearer localhost-dev-key-123',
+//     'Authorization': 'Bearer 9f43a3e526851607eea172265557c15b4b4a3654f61cb3b097a134c27de04f7c',
 //   },
 // });
 
@@ -264,13 +264,13 @@ export const fetchRootEntry = async (rootId) => {
   }
 };
 
-// Fetch comprehensive root information (entry + analysis data)
-export const fetchRootInfo = async (rootId) => {
+// Fetch analysis data for any node type
+export const fetchAnalysisData = async (nodeType, nodeId) => {
   try {
-    const response = await api.get(`/rootinfo/${rootId}`);
+    const response = await api.get(`/analysis/${nodeType}/${nodeId}`);
     return convertIntegers(response.data);
   } catch (error) {
-    console.error('Error fetching root info:', error);
+    console.error('Error fetching analysis data:', error);
     throw error;
   }
 };

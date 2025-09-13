@@ -1702,45 +1702,55 @@ router.use(authenticateAPI);
 // API Authentication middleware
 router.use(authenticateAPI);
 
-// Comprehensive root information endpoint - includes both entry and analysis data
-router.get('/rootinfo/:rootId', async (req, res) => {
-  const { rootId } = req.params;
+// Generic analysis data endpoint for any node type
+router.get('/analysis/:nodeType/:nodeId', async (req, res) => {
+  const { nodeType, nodeId } = req.params;
   const session = req.driver.session();
   
   try {
-    const query = `
-      MATCH (root:Root {root_id: toInteger($rootId)})
-      OPTIONAL MATCH (root)-[:HAS_ANALYSIS]->(analysis:Analysis)
-      RETURN 
-        root.entry AS entry,
-        collect(DISTINCT {
-          lexical_summary: analysis.lexical_summary,
-          semantic_path: analysis.semantic_path,
-          fundamental_frame: analysis.fundamental_frame,
-          words_expressions: analysis.words_expressions,
-          poetic_references: analysis.poetic_references,
-          basic_stats: analysis.basic_stats,
-          version: analysis.version,
-          created_at: analysis.created_at
-        }) AS analyses
-    `;
-    const result = await session.run(query, { rootId: parseInt(rootId) });
+    let query;
+    let params;
+
+    // Build query based on node type
+    switch (nodeType.toLowerCase()) {
+      case 'root':
+        query = `
+          MATCH (n:Root {root_id: toInteger($nodeId)})
+          OPTIONAL MATCH (n)-[:HAS_ANALYSIS]->(analysis:Analysis)
+          RETURN collect(DISTINCT {
+            lexical_summary: analysis.lexical_summary,
+            semantic_path: analysis.semantic_path,
+            fundamental_frame: analysis.fundamental_frame,
+            words_expressions: analysis.words_expressions,
+            poetic_references: analysis.poetic_references,
+            basic_stats: analysis.basic_stats,
+            version: analysis.version,
+            created_at: analysis.created_at
+          }) AS analyses
+        `;
+        params = { nodeId: parseInt(nodeId) };
+        break;
+        
+      // Future: Add other node types here
+      case 'word':
+      case 'form':
+      default:
+        // For now, return empty analyses for other node types
+        res.json({ analyses: [] });
+        return;
+    }
+
+    const result = await session.run(query, params);
 
     if (result.records.length > 0) {
-      const record = result.records[0];
-      const entry = record.get('entry');
-      const analyses = record.get('analyses').filter(a => a.lexical_summary); // Filter out empty objects
-      
-      res.json({
-        entry: entry,
-        analyses: analyses
-      });
+      const analyses = result.records[0].get('analyses').filter(a => a.lexical_summary); // Filter out empty objects
+      res.json({ analyses: analyses });
     } else {
-      res.status(404).json({ error: 'Root not found' });
+      res.json({ analyses: [] });
     }
   } catch (error) {
-    console.error('Error fetching root info:', error);
-    res.status(500).json({ error: 'Error fetching root info' });
+    console.error('Error fetching analysis data:', error);
+    res.status(500).json({ error: 'Error fetching analysis data' });
   } finally {
     await session.close();
   }
