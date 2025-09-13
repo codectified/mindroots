@@ -816,3 +816,32 @@
   color: #6c757d;
   font-style: italic;
 }
+
+/* Older versions section */
+.older-versions-section {
+  margin-top: 15px;
+  border-top: 1px solid #e9ecef;
+  padding-top: 10px;
+}
+
+.older-versions-section summary {
+  color: #6c757d;
+  font-size: 0.9em;
+  cursor: pointer;
+  margin-bottom: 8px;
+}
+
+.older-versions-section summary:hover {
+  color: #495057;
+}
+
+.older-versions-content {
+  margin-top: 8px;
+  opacity: 0.8;
+}
+
+.version-separator {
+  border: none;
+  border-top: 1px dashed #dee2e6;
+  margin: 15px 0;
+}
