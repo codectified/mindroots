@@ -4,6 +4,7 @@ import {
   fetchHansWehrEntry,
   fetchCorpusItemEntry,
   fetchRootEntry,
+  fetchRootInfo,
   expandGraph,
   summarizeNodeContent,
   reportNodeIssue,
@@ -930,6 +931,12 @@ const handleContextMenuAction = async (action, node, position = null) => {
           switch (node.type) {
             case 'word':
               nodeId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
+              
+              // Include Proto-Semitic gloss if available (meaning property)
+              if (node.meaning) {
+                nodeInfoData.meaning = node.meaning;
+              }
+              
               // Fetch Lane and Hans Wehr entries for word nodes
               try {
                 const laneEntry = await fetchLaneEntry(nodeId);
@@ -948,10 +955,26 @@ const handleContextMenuAction = async (action, node, position = null) => {
               
             case 'root':
               nodeId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
-              // Check if root entry exists in cache
-              const cachedRootEntry = rootEntries[nodeId];
-              if (cachedRootEntry) {
-                nodeInfoData.entry = cachedRootEntry;
+              // Fetch comprehensive root information (entry + analysis)
+              try {
+                const rootInfo = await fetchRootInfo(nodeId);
+                if (rootInfo) {
+                  // Include entry if available
+                  if (rootInfo.entry) {
+                    nodeInfoData.entry = rootInfo.entry;
+                  }
+                  // Include analyses if available
+                  if (rootInfo.analyses && rootInfo.analyses.length > 0) {
+                    nodeInfoData.analyses = rootInfo.analyses;
+                  }
+                }
+              } catch (error) {
+                console.error('Error fetching root info:', error);
+                // Fallback to cached entry if API fails
+                const cachedRootEntry = rootEntries[nodeId];
+                if (cachedRootEntry) {
+                  nodeInfoData.entry = cachedRootEntry;
+                }
               }
               break;
               

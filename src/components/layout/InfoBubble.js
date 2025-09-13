@@ -90,11 +90,75 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                   </div>
                 </details>
               )}
+
+              {/* Proto-Semitic Gloss Section */}
+              {nodeData.meaning && (
+                <details className="info-section">
+                  <summary>Proto-Semitic Gloss</summary>
+                  <div className="info-content">
+                    <p>{nodeData.meaning}</p>
+                  </div>
+                </details>
+              )}
+
+              {/* Analysis Section (for roots with LLM-generated analysis) */}
+              {nodeData.analyses && nodeData.analyses.length > 0 && (
+                <details className="info-section">
+                  <summary>Analysis</summary>
+                  <div className="info-content">
+                    {nodeData.analyses.map((analysis, index) => (
+                      <div key={index} className="analysis-entry">
+                        {analysis.lexical_summary && (
+                          <div className="analysis-section">
+                            <h4>Lexical Summary</h4>
+                            <p>{analysis.lexical_summary}</p>
+                          </div>
+                        )}
+                        {analysis.semantic_path && (
+                          <div className="analysis-section">
+                            <h4>Semantic Path</h4>
+                            <p>{analysis.semantic_path}</p>
+                          </div>
+                        )}
+                        {analysis.fundamental_frame && (
+                          <div className="analysis-section">
+                            <h4>Fundamental Frame</h4>
+                            <p>{analysis.fundamental_frame}</p>
+                          </div>
+                        )}
+                        {analysis.words_expressions && (
+                          <div className="analysis-section">
+                            <h4>Words & Expressions</h4>
+                            <p>{analysis.words_expressions}</p>
+                          </div>
+                        )}
+                        {analysis.poetic_references && (
+                          <div className="analysis-section">
+                            <h4>Poetic References</h4>
+                            <p>{analysis.poetic_references}</p>
+                          </div>
+                        )}
+                        {analysis.basic_stats && (
+                          <div className="analysis-section">
+                            <h4>Basic Stats</h4>
+                            <p>{analysis.basic_stats}</p>
+                          </div>
+                        )}
+                        {analysis.version && (
+                          <div className="analysis-meta">
+                            <small>Version: {analysis.version}</small>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                </details>
+              )}
               
-              {/* Notes Section */}
+              {/* Entry Section */}
               {nodeData.entry && (
                 <details className="info-section">
-                  <summary>Notes</summary>
+                  <summary>Entry</summary>
                   <div className="info-content">
                     <p>{nodeData.entry}</p>
                   </div>
@@ -102,7 +166,7 @@ export default function InfoBubble({ nodeData, onClose, style }) {
               )}
               
               {/* Show message if no data available */}
-              {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.entry && (
+              {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.meaning && !nodeData.analyses && !nodeData.entry && (
                 <p>No additional information available.</p>
               )}
             </>
