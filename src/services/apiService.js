@@ -1,12 +1,20 @@
 import axios from 'axios';
 
-// Create an Axios instance with environment-based configuration
+// Create an Axios instance with base configuration
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'http://localhost:5001/api',
+  baseURL: 'https://theoption.life/api',
   headers: {
-    'Authorization': `Bearer ${process.env.REACT_APP_API_KEY || 'localhost-dev-key-123'}`,
+    'Authorization': 'Bearer REDACTED_API_KEY',
   },
 });
+
+// Localhost development setup (comment out for production)
+// const api = axios.create({
+//   baseURL: 'http://localhost:5001/api',
+//   headers: {
+//     'Authorization': 'Bearer localhost-dev-key-123',
+//   },
+// });
 
 
 // Helper function to convert Neo4j integers to regular numbers
