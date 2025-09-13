@@ -1702,6 +1702,50 @@ router.use(authenticateAPI);
 // API Authentication middleware
 router.use(authenticateAPI);
 
+// Comprehensive root information endpoint - includes both entry and analysis data
+router.get('/rootinfo/:rootId', async (req, res) => {
+  const { rootId } = req.params;
+  const session = req.driver.session();
+  
+  try {
+    const query = `
+      MATCH (root:Root {root_id: toInteger($rootId)})
+      OPTIONAL MATCH (root)-[:HAS_ANALYSIS]->(analysis:Analysis)
+      RETURN 
+        root.entry AS entry,
+        collect(DISTINCT {
+          lexical_summary: analysis.lexical_summary,
+          semantic_path: analysis.semantic_path,
+          fundamental_frame: analysis.fundamental_frame,
+          words_expressions: analysis.words_expressions,
+          poetic_references: analysis.poetic_references,
+          basic_stats: analysis.basic_stats,
+          version: analysis.version,
+          created_at: analysis.created_at
+        }) AS analyses
+    `;
+    const result = await session.run(query, { rootId: parseInt(rootId) });
+
+    if (result.records.length > 0) {
+      const record = result.records[0];
+      const entry = record.get('entry');
+      const analyses = record.get('analyses').filter(a => a.lexical_summary); // Filter out empty objects
+      
+      res.json({
+        entry: entry,
+        analyses: analyses
+      });
+    } else {
+      res.status(404).json({ error: 'Root not found' });
+    }
+  } catch (error) {
+    console.error('Error fetching root info:', error);
+    res.status(500).json({ error: 'Error fetching root info' });
+  } finally {
+    await session.close();
+  }
+});
+
 
 // LEGACY ROUTE WARNING: This endpoint is incompatible with Corpus 2 hierarchical IDs (surah:ayah:word)
 // Uses hardcoded radical position mapping and does not support the new RadicalPosition system

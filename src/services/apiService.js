@@ -264,6 +264,17 @@ export const fetchRootEntry = async (rootId) => {
   }
 };
 
+// Fetch comprehensive root information (entry + analysis data)
+export const fetchRootInfo = async (rootId) => {
+  try {
+    const response = await api.get(`/rootinfo/${rootId}`);
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching root info:', error);
+    throw error;
+  }
+};
+
 // New consolidated expand function
 export const expandGraph = async (sourceType, sourceId, targetType, options = {}) => {
   try {

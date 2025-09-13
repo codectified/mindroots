@@ -771,3 +771,48 @@
     justify-content: center;
   }
 }
+
+/* Analysis section styles */
+.analysis-entry {
+  border-bottom: 1px solid #f0f0f0;
+  padding-bottom: 15px;
+  margin-bottom: 15px;
+}
+
+.analysis-entry:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.analysis-section {
+  margin-bottom: 12px;
+}
+
+.analysis-section h4 {
+  font-size: 14px;
+  font-weight: 600;
+  color: #2c3e50;
+  margin: 0 0 8px 0;
+  padding: 6px 10px;
+  background-color: #f8f9fa;
+  border-left: 3px solid #3498db;
+  border-radius: 3px;
+}
+
+.analysis-section p {
+  margin: 0;
+  line-height: 1.5;
+  padding: 0 10px;
+  color: #34495e;
+}
+
+.analysis-meta {
+  margin-top: 10px;
+  padding-top: 8px;
+  border-top: 1px solid #e9ecef;
+}
+
+.analysis-meta small {
+  color: #6c757d;
+  font-style: italic;
+}
