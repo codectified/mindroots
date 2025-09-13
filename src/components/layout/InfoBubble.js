@@ -71,40 +71,54 @@ export default function InfoBubble({ nodeData, onClose, style }) {
         <div className="info-bubble-content">
           {nodeData ? (
             <>
-              {/* Lane Dictionary Section */}
-              {nodeData.definitions && (
-                <details className="info-section">
-                  <summary>Lane</summary>
-                  <div className="info-content">
-                    <p>{nodeData.definitions}</p>
-                  </div>
-                </details>
-              )}
-              
-              {/* Hans Wehr Dictionary Section */}
-              {nodeData.hanswehr_entry && (
-                <details className="info-section">
-                  <summary>Hans Wehr</summary>
-                  <div className="info-content">
-                    <p>{nodeData.hanswehr_entry}</p>
-                  </div>
-                </details>
-              )}
+              {(() => {
+                // Count available sections to determine if only one exists
+                const availableSections = [
+                  nodeData.definitions,
+                  nodeData.hanswehr_entry,
+                  nodeData.meaning,
+                  nodeData.analyses && nodeData.analyses.length > 0,
+                  nodeData.entry
+                ].filter(Boolean);
+                
+                const shouldAutoExpand = availableSections.length === 1;
+                
+                return (
+                  <>
+                    {/* Lane Dictionary Section */}
+                    {nodeData.definitions && (
+                      <details className="info-section" open={shouldAutoExpand}>
+                        <summary>Lane</summary>
+                        <div className="info-content">
+                          <p>{nodeData.definitions}</p>
+                        </div>
+                      </details>
+                    )}
+                    
+                    {/* Hans Wehr Dictionary Section */}
+                    {nodeData.hanswehr_entry && (
+                      <details className="info-section" open={shouldAutoExpand}>
+                        <summary>Hans Wehr</summary>
+                        <div className="info-content">
+                          <p>{nodeData.hanswehr_entry}</p>
+                        </div>
+                      </details>
+                    )}
 
-              {/* Proto-Semitic Gloss Section */}
-              {nodeData.meaning && (
-                <details className="info-section">
-                  <summary>Proto-Semitic Gloss</summary>
-                  <div className="info-content">
-                    <p>{nodeData.meaning}</p>
-                  </div>
-                </details>
-              )}
+                    {/* Proto-Semitic Gloss Section */}
+                    {nodeData.meaning && (
+                      <details className="info-section" open={shouldAutoExpand}>
+                        <summary>Proto-Semitic Gloss</summary>
+                        <div className="info-content">
+                          <p>{nodeData.meaning}</p>
+                        </div>
+                      </details>
+                    )}
 
-              {/* Analysis Section (for roots with LLM-generated analysis) */}
-              {nodeData.analyses && nodeData.analyses.length > 0 && (
-                <details className="info-section">
-                  <summary>Analysis</summary>
+                    {/* Analysis Section (for roots with LLM-generated analysis) */}
+                    {nodeData.analyses && nodeData.analyses.length > 0 && (
+                      <details className="info-section" open={shouldAutoExpand}>
+                        <summary>Analysis</summary>
                   <div className="info-content">
                     {(() => {
                       // Sort analyses by version descending to get latest first
@@ -184,20 +198,23 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                 </details>
               )}
               
-              {/* Entry Section */}
-              {nodeData.entry && (
-                <details className="info-section">
-                  <summary>Entry</summary>
-                  <div className="info-content">
-                    <p>{nodeData.entry}</p>
-                  </div>
-                </details>
-              )}
-              
-              {/* Show message if no data available */}
-              {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.meaning && !nodeData.analyses && !nodeData.entry && (
-                <p>No additional information available.</p>
-              )}
+                    {/* Entry Section */}
+                    {nodeData.entry && (
+                      <details className="info-section" open={shouldAutoExpand}>
+                        <summary>Entry</summary>
+                        <div className="info-content">
+                          <p>{nodeData.entry}</p>
+                        </div>
+                      </details>
+                    )}
+                    
+                    {/* Show message if no data available */}
+                    {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.meaning && !nodeData.analyses && !nodeData.entry && (
+                      <p>No additional information available.</p>
+                    )}
+                  </>
+                );
+              })()}
             </>
           ) : (
             <p>No data available.</p>
