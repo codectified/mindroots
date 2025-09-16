@@ -16,9 +16,66 @@ InfoBubble is a reusable component that displays detailed information in a modal
 
 **Root Cause**: InfoBubble component expects a `style` prop with positioning coordinates. When not provided, it defaults to position (0,0) which appears in the bottom left.
 
-## Three Positioning Patterns
+## Four Positioning Patterns
 
-### 1. **Click-Based Positioning** (Recommended for interactive elements)
+### 1. **Smart Click-Based Positioning** (Recommended for UI buttons)
+
+**Use Case**: When InfoBubble should appear near user click but stay readable
+**Implementation**: Horizontal centering with vertical click following + boundary clamping
+
+```javascript
+const [bubblePosition, setBubblePosition] = useState({ top: '50%', left: '50%' });
+
+const handleShowInfo = (event) => {
+  const viewportWidth = window.innerWidth;
+  const viewportHeight = window.innerHeight;
+  
+  // Approximate InfoBubble dimensions
+  const bubbleWidth = 500;
+  const bubbleHeight = 400;
+  
+  // Center horizontally, position vertically near click
+  let top = event.clientY;
+  let left = (viewportWidth - bubbleWidth) / 2;
+  
+  // Clamp to viewport bounds
+  if (top + bubbleHeight > viewportHeight) {
+    top = viewportHeight - bubbleHeight - 20;
+  }
+  if (top < 20) top = 20;
+  if (left < 20) left = 20;
+  if (left + bubbleWidth > viewportWidth) {
+    left = viewportWidth - bubbleWidth - 20;
+  }
+  
+  setBubblePosition({ top: `${top}px`, left: `${left}px` });
+  setShowInfoBubble(true);
+};
+
+// In JSX
+<button onClick={(e) => handleShowInfo(e)}>Show Info</button>
+{showInfoBubble && (
+  <InfoBubble
+    nodeData={data}
+    onClose={() => setShowInfoBubble(false)}
+    style={{
+      top: bubblePosition.top,
+      left: bubblePosition.left,
+      position: 'fixed',
+      zIndex: 9999
+    }}
+  />
+)}
+```
+
+**Features**:
+- ✅ Follows click Y-coordinate
+- ✅ Centers horizontally for readability
+- ✅ Automatically clamps to viewport bounds
+- ✅ Works for any button or clickable element
+- ✅ Example: MainMenu.js "View Analysis" button
+
+### 2. **UseInfoBubbles Hook** (Recommended for interactive grids/tables)
 
 **Use Case**: When InfoBubble should appear near where user clicked
 **Implementation**: Use `useInfoBubbles` hook
@@ -61,7 +118,7 @@ const MyComponent = () => {
 - ✅ Supports multiple simultaneous bubbles
 - ✅ Container-relative positioning
 
-### 2. **Center-Screen Positioning** (Recommended for non-interactive elements)
+### 3. **Center-Screen Positioning** (Recommended for non-interactive elements)
 
 **Use Case**: When InfoBubble should appear in center of screen (like MainMenu)
 **Implementation**: Fixed positioning with transform centering
@@ -106,7 +163,7 @@ const MyComponent = () => {
 - ✅ Simple implementation
 - ✅ Good for modal-like usage
 
-### 3. **Graph/Context Menu Positioning** (For GraphDataContext)
+### 4. **Graph/Context Menu Positioning** (For GraphDataContext)
 
 **Use Case**: When InfoBubble follows right-click context menus on graph nodes
 **Implementation**: Event coordinate extraction with viewport clamping
@@ -254,8 +311,9 @@ InfoBubble has smart positioning built-in:
 
 | Use Case | Pattern | Implementation |
 |----------|---------|----------------|
-| Button clicks | Center-screen | `style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', position: 'fixed' }}` |
-| Interactive elements | Click-based | `useInfoBubbles` hook |
+| UI Buttons | Smart click-based | Calculate from `event.clientY` with horizontal centering & bounds checking |
+| Interactive grids/tables | useInfoBubbles hook | `useInfoBubbles` hook with container-relative positioning |
+| Modal-like displays | Center-screen | `style={{ top: '50%', left: '50%', transform: 'translate(-50%, -50%)', position: 'fixed' }}` |
 | Context menus | Event coordinates | `style={{ top: event.clientY, left: event.clientX, position: 'fixed' }}` |
 
 ---
