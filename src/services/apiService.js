@@ -1,20 +1,20 @@
 import axios from 'axios';
 
 // Create an Axios instance with environment-based configuration
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://theoption.life/api',
-  headers: {
-    'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
-  },
-});
-
-// Localhost development setup (comment out for production)
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: process.env.REACT_APP_API_BASE_URL || 'https://theoption.life/api',
 //   headers: {
-//     'Authorization': 'Bearer 9f43a3e526851607eea172265557c15b4b4a3654f61cb3b097a134c27de04f7c',
+//     'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
 //   },
 // });
+
+// Localhost development setup (comment out for production)
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+  headers: {
+    'Authorization': 'Bearer 9f43a3e526851607eea172265557c15b4b4a3654f61cb3b097a134c27de04f7c',
+  },
+});
 
 // Environment variables used:
 // REACT_APP_API_BASE_URL - API base URL (defaults to production)

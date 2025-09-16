@@ -3334,7 +3334,7 @@ router.get('/latest-analysis', async (req, res) => {
     const result = await session.run(`
       MATCH (r:Root)-[:HAS_ANALYSIS]->(a:Analysis)
       WITH r, a, 
-           a.timestamp as timestamp,
+           a.created as timestamp,
            COALESCE(a.version, 1) as version
       ORDER BY timestamp DESC, version DESC
       LIMIT 1
