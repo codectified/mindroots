@@ -599,3 +599,14 @@ export const updateValidationFields = async (nodeType, nodeId, updates) => {
     throw error;
   }
 };
+
+// Fetch latest root analysis for News section
+export const fetchLatestAnalysis = async () => {
+  try {
+    const response = await api.get('/latest-analysis');
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching latest analysis:', error);
+    throw error;
+  }
+};

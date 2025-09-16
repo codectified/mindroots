@@ -3327,4 +3327,64 @@ router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
   }
 });
 
+// Latest Analysis for News section
+router.get('/latest-analysis', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (r:Root)-[:HAS_ANALYSIS]->(a:Analysis)
+      WITH r, a, 
+           a.timestamp as timestamp,
+           COALESCE(a.version, 1) as version
+      ORDER BY timestamp DESC, version DESC
+      LIMIT 1
+      RETURN {
+        root: {
+          root_id: r.root_id,
+          arabic: r.arabic,
+          english: r.english,
+          definitions: r.definitions,
+          hanswehr_entry: r.hanswehr_entry,
+          meaning: r.meaning
+        },
+        analysis: {
+          concrete_origin: a.concrete_origin,
+          path_to_abstraction: a.path_to_abstraction,
+          fundamental_frame: a.fundamental_frame,
+          basic_stats: a.basic_stats,
+          quranic_refs: a.quranic_refs,
+          hadith_refs: a.hadith_refs,
+          poetic_refs: a.poetic_refs,
+          proverbial_refs: a.proverbial_refs,
+          lexical_summary: a.lexical_summary,
+          semantic_path: a.semantic_path,
+          words_expressions: a.words_expressions,
+          poetic_references: a.poetic_references,
+          version: version,
+          timestamp: timestamp
+        }
+      } as latest_analysis
+    `);
+
+    if (result.records.length === 0) {
+      return res.json({ 
+        latest_analysis: null,
+        message: "No analysis found" 
+      });
+    }
+
+    const latestAnalysis = convertIntegers(result.records[0].get('latest_analysis'));
+    res.json({ latest_analysis: latestAnalysis });
+    
+  } catch (error) {
+    console.error('Error fetching latest analysis:', error);
+    res.status(500).json({ 
+      error: 'Error fetching latest analysis',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;
