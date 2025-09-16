@@ -42,3 +42,76 @@
   color: #333;
   word-wrap: break-word;
 }
+
+/* ============================================
+   News Section Styling
+   ============================================ */
+.news-section {
+  margin: 30px auto;
+  max-width: 600px;
+  padding: 20px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #007bff;
+}
+
+.news-section h3 {
+  margin: 0 0 20px 0;
+  font-family: 'Noto Serif', serif;
+  color: #333;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.latest-analysis {
+  margin-bottom: 15px;
+  padding: 15px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e9ecef;
+}
+
+.latest-analysis p {
+  margin: 0 0 10px 0;
+  font-family: 'Noto Serif', serif;
+  color: #555;
+  line-height: 1.4;
+}
+
+.latest-analysis em {
+  font-weight: 600;
+  color: #007bff;
+}
+
+.analysis-link {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  font-family: 'Noto Serif', serif;
+  transition: background 0.2s ease;
+}
+
+.analysis-link:hover {
+  background: #0056b3;
+}
+
+.static-news {
+  padding: 10px 0;
+}
+
+.news-link {
+  color: #007bff;
+  text-decoration: none;
+  font-family: 'Noto Serif', serif;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.news-link:hover {
+  color: #0056b3;
+  text-decoration: underline;
+}

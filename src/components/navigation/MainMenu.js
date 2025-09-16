@@ -1,24 +1,97 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
   faBook, 
   faSearch, 
   faMapMarked, 
-  faPodcast 
+  faPodcast,
+  faNewspaper,
+  faFlask
 } from '@fortawesome/free-solid-svg-icons';
 import { 
   faInstagram, 
   faLinkedin, 
   faYoutube,
   faGithub
-} from '@fortawesome/free-brands-svg-icons'; // Import social media icons
+} from '@fortawesome/free-brands-svg-icons';
+import { fetchLatestAnalysis } from '../../services/apiService';
+import InfoBubble from '../layout/InfoBubble';
 
 const MainMenu = () => {
   const navigate = useNavigate();
+  const [latestAnalysis, setLatestAnalysis] = useState(null);
+  const [showInfoBubble, setShowInfoBubble] = useState(false);
+  const [infoBubbleData, setInfoBubbleData] = useState({});
+  const [bubblePosition, setBubblePosition] = useState({ top: '50%', left: '50%' });
+
+  useEffect(() => {
+    const loadLatestAnalysis = async () => {
+      try {
+        const data = await fetchLatestAnalysis();
+        setLatestAnalysis(data.latest_analysis);
+      } catch (error) {
+        console.error('Error loading latest analysis:', error);
+      }
+    };
+
+    loadLatestAnalysis();
+  }, []);
 
   const handleNavigation = (path) => {
     navigate(path);
+  };
+
+  const handleShowAnalysis = (event) => {
+    if (latestAnalysis) {
+      const nodeInfoData = {
+        analyses: [latestAnalysis.analysis]
+      };
+      if (latestAnalysis.root.meaning) {
+        nodeInfoData.meaning = latestAnalysis.root.meaning;
+      }
+      if (latestAnalysis.root.definitions) {
+        nodeInfoData.definitions = latestAnalysis.root.definitions;
+      }
+      if (latestAnalysis.root.hanswehr_entry) {
+        nodeInfoData.hanswehr_entry = latestAnalysis.root.hanswehr_entry;
+      }
+      
+      // Calculate position relative to click, but keep it centered horizontally
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Center horizontally, position vertically near click but ensure visibility
+      const bubbleWidth = 500; // Approximate InfoBubble width
+      const bubbleHeight = 400; // Approximate InfoBubble height
+      
+      let top = event.clientY;
+      let left = (viewportWidth - bubbleWidth) / 2;
+      
+      // Ensure bubble doesn't go off top or bottom of screen
+      if (top + bubbleHeight > viewportHeight) {
+        top = viewportHeight - bubbleHeight - 20;
+      }
+      if (top < 20) {
+        top = 20;
+      }
+      
+      // Ensure left positioning doesn't go off edges
+      if (left < 20) {
+        left = 20;
+      }
+      if (left + bubbleWidth > viewportWidth) {
+        left = viewportWidth - bubbleWidth - 20;
+      }
+      
+      setBubblePosition({
+        top: `${top}px`,
+        left: `${left}px`
+      });
+      
+      setInfoBubbleData(nodeInfoData);
+      setShowInfoBubble(true);
+    }
   };
 
   return (
@@ -64,6 +137,36 @@ const MainMenu = () => {
         </ul>
       </div>
 
+      {/* News Section */}
+      <div className="news-section">
+        <h3>Latest Updates</h3>
+        
+        {/* Dynamic Latest Analysis */}
+        {latestAnalysis && (
+          <div className="latest-analysis">
+            <p>
+              <strong>Latest Analysis:</strong> Root{' '}
+              <em>{latestAnalysis.root.arabic}</em>
+              {latestAnalysis.root.english && ` (${latestAnalysis.root.english})`}
+            </p>
+            <button 
+              className="analysis-link"
+              onClick={(e) => handleShowAnalysis(e)}
+              title="View full analysis"
+            >
+              View Analysis
+            </button>
+          </div>
+        )}
+        
+        {/* Static News Link */}
+        <div className="static-news">
+          <Link to="/news" className="news-link">
+            Read Recent Developments →
+          </Link>
+        </div>
+      </div>
+
       {/* Main Site and Social Links */}
       <div className="contact-info">
         <div className="social-links">
@@ -81,6 +184,20 @@ const MainMenu = () => {
           </a>
         </div>
       </div>
+
+      {/* InfoBubble for Latest Analysis */}
+      {showInfoBubble && (
+        <InfoBubble
+          nodeData={infoBubbleData}
+          onClose={() => setShowInfoBubble(false)}
+          style={{
+            top: bubblePosition.top,
+            left: bubblePosition.left,
+            position: 'fixed',
+            zIndex: 9999
+          }}
+        />
+      )}
     </div>
   );
 };

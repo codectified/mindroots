@@ -52,6 +52,15 @@
 - Graph & table mode compatibility
 - **Date**: August 21, 2025
 
+### [`docs/features/INFOBUBBLE-POSITIONING-GUIDE.md`](./docs/features/INFOBUBBLE-POSITIONING-GUIDE.md) 💬 **InfoBubble Positioning**
+*Complete guide to fixing InfoBubble positioning across all components*
+- Three positioning patterns: click-based, center-screen, context menu
+- Common issues & solutions (bottom-left positioning problem)
+- Production examples & implementation code
+- Best practices & troubleshooting guide
+- **Date**: September 16, 2025
+- **Status**: Production reference guide
+
 ### [`docs/features/MOBILE-DEVELOPMENT-READINESS.md`](./docs/features/MOBILE-DEVELOPMENT-READINESS.md) 📱 **Mobile App Development**
 *Comprehensive assessment for iOS/Android mobile app development*
 - Complete codebase analysis (57 JS files, 38 components, 6,407 lines)
