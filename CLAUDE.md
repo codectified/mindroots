@@ -313,6 +313,16 @@ GET /hanswehrentry/:wordId    // Hans Wehr dictionary
 GET /rootentry/:rootId        // Root-level definitions
 ```
 
+### **Analysis Nodes (v2 Schema)**
+```javascript
+GET /analysis/:nodeType/:nodeId    // Read Analysis nodes (supports v1 + v2 schemas)
+POST /write-root-analysis          // Write Analysis nodes (v2 schema + v1 compatibility)
+
+// Examples:
+// GET /analysis/root/3             - Read all analyses for root 3
+// POST /write-root-analysis        - Create new analysis with v2 fields
+```
+
 ---
 
 ## 🔧 **Development Setup**
@@ -585,23 +595,33 @@ const query = isHierarchicalId ?
 }
 ```
 
-#### **Analysis Node Schema**
+#### **Analysis Node Schema v2 (September 2025)**
 ```cypher
 (:Root)-[:HAS_ANALYSIS]->(:Analysis {
   id: "analysis_123",
-  version: 1,
-  created: "2025-09-12T07:08:17.912Z",
+  version: 2,
+  created: "2025-09-16T00:47:12.691Z",
   source: "gpt-analysis",
   user_edited: false,
   validation_status: "pending",
   
-  // Structured sections
-  lexical_summary: "Concrete origin analysis...",
-  semantic_path: "Path to abstraction...",
-  fundamental_frame: "Union/separation dynamics...",
-  words_expressions: "Relevant words and expressions...",
-  poetic_references: "Poetic and idiomatic usage...",
-  basic_stats: "Statistical information..."
+  // v2 Core Fields (required/standard)
+  concrete_origin: "Original concrete meaning...",
+  path_to_abstraction: "Journey from concrete to abstract...",
+  fundamental_frame: "Conceptual frames (union/separation, expansion)...",
+  basic_stats: "Quantitative notes (verb forms, counts, spread)...",
+  
+  // v2 Reference Fields (cleanly separated)
+  quranic_refs: "Direct Qur'anic quotations + surah/ayah indices...",
+  hadith_refs: "Prophetic or Qudsi hadith citations...",
+  poetic_refs: "Classical poetry with attribution (Zuhayr, Imru' al-Qays)...",
+  proverbial_refs: "Arabic proverbs and idioms...",
+  
+  // Legacy v1 fields (backward compatibility)
+  lexical_summary: "Legacy: Concrete origin analysis...",
+  semantic_path: "Legacy: Path to abstraction...",
+  words_expressions: "Legacy: Relevant words and expressions...",
+  poetic_references: "Legacy: Combined poetic/religious references..."
 })
 ```
 
@@ -619,13 +639,25 @@ const query = isHierarchicalId ?
 4. **Track Progress**: Backend creates versioned Analysis node
 5. **Future Enhancement**: User editing interface for Analysis nodes
 
-#### **Structured Sections (Based on Example)**
-- **lexical_summary**: Core meanings and concrete origins
-- **semantic_path**: Pathway from concrete to abstract meanings
-- **fundamental_frame**: Underlying semantic frameworks
-- **words_expressions**: Related words and expressions
-- **poetic_references**: Literary and idiomatic usage examples
-- **basic_stats**: Quantitative analysis of the root's word family
+#### **v2 Schema Structure**
+
+**Core Fields (required/standard)**
+- **concrete_origin**: Original concrete meaning and physical/tangible sense
+- **path_to_abstraction**: Journey from concrete sense to abstract meanings
+- **fundamental_frame**: Conceptual frames (union/separation, expansion, containment, etc.)
+- **basic_stats**: Quantitative notes (number of verb forms, itype values, spread, counts)
+
+**Reference Fields (cleanly separated)**
+- **quranic_refs**: Direct Qur'anic quotations with surah/ayah indices
+- **hadith_refs**: Prophetic or Qudsi hadith citations with attribution
+- **poetic_refs**: Classical poetry with clear attribution (e.g., Zuhayr, Imru' al-Qays)
+- **proverbial_refs**: Arabic proverbs and idioms with usage context
+
+**Legacy v1 Fields (backward compatibility)**
+- **lexical_summary**: Core meanings and concrete origins (superseded by concrete_origin)
+- **semantic_path**: Pathway from concrete to abstract meanings (superseded by path_to_abstraction)
+- **words_expressions**: Related words and expressions (moved to basic_stats or dedicated fields)
+- **poetic_references**: Combined poetic/religious references (split into separate reference fields)
 
 #### **Security Features**
 - Only public GPT API key accepted (admin key rejected)
