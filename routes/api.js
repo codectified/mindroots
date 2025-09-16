@@ -1318,8 +1318,21 @@ router.post('/write-root-analysis', async (req, res) => {
     });
   }
 
+  const { rootId, analysis } = req.body;
+  
+  // Validate analysis object structure
+  if (!analysis || typeof analysis !== 'object') {
+    return res.status(400).json({ 
+      error: 'analysis object is required',
+      usage: 'POST /api/write-root-analysis',
+      format: '{ "rootId": 123, "analysis": { "concrete_origin": "...", "fundamental_frame": "..." } }',
+      requiredFields: ['rootId', 'analysis'],
+      v2Fields: ['concrete_origin', 'path_to_abstraction', 'fundamental_frame', 'basic_stats', 'quranic_refs', 'hadith_refs', 'poetic_refs', 'proverbial_refs'],
+      v1Fields: ['lexical_summary', 'semantic_path', 'words_expressions', 'poetic_references']
+    });
+  }
+  
   const { 
-    rootId, 
     // v2 schema fields
     concrete_origin,
     path_to_abstraction,
@@ -1335,16 +1348,18 @@ router.post('/write-root-analysis', async (req, res) => {
     words_expressions, 
     poetic_references, 
     version 
-  } = req.body;
+  } = analysis;
 
   // Validate required parameters - support both v1 and v2 schemas
-  const hasV2Fields = concrete_origin || path_to_abstraction;
-  const hasV1Fields = lexical_summary || semantic_path;
+  const hasV2Fields = concrete_origin || path_to_abstraction || fundamental_frame || basic_stats || 
+                      quranic_refs || hadith_refs || poetic_refs || proverbial_refs;
+  const hasV1Fields = lexical_summary || semantic_path || words_expressions || poetic_references;
   
   if (!rootId || (!hasV1Fields && !hasV2Fields)) {
     return res.status(400).json({ 
       error: 'rootId and at least one analysis field are required',
-      usage: 'POST /api/write-root-analysis with structured analysis sections',
+      usage: 'POST /api/write-root-analysis',
+      format: '{ "rootId": 123, "analysis": { "concrete_origin": "...", "fundamental_frame": "..." } }',
       requiredFields: ['rootId'],
       v2Fields: ['concrete_origin', 'path_to_abstraction', 'fundamental_frame', 'basic_stats', 'quranic_refs', 'hadith_refs', 'poetic_refs', 'proverbial_refs'],
       v1Fields: ['lexical_summary', 'semantic_path', 'words_expressions', 'poetic_references'],

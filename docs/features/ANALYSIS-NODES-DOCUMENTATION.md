@@ -93,7 +93,7 @@ GET /analysis/word/456        // Future: word-level analysis
 ```javascript
 POST /write-root-analysis
 
-// Request Body (v2 Schema):
+// Required Format (Nested Object):
 {
   "rootId": 123,
   "analysis": {
@@ -111,7 +111,7 @@ POST /write-root-analysis
   }
 }
 
-// Legacy v1 Request (Still Supported):
+// Legacy v1 Schema (within analysis object):
 {
   "rootId": 123,
   "analysis": {
@@ -119,6 +119,15 @@ POST /write-root-analysis
     "semantic_path": "Semantic evolution",
     "words_expressions": "Derived vocabulary",
     "poetic_references": "Poetry examples"
+  }
+}
+
+// Mixed v1 + v2 Schema (supported):
+{
+  "rootId": 123,
+  "analysis": {
+    "concrete_origin": "Physical preparation",    // v2
+    "lexical_summary": "Comprehensive overview"   // v1
   }
 }
 ```
