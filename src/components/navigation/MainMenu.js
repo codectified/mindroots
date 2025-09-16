@@ -41,7 +41,7 @@ const MainMenu = () => {
     navigate(path);
   };
 
-  const handleShowAnalysis = () => {
+  const handleShowAnalysis = (event) => {
     if (latestAnalysis) {
       const nodeInfoData = {
         analyses: [latestAnalysis.analysis]
@@ -157,6 +157,13 @@ const MainMenu = () => {
         <InfoBubble
           nodeData={infoBubbleData}
           onClose={() => setShowInfoBubble(false)}
+          style={{
+            top: '50%',
+            left: '50%',
+            transform: 'translate(-50%, -50%)',
+            position: 'fixed',
+            zIndex: 9999
+          }}
         />
       )}
     </div>
