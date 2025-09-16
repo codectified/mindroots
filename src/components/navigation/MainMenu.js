@@ -23,6 +23,7 @@ const MainMenu = () => {
   const [latestAnalysis, setLatestAnalysis] = useState(null);
   const [showInfoBubble, setShowInfoBubble] = useState(false);
   const [infoBubbleData, setInfoBubbleData] = useState({});
+  const [bubblePosition, setBubblePosition] = useState({ top: '50%', left: '50%' });
 
   useEffect(() => {
     const loadLatestAnalysis = async () => {
@@ -55,6 +56,38 @@ const MainMenu = () => {
       if (latestAnalysis.root.hanswehr_entry) {
         nodeInfoData.hanswehr_entry = latestAnalysis.root.hanswehr_entry;
       }
+      
+      // Calculate position relative to click, but keep it centered horizontally
+      const viewportWidth = window.innerWidth;
+      const viewportHeight = window.innerHeight;
+      
+      // Center horizontally, position vertically near click but ensure visibility
+      const bubbleWidth = 500; // Approximate InfoBubble width
+      const bubbleHeight = 400; // Approximate InfoBubble height
+      
+      let top = event.clientY;
+      let left = (viewportWidth - bubbleWidth) / 2;
+      
+      // Ensure bubble doesn't go off top or bottom of screen
+      if (top + bubbleHeight > viewportHeight) {
+        top = viewportHeight - bubbleHeight - 20;
+      }
+      if (top < 20) {
+        top = 20;
+      }
+      
+      // Ensure left positioning doesn't go off edges
+      if (left < 20) {
+        left = 20;
+      }
+      if (left + bubbleWidth > viewportWidth) {
+        left = viewportWidth - bubbleWidth - 20;
+      }
+      
+      setBubblePosition({
+        top: `${top}px`,
+        left: `${left}px`
+      });
       
       setInfoBubbleData(nodeInfoData);
       setShowInfoBubble(true);
@@ -118,7 +151,7 @@ const MainMenu = () => {
             </p>
             <button 
               className="analysis-link"
-              onClick={handleShowAnalysis}
+              onClick={(e) => handleShowAnalysis(e)}
               title="View full analysis"
             >
               View Analysis
@@ -158,9 +191,8 @@ const MainMenu = () => {
           nodeData={infoBubbleData}
           onClose={() => setShowInfoBubble(false)}
           style={{
-            top: '50%',
-            left: '50%',
-            transform: 'translate(-50%, -50%)',
+            top: bubblePosition.top,
+            left: bubblePosition.left,
             position: 'fixed',
             zIndex: 9999
           }}
