@@ -128,6 +128,59 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                       
                       const renderAnalysis = (analysis, isOlder = false) => (
                         <div className="analysis-entry">
+                          {/* Core Fields (v2 schema) */}
+                          {analysis.concrete_origin && (
+                            <div className="analysis-section">
+                              <h4>Concrete Origin</h4>
+                              <p>{analysis.concrete_origin}</p>
+                            </div>
+                          )}
+                          {analysis.path_to_abstraction && (
+                            <div className="analysis-section">
+                              <h4>Path to Abstraction</h4>
+                              <p>{analysis.path_to_abstraction}</p>
+                            </div>
+                          )}
+                          {analysis.fundamental_frame && (
+                            <div className="analysis-section">
+                              <h4>Fundamental Frame</h4>
+                              <p>{analysis.fundamental_frame}</p>
+                            </div>
+                          )}
+                          {analysis.basic_stats && (
+                            <div className="analysis-section">
+                              <h4>Basic Stats</h4>
+                              <p>{analysis.basic_stats}</p>
+                            </div>
+                          )}
+                          
+                          {/* Reference Fields (v2 schema) */}
+                          {analysis.quranic_refs && (
+                            <div className="analysis-section">
+                              <h4>Qur'anic References</h4>
+                              <p>{analysis.quranic_refs}</p>
+                            </div>
+                          )}
+                          {analysis.hadith_refs && (
+                            <div className="analysis-section">
+                              <h4>Hadith References</h4>
+                              <p>{analysis.hadith_refs}</p>
+                            </div>
+                          )}
+                          {analysis.poetic_refs && (
+                            <div className="analysis-section">
+                              <h4>Poetic References</h4>
+                              <p>{analysis.poetic_refs}</p>
+                            </div>
+                          )}
+                          {analysis.proverbial_refs && (
+                            <div className="analysis-section">
+                              <h4>Proverbial References</h4>
+                              <p>{analysis.proverbial_refs}</p>
+                            </div>
+                          )}
+                          
+                          {/* Legacy v1 fields (backward compatibility) */}
                           {analysis.lexical_summary && (
                             <div className="analysis-section">
                               <h4>Lexical Summary</h4>
@@ -140,12 +193,6 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                               <p>{analysis.semantic_path}</p>
                             </div>
                           )}
-                          {analysis.fundamental_frame && (
-                            <div className="analysis-section">
-                              <h4>Fundamental Frame</h4>
-                              <p>{analysis.fundamental_frame}</p>
-                            </div>
-                          )}
                           {analysis.words_expressions && (
                             <div className="analysis-section">
                               <h4>Words & Expressions</h4>
@@ -154,16 +201,11 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                           )}
                           {analysis.poetic_references && (
                             <div className="analysis-section">
-                              <h4>Poetic References</h4>
+                              <h4>Poetic References (Legacy)</h4>
                               <p>{analysis.poetic_references}</p>
                             </div>
                           )}
-                          {analysis.basic_stats && (
-                            <div className="analysis-section">
-                              <h4>Basic Stats</h4>
-                              <p>{analysis.basic_stats}</p>
-                            </div>
-                          )}
+                          
                           {analysis.version && (
                             <div className="analysis-meta">
                               <small>{isOlder ? `Previous Version: ${analysis.version}` : `Version: ${analysis.version}`}</small>

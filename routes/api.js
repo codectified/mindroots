@@ -1320,22 +1320,35 @@ router.post('/write-root-analysis', async (req, res) => {
 
   const { 
     rootId, 
+    // v2 schema fields
+    concrete_origin,
+    path_to_abstraction,
+    fundamental_frame,
+    basic_stats,
+    quranic_refs,
+    hadith_refs,
+    poetic_refs,
+    proverbial_refs,
+    // Legacy v1 fields (backward compatibility)
     lexical_summary, 
     semantic_path, 
-    fundamental_frame, 
     words_expressions, 
     poetic_references, 
-    basic_stats,
     version 
   } = req.body;
 
-  // Validate required parameters
-  if (!rootId || !lexical_summary) {
+  // Validate required parameters - support both v1 and v2 schemas
+  const hasV2Fields = concrete_origin || path_to_abstraction;
+  const hasV1Fields = lexical_summary || semantic_path;
+  
+  if (!rootId || (!hasV1Fields && !hasV2Fields)) {
     return res.status(400).json({ 
-      error: 'rootId and lexical_summary are required',
+      error: 'rootId and at least one analysis field are required',
       usage: 'POST /api/write-root-analysis with structured analysis sections',
-      requiredFields: ['rootId', 'lexical_summary'],
-      optionalFields: ['semantic_path', 'fundamental_frame', 'words_expressions', 'poetic_references', 'basic_stats', 'version']
+      requiredFields: ['rootId'],
+      v2Fields: ['concrete_origin', 'path_to_abstraction', 'fundamental_frame', 'basic_stats', 'quranic_refs', 'hadith_refs', 'poetic_refs', 'proverbial_refs'],
+      v1Fields: ['lexical_summary', 'semantic_path', 'words_expressions', 'poetic_references'],
+      systemFields: ['version']
     });
   }
 
@@ -1377,7 +1390,7 @@ router.post('/write-root-analysis', async (req, res) => {
     const maxVersion = versionResult.records[0]?.get('max_version') || 0;
     const nextVersion = version || (convertIntegers(maxVersion) + 1);
 
-    // Hard-coded Cypher for security - create Analysis node with structured sections
+    // Hard-coded Cypher for security - create Analysis node with structured sections (v2 + v1 support)
     const writeQuery = `
       MATCH (r:Root) 
       WHERE r.root_id = toInteger($rootId) OR r.id = toInteger($rootId) OR r.root_id = $rootId OR r.id = $rootId
@@ -1390,12 +1403,21 @@ router.post('/write-root-analysis', async (req, res) => {
         user_edited: false,
         validation_status: "pending",
         
+        // v2 schema fields
+        concrete_origin: $concrete_origin,
+        path_to_abstraction: $path_to_abstraction,
+        fundamental_frame: $fundamental_frame,
+        basic_stats: $basic_stats,
+        quranic_refs: $quranic_refs,
+        hadith_refs: $hadith_refs,
+        poetic_refs: $poetic_refs,
+        proverbial_refs: $proverbial_refs,
+        
+        // Legacy v1 fields (backward compatibility)
         lexical_summary: $lexical_summary,
         semantic_path: $semantic_path,
-        fundamental_frame: $fundamental_frame,
         words_expressions: $words_expressions,
-        poetic_references: $poetic_references,
-        basic_stats: $basic_stats
+        poetic_references: $poetic_references
       })
       CREATE (r)-[:HAS_ANALYSIS]->(a)
       RETURN r.root_id as root_id, r.arabic as arabic, a.id as analysis_id, a.version as version
@@ -1408,12 +1430,20 @@ router.post('/write-root-analysis', async (req, res) => {
       version: nextVersion,
       timestamp,
       ip: req.ip,
+      // v2 schema fields
+      concrete_origin: concrete_origin?.trim() || null,
+      path_to_abstraction: path_to_abstraction?.trim() || null,
+      fundamental_frame: fundamental_frame?.trim() || null,
+      basic_stats: basic_stats?.trim() || null,
+      quranic_refs: quranic_refs?.trim() || null,
+      hadith_refs: hadith_refs?.trim() || null,
+      poetic_refs: poetic_refs?.trim() || null,
+      proverbial_refs: proverbial_refs?.trim() || null,
+      // Legacy v1 fields
       lexical_summary: lexical_summary?.trim() || null,
       semantic_path: semantic_path?.trim() || null,
-      fundamental_frame: fundamental_frame?.trim() || null,
       words_expressions: words_expressions?.trim() || null,
-      poetic_references: poetic_references?.trim() || null,
-      basic_stats: basic_stats?.trim() || null
+      poetic_references: poetic_references?.trim() || null
     });
 
     const updatedRecord = writeResult.records[0];
@@ -1718,12 +1748,25 @@ router.get('/analysis/:nodeType/:nodeId', async (req, res) => {
           MATCH (n:Root {root_id: toInteger($nodeId)})
           OPTIONAL MATCH (n)-[:HAS_ANALYSIS]->(analysis:Analysis)
           RETURN collect(DISTINCT {
+            // Core Fields (v2 schema)
+            concrete_origin: analysis.concrete_origin,
+            path_to_abstraction: analysis.path_to_abstraction,
+            fundamental_frame: analysis.fundamental_frame,
+            basic_stats: analysis.basic_stats,
+            
+            // Reference Fields (v2 schema)
+            quranic_refs: analysis.quranic_refs,
+            hadith_refs: analysis.hadith_refs,
+            poetic_refs: analysis.poetic_refs,
+            proverbial_refs: analysis.proverbial_refs,
+            
+            // Legacy v1 fields (backward compatibility)
             lexical_summary: analysis.lexical_summary,
             semantic_path: analysis.semantic_path,
-            fundamental_frame: analysis.fundamental_frame,
             words_expressions: analysis.words_expressions,
             poetic_references: analysis.poetic_references,
-            basic_stats: analysis.basic_stats,
+            
+            // System fields
             version: analysis.version,
             created_at: analysis.created_at
           }) AS analyses
@@ -1743,7 +1786,12 @@ router.get('/analysis/:nodeType/:nodeId', async (req, res) => {
     const result = await session.run(query, params);
 
     if (result.records.length > 0) {
-      const analyses = result.records[0].get('analyses').filter(a => a.lexical_summary); // Filter out empty objects
+      const analyses = result.records[0].get('analyses').filter(a => 
+        // Check for v2 schema fields
+        a.concrete_origin || a.path_to_abstraction || 
+        // Or legacy v1 fields for backward compatibility
+        a.lexical_summary || a.semantic_path
+      );
       res.json({ analyses: analyses });
     } else {
       res.json({ analyses: [] });

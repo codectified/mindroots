@@ -3,12 +3,17 @@
 **Claude's comprehensive guide to the MindRoots Arabic morphology application**
 
 ## 📚 **Documentation Index**
-**IMPORTANT**: Always check the organized documentation in `/docs/` before adding new files:
-- **Features**: `/docs/features/` - All feature documentation including GPT integration
-- **Testing**: `/docs/testing/` - Test procedures and results
-- **Deployment**: `/docs/deployment/` - Production deployment guides
-- **Archived**: `/docs/archived/` - Historical/completed feature documentation
-- **Prototypes**: `/docs/development-prototypes/` - Experimental code and concepts
+
+**IMPORTANT**: Check organized documentation first before adding new files:
+
+### **📁 Documentation Structure**
+- **[Documentation Index](docs/DOCUMENTATION-INDEX.md)** - Complete navigation guide
+- **[Features](docs/features/)** - Current feature documentation
+  - **[Analysis Nodes](docs/features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system
+  - **[Radical Search](docs/features/RADICAL-SEARCH-INTEGRATION.md)** - RadicalPosition-based search architecture
+  - **[Validation System](docs/features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - Inline editing and approval workflow
+- **[Testing](docs/testing/)** - Test procedures and results
+- **[Archived](docs/archived/)** - Historical/completed feature documentation
 
 **🔒 SECURITY**: Never include API keys, credentials, or sensitive data in documentation files. All keys belong in `.env` files only.
 
@@ -79,126 +84,23 @@ CLAUDE.md                           # This file - your knowledge base!
 
 ---
 
-## 🔍 **Complete Root Search System Architecture (Recently Overhauled)**
+## 🔍 **Root Search System**
 
-### **Modern RadicalPosition-Based System** ✅ **PRODUCTION ACTIVE**
+**See detailed documentation**: [Radical Search Integration](docs/features/RADICAL-SEARCH-INTEGRATION.md)
 
-The search system uses a flexible RadicalPosition layer in Neo4j for optimal performance and extensibility.
+### **Quick Overview**
+- **Modern System**: RadicalPosition-based architecture with flexible search modes
+- **Three Search Types**: Position-specific (`/search-roots`), Permutation (`/search-combinate`), Extended (`/search-extended`)
+- **Wildcard Support**: `*` for any radical, `None` for biradical-only searches
+- **Legacy Support**: Deprecated hardcoded endpoints still functional
 
-#### **Database Structure**
+### **Database Structure**
 ```cypher
 // RadicalPosition Layer (Flexible)
 (:Root {arabic: "ا-د-م"})-[:HAS_RADICAL]->(:RadicalPosition {radical: "ا", position: 1})
 (:Root {arabic: "ا-د-م"})-[:HAS_RADICAL]->(:RadicalPosition {radical: "د", position: 2})
 (:Root {arabic: "ا-د-م"})-[:HAS_RADICAL]->(:RadicalPosition {radical: "م", position: 3})
-
-// Legacy Properties (Backward Compatibility)
-(:Root {arabic: "ا-د-م", r1: "ا", r2: "د", r3: "م"})
 ```
-
-#### **Three Primary Search Endpoints**
-
-##### **1. Position-Specific Search** `/search-roots`
-```javascript
-// Examples:
-GET /search-roots?r1=ا&r2=*&r3=None&L1=arabic&L2=english
-// → Biradical roots with ا in position 1
-
-GET /search-roots?r1=ا&r2=د&r3=م&L1=arabic&L2=english  
-// → Exact triradical match ا-د-م
-```
-- **Wildcards**: `*` (any radical), `None` (biradical only)
-- **Logic**: Exact position matching with wildcard support
-- **Neo4j**: Uses RadicalPosition relationships
-
-##### **2. Permutation-Based Search** `/search-combinate`  
-```javascript
-// Examples:
-GET /search-combinate?r1=ا&r2=د&L1=arabic&L2=english
-// → All roots containing both ا and د in any positions
-```
-- **Behavior**: Finds all permutations regardless of position
-- **Use Case**: "I know these radicals appear but not their positions"
-- **Neo4j**: Flexible RadicalPosition matching
-
-##### **3. Extended Roots Only** `/search-extended`
-```javascript
-// Examples: 
-GET /search-extended?L1=arabic&L2=english
-// → Only returns 4+ radical roots (quadriliteral, etc.)
-```
-- **Filter**: Automatically excludes 2-3 radical roots
-- **Purpose**: Focus on complex morphological patterns
-- **Count Constraint**: `size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) >= 4`
-
-### **Advanced RadicalPosition Engine** `/radical-search` 
-```javascript
-// Advanced JSON-based query structure
-POST /radical-search
-{
-  "radicals": [
-    {"radical": "ا", "position": 1},
-    {"radical": "د", "position": 2}
-  ],
-  "searchType": "biradical_only",
-  "L1": "arabic", "L2": "english"
-}
-```
-
-### **Legacy Endpoints** ⚠️ **DEPRECATED BUT FUNCTIONAL**
-
-These endpoints use hardcoded `r1`, `r2`, `r3` properties and are marked for future migration:
-
-- `/rootbyletters` - Basic hardcoded position search  
-- `/geminate-roots` - Hardcoded biradical logic
-- `/triliteral-roots` - Hardcoded triradical logic
-- `/extended-roots` - Hardcoded extended logic
-
-**Migration Path**: Legacy endpoints will eventually be removed in favor of RadicalPosition-based equivalents.
-
-### **🔤 Orthographical Normalization (Recommended Enhancement)**
-
-#### **Current Challenge**
-RadicalPosition stores exact Arabic characters without normalization, leading to search misses:
-- User searches for `أ` but data contains `ا`
-- User searches for `ة` but data contains `ت`
-
-#### **Proposed Normalization Rules**
-```javascript
-const normalizeArabicLetter = (letter) => {
-  const normalizationMap = {
-    // Alef variants
-    'أ': 'ا', 'إ': 'ا', 'آ': 'ا', 'ء': 'ا',
-    
-    // Taa variants  
-    'ة': 'ت',
-    
-    // Yaa variants
-    'ى': 'ي',
-    
-    // Waw variants
-    'ؤ': 'و',
-    
-    // Noon variants
-    'ن': 'ن'
-  };
-  
-  return normalizationMap[letter] || letter;
-};
-```
-
-#### **Implementation Points**
-- **Input Normalization**: Normalize user input before RadicalPosition queries
-- **Data Normalization**: Consider normalizing RadicalPosition.radical values
-- **Backward Compatibility**: Maintain original values for linguistic analysis
-- **Performance**: Pre-compute normalized indexes for fast lookup
-
-#### **Affected Endpoints**
-All RadicalPosition-based search endpoints would benefit:
-- `/search-roots` - Position-specific matching
-- `/search-combinate` - Permutation matching  
-- `/search-extended` - Extended root matching
-- `/radical-search` - Advanced query engine
 
 ---
 
@@ -311,6 +213,14 @@ GET /expand/corpusitem/:id/word // Words in specific text
 GET /laneentry/:wordId        // Lane's Lexicon definitions
 GET /hanswehrentry/:wordId    // Hans Wehr dictionary
 GET /rootentry/:rootId        // Root-level definitions
+```
+
+### **Analysis Nodes & LLM Integration**
+**See detailed documentation**: [Analysis Nodes](docs/features/ANALYSIS-NODES-DOCUMENTATION.md)
+
+```javascript
+GET /analysis/:nodeType/:nodeId    // Read Analysis nodes (v2 schema + v1 compatibility)
+POST /write-root-analysis          // Write Analysis nodes with structured v2 fields
 ```
 
 ---
@@ -585,23 +495,33 @@ const query = isHierarchicalId ?
 }
 ```
 
-#### **Analysis Node Schema**
+#### **Analysis Node Schema v2 (September 2025)**
 ```cypher
 (:Root)-[:HAS_ANALYSIS]->(:Analysis {
   id: "analysis_123",
-  version: 1,
-  created: "2025-09-12T07:08:17.912Z",
+  version: 2,
+  created: "2025-09-16T00:47:12.691Z",
   source: "gpt-analysis",
   user_edited: false,
   validation_status: "pending",
   
-  // Structured sections
-  lexical_summary: "Concrete origin analysis...",
-  semantic_path: "Path to abstraction...",
-  fundamental_frame: "Union/separation dynamics...",
-  words_expressions: "Relevant words and expressions...",
-  poetic_references: "Poetic and idiomatic usage...",
-  basic_stats: "Statistical information..."
+  // v2 Core Fields (required/standard)
+  concrete_origin: "Original concrete meaning...",
+  path_to_abstraction: "Journey from concrete to abstract...",
+  fundamental_frame: "Conceptual frames (union/separation, expansion)...",
+  basic_stats: "Quantitative notes (verb forms, counts, spread)...",
+  
+  // v2 Reference Fields (cleanly separated)
+  quranic_refs: "Direct Qur'anic quotations + surah/ayah indices...",
+  hadith_refs: "Prophetic or Qudsi hadith citations...",
+  poetic_refs: "Classical poetry with attribution (Zuhayr, Imru' al-Qays)...",
+  proverbial_refs: "Arabic proverbs and idioms...",
+  
+  // Legacy v1 fields (backward compatibility)
+  lexical_summary: "Legacy: Concrete origin analysis...",
+  semantic_path: "Legacy: Path to abstraction...",
+  words_expressions: "Legacy: Relevant words and expressions...",
+  poetic_references: "Legacy: Combined poetic/religious references..."
 })
 ```
 
@@ -619,13 +539,25 @@ const query = isHierarchicalId ?
 4. **Track Progress**: Backend creates versioned Analysis node
 5. **Future Enhancement**: User editing interface for Analysis nodes
 
-#### **Structured Sections (Based on Example)**
-- **lexical_summary**: Core meanings and concrete origins
-- **semantic_path**: Pathway from concrete to abstract meanings
-- **fundamental_frame**: Underlying semantic frameworks
-- **words_expressions**: Related words and expressions
-- **poetic_references**: Literary and idiomatic usage examples
-- **basic_stats**: Quantitative analysis of the root's word family
+#### **v2 Schema Structure**
+
+**Core Fields (required/standard)**
+- **concrete_origin**: Original concrete meaning and physical/tangible sense
+- **path_to_abstraction**: Journey from concrete sense to abstract meanings
+- **fundamental_frame**: Conceptual frames (union/separation, expansion, containment, etc.)
+- **basic_stats**: Quantitative notes (number of verb forms, itype values, spread, counts)
+
+**Reference Fields (cleanly separated)**
+- **quranic_refs**: Direct Qur'anic quotations with surah/ayah indices
+- **hadith_refs**: Prophetic or Qudsi hadith citations with attribution
+- **poetic_refs**: Classical poetry with clear attribution (e.g., Zuhayr, Imru' al-Qays)
+- **proverbial_refs**: Arabic proverbs and idioms with usage context
+
+**Legacy v1 Fields (backward compatibility)**
+- **lexical_summary**: Core meanings and concrete origins (superseded by concrete_origin)
+- **semantic_path**: Pathway from concrete to abstract meanings (superseded by path_to_abstraction)
+- **words_expressions**: Related words and expressions (moved to basic_stats or dedicated fields)
+- **poetic_references**: Combined poetic/religious references (split into separate reference fields)
 
 #### **Security Features**
 - Only public GPT API key accepted (admin key rejected)
@@ -681,36 +613,13 @@ After any changes:
 
 ## 🎨 UI & Validation System
 
+**See detailed documentation**: [Validation System](docs/features/VALIDATION-SYSTEM-DOCUMENTATION.md)
+
 ### Key Features
-- **Context Menu**: Simplified with "More info" action
-- **InfoBubble**: Collapsible sections for definitions
-- **Node Inspector**: Full node data with inline editing
-- **Validation**: Edit → Approve → Lock workflow
-
-### Validation System
-- **Editable Fields**: english, wazn, spanish, urdu, classification, transliteration
-- **Endpoint**: `POST /update-validation/:nodeType/:nodeId`
-- **Security**: IP-based spam protection
-- **Audit Trail**: Creates Approval nodes for tracking
-
-### Navigation
-- **Arrow Buttons**: `←` and `→` for Word and CorpusItem nodes
-- **Location**: Next to node ID in inspector header
-- **Endpoint**: `/navigate/:nodeType/:nodeId/:direction`
-```bash
-# Test validation update
-curl -X POST "http://localhost:5001/api/update-validation/word/16089" \
-     -H "Authorization: Bearer [DEV_KEY]" \
-     -H "Content-Type: application/json" \
-     -d '{"updates": {"wazn": {"value": "فَعَلَ", "approve": true}}}'
-```
-
-### Production Deployment Checklist
-1. **Switch API URL**: Comment localhost, uncomment production in `apiService.js`
-2. **Git Workflow**: Follow critical merge sequence (rebase master first!)
-3. **Build**: Use memory flags for 1GB server constraint
-4. **Test**: Verify validation system works with production API key
-5. **Monitor**: Check pm2 logs for any approval/navigation errors
+- **Inline Editing**: 6 linguistic fields with approval workflow
+- **Spam Protection**: IP-based 24-hour cooldown
+- **Audit Trail**: Full approval tracking with timestamps
+- **Navigation**: Arrow buttons for Word and CorpusItem nodes
 
 ---
 
