@@ -12,7 +12,7 @@ const api = axios.create({
 // const api = axios.create({
 //   baseURL: 'http://localhost:5001/api',
 //   headers: {
-//     'Authorization': 'Bearer REDACTED_API_KEY',
+//     'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
 //   },
 // });
 
@@ -596,6 +596,17 @@ export const updateValidationFields = async (nodeType, nodeId, updates) => {
     return convertIntegers(response.data);
   } catch (error) {
     console.error('Error updating validation fields:', error);
+    throw error;
+  }
+};
+
+// Fetch latest root analysis for News section
+export const fetchLatestAnalysis = async () => {
+  try {
+    const response = await api.get('/latest-analysis');
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching latest analysis:', error);
     throw error;
   }
 };
