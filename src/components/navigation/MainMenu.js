@@ -129,10 +129,12 @@ const MainMenu = () => {
             <p>
               <strong>Latest Analysis:</strong> Root{' '}
               <span 
-                className="analysis-link"
                 onClick={(e) => handleShowAnalysis(e)}
                 title="Click to view full analysis"
-                style={{ cursor: 'pointer' }}
+                style={{ 
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
               >
                 <em>{latestAnalysis.root.arabic}</em>
                 {latestAnalysis.root.english && ` (${latestAnalysis.root.english})`}
