@@ -1,16 +1,18 @@
 # Latest Updates
 
-**Last Updated**: September 16, 2025
+**Last Updated**: September 19, 2025
 
 ## Recent Developments
 
-• **Enhanced Analysis System**: Upgraded to v2 schema with structured linguistic fields for better GPT integration
+-Mindroots GPT now saves and versions root analyses in the database:  everytime you search for a root using the Mindroots GPT a new root analysis is saved to the database!:  [Mindroots](https://chatgpt.com/g/g-6837e9a3285081919820781cf0fb2292-mindroots)
 
-• **Documentation Overhaul**: Reorganized documentation with dedicated feature guides for improved maintainability  
+-Qur’anRoots GPT is live in beta as a dedicated Qur’an search tool: [Quranroots GPT](https://chatgpt.com/g/g-68c8fbd5dcf48191a399e8045059a8d4-quranroots)
 
-• **Validation Improvements**: Streamlined inline editing workflow with improved spam protection and audit trail
+-Data validation is built directly into the app so you can edit and approve fields in 'Advanced Mode' by clicking 'Inspect Node'
 
-• **Search System Enhancements**: RadicalPosition-based architecture now supports all Arabic root lengths and wildcard searches
+-Lisān Lab sessions and reports are almost fully up to date
+
+-Help is welcome for validation, design, app feedback, social media, and editing
 
 ## Coming Soon
 
