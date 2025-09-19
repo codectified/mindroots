@@ -119,24 +119,6 @@ const MainMenu = () => {
         </div>
       </div>
 
-      {/* Statistics Section */}
-      <div className="statistics-section">
-        <ul className="articles-list">
-          <li>
-            <Link to="/about">About</Link>
-          </li>
-          <li>
-            <Link to="/getting-started">Getting Started</Link>
-          </li>
-          <li>
-            <Link to="/project-overview">Project Overview</Link>
-          </li>
-          <li>
-            <Link to="/acknowledgements">Acknowledgements</Link>
-          </li>
-        </ul>
-      </div>
-
       {/* News Section */}
       <div className="news-section">
         <h3>Latest Updates</h3>
@@ -146,25 +128,43 @@ const MainMenu = () => {
           <div className="latest-analysis">
             <p>
               <strong>Latest Analysis:</strong> Root{' '}
-              <em>{latestAnalysis.root.arabic}</em>
-              {latestAnalysis.root.english && ` (${latestAnalysis.root.english})`}
+              <span 
+                className="analysis-link"
+                onClick={(e) => handleShowAnalysis(e)}
+                title="Click to view full analysis"
+                style={{ cursor: 'pointer' }}
+              >
+                <em>{latestAnalysis.root.arabic}</em>
+                {latestAnalysis.root.english && ` (${latestAnalysis.root.english})`}
+              </span>
             </p>
-            <button 
-              className="analysis-link"
-              onClick={(e) => handleShowAnalysis(e)}
-              title="View full analysis"
-            >
-              View Analysis
-            </button>
           </div>
         )}
         
         {/* Static News Link */}
         <div className="static-news">
           <Link to="/news" className="news-link">
-            Read Recent Developments →
+            Recent Developments →
           </Link>
         </div>
+      </div>
+
+      {/* Statistics Section */}
+      <div className="statistics-section">
+        <ul className="articles-list">
+          <li>
+            <Link to="/acknowledgements">Acknowledgements</Link>
+          </li>
+          <li>
+            <Link to="/project-overview">Project Overview</Link>
+          </li>
+          <li>
+            <Link to="/getting-started">Getting Started</Link>
+          </li>
+          <li>
+            <Link to="/about">About</Link>
+          </li>
+        </ul>
       </div>
 
       {/* Main Site and Social Links */}
