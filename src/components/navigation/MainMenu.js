@@ -15,12 +15,13 @@ import {
   faYoutube,
   faGithub
 } from '@fortawesome/free-brands-svg-icons';
-import { fetchLatestAnalysis } from '../../services/apiService';
+import { fetchLatestAnalysis, fetchAnalysisHeaders } from '../../services/apiService';
 import InfoBubble from '../layout/InfoBubble';
 
 const MainMenu = () => {
   const navigate = useNavigate();
   const [latestAnalysis, setLatestAnalysis] = useState(null);
+  const [allAnalyses, setAllAnalyses] = useState([]);
   const [showInfoBubble, setShowInfoBubble] = useState(false);
   const [infoBubbleData, setInfoBubbleData] = useState({});
   const [bubblePosition, setBubblePosition] = useState({ top: '50%', left: '50%' });
@@ -57,41 +58,61 @@ const MainMenu = () => {
         nodeInfoData.hanswehr_entry = latestAnalysis.root.hanswehr_entry;
       }
       
-      // Calculate position relative to click, but keep it centered horizontally
-      const viewportWidth = window.innerWidth;
-      const viewportHeight = window.innerHeight;
-      
-      // Center horizontally, position vertically near click but ensure visibility
-      const bubbleWidth = 500; // Approximate InfoBubble width
-      const bubbleHeight = 400; // Approximate InfoBubble height
-      
-      let top = event.clientY;
-      let left = (viewportWidth - bubbleWidth) / 2;
-      
-      // Ensure bubble doesn't go off top or bottom of screen
-      if (top + bubbleHeight > viewportHeight) {
-        top = viewportHeight - bubbleHeight - 20;
-      }
-      if (top < 20) {
-        top = 20;
-      }
-      
-      // Ensure left positioning doesn't go off edges
-      if (left < 20) {
-        left = 20;
-      }
-      if (left + bubbleWidth > viewportWidth) {
-        left = viewportWidth - bubbleWidth - 20;
-      }
-      
-      setBubblePosition({
-        top: `${top}px`,
-        left: `${left}px`
-      });
-      
-      setInfoBubbleData(nodeInfoData);
-      setShowInfoBubble(true);
+      calculateAndShowBubble(event, nodeInfoData);
     }
+  };
+
+  const handleShowAllAnalyses = async (event) => {
+    try {
+      const data = await fetchAnalysisHeaders();
+      if (data.headers && data.headers.length > 0) {
+        // Structure data for collapsible lazy-loaded analyses
+        const nodeInfoData = {
+          analysisHeaders: data.headers // Pass lightweight headers for on-demand loading
+        };
+        
+        calculateAndShowBubble(event, nodeInfoData);
+      }
+    } catch (error) {
+      console.error('Error loading analysis headers:', error);
+    }
+  };
+
+  const calculateAndShowBubble = (event, nodeInfoData) => {
+    // Calculate position relative to click, but keep it centered horizontally
+    const viewportWidth = window.innerWidth;
+    const viewportHeight = window.innerHeight;
+    
+    // Center horizontally, position vertically near click but ensure visibility
+    const bubbleWidth = 500; // Approximate InfoBubble width
+    const bubbleHeight = 400; // Approximate InfoBubble height
+    
+    let top = event.clientY;
+    let left = (viewportWidth - bubbleWidth) / 2;
+    
+    // Ensure bubble doesn't go off top or bottom of screen
+    if (top + bubbleHeight > viewportHeight) {
+      top = viewportHeight - bubbleHeight - 20;
+    }
+    if (top < 20) {
+      top = 20;
+    }
+    
+    // Ensure left positioning doesn't go off edges
+    if (left < 20) {
+      left = 20;
+    }
+    if (left + bubbleWidth > viewportWidth) {
+      left = viewportWidth - bubbleWidth - 20;
+    }
+    
+    setBubblePosition({
+      top: `${top}px`,
+      left: `${left}px`
+    });
+    
+    setInfoBubbleData(nodeInfoData);
+    setShowInfoBubble(true);
   };
 
   return (
@@ -140,6 +161,18 @@ const MainMenu = () => {
                 {latestAnalysis.root.english && ` (${latestAnalysis.root.english})`}
               </span>
             </p>
+            <div style={{ marginTop: '10px' }}>
+              <span 
+                onClick={(e) => handleShowAllAnalyses(e)}
+                title="View all previous analyses"
+                style={{ 
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Previous Analyses
+              </span>
+            </div>
           </div>
         )}
         
