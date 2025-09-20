@@ -1,20 +1,20 @@
 import axios from 'axios';
 
 // Create an Axios instance with environment-based configuration
+const api = axios.create({
+  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://theoption.life/api',
+  headers: {
+    'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
+  },
+});
+
+// Localhost development setup (comment out for production)
 // const api = axios.create({
-//   baseURL: process.env.REACT_APP_API_BASE_URL || 'https://theoption.life/api',
+//   baseURL: 'http://localhost:5001/api',
 //   headers: {
 //     'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
 //   },
 // });
-
-// Localhost development setup (comment out for production)
-const api = axios.create({
-  baseURL: 'http://localhost:5001/api',
-  headers: {
-    'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
-  },
-});
 
 // Environment variables used:
 // REACT_APP_API_BASE_URL - API base URL (defaults to production)
@@ -640,41 +640,6 @@ export const fetchAnalysisByRoot = async (rootId) => {
     return convertIntegers(response.data);
   } catch (error) {
     console.error('Error fetching analysis by root:', error);
-    throw error;
-  }
-};
-
-// ARTICLE FUNCTIONS
-
-// Fetch latest article for Main Menu
-export const fetchLatestArticle = async () => {
-  try {
-    const response = await api.get('/latest-article');
-    return convertIntegers(response.data);
-  } catch (error) {
-    console.error('Error fetching latest article:', error);
-    throw error;
-  }
-};
-
-// Fetch article headers (lightweight) for collapsible list
-export const fetchArticleHeaders = async () => {
-  try {
-    const response = await api.get('/article-headers');
-    return convertIntegers(response.data);
-  } catch (error) {
-    console.error('Error fetching article headers:', error);
-    throw error;
-  }
-};
-
-// Fetch single article by ID (on-demand)
-export const fetchArticleById = async (articleId) => {
-  try {
-    const response = await api.get(`/article-by-id/${articleId}`);
-    return convertIntegers(response.data);
-  } catch (error) {
-    console.error('Error fetching article by ID:', error);
     throw error;
   }
 };
