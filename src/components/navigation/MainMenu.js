@@ -186,8 +186,7 @@ const MainMenu = () => {
                 onClick={(e) => handleShowAnalysis(e)}
                 title="Click to view full analysis"
                 style={{ 
-                  cursor: 'pointer',
-                  textDecoration: 'underline'
+                  cursor: 'pointer'
                 }}
               >
                 <em>{latestAnalysis.root.arabic}</em>
@@ -218,15 +217,13 @@ const MainMenu = () => {
                 onClick={(e) => handleShowArticle(e)}
                 title="Click to view full article"
                 style={{ 
-                  cursor: 'pointer',
-                  textDecoration: 'underline'
+                  cursor: 'pointer'
                 }}
               >
-                <em>{latestArticle.title}</em>
-              </span>
-              <br />
-              <span style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>
-                by {latestArticle.signature}
+                <em>{latestArticle.title}</em>{' '}
+                <span style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>
+                  by {latestArticle.signature}
+                </span>
               </span>
             </p>
             <div style={{ marginTop: '10px' }}>
