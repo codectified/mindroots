@@ -643,3 +643,38 @@ export const fetchAnalysisByRoot = async (rootId) => {
     throw error;
   }
 };
+
+// ARTICLE FUNCTIONS
+
+// Fetch latest article for Main Menu
+export const fetchLatestArticle = async () => {
+  try {
+    const response = await api.get('/latest-article');
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching latest article:', error);
+    throw error;
+  }
+};
+
+// Fetch article headers (lightweight) for collapsible list
+export const fetchArticleHeaders = async () => {
+  try {
+    const response = await api.get('/article-headers');
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching article headers:', error);
+    throw error;
+  }
+};
+
+// Fetch single article by ID (on-demand)
+export const fetchArticleById = async (articleId) => {
+  try {
+    const response = await api.get(`/article-by-id/${articleId}`);
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching article by ID:', error);
+    throw error;
+  }
+};

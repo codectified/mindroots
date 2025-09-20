@@ -15,28 +15,34 @@ import {
   faYoutube,
   faGithub
 } from '@fortawesome/free-brands-svg-icons';
-import { fetchLatestAnalysis, fetchAnalysisHeaders } from '../../services/apiService';
+import { fetchLatestAnalysis, fetchAnalysisHeaders, fetchLatestArticle, fetchArticleHeaders } from '../../services/apiService';
 import InfoBubble from '../layout/InfoBubble';
 
 const MainMenu = () => {
   const navigate = useNavigate();
   const [latestAnalysis, setLatestAnalysis] = useState(null);
+  const [latestArticle, setLatestArticle] = useState(null);
   const [allAnalyses, setAllAnalyses] = useState([]);
   const [showInfoBubble, setShowInfoBubble] = useState(false);
   const [infoBubbleData, setInfoBubbleData] = useState({});
   const [bubblePosition, setBubblePosition] = useState({ top: '50%', left: '50%' });
 
   useEffect(() => {
-    const loadLatestAnalysis = async () => {
+    const loadLatestData = async () => {
       try {
-        const data = await fetchLatestAnalysis();
-        setLatestAnalysis(data.latest_analysis);
+        // Load latest analysis
+        const analysisData = await fetchLatestAnalysis();
+        setLatestAnalysis(analysisData.latest_analysis);
+        
+        // Load latest article
+        const articleData = await fetchLatestArticle();
+        setLatestArticle(articleData.latest_article);
       } catch (error) {
-        console.error('Error loading latest analysis:', error);
+        console.error('Error loading latest data:', error);
       }
     };
 
-    loadLatestAnalysis();
+    loadLatestData();
   }, []);
 
   const handleNavigation = (path) => {
@@ -75,6 +81,33 @@ const MainMenu = () => {
       }
     } catch (error) {
       console.error('Error loading analysis headers:', error);
+    }
+  };
+
+  const handleShowArticle = (event) => {
+    if (latestArticle) {
+      const nodeInfoData = {
+        articles: [latestArticle],
+        signature: latestArticle.signature
+      };
+      
+      calculateAndShowBubble(event, nodeInfoData);
+    }
+  };
+
+  const handleShowAllArticles = async (event) => {
+    try {
+      const data = await fetchArticleHeaders();
+      if (data.headers && data.headers.length > 0) {
+        // Structure data for collapsible lazy-loaded articles
+        const nodeInfoData = {
+          articleHeaders: data.headers // Pass lightweight headers for on-demand loading
+        };
+        
+        calculateAndShowBubble(event, nodeInfoData);
+      }
+    } catch (error) {
+      console.error('Error loading article headers:', error);
     }
   };
 
@@ -171,6 +204,41 @@ const MainMenu = () => {
                 }}
               >
                 Previous Analyses
+              </span>
+            </div>
+          </div>
+        )}
+
+        {/* Dynamic Latest Article */}
+        {latestArticle && (
+          <div className="latest-analysis">
+            <p>
+              <strong>Latest Article:</strong>{' '}
+              <span 
+                onClick={(e) => handleShowArticle(e)}
+                title="Click to view full article"
+                style={{ 
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                <em>{latestArticle.title}</em>
+              </span>
+              <br />
+              <span style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>
+                by {latestArticle.signature}
+              </span>
+            </p>
+            <div style={{ marginTop: '10px' }}>
+              <span 
+                onClick={(e) => handleShowAllArticles(e)}
+                title="View all previous articles"
+                style={{ 
+                  cursor: 'pointer',
+                  textDecoration: 'underline'
+                }}
+              >
+                Previous Articles
               </span>
             </div>
           </div>
