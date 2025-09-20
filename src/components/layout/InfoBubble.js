@@ -188,11 +188,7 @@ const LazyArticleItem = ({ header, isLast }) => {
           lineHeight: '1.6',
           fontSize: '14px',
           maxHeight: '400px',
-          overflowY: 'auto',
-          padding: '10px',
-          backgroundColor: '#f9f9f9',
-          borderRadius: '4px',
-          border: '1px solid #e0e0e0'
+          overflowY: 'auto'
         }}>
           {article.text}
         </div>
@@ -515,11 +511,7 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                                   lineHeight: '1.6',
                                   fontSize: '14px',
                                   maxHeight: '400px',
-                                  overflowY: 'auto',
-                                  padding: '10px',
-                                  backgroundColor: '#f9f9f9',
-                                  borderRadius: '4px',
-                                  border: '1px solid #e0e0e0'
+                                  overflowY: 'auto'
                                 }}>
                                   {article.text}
                                 </div>
