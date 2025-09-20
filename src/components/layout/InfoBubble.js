@@ -2,7 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
-import { fetchAnalysisByRoot } from '../../services/apiService';
+import { fetchAnalysisByRoot, fetchArticleById } from '../../services/apiService';
 import '../../styles/info-bubble.css'; // ensure your CSS is here
 
 // Lazy-loaded analysis component
@@ -138,6 +138,91 @@ const LazyAnalysisItem = ({ header, isLast }) => {
           {isLoading && <div className="loading-indicator">Loading analysis...</div>}
           {error && <div className="error-indicator">{error}</div>}
           {analysisData && renderAnalysis(analysisData)}
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Lazy-loaded article component
+const LazyArticleItem = ({ header, isLast }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [articleData, setArticleData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleToggle = async () => {
+    if (!isExpanded && !articleData) {
+      // Load article data on first expansion
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await fetchArticleById(header.article_id);
+        setArticleData(data.article);
+      } catch (err) {
+        setError('Failed to load article');
+        console.error('Error loading article:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    setIsExpanded(!isExpanded);
+  };
+
+  const renderArticle = (article) => (
+    <div className="analysis-entry">
+      <div className="analysis-section">
+        <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
+          {article.title}
+        </h3>
+        {article.subtitle && (
+          <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontStyle: 'italic', color: '#666' }}>
+            {article.subtitle}
+          </h4>
+        )}
+        <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#888' }}>
+          by {article.signature}
+        </p>
+        <div style={{ 
+          whiteSpace: 'pre-wrap', 
+          lineHeight: '1.6',
+          fontSize: '14px',
+          maxHeight: '400px',
+          overflowY: 'auto',
+          padding: '10px',
+          backgroundColor: '#f9f9f9',
+          borderRadius: '4px',
+          border: '1px solid #e0e0e0'
+        }}>
+          {article.text}
+        </div>
+      </div>
+      <div className="analysis-meta">
+        <span className="timestamp">
+          {article.created_at && new Date(article.created_at).toLocaleDateString()}
+        </span>
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="compact-analysis-item">
+      <div className="analysis-header" onClick={handleToggle} style={{ cursor: 'pointer' }}>
+        <span className="expand-indicator">{isExpanded ? '▼' : '▶'}</span>
+        <span className="root-text">
+          {header.title}
+          {header.subtitle && ` - ${header.subtitle}`}
+        </span>
+        <span className="analysis-date">
+          {header.created_at && new Date(header.created_at).toLocaleDateString()}
+        </span>
+      </div>
+      
+      {isExpanded && (
+        <div className="analysis-content">
+          {isLoading && <div className="loading-indicator">Loading article...</div>}
+          {error && <div className="error-indicator">{error}</div>}
+          {articleData && renderArticle(articleData)}
         </div>
       )}
     </div>
@@ -405,9 +490,69 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                         </div>
                       </details>
                     )}
+
+                    {/* Individual Articles */}
+                    {nodeData.articles && nodeData.articles.length > 0 && (
+                      <details className="info-section" open>
+                        <summary>Article</summary>
+                        <div className="info-content">
+                          {nodeData.articles.map((article, index) => (
+                            <div key={`article-${index}`} className="analysis-entry">
+                              <div className="analysis-section">
+                                <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
+                                  {article.title}
+                                </h3>
+                                {article.subtitle && (
+                                  <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontStyle: 'italic', color: '#666' }}>
+                                    {article.subtitle}
+                                  </h4>
+                                )}
+                                <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#888' }}>
+                                  by {article.signature}
+                                </p>
+                                <div style={{ 
+                                  whiteSpace: 'pre-wrap', 
+                                  lineHeight: '1.6',
+                                  fontSize: '14px',
+                                  maxHeight: '400px',
+                                  overflowY: 'auto',
+                                  padding: '10px',
+                                  backgroundColor: '#f9f9f9',
+                                  borderRadius: '4px',
+                                  border: '1px solid #e0e0e0'
+                                }}>
+                                  {article.text}
+                                </div>
+                              </div>
+                              <div className="analysis-meta">
+                                <span className="timestamp">
+                                  {article.created_at && new Date(article.created_at).toLocaleDateString()}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      </details>
+                    )}
+
+                    {/* Lazy-Loaded Article Headers */}
+                    {nodeData.articleHeaders && nodeData.articleHeaders.length > 0 && (
+                      <details className="info-section" open>
+                        <summary>All Articles ({nodeData.articleHeaders.length})</summary>
+                        <div className="info-content">
+                          {nodeData.articleHeaders.map((header, index) => (
+                            <LazyArticleItem 
+                              key={`article-header-${header.article_id}`}
+                              header={header}
+                              isLast={index === nodeData.articleHeaders.length - 1}
+                            />
+                          ))}
+                        </div>
+                      </details>
+                    )}
                     
                     {/* Show message if no data available */}
-                    {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.meaning && !nodeData.analyses && !nodeData.entry && !nodeData.analysisHeaders && (
+                    {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.meaning && !nodeData.analyses && !nodeData.entry && !nodeData.analysisHeaders && !nodeData.articleHeaders && !nodeData.articles && (
                       <p>No additional information available.</p>
                     )}
                   </>
