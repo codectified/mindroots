@@ -3563,4 +3563,117 @@ router.get('/analysis-by-root/:rootId', async (req, res) => {
   }
 });
 
+// Latest Article for Main Menu
+router.get('/latest-article', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (a:Article)
+      ORDER BY a.created_at DESC
+      LIMIT 1
+      RETURN {
+        article_id: id(a),
+        signature: a.signature,
+        title: a.title,
+        subtitle: a.subtitle,
+        text: a.text,
+        created_at: a.created_at
+      } as latest_article
+    `);
+
+    if (result.records.length === 0) {
+      return res.status(404).json({ 
+        error: 'No articles found',
+        message: 'No articles found in database' 
+      });
+    }
+
+    const latestArticle = convertIntegers(result.records[0].get('latest_article'));
+    res.json({ latest_article: latestArticle });
+    
+  } catch (error) {
+    console.error('Error fetching latest article:', error);
+    res.status(500).json({ 
+      error: 'Error fetching latest article',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
+// Article Headers for Previous Articles (lightweight)
+router.get('/article-headers', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (a:Article)
+      ORDER BY a.created_at DESC
+      RETURN {
+        article_id: id(a),
+        signature: a.signature,
+        title: a.title,
+        subtitle: a.subtitle,
+        created_at: a.created_at,
+        text_preview: substring(a.text, 0, 100) + "..."
+      } as article_header
+    `);
+
+    const headers = result.records.map(record => 
+      convertIntegers(record.get('article_header'))
+    );
+    
+    res.json({ headers });
+    
+  } catch (error) {
+    console.error('Error fetching article headers:', error);
+    res.status(500).json({ 
+      error: 'Error fetching article headers',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
+// Article by ID for lazy loading
+router.get('/article-by-id/:articleId', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const { articleId } = req.params;
+    
+    const result = await session.run(`
+      MATCH (a:Article)
+      WHERE id(a) = toInteger($articleId)
+      RETURN {
+        article_id: id(a),
+        signature: a.signature,
+        title: a.title,
+        subtitle: a.subtitle,
+        text: a.text,
+        created_at: a.created_at
+      } as article_data
+    `, { articleId: parseInt(articleId) });
+
+    if (result.records.length === 0) {
+      return res.status(404).json({ 
+        error: 'Article not found',
+        message: `No article found with ID ${articleId}` 
+      });
+    }
+
+    const articleData = convertIntegers(result.records[0].get('article_data'));
+    res.json({ article: articleData });
+    
+  } catch (error) {
+    console.error('Error fetching article by ID:', error);
+    res.status(500).json({ 
+      error: 'Error fetching article by ID',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;
