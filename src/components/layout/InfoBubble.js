@@ -170,34 +170,33 @@ const LazyArticleItem = ({ header, isLast }) => {
   };
 
   const renderArticle = (article) => (
-    <div className="analysis-entry">
-      <div className="analysis-section">
-        <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
-          {article.title}
-        </h3>
-        {article.subtitle && (
-          <h4 style={{ margin: '0 0 10px 0', fontSize: '14px', fontStyle: 'italic', color: '#666' }}>
-            {article.subtitle}
-          </h4>
-        )}
-        <p style={{ margin: '0 0 10px 0', fontSize: '12px', color: '#888' }}>
-          by {article.signature}
-        </p>
-        <div style={{ 
-          whiteSpace: 'pre-wrap', 
-          lineHeight: '1.6',
-          fontSize: '14px',
-          maxHeight: '400px',
-          overflowY: 'auto'
-        }}>
-          {article.text}
+    <div>
+      <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
+        {article.title}
+      </h3>
+      {article.subtitle && (
+        <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', fontStyle: 'italic', color: '#666' }}>
+          {article.subtitle}
+        </h4>
+      )}
+      <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#888' }}>
+        by {article.signature}
+      </p>
+      <div style={{ 
+        whiteSpace: 'pre-wrap', 
+        lineHeight: '1.6',
+        fontSize: '14px',
+        maxHeight: '400px',
+        overflowY: 'auto',
+        marginBottom: '10px'
+      }}>
+        {article.text}
+      </div>
+      {article.created_at && (
+        <div style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>
+          {new Date(article.created_at).toLocaleDateString()}
         </div>
-      </div>
-      <div className="analysis-meta">
-        <span className="timestamp">
-          {article.created_at && new Date(article.created_at).toLocaleDateString()}
-        </span>
-      </div>
+      )}
     </div>
   );
 
