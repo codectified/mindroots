@@ -2,7 +2,147 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
+import { fetchAnalysisByRoot } from '../../services/apiService';
 import '../../styles/info-bubble.css'; // ensure your CSS is here
+
+// Lazy-loaded analysis component
+const LazyAnalysisItem = ({ header, isLast }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [analysisData, setAnalysisData] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  const handleToggle = async () => {
+    if (!isExpanded && !analysisData) {
+      // Load analysis data on first expansion
+      setIsLoading(true);
+      setError(null);
+      try {
+        const data = await fetchAnalysisByRoot(header.root.root_id);
+        setAnalysisData(data.analysis.analysis);
+      } catch (err) {
+        setError('Failed to load analysis');
+        console.error('Error loading analysis:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    setIsExpanded(!isExpanded);
+  };
+
+  const renderAnalysis = (analysis) => (
+    <div className="analysis-entry">
+      {/* Core Fields (v2 schema) */}
+      {analysis.concrete_origin && (
+        <div className="analysis-section">
+          <h4>Concrete Origin</h4>
+          <p>{analysis.concrete_origin}</p>
+        </div>
+      )}
+      {analysis.path_to_abstraction && (
+        <div className="analysis-section">
+          <h4>Path to Abstraction</h4>
+          <p>{analysis.path_to_abstraction}</p>
+        </div>
+      )}
+      {analysis.fundamental_frame && (
+        <div className="analysis-section">
+          <h4>Fundamental Frame</h4>
+          <p>{analysis.fundamental_frame}</p>
+        </div>
+      )}
+      {analysis.basic_stats && (
+        <div className="analysis-section">
+          <h4>Basic Stats</h4>
+          <p>{analysis.basic_stats}</p>
+        </div>
+      )}
+      {analysis.quranic_refs && (
+        <div className="analysis-section">
+          <h4>Qur'anic References</h4>
+          <p>{analysis.quranic_refs}</p>
+        </div>
+      )}
+      {analysis.hadith_refs && (
+        <div className="analysis-section">
+          <h4>Hadith References</h4>
+          <p>{analysis.hadith_refs}</p>
+        </div>
+      )}
+      {analysis.poetic_refs && (
+        <div className="analysis-section">
+          <h4>Poetic References</h4>
+          <p>{analysis.poetic_refs}</p>
+        </div>
+      )}
+      {analysis.proverbial_refs && (
+        <div className="analysis-section">
+          <h4>Proverbial References</h4>
+          <p>{analysis.proverbial_refs}</p>
+        </div>
+      )}
+      
+      {/* Legacy fields (v1 schema) */}
+      {analysis.lexical_summary && (
+        <div className="analysis-section">
+          <h4>Lexical Summary</h4>
+          <p>{analysis.lexical_summary}</p>
+        </div>
+      )}
+      {analysis.semantic_path && (
+        <div className="analysis-section">
+          <h4>Semantic Path</h4>
+          <p>{analysis.semantic_path}</p>
+        </div>
+      )}
+      {analysis.words_expressions && (
+        <div className="analysis-section">
+          <h4>Words & Expressions</h4>
+          <p>{analysis.words_expressions}</p>
+        </div>
+      )}
+      {analysis.poetic_references && (
+        <div className="analysis-section">
+          <h4>Poetic References</h4>
+          <p>{analysis.poetic_references}</p>
+        </div>
+      )}
+      
+      {/* Version and timestamp info */}
+      <div className="analysis-meta">
+        {analysis.version && <span className="version-badge">Version {analysis.version}</span>}
+        {analysis.timestamp && (
+          <span className="timestamp">
+            {new Date(analysis.timestamp).toLocaleDateString()}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="compact-analysis-item">
+      <div className="analysis-header" onClick={handleToggle} style={{ cursor: 'pointer' }}>
+        <span className="expand-indicator">{isExpanded ? '▼' : '▶'}</span>
+        <span className="root-text">
+          {header.root.arabic} {header.root.english && `(${header.root.english})`}
+        </span>
+        <span className="analysis-date">
+          {header.analysis_meta.timestamp && 
+            new Date(header.analysis_meta.timestamp).toLocaleDateString()}
+        </span>
+      </div>
+      
+      {isExpanded && (
+        <div className="analysis-content">
+          {isLoading && <div className="loading-indicator">Loading analysis...</div>}
+          {error && <div className="error-indicator">{error}</div>}
+          {analysisData && renderAnalysis(analysisData)}
+        </div>
+      )}
+    </div>
+  );
+};
 
 export default function InfoBubble({ nodeData, onClose, style }) {
   const infoBubbleRef = useRef(null);
@@ -249,9 +389,25 @@ export default function InfoBubble({ nodeData, onClose, style }) {
                         </div>
                       </details>
                     )}
+
+                    {/* Lazy-Loaded Analysis Headers */}
+                    {nodeData.analysisHeaders && nodeData.analysisHeaders.length > 0 && (
+                      <details className="info-section" open>
+                        <summary>All Root Analyses ({nodeData.analysisHeaders.length})</summary>
+                        <div className="info-content">
+                          {nodeData.analysisHeaders.map((header, index) => (
+                            <LazyAnalysisItem 
+                              key={`analysis-header-${header.root.root_id}`}
+                              header={header}
+                              isLast={index === nodeData.analysisHeaders.length - 1}
+                            />
+                          ))}
+                        </div>
+                      </details>
+                    )}
                     
                     {/* Show message if no data available */}
-                    {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.meaning && !nodeData.analyses && !nodeData.entry && (
+                    {!nodeData.definitions && !nodeData.hanswehr_entry && !nodeData.meaning && !nodeData.analyses && !nodeData.entry && !nodeData.analysisHeaders && (
                       <p>No additional information available.</p>
                     )}
                   </>

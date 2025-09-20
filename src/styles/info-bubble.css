@@ -845,3 +845,124 @@
   border-top: 1px dashed #dee2e6;
   margin: 15px 0;
 }
+
+/* All Analyses List Styles */
+.single-root-analysis {
+  margin-bottom: 20px;
+  padding: 15px;
+  border: 1px solid #e9ecef;
+  border-radius: 8px;
+  background: #fafbfc;
+}
+
+.single-root-analysis:last-child {
+  margin-bottom: 0;
+}
+
+.root-header {
+  margin-bottom: 15px;
+  padding: 10px 15px;
+  background: #e3f2fd;
+  border-radius: 6px;
+  border-left: 4px solid #2196f3;
+}
+
+.root-header h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+  color: #1565c0;
+  font-family: 'Amiri', serif;
+}
+
+.analysis-separator {
+  border: none;
+  border-top: 2px solid #dee2e6;
+  margin: 20px 0;
+}
+
+.version-badge {
+  background: #6c757d;
+  color: white;
+  padding: 2px 6px;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  margin-right: 8px;
+}
+
+.timestamp {
+  color: #6c757d;
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+/* Compact Analysis List Styles */
+.compact-analysis-item {
+  margin-bottom: 8px;
+  border-bottom: 1px solid #e9ecef;
+  padding-bottom: 8px;
+}
+
+.compact-analysis-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.analysis-header:hover {
+  background-color: #f8f9fa;
+}
+
+.expand-indicator {
+  display: inline-block;
+  transition: transform 0.2s ease;
+  font-size: 0.7rem;
+  color: #6c757d;
+  width: 12px;
+  text-align: center;
+}
+
+.root-text {
+  flex: 1;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.analysis-date {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-left: auto;
+}
+
+.analysis-content {
+  padding: 10px 0 0 24px;
+  margin-left: 8px;
+  border-left: 2px solid #dee2e6;
+}
+
+.loading-indicator {
+  padding: 15px;
+  text-align: center;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.85rem;
+}
+
+.error-indicator {
+  padding: 10px;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
+  border-radius: 4px;
+  margin: 8px 0;
+  font-size: 0.85rem;
+}

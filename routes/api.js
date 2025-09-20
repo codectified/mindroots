@@ -3387,4 +3387,180 @@ router.get('/latest-analysis', async (req, res) => {
   }
 });
 
+// All Previous Analyses for News section
+router.get('/all-analyses', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (r:Root)-[:HAS_ANALYSIS]->(a:Analysis)
+      WITH r, a, 
+           a.created as timestamp,
+           COALESCE(a.version, 1) as version
+      ORDER BY timestamp DESC, version DESC
+      RETURN {
+        root: {
+          root_id: r.root_id,
+          arabic: r.arabic,
+          english: r.english,
+          definitions: r.definitions,
+          hanswehr_entry: r.hanswehr_entry,
+          meaning: r.meaning
+        },
+        analysis: {
+          concrete_origin: a.concrete_origin,
+          path_to_abstraction: a.path_to_abstraction,
+          fundamental_frame: a.fundamental_frame,
+          basic_stats: a.basic_stats,
+          quranic_refs: a.quranic_refs,
+          hadith_refs: a.hadith_refs,
+          poetic_refs: a.poetic_refs,
+          proverbial_refs: a.proverbial_refs,
+          lexical_summary: a.lexical_summary,
+          semantic_path: a.semantic_path,
+          words_expressions: a.words_expressions,
+          poetic_references: a.poetic_references,
+          version: version,
+          timestamp: timestamp
+        }
+      } as analysis_entry
+    `);
+
+    if (result.records.length === 0) {
+      return res.json({ 
+        analyses: [],
+        message: "No analyses found" 
+      });
+    }
+
+    const analyses = result.records.map(record => 
+      convertIntegers(record.get('analysis_entry'))
+    );
+    
+    res.json({ analyses });
+    
+  } catch (error) {
+    console.error('Error fetching all analyses:', error);
+    res.status(500).json({ 
+      error: 'Error fetching all analyses',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
+// Root Headers for Previous Analyses (lightweight - no full analysis data)
+router.get('/analysis-headers', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (r:Root)-[:HAS_ANALYSIS]->(a:Analysis)
+      WITH r, a, 
+           a.created as timestamp,
+           COALESCE(a.version, 1) as version
+      ORDER BY r.root_id, timestamp DESC, version DESC
+      WITH r, 
+           collect(a)[0] as latest_analysis,
+           collect(timestamp)[0] as latest_timestamp,
+           collect(version)[0] as latest_version
+      ORDER BY latest_timestamp DESC
+      RETURN {
+        root: {
+          root_id: r.root_id,
+          arabic: r.arabic,
+          english: r.english
+        },
+        analysis_meta: {
+          version: latest_version,
+          timestamp: latest_timestamp
+        }
+      } as analysis_header
+    `);
+
+    if (result.records.length === 0) {
+      return res.json({ 
+        headers: [],
+        message: "No analyses found" 
+      });
+    }
+
+    const headers = result.records.map(record => 
+      convertIntegers(record.get('analysis_header'))
+    );
+    
+    res.json({ headers });
+    
+  } catch (error) {
+    console.error('Error fetching analysis headers:', error);
+    res.status(500).json({ 
+      error: 'Error fetching analysis headers',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
+// Single Analysis by Root ID (for on-demand loading)
+router.get('/analysis-by-root/:rootId', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const { rootId } = req.params;
+    
+    const result = await session.run(`
+      MATCH (r:Root {root_id: toInteger($rootId)})-[:HAS_ANALYSIS]->(a:Analysis)
+      WITH r, a, 
+           a.created as timestamp,
+           COALESCE(a.version, 1) as version
+      ORDER BY timestamp DESC, version DESC
+      LIMIT 1
+      RETURN {
+        root: {
+          root_id: r.root_id,
+          arabic: r.arabic,
+          english: r.english,
+          definitions: r.definitions,
+          hanswehr_entry: r.hanswehr_entry,
+          meaning: r.meaning
+        },
+        analysis: {
+          concrete_origin: a.concrete_origin,
+          path_to_abstraction: a.path_to_abstraction,
+          fundamental_frame: a.fundamental_frame,
+          basic_stats: a.basic_stats,
+          quranic_refs: a.quranic_refs,
+          hadith_refs: a.hadith_refs,
+          poetic_refs: a.poetic_refs,
+          proverbial_refs: a.proverbial_refs,
+          lexical_summary: a.lexical_summary,
+          semantic_path: a.semantic_path,
+          words_expressions: a.words_expressions,
+          poetic_references: a.poetic_references,
+          version: version,
+          timestamp: timestamp
+        }
+      } as analysis_data
+    `, { rootId: parseInt(rootId) });
+
+    if (result.records.length === 0) {
+      return res.status(404).json({ 
+        error: 'Analysis not found',
+        message: `No analysis found for root ID ${rootId}` 
+      });
+    }
+
+    const analysisData = convertIntegers(result.records[0].get('analysis_data'));
+    res.json({ analysis: analysisData });
+    
+  } catch (error) {
+    console.error('Error fetching analysis by root:', error);
+    res.status(500).json({ 
+      error: 'Error fetching analysis by root',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;
