@@ -1,10 +1,13 @@
 const authenticateAPI = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  const publicKey = process.env.PUBLIC_API_KEY;
-  const adminKey = process.env.ADMIN_API_KEY;
+  
+  // Core API keys
+  const mainKey = process.env.API_KEY; // Main production key (0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1)
+  const publicKey = process.env.PUBLIC_API_KEY; // GPT read-only key
+  const adminKey = process.env.ADMIN_API_KEY; // GPT admin key
 
-  if (!publicKey && !adminKey) {
-    console.error("Neither PUBLIC_API_KEY nor ADMIN_API_KEY configured in environment");
+  if (!mainKey && !publicKey && !adminKey) {
+    console.error("No API keys configured in environment");
     return res.status(500).json({ 
       error: "Server configuration error" 
     });
@@ -21,11 +24,12 @@ const authenticateAPI = (req, res, next) => {
     ? authHeader.slice(7) 
     : authHeader;
 
-  // Check if token matches public or admin key
+  // Check if token matches any valid key
+  const isMainKey = mainKey && token === mainKey;
   const isPublicKey = publicKey && token === publicKey;
   const isAdminKey = adminKey && token === adminKey;
 
-  if (!isPublicKey && !isAdminKey) {
+  if (!isMainKey && !isPublicKey && !isAdminKey) {
     console.log(`Authentication failed for IP: ${req.ip}, Key: ${token.substring(0, 8)}...`);
     return res.status(403).json({ 
       error: "Invalid API key" 
@@ -33,7 +37,7 @@ const authenticateAPI = (req, res, next) => {
   }
 
   // Store auth level in request for later use
-  req.authLevel = isAdminKey ? 'admin' : 'public';
+  req.authLevel = isAdminKey ? 'admin' : (isMainKey ? 'main' : 'public');
   
   // Log successful authentication
   console.log(`API access granted (${req.authLevel}) for IP: ${req.ip} at ${new Date().toISOString()}`);

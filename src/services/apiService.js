@@ -1,20 +1,20 @@
 import axios from 'axios';
 
 // Create an Axios instance with environment-based configuration
-const api = axios.create({
-  baseURL: process.env.REACT_APP_API_BASE_URL || 'https://theoption.life/api',
-  headers: {
-    'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
-  },
-});
-
-// Localhost development setup (comment out for production)
 // const api = axios.create({
-//   baseURL: 'http://localhost:5001/api',
+//   baseURL: process.env.REACT_APP_API_BASE_URL || 'https://theoption.life/api',
 //   headers: {
 //     'Authorization': `Bearer ${process.env.REACT_APP_API_KEY}`,
 //   },
 // });
+
+// Localhost development setup (comment out for production)
+const api = axios.create({
+  baseURL: 'http://localhost:5001/api',
+  headers: {
+    'Authorization': 'Bearer 0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1',
+  },
+});
 
 // Environment variables used:
 // REACT_APP_API_BASE_URL - API base URL (defaults to production)
@@ -607,6 +607,39 @@ export const fetchLatestAnalysis = async () => {
     return convertIntegers(response.data);
   } catch (error) {
     console.error('Error fetching latest analysis:', error);
+    throw error;
+  }
+};
+
+// Fetch all previous root analyses for News section
+export const fetchAllAnalyses = async () => {
+  try {
+    const response = await api.get('/all-analyses');
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching all analyses:', error);
+    throw error;
+  }
+};
+
+// Fetch analysis headers (lightweight) for collapsible list
+export const fetchAnalysisHeaders = async () => {
+  try {
+    const response = await api.get('/analysis-headers');
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching analysis headers:', error);
+    throw error;
+  }
+};
+
+// Fetch single analysis by root ID (on-demand)
+export const fetchAnalysisByRoot = async (rootId) => {
+  try {
+    const response = await api.get(`/analysis-by-root/${rootId}`);
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching analysis by root:', error);
     throw error;
   }
 };
