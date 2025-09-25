@@ -23,7 +23,8 @@
       "Bash(tree:*)",
       "Bash(ssh:*)",
       "Bash(cat:*)",
-      "Bash(lsof:*)"
+      "Bash(lsof:*)",
+      "Bash(node:*)"
     ],
     "deny": []
   }
