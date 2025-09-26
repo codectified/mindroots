@@ -2,7 +2,7 @@ const authenticateAPI = (req, res, next) => {
   const authHeader = req.headers.authorization;
   
   // Core API keys
-  const mainKey = process.env.API_KEY; // Main production key (0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1)
+  const mainKey = process.env.API_KEY; // Main production key
   const publicKey = process.env.PUBLIC_API_KEY; // GPT read-only key
   const adminKey = process.env.ADMIN_API_KEY; // GPT admin key
 
