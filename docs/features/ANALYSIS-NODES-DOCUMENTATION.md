@@ -312,7 +312,7 @@ const shouldAutoExpand = availableSections.length === 1;
 ### Configuration
 ```javascript
 // .env configuration
-PUBLIC_API_KEY=REDACTED_API_KEY
+PUBLIC_API_KEY=your-public-api-key-here
 
 // API service configuration  
 const api = axios.create({
@@ -347,7 +347,7 @@ curl -X POST "http://localhost:5001/api/write-root-analysis" \
 ```bash
 # Test production analysis endpoint
 curl "https://theoption.life/api/analysis/root/123" \
-     -H "Authorization: Bearer REDACTED_API_KEY"
+     -H "Authorization: Bearer your-api-key-here"
 ```
 
 ### Frontend Testing Checklist
