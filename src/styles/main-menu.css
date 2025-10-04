@@ -41,6 +41,11 @@
   font-family: 'Noto Serif', serif;
   color: #333;
   word-wrap: break-word;
+  hyphens: none;
+  -webkit-hyphens: none;
+  -moz-hyphens: none;
+  word-break: normal;
+  overflow-wrap: break-word;
 }
 
 /* ============================================
