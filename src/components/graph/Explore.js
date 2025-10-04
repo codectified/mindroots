@@ -402,7 +402,7 @@ const Explore = () => {
   return (
     <div className="start">
 
-      <h2>Ontological Knowledge Graph Exploration</h2>
+      <h2>Knowledge Graph Exploration</h2>
 
       <div className="button-row">
         {/* Word Button */}

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,6 +30,7 @@ const CorpusRenderer = ({
   handleSelectCorpusItem,
 }) => {
   const [showQuranControls, setShowQuranControls] = useState(false); // Quran controls collapsed by default
+  const [tempAyahsPerPage, setTempAyahsPerPage] = useState(ayahsPerPage); // Local state for input
   const {
     highlightGender,
     highlightVerb,
@@ -39,7 +40,32 @@ const CorpusRenderer = ({
   } = useHighlight();
   const { layout } = useTextLayout(); // Access the text layout setting
 
-  
+  // Sync temp state with parent prop changes
+  useEffect(() => {
+    setTempAyahsPerPage(ayahsPerPage);
+  }, [ayahsPerPage]);
+
+  // Handle input changes without immediately applying them
+  const handleAyahsPerPageInputChange = (e) => {
+    const value = e.target.value;
+    setTempAyahsPerPage(value);
+  };
+
+  // Apply changes on blur or explicit confirmation
+  const applyAyahsPerPageChange = () => {
+    const validValue = Math.max(1, Math.min(50, parseInt(tempAyahsPerPage) || 10));
+    setTempAyahsPerPage(validValue);
+    setAyahsPerPage(validValue);
+  };
+
+  // Prevent form submission on Enter key
+  const handleAyahsPerPageKeyDown = (e) => {
+    if (e.key === 'Enter') {
+      e.preventDefault();
+      applyAyahsPerPageChange();
+      e.target.blur(); // Remove focus after applying
+    }
+  };
 
 
   const handleFreeformAyaHighlight = (ayaIndex) => {
@@ -162,15 +188,19 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   }}
                   disabled={surah <= 1 && currentStartAya <= 1}
                   style={{ 
-                    padding: '6px 10px', 
+                    padding: '8px 16px', 
+                    minWidth: '70px',
                     border: '1px solid #4a7c4a', 
                     borderRadius: '6px',
                     backgroundColor: (surah <= 1 && currentStartAya <= 1) ? '#f5f5f5' : '#4a7c4a',
                     color: (surah <= 1 && currentStartAya <= 1) ? '#999' : '#fff',
                     cursor: (surah <= 1 && currentStartAya <= 1) ? 'not-allowed' : 'pointer',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     fontWeight: '500',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
                   ← Prev
@@ -190,15 +220,19 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   }}
                   disabled={surah >= 114 && currentEndAya >= (ayaCount || 286)}
                   style={{ 
-                    padding: '6px 10px', 
+                    padding: '8px 16px', 
+                    minWidth: '70px',
                     border: '1px solid #4a7c4a', 
                     borderRadius: '6px',
                     backgroundColor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#f5f5f5' : '#4a7c4a',
                     color: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#999' : '#fff',
                     cursor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? 'not-allowed' : 'pointer',
-                    fontSize: '12px',
+                    fontSize: '14px',
                     fontWeight: '500',
-                    transition: 'all 0.2s ease'
+                    transition: 'all 0.2s ease',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
                   }}
                 >
                   Next →
@@ -275,8 +309,10 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   type="number" 
                   min="1" 
                   max="50" 
-                  value={ayahsPerPage}
-                  onChange={(e) => setAyahsPerPage(Math.max(1, Math.min(50, parseInt(e.target.value) || 10)))}
+                  value={tempAyahsPerPage}
+                  onChange={handleAyahsPerPageInputChange}
+                  onBlur={applyAyahsPerPageChange}
+                  onKeyDown={handleAyahsPerPageKeyDown}
                   style={{ 
                     width: '60px', 
                     padding: '6px', 
@@ -289,75 +325,6 @@ const handleFreeformLineHighlight = (lineNumber) => {
                 />
               </div>
               
-              <div className="aya-navigation" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                <button 
-                  onClick={() => {
-                    if (currentStartAya <= 1) {
-                      // Go to previous surah
-                      if (surah > 1) {
-                        setSurah(surah - 1);
-                        setAya(-1); // Will load from the end of previous surah
-                      }
-                    } else {
-                      setAya(Math.max(1, currentStartAya - ayahsPerPage));
-                    }
-                  }}
-                  disabled={surah <= 1 && currentStartAya <= 1}
-                  className="nav-button"
-                  style={{ 
-                    padding: '8px 12px', 
-                    border: '1px solid #4a7c4a', 
-                    borderRadius: '6px',
-                    backgroundColor: (surah <= 1 && currentStartAya <= 1) ? '#f5f5f5' : '#4a7c4a',
-                    color: (surah <= 1 && currentStartAya <= 1) ? '#999' : '#fff',
-                    cursor: (surah <= 1 && currentStartAya <= 1) ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  ← Previous {ayahsPerPage}
-                </button>
-                
-                <span className="current-aya" style={{ 
-                  minWidth: '120px', 
-                  textAlign: 'center',
-                  fontSize: '14px',
-                  fontWeight: '500',
-                  color: '#333'
-                }}>
-                  Ayahs {currentStartAya}-{currentEndAya}
-                </span>
-                
-                <button 
-                  onClick={() => {
-                    if (currentEndAya >= (ayaCount || 286)) {
-                      // Go to next surah
-                      if (surah < 114) {
-                        setSurah(surah + 1);
-                        setAya(0); // Will load from the beginning of next surah
-                      }
-                    } else {
-                      setAya(currentEndAya + 1);
-                    }
-                  }}
-                  disabled={surah >= 114 && currentEndAya >= (ayaCount || 286)}
-                  className="nav-button"
-                  style={{ 
-                    padding: '8px 12px', 
-                    border: '1px solid #4a7c4a', 
-                    borderRadius: '6px',
-                    backgroundColor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#f5f5f5' : '#4a7c4a',
-                    color: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#999' : '#fff',
-                    cursor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    transition: 'all 0.2s ease'
-                  }}
-                >
-                  Next {ayahsPerPage} →
-                </button>
-              </div>
             </div>
             </div>
           )}

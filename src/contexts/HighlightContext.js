@@ -3,9 +3,9 @@ import React, { createContext, useState, useContext } from 'react';
 const HighlightContext = createContext();
 
 export const HighlightProvider = ({ children }) => {
-  const [highlightGender, setHighlightGender] = useState('feminine'); // Default to highlighting feminine nouns
-  const [highlightVerb, setHighlightVerb] = useState(true); // Default to highlighting verbs
-  const [highlightParticle, setHighlightParticle] = useState(true); // Default to highlighting particles
+  const [highlightGender, setHighlightGender] = useState(null); // Default to no gender highlighting
+  const [highlightVerb, setHighlightVerb] = useState(false); // Default to no verb highlighting
+  const [highlightParticle, setHighlightParticle] = useState(false); // Default to no particle highlighting
   const [freeformMode, setFreeformMode] = useState(false);
   const [highlightColor, setHighlightColor] = useState('#FF4500'); // Default highlight color (orange)
 
