@@ -1008,6 +1008,69 @@ const handleContextMenuAction = async (action, node, position = null) => {
         }
         break;
       
+      case 'view-in-context':
+        // Navigate back to corpus text with this item selected
+        if (node.type === 'corpusitem') {
+          try {
+            const corpusItemId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
+            const corpusId = node.corpus_id?.low !== undefined ? node.corpus_id.low : node.corpus_id;
+            
+            // Map corpus IDs to their names and types (hardcoded for now since we can't access context)
+            const corpusInfo = {
+              1: { name: '99 Names', type: 'text' },
+              2: { name: 'Quran', type: 'quran' },
+              3: { name: 'Poetry', type: 'poetry' }
+            };
+            
+            const targetCorpus = corpusInfo[corpusId];
+            
+            if (targetCorpus) {
+              // Build the navigation URL with corpus information
+              const queryParams = new URLSearchParams({
+                corpus_id: corpusId.toString(),
+                corpus_name: targetCorpus.name,
+                corpus_type: targetCorpus.type
+              });
+              
+              // For Corpus 2 (Quran) with hierarchical IDs, add position parameters
+              if (corpusId === 2 && typeof corpusItemId === 'string' && corpusItemId.includes(':')) {
+                const [surah, aya] = corpusItemId.split(':');
+                console.log(`Corpus 2 hierarchical ID detected: ${corpusItemId} -> Surah: ${surah}, Aya: ${aya}`);
+                queryParams.set('surah', surah);
+                queryParams.set('aya', aya);
+              } else {
+                console.log(`Not Corpus 2 hierarchical ID. corpusId: ${corpusId}, corpusItemId: ${corpusItemId}, type: ${typeof corpusItemId}`);
+              }
+              
+              // Store the selected corpus item in sessionStorage for the target page to pick up
+              const corpusItemData = {
+                item_id: corpusItemId,
+                corpus_id: corpusId,
+                ...node
+              };
+              sessionStorage.setItem('selectedCorpusItem', JSON.stringify(corpusItemData));
+              
+              // Navigate to the list page with the corpus selected using browser navigation
+              window.location.href = `/list?${queryParams.toString()}`;
+              
+              console.log(`Navigating to corpus context: ${targetCorpus.name} (ID: ${corpusId}), item: ${corpusItemId}`);
+            } else {
+              console.error('Could not find corpus information for corpus_id:', corpusId);
+              setInfoBubble({
+                definition: `Could not find corpus information for corpus ID ${corpusId}. Unable to navigate to context.`,
+                position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+              });
+            }
+          } catch (error) {
+            console.error('Error navigating to corpus context:', error);
+            setInfoBubble({
+              definition: 'Failed to navigate to corpus context. Please try again.',
+              position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+            });
+          }
+        }
+        break;
+      
       default:
         console.warn('Unknown action:', action);
     }

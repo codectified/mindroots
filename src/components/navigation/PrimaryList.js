@@ -26,6 +26,10 @@ const PrimaryList = () => {
   const corpusId = queryParams.get('corpus_id');
   const corpusName = queryParams.get('corpus_name');
   const corpusType = queryParams.get('corpus_type'); // Use corpus_type for poetry and prose
+  
+  // Handle "View in Context" navigation parameters
+  const urlSurah = queryParams.get('surah');
+  const urlAya = queryParams.get('aya');
 
 
   useEffect(() => {
@@ -97,6 +101,33 @@ const PrimaryList = () => {
       fetchAyaData();
     }
   }, [surah, corpusId]);
+
+  // Handle "View in Context" navigation from graph screen
+  useEffect(() => {
+    const selectedCorpusItemData = sessionStorage.getItem('selectedCorpusItem');
+    if (selectedCorpusItemData) {
+      try {
+        const corpusItemData = JSON.parse(selectedCorpusItemData);
+        console.log('Setting selected corpus item from sessionStorage:', corpusItemData);
+        handleSelectCorpusItem(corpusItemData);
+        // Clear the sessionStorage data after using it
+        sessionStorage.removeItem('selectedCorpusItem');
+      } catch (error) {
+        console.error('Error parsing selected corpus item from sessionStorage:', error);
+        sessionStorage.removeItem('selectedCorpusItem'); // Clear invalid data
+      }
+    }
+  }, []); // Run only once when component mounts
+
+  // Handle URL parameters for surah/aya positioning (from "View in Context")
+  useEffect(() => {
+    console.log(`PrimaryList URL parameters: corpusId=${corpusId}, urlSurah=${urlSurah}, urlAya=${urlAya}`);
+    if (corpusId === '2' && urlSurah && urlAya) {
+      console.log(`Setting position from URL: Surah ${urlSurah}, Aya ${urlAya}`);
+      setSurah(parseInt(urlSurah));
+      setAya(parseInt(urlAya));
+    }
+  }, [corpusId, urlSurah, urlAya]);
 
   const handleItemClick = (item) => {
     handleSelectCorpusItem(item);

@@ -112,6 +112,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
       case 'corpusitem': // corpus item nodes
         options.push(
           { label: 'More info', action: 'more-info' },
+          { label: 'View in Context', action: 'view-in-context' },
           { label: 'Inspect Node', action: 'inspect' },
           { label: 'Report Issue', action: 'report' }
         );
