@@ -19,6 +19,7 @@ const PrimaryList = () => {
   const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
   const [ayahsPerPage, setAyahsPerPage] = useState(10); // Track ayahs per page
   const [showTextSettings, setShowTextSettings] = useState(false); // Text settings collapsed by default
+  const [fontSize, setFontSize] = useState(16); // Font size control
   const { L1, L2 } = useLanguage();
   const { handleSelectCorpusItem } = useCorpus();
 
@@ -238,6 +239,25 @@ const PrimaryList = () => {
           }}>
             <TextLayoutToggle />
             <HighlightController />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
+                Font Size:
+              </label>
+              <input
+                type="range"
+                min="12"
+                max="32"
+                value={fontSize}
+                onChange={(e) => setFontSize(parseInt(e.target.value))}
+                style={{
+                  width: '80px',
+                  accentColor: '#4a7c4a'
+                }}
+              />
+              <span style={{ fontSize: '12px', color: '#666', minWidth: '30px' }}>
+                {fontSize}px
+              </span>
+            </div>
             <button 
               onClick={() => {
                 navigate('/corpus-menu');
@@ -289,6 +309,7 @@ const PrimaryList = () => {
         ayaCount={ayaCount}
         ayahsPerPage={ayahsPerPage}
         setAyahsPerPage={setAyahsPerPage}
+        fontSize={fontSize}
         L1={L1}
         L2={L2}
         handleSelectCorpusItem={handleItemClick}
