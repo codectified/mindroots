@@ -34,7 +34,7 @@ const ProfilePage = () => {
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="mission-statement">
-            In a world with more systems than people, an effective facilitator leverages knowledge from multiple domains and delivers the best option.
+            In a world with more systems than people, an effective facilitator leverages knowledge from multiple domains to deliver the best option.
           </h1>
           <nav className="hero-navigation">
             <a href="#resume" className="nav-link">Resume</a>
@@ -50,8 +50,19 @@ const ProfilePage = () => {
         <div className="section-container">
           <h2>Professional Services Bio</h2>
           
+          {/* Bio Section Index */}
+          <nav style={{ marginBottom: '30px', textAlign: 'center' }}>
+            <div style={{ display: 'inline-flex', gap: '20px', padding: '10px 20px', backgroundColor: '#f8f9fa', borderRadius: '8px', fontSize: '0.9em' }}>
+              <a href="#it-consulting" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500' }}>IT Consulting</a>
+              <span style={{ color: '#ccc' }}>•</span>
+              <a href="#communications" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500' }}>Communications</a>
+              <span style={{ color: '#ccc' }}>•</span>
+              <a href="#knowledge-architecture" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500' }}>Knowledge Architecture</a>
+            </div>
+          </nav>
+          
           {/* Information Technology Consulting */}
-          <div className="bio-subsection">
+          <div id="it-consulting" className="bio-subsection">
             <h3>Information Technology Consulting</h3>
             <p className="bio-subtitle">(Automation, infrastructure, systems design)</p>
             <p>I have over ten years of experience with information technology management and administration including:</p>
@@ -82,7 +93,7 @@ const ProfilePage = () => {
           </div>
 
           {/* Communications Strategy */}
-          <div className="bio-subsection">
+          <div id="communications" className="bio-subsection">
             <h3>Communications Strategy</h3>
             <p>I am experienced in digital transformation and design as well as community management and organization. Other skills and experience include:</p>
             <ul>
@@ -113,7 +124,7 @@ const ProfilePage = () => {
           </div>
 
           {/* Informative Science & Knowledge Architecture */}
-          <div className="bio-subsection">
+          <div id="knowledge-architecture" className="bio-subsection">
             <h3>Informative Science & Knowledge Architecture</h3>
             <p className="bio-subtitle">(Meaning, structure, intelligence)</p>
             <p>My specialty is cognitive science and optimizing systems and process control to deliver optimized solutions with:</p>
@@ -190,7 +201,7 @@ const ProfilePage = () => {
             </div>
 
             <ul style={{ listStyle: 'disc', paddingLeft: '20px', fontSize: '0.95em', lineHeight: '1.6' }}>
-              <li><strong>MindRoots:</strong> An advanced search and language exploration tool, connecting key texts and primary sources with graph technology and cognitive-linguistic ontologoy design</li>
+              <li><strong>MindRoots:</strong> An advanced search and language exploration tool, connecting key texts and primary sources with graph technology and cognitive-linguistic ontology design</li>
               <li><strong>MindRoots GPT:</strong> An AI chatbot which can talk to Mindroots and summarize entries from Lane's Lexicon and other data sources</li>
               <li><strong>QuranRoots GPT (Beta):</strong> An AI chatbot with advanced search capability specifically for the quran</li>
             </ul>
