@@ -25,13 +25,13 @@ const GraphDataContext = createContext();
 
 // Normalize node structure to ensure consistency across different API sources
 const normalizeNode = (node) => {
-  if (!node) return null;
+  if (!node || typeof node !== 'object') return null;
   
   // Ensure node has required fields
   const normalized = {
     ...node,
     // Ensure id exists and follows consistent format
-    id: node.id || `${node.type}_${node.word_id || node.root_id || node.form_id || node.item_id}`,
+    id: node.id || `${node.type || 'unknown'}_${node.word_id || node.root_id || node.form_id || node.item_id || 'no_id'}`,
     // Ensure node_type exists (some legacy nodes might be missing this)
     node_type: node.node_type || (node.type ? node.type.charAt(0).toUpperCase() + node.type.slice(1) : 'Unknown'),
     // Ensure type exists and is lowercase

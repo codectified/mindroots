@@ -29,6 +29,40 @@ const ArticlesAndReferences = () => {
     navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english || corpus.arabic)}`);
   };
 
+  // Auto-navigate to last corpus state when component loads
+  useEffect(() => {
+    const savedStateData = sessionStorage.getItem('lastCorpusState');
+    if (savedStateData) {
+      try {
+        const state = JSON.parse(savedStateData);
+        // Only auto-navigate if saved within last 24 hours
+        if (Date.now() - state.timestamp < 24 * 60 * 60 * 1000) {
+          console.log('Auto-navigating to saved corpus state:', state);
+          
+          // Build the URL with all saved parameters
+          const params = new URLSearchParams({
+            corpus_id: state.corpusId,
+            corpus_name: state.corpusName,
+            corpus_type: state.corpusType || 'text'
+          });
+          
+          // Add position parameters for Corpus 2 (Quran)
+          if (state.corpusId === '2' && state.surah && state.aya) {
+            params.set('surah', state.surah);
+            params.set('aya', state.aya);
+          }
+          
+          navigate(`/list?${params.toString()}`);
+          return; // Exit early, don't render the library
+        } else {
+          sessionStorage.removeItem('lastCorpusState');
+        }
+      } catch (error) {
+        sessionStorage.removeItem('lastCorpusState');
+      }
+    }
+  }, [navigate]);
+
   // Separate corpora by type
   const corpus99Names = corpora.find(c => c.id === 1); // 99 Names
   const corpusQuran = corpora.find(c => c.id === 2);   // Quran
@@ -40,6 +74,7 @@ const ArticlesAndReferences = () => {
       <div className="corpus-library-header">
         <h1 className="library-title">Corpus Library</h1>
       </div>
+
 
       {/* Top Row: Quran (left) and 99 Names (right) */}
       <div className="corpus-top-row">

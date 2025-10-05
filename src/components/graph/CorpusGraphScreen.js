@@ -22,10 +22,11 @@ const CorpusGraphScreen = () => {
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
       const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
+      const corpusId = selectedCorpus?.id || selectedCorpusItem.corpus_id?.low || selectedCorpusItem.corpus_id;
       const response = await expandGraph('corpusitem', itemId, 'word', { 
         L1, 
         L2, 
-        corpus_id: selectedCorpus.id 
+        corpus_id: corpusId 
       });
   
       if (response && response.nodes && response.nodes.length > 0) {
