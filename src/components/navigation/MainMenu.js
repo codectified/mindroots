@@ -2,13 +2,13 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faBook, 
   faSearch, 
   faMapMarked, 
   faPodcast,
   faNewspaper,
   faFlask
 } from '@fortawesome/free-solid-svg-icons';
+import { RiBookShelfLine } from 'react-icons/ri';
 import { 
   faInstagram, 
   faLinkedin, 
@@ -152,7 +152,7 @@ const MainMenu = () => {
     <div className="mainmenu-container">
       <div className="icon-grid">
         <div className="icon-item" onClick={() => handleNavigation('/corpus-menu')}>
-          <FontAwesomeIcon icon={faBook} className="icon" />
+          <RiBookShelfLine className="icon" style={{ fontSize: '3em' }} />
           <span>Corpus Library</span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/start')}>
