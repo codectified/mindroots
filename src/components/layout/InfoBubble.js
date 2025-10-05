@@ -2,6 +2,7 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import Draggable from 'react-draggable';
+import Markdown from 'markdown-to-jsx';
 import { fetchAnalysisByRoot, fetchArticleById } from '../../services/apiService';
 import '../../styles/info-bubble.css'; // ensure your CSS is here
 
@@ -239,9 +240,23 @@ const LazyArticleItem = ({ header, isLast }) => {
   );
 };
 
-export default function InfoBubble({ nodeData, onClose, style }) {
+export default function InfoBubble({ nodeData, filePath, title, onClose, style }) {
   const infoBubbleRef = useRef(null);
   const [centeredStyle, setCenteredStyle] = useState(style);
+  const [markdownContent, setMarkdownContent] = useState('');
+
+  // Load markdown content if filePath is provided
+  useEffect(() => {
+    if (filePath) {
+      fetch(filePath)
+        .then(response => response.text())
+        .then(text => setMarkdownContent(text))
+        .catch(error => {
+          console.error('Error loading markdown:', error);
+          setMarkdownContent('Error loading article content.');
+        });
+    }
+  }, [filePath]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -260,6 +275,12 @@ export default function InfoBubble({ nodeData, onClose, style }) {
   // Calculate positioning: X centered in viewport, Y follows click
   useEffect(() => {
     if (!infoBubbleRef.current || !style) return;
+
+    // If we're in ProfilePage mode (has transform property), use different positioning
+    if (style.transform && style.transform.includes('translateX')) {
+      setCenteredStyle(style);
+      return;
+    }
 
     // Get the actual bubble dimensions
     const rect = infoBubbleRef.current.getBoundingClientRect();
@@ -304,7 +325,25 @@ export default function InfoBubble({ nodeData, onClose, style }) {
           </button>
         </div>
         <div className="info-bubble-content">
-          {nodeData ? (
+          {title && (
+            <h2 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', color: '#333' }}>
+              {title}
+            </h2>
+          )}
+          {filePath ? (
+            <div className="markdown-content">
+              <Markdown
+                options={{
+                  overrides: {
+                    li: { component: ({ children }) => <li style={{ fontSize: '1em' }}>{children}</li> },
+                    ul: { component: ({ children }) => <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>{children}</ul> },
+                  },
+                }}
+              >
+                {markdownContent}
+              </Markdown>
+            </div>
+          ) : nodeData ? (
             <>
               {(() => {
                 // Count available sections to determine if only one exists
