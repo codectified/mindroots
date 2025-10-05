@@ -24,7 +24,9 @@
       "Bash(ssh:*)",
       "Bash(cat:*)",
       "Bash(lsof:*)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "WebSearch",
+      "WebFetch(domain:fontawesome.com)"
     ],
     "deny": []
   }
