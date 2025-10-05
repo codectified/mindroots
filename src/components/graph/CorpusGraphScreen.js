@@ -1,6 +1,6 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useState } from 'react';
 import GraphVisualization from './GraphVisualization';
-import { expandGraph } from '../../services/apiService';
+import { expandGraph, navigateToAdjacentNode, navigateByGlobalPosition } from '../../services/apiService';
 import MainMenu from '../navigation/MainMenu';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
@@ -14,25 +14,51 @@ import InfoBubble from '../layout/InfoBubble';
 const CorpusGraphScreen = () => {
   const { L1, L2 } = useLanguage();
   const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
-  const { selectedCorpus, selectedCorpusItem, goToNextItem, goToPreviousItem, corpusItems, loading } = useCorpus();
+  const { selectedCorpus, selectedCorpusItem, handleSelectCorpusItem, loading } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
+  const [navigationLoading, setNavigationLoading] = useState(false);
+  const [currentNavigationItem, setCurrentNavigationItem] = useState(null);
 
 
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
-      const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
-      const response = await expandGraph('corpusitem', itemId, 'word', { 
-        L1, 
-        L2, 
-        corpus_id: selectedCorpus.id 
-      });
+      try {
+        const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
+        const corpusId = selectedCorpus?.id || selectedCorpusItem.corpus_id?.low || selectedCorpusItem.corpus_id;
+        
+        console.log('🔍 CorpusGraphScreen fetchData:', {
+          selectedCorpusItem,
+          itemId,
+          corpusId,
+          selectedCorpus: selectedCorpus?.id,
+          L1, L2
+        });
+        
+        // Ensure corpusId is valid before making the request
+        if (!corpusId) {
+          console.error('❌ CorpusGraphScreen: corpusId is undefined, cannot expand graph');
+          setGraphData({ nodes: [], links: [] });
+          return;
+        }
+
+        const response = await expandGraph('corpusitem', itemId, 'word', { 
+          L1, 
+          L2, 
+          corpus_id: corpusId 
+        });
   
-      if (response && response.nodes && response.nodes.length > 0) {
-        // Use the response directly - it already has the correct structure
-        setGraphData({ nodes: response.nodes, links: response.links });
-  
-      } else {
+        if (response && response.nodes && response.nodes.length > 0) {
+          console.log('✅ CorpusGraphScreen: Graph data received:', response.nodes.length, 'nodes');
+          setGraphData({ nodes: response.nodes, links: response.links });
+          // Initialize currentNavigationItem for subsequent navigation
+          setCurrentNavigationItem(selectedCorpusItem);
+        } else {
+          console.log('📭 CorpusGraphScreen: No graph data received');
+          setGraphData({ nodes: [], links: [] });
+        }
+      } catch (error) {
+        console.error('❌ CorpusGraphScreen fetchData error:', error);
         setGraphData({ nodes: [], links: [] });
       }
     }
@@ -45,6 +71,98 @@ const CorpusGraphScreen = () => {
 
   const closeInfoBubble = () => {
     setInfoBubble(null);
+  };
+
+  // Simple navigation: get next/previous corpus item and regenerate graph
+  const handleNavigation = async (direction) => {
+    // Use currentNavigationItem if available, fallback to selectedCorpusItem
+    const navItem = currentNavigationItem || selectedCorpusItem;
+    if (!navItem || navigationLoading) return;
+
+    setNavigationLoading(true);
+    
+    try {
+      // Extract current item ID and corpus ID
+      let currentItemId = navItem.item_id;
+      let corpusId = selectedCorpus?.id || navItem.corpus_id;
+      
+      // Handle wrapped property format if needed
+      if (currentItemId && typeof currentItemId === 'object' && 'value' in currentItemId) {
+        currentItemId = currentItemId.value;
+      }
+      if (currentItemId && typeof currentItemId === 'object' && 'low' in currentItemId) {
+        currentItemId = currentItemId.low;
+      }
+      if (corpusId && typeof corpusId === 'object' && 'value' in corpusId) {
+        corpusId = corpusId.value;
+      }
+      if (corpusId && typeof corpusId === 'object' && 'low' in corpusId) {
+        corpusId = corpusId.low;
+      }
+
+      console.log('🧭 Navigation request:', { direction, currentItemId, corpusId });
+
+      // Try to use global_position for navigation (more reliable for Quran)
+      let navigationResult = null;
+      const globalPosition = navItem.global_position;
+      
+      if (globalPosition !== undefined && globalPosition !== null) {
+        // Handle wrapped property format for global_position
+        let actualGlobalPosition = globalPosition;
+        if (globalPosition && typeof globalPosition === 'object' && 'value' in globalPosition) {
+          actualGlobalPosition = globalPosition.value;
+        }
+        if (globalPosition && typeof globalPosition === 'object' && 'low' in globalPosition) {
+          actualGlobalPosition = globalPosition.low;
+        }
+        
+        console.log('🧭 Using global_position navigation:', actualGlobalPosition);
+        navigationResult = await navigateByGlobalPosition(corpusId, actualGlobalPosition, direction);
+      } else {
+        // Fallback to the old item_id based navigation
+        console.log('🧭 Fallback to item_id navigation');
+        navigationResult = await navigateToAdjacentNode('corpusitem', currentItemId, direction, corpusId);
+      }
+      
+      if (navigationResult && navigationResult.nodeData) {
+        // Extract the new item ID
+        const newItemId = navigationResult.nodeData.nodeId;
+        
+        console.log('✅ Found adjacent item:', newItemId);
+        
+        // Generate new graph for this corpus item (same call as clicking on corpus item)
+        const response = await expandGraph('corpusitem', newItemId, 'word', { 
+          L1, 
+          L2, 
+          corpus_id: corpusId 
+        });
+
+        if (response && response.nodes && response.nodes.length > 0) {
+          console.log('✅ New graph generated:', response.nodes.length, 'nodes');
+          setGraphData({ nodes: response.nodes, links: response.links });
+          
+          // Update currentNavigationItem to the new item for next navigation
+          // Create a corpus item object from the navigation result
+          const newCorpusItem = {
+            item_id: navigationResult.nodeData.nodeId,
+            corpus_id: corpusId,
+            global_position: navigationResult.nodeData.properties?.global_position,
+            // Include other properties that might be needed
+            ...navigationResult.nodeData.properties
+          };
+          setCurrentNavigationItem(newCorpusItem);
+        } else {
+          console.log('📭 No graph data for new corpus item');
+          setGraphData({ nodes: [], links: [] });
+        }
+      } else {
+        console.log('📭 No adjacent corpus item found');
+      }
+    } catch (error) {
+      console.error('❌ Navigation error:', error);
+    } finally {
+      setNavigationLoading(false);
+    }
   };
   
 
@@ -63,10 +181,20 @@ const CorpusGraphScreen = () => {
   return (
     <div>
       <div className="navigation-buttons">
-        <button className="menu-button" onClick={goToPreviousItem} disabled={selectedCorpusItem.index === 0}>
+        <button 
+          className="menu-button" 
+          onClick={() => handleNavigation('previous')} 
+          disabled={navigationLoading}
+          style={{ opacity: navigationLoading ? 0.6 : 1 }}
+        >
           <FontAwesomeIcon icon={faArrowLeft} />
         </button>
-        <button className="menu-button" onClick={goToNextItem} disabled={selectedCorpusItem.index === corpusItems.length - 1}>
+        <button 
+          className="menu-button" 
+          onClick={() => handleNavigation('next')} 
+          disabled={navigationLoading}
+          style={{ opacity: navigationLoading ? 0.6 : 1 }}
+        >
           <FontAwesomeIcon icon={faArrowRight} />
         </button>
       </div>
