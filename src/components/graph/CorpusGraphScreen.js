@@ -21,19 +21,40 @@ const CorpusGraphScreen = () => {
 
   const fetchData = useCallback(async () => {
     if (selectedCorpusItem) {
-      const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
-      const corpusId = selectedCorpus?.id || selectedCorpusItem.corpus_id?.low || selectedCorpusItem.corpus_id;
-      const response = await expandGraph('corpusitem', itemId, 'word', { 
-        L1, 
-        L2, 
-        corpus_id: corpusId 
-      });
+      try {
+        const itemId = selectedCorpusItem.item_id.low !== undefined ? selectedCorpusItem.item_id.low : selectedCorpusItem.item_id;
+        const corpusId = selectedCorpus?.id || selectedCorpusItem.corpus_id?.low || selectedCorpusItem.corpus_id;
+        
+        console.log('🔍 CorpusGraphScreen fetchData:', {
+          selectedCorpusItem,
+          itemId,
+          corpusId,
+          selectedCorpus: selectedCorpus?.id,
+          L1, L2
+        });
+        
+        // Ensure corpusId is valid before making the request
+        if (!corpusId) {
+          console.error('❌ CorpusGraphScreen: corpusId is undefined, cannot expand graph');
+          setGraphData({ nodes: [], links: [] });
+          return;
+        }
+
+        const response = await expandGraph('corpusitem', itemId, 'word', { 
+          L1, 
+          L2, 
+          corpus_id: corpusId 
+        });
   
-      if (response && response.nodes && response.nodes.length > 0) {
-        // Use the response directly - it already has the correct structure
-        setGraphData({ nodes: response.nodes, links: response.links });
-  
-      } else {
+        if (response && response.nodes && response.nodes.length > 0) {
+          console.log('✅ CorpusGraphScreen: Graph data received:', response.nodes.length, 'nodes');
+          setGraphData({ nodes: response.nodes, links: response.links });
+        } else {
+          console.log('📭 CorpusGraphScreen: No graph data received');
+          setGraphData({ nodes: [], links: [] });
+        }
+      } catch (error) {
+        console.error('❌ CorpusGraphScreen fetchData error:', error);
         setGraphData({ nodes: [], links: [] });
       }
     }

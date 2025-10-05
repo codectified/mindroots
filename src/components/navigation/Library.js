@@ -1,11 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchCorpora } from '../../services/apiService';
 import { useCorpus } from '../../contexts/CorpusContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 
 const ArticlesAndReferences = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { handleSelectCorpus } = useCorpus(); // Use context to store the selected corpus
   const { L1, L2 } = useLanguage(); // Get L1 and L2 from context
   const [corpora, setCorpora] = useState([]);
@@ -26,40 +27,67 @@ const ArticlesAndReferences = () => {
   const handleSelect = (corpus) => {
     console.log('Selected corpus in ArticlesAndReferences:', corpus);
     handleSelectCorpus(corpus);
-    navigate(`/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english || corpus.arabic)}`);
+    
+    let navigationUrl = `/list?corpus_id=${corpus.id}&corpus_name=${encodeURIComponent(corpus[L1] || corpus.english || corpus.arabic)}`;
+    
+    // For Quran (Corpus 2), restore last saved position if available
+    if (corpus.id === 2) {
+      const savedQuranPosition = sessionStorage.getItem('lastQuranPosition');
+      if (savedQuranPosition) {
+        try {
+          const position = JSON.parse(savedQuranPosition);
+          console.log('📖 Restoring saved Quran position:', position);
+          navigationUrl += `&corpus_type=quran&surah=${position.surah}&aya=${position.aya}`;
+        } catch (error) {
+          console.error('Error parsing saved Quran position:', error);
+          navigationUrl += '&corpus_type=quran';
+        }
+      } else {
+        navigationUrl += '&corpus_type=quran';
+      }
+    }
+    
+    navigate(navigationUrl);
   };
 
-  // Auto-navigate to last corpus state when component loads
+  // Handle "View in Context" navigation
   useEffect(() => {
-    const savedStateData = sessionStorage.getItem('lastCorpusState');
-    if (savedStateData) {
+    const selectedCorpusItemData = sessionStorage.getItem('selectedCorpusItem');
+    if (selectedCorpusItemData) {
       try {
-        const state = JSON.parse(savedStateData);
-        // Only auto-navigate if saved within last 24 hours
-        if (Date.now() - state.timestamp < 24 * 60 * 60 * 1000) {
-          console.log('Auto-navigating to saved corpus state:', state);
-          
-          // Build the URL with all saved parameters
-          const params = new URLSearchParams({
-            corpus_id: state.corpusId,
-            corpus_name: state.corpusName,
-            corpus_type: state.corpusType || 'text'
+        const corpusItemData = JSON.parse(selectedCorpusItemData);
+        console.log('📚 Library: Processing "View in Context" navigation');
+        
+        // Build navigation URL based on corpus item
+        const corpusId = corpusItemData.corpus_id?.low || corpusItemData.corpus_id;
+        const corpusInfo = {
+          1: { name: '99 Names', type: 'text' },
+          2: { name: 'Quran', type: 'quran' },
+          3: { name: 'Poetry', type: 'poetry' }
+        };
+        
+        const targetCorpus = corpusInfo[corpusId];
+        if (targetCorpus) {
+          const queryParams = new URLSearchParams({
+            corpus_id: corpusId.toString(),
+            corpus_name: targetCorpus.name,
+            corpus_type: targetCorpus.type
           });
           
-          // Add position parameters for Corpus 2 (Quran)
-          if (state.corpusId === '2' && state.surah && state.aya) {
-            params.set('surah', state.surah);
-            params.set('aya', state.aya);
+          // For Corpus 2 (Quran) with hierarchical IDs, add position parameters
+          if (corpusId === 2 && typeof corpusItemData.item_id === 'string' && corpusItemData.item_id.includes(':')) {
+            const [surah, aya] = corpusItemData.item_id.split(':');
+            queryParams.set('surah', surah);
+            queryParams.set('aya', aya);
           }
           
-          navigate(`/list?${params.toString()}`);
-          return; // Exit early, don't render the library
-        } else {
-          sessionStorage.removeItem('lastCorpusState');
+          navigate(`/list?${queryParams.toString()}`);
+          return;
         }
       } catch (error) {
-        sessionStorage.removeItem('lastCorpusState');
+        console.error('Error processing selectedCorpusItem:', error);
       }
+      sessionStorage.removeItem('selectedCorpusItem');
     }
   }, [navigate]);
 
