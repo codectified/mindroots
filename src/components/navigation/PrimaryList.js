@@ -110,6 +110,16 @@ const PrimaryList = () => {
         const corpusItemData = JSON.parse(selectedCorpusItemData);
         console.log('Setting selected corpus item from sessionStorage:', corpusItemData);
         handleSelectCorpusItem(corpusItemData);
+        
+        // For Corpus 2 (Quran), extract position from hierarchical ID
+        const itemCorpusId = corpusItemData.corpus_id?.low || corpusItemData.corpus_id;
+        if (itemCorpusId === 2 && typeof corpusItemData.item_id === 'string' && corpusItemData.item_id.includes(':')) {
+          const [surahFromId, ayaFromId] = corpusItemData.item_id.split(':');
+          console.log(`Setting position from corpus item ID: Surah ${surahFromId}, Aya ${ayaFromId}`);
+          setSurah(parseInt(surahFromId));
+          setAya(parseInt(ayaFromId));
+        }
+        
         // Clear the sessionStorage data after using it
         sessionStorage.removeItem('selectedCorpusItem');
       } catch (error) {
@@ -133,6 +143,24 @@ const PrimaryList = () => {
     handleSelectCorpusItem(item);
     navigate('/graph');
   };
+
+  // Save current corpus state for better navigation persistence
+  useEffect(() => {
+    if (corpusId && corpusName) {
+      const corpusState = {
+        corpusId,
+        corpusName,
+        corpusType,
+        surah,
+        aya,
+        ayaCount,
+        ayahsPerPage,
+        timestamp: Date.now()
+      };
+      sessionStorage.setItem('lastCorpusState', JSON.stringify(corpusState));
+      console.log('Saved corpus state:', corpusState);
+    }
+  }, [corpusId, corpusName, corpusType, surah, aya, ayaCount, ayahsPerPage]);
 
   return (
     <div>
@@ -193,6 +221,27 @@ const PrimaryList = () => {
           }}>
             <TextLayoutToggle />
             <HighlightController />
+            <button 
+              onClick={() => {
+                sessionStorage.removeItem('lastCorpusState');
+                navigate('/corpus-menu');
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#4a7c4a',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6a3a'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#4a7c4a'}
+            >
+              Return to Library
+            </button>
           </div>
         )}
       </div>
