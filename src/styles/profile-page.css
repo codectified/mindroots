@@ -1,0 +1,325 @@
+/* Profile Page Styles */
+.profile-page {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+}
+
+/* Hero Section */
+.hero-section {
+  padding: 120px 20px 80px;
+  text-align: center;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  margin-bottom: 0;
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.mission-statement {
+  font-size: 2.5rem;
+  font-weight: 300;
+  line-height: 1.4;
+  margin-bottom: 30px;
+  font-family: 'Georgia', 'Times New Roman', serif;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.hero-subtext {
+  font-size: 1.2rem;
+  opacity: 0.9;
+  font-weight: 300;
+}
+
+/* Section Container */
+.section-container {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Common Section Styles */
+section {
+  padding: 80px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+}
+
+section h2 {
+  font-size: 2.5rem;
+  color: #333;
+  margin-bottom: 40px;
+  text-align: center;
+  font-weight: 300;
+}
+
+/* Resume Section */
+.resume-section {
+  background: white;
+}
+
+.resume-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.resume-card h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 400;
+}
+
+.resume-card p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Call-to-Action Buttons */
+.cta-button {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+  padding: 15px 30px;
+  font-size: 1.1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: 500;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-button:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.cta-button:disabled {
+  background: #ccc;
+  cursor: not-allowed;
+  color: #888;
+}
+
+.cta-button-link {
+  text-decoration: none;
+  display: inline-block;
+}
+
+.mindroots-image-link {
+  text-decoration: none;
+  display: inline-block;
+  margin-top: 20px;
+}
+
+.mindroots-image-button {
+  max-width: 200px;
+  width: 100%;
+  height: auto;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
+.mindroots-image-button:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+}
+
+.coming-soon {
+  display: block;
+  font-size: 0.8rem;
+  opacity: 0.8;
+  margin-top: 5px;
+}
+
+/* Calendar Section */
+.calendar-section {
+  background: #f8f9fa;
+}
+
+.calendar-container {
+  max-width: 800px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  background: white;
+}
+
+.calendar-container iframe {
+  display: block;
+  border-radius: 12px;
+}
+
+/* Projects Section */
+.projects-section {
+  background: white;
+}
+
+.project-card {
+  background: white;
+  border-radius: 12px;
+  padding: 40px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.project-card h3 {
+  font-size: 1.8rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 400;
+}
+
+.project-card p {
+  color: #666;
+  margin-bottom: 30px;
+  font-size: 1.1rem;
+  line-height: 1.6;
+}
+
+/* Contact Footer */
+.contact-footer {
+  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+  color: white;
+  border-bottom: none;
+}
+
+.contact-footer h2 {
+  color: white;
+  margin-bottom: 30px;
+}
+
+.social-links {
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.social-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  color: white;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  padding: 15px;
+  border-radius: 10px;
+  min-width: 80px;
+}
+
+.social-link:hover {
+  color: #74b9ff;
+  transform: translateY(-3px);
+  background: rgba(255,255,255,0.1);
+}
+
+.social-link svg {
+  font-size: 1.5rem;
+}
+
+.social-link span {
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 80px 20px 60px;
+  }
+  
+  .mission-statement {
+    font-size: 1.8rem;
+    line-height: 1.5;
+  }
+  
+  .hero-subtext {
+    font-size: 1rem;
+  }
+  
+  section {
+    padding: 60px 0;
+  }
+  
+  section h2 {
+    font-size: 2rem;
+    margin-bottom: 30px;
+  }
+  
+  .resume-card,
+  .project-card {
+    padding: 30px 20px;
+    margin: 0 10px;
+  }
+  
+  .calendar-container {
+    margin: 0 10px;
+  }
+  
+  .calendar-container iframe {
+    height: 400px;
+  }
+  
+  .social-links {
+    gap: 20px;
+  }
+  
+  .social-link {
+    min-width: 60px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 480px) {
+  .hero-section {
+    padding: 60px 15px 40px;
+  }
+  
+  .mission-statement {
+    font-size: 1.5rem;
+  }
+  
+  section {
+    padding: 40px 0;
+  }
+  
+  .section-container {
+    padding: 0 15px;
+  }
+  
+  .resume-card,
+  .project-card {
+    padding: 25px 15px;
+  }
+  
+  .social-links {
+    flex-direction: column;
+    align-items: center;
+    gap: 15px;
+  }
+  
+  .social-link {
+    flex-direction: row;
+    gap: 12px;
+    min-width: 120px;
+    justify-content: flex-start;
+  }
+}
