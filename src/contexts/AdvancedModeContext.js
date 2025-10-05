@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
 
 const AdvancedModeContext = createContext();
 
@@ -11,7 +11,26 @@ export const useAdvancedMode = () => {
 };
 
 export const AdvancedModeProvider = ({ children }) => {
-  const [isAdvancedMode, setIsAdvancedMode] = useState(false);
+  // Initialize from localStorage, default to false if not found
+  const [isAdvancedMode, setIsAdvancedMode] = useState(() => {
+    try {
+      const saved = localStorage.getItem('advancedMode');
+      return saved !== null ? JSON.parse(saved) : false;
+    } catch (error) {
+      console.error('Error loading advanced mode from localStorage:', error);
+      return false;
+    }
+  });
+
+  // Save to localStorage whenever the mode changes
+  useEffect(() => {
+    try {
+      localStorage.setItem('advancedMode', JSON.stringify(isAdvancedMode));
+      console.log('💾 Saved advanced mode to localStorage:', isAdvancedMode);
+    } catch (error) {
+      console.error('Error saving advanced mode to localStorage:', error);
+    }
+  }, [isAdvancedMode]);
 
   const toggleAdvancedMode = () => {
     setIsAdvancedMode(prev => !prev);
