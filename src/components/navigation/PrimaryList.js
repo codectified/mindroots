@@ -108,19 +108,33 @@ const PrimaryList = () => {
     if (selectedCorpusItemData) {
       try {
         const corpusItemData = JSON.parse(selectedCorpusItemData);
-        console.log('Setting selected corpus item from sessionStorage:', corpusItemData);
+        console.log('🎯 View in Context: Setting selected corpus item from sessionStorage:', corpusItemData);
         handleSelectCorpusItem(corpusItemData);
         
         // For Corpus 2 (Quran), extract position from hierarchical ID
         const itemCorpusId = corpusItemData.corpus_id?.low || corpusItemData.corpus_id;
         if (itemCorpusId === 2 && typeof corpusItemData.item_id === 'string' && corpusItemData.item_id.includes(':')) {
           const [surahFromId, ayaFromId] = corpusItemData.item_id.split(':');
-          console.log(`Setting position from corpus item ID: Surah ${surahFromId}, Aya ${ayaFromId}`);
+          console.log(`🎯 View in Context: Setting position from corpus item ID: Surah ${surahFromId}, Aya ${ayaFromId}`);
           setSurah(parseInt(surahFromId));
           setAya(parseInt(ayaFromId));
+          
+          // Force update the saved state with the correct position immediately
+          const updatedState = {
+            corpusId: itemCorpusId.toString(),
+            corpusName: corpusItemData.corpus_name || (itemCorpusId === 2 ? 'Quran' : 'Unknown'),
+            corpusType: itemCorpusId === 2 ? 'quran' : 'text',
+            surah: parseInt(surahFromId),
+            aya: parseInt(ayaFromId),
+            ayaCount: ayaCount || 7,
+            ayahsPerPage: ayahsPerPage || 10,
+            timestamp: Date.now()
+          };
+          sessionStorage.setItem('lastCorpusState', JSON.stringify(updatedState));
+          console.log('🎯 View in Context: Updated corpus state with correct position:', updatedState);
         }
         
-        // Clear the sessionStorage data after using it
+        // Clear the selectedCorpusItem data after using it
         sessionStorage.removeItem('selectedCorpusItem');
       } catch (error) {
         console.error('Error parsing selected corpus item from sessionStorage:', error);
@@ -140,27 +154,30 @@ const PrimaryList = () => {
   }, [corpusId, urlSurah, urlAya]);
 
   const handleItemClick = (item) => {
-    handleSelectCorpusItem(item);
+    // Ensure the item has corpus_id attached for proper graph expansion
+    const itemWithCorpusId = {
+      ...item,
+      corpus_id: parseInt(corpusId) // Add the current corpus ID to the item
+    };
+    console.log('🎯 PrimaryList handleItemClick: Adding corpus_id to item:', itemWithCorpusId);
+    handleSelectCorpusItem(itemWithCorpusId);
     navigate('/graph');
   };
 
-  // Save current corpus state for better navigation persistence
+  // Save Quran position specifically for Corpus 2
   useEffect(() => {
-    if (corpusId && corpusName) {
-      const corpusState = {
-        corpusId,
-        corpusName,
-        corpusType,
+    if (corpusId === '2') { // Only save for Quran
+      const quranPosition = {
         surah,
         aya,
         ayaCount,
         ayahsPerPage,
         timestamp: Date.now()
       };
-      sessionStorage.setItem('lastCorpusState', JSON.stringify(corpusState));
-      console.log('Saved corpus state:', corpusState);
+      sessionStorage.setItem('lastQuranPosition', JSON.stringify(quranPosition));
+      console.log('💾 Saved Quran position:', quranPosition);
     }
-  }, [corpusId, corpusName, corpusType, surah, aya, ayaCount, ayahsPerPage]);
+  }, [corpusId, surah, aya, ayaCount, ayahsPerPage]);
 
   return (
     <div>
@@ -223,7 +240,6 @@ const PrimaryList = () => {
             <HighlightController />
             <button 
               onClick={() => {
-                sessionStorage.removeItem('lastCorpusState');
                 navigate('/corpus-menu');
               }}
               style={{
