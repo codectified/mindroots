@@ -548,6 +548,143 @@ router.get('/navigate/corpusitem/:corpusId/:itemId/:direction', async (req, res)
   }
 });
 
+// Navigation by global_position (more reliable for Quran/hierarchical data)
+router.get('/navigate-by-position/:corpusId/:globalPosition/:direction', async (req, res) => {
+  const session = req.driver.session();
+  const { corpusId, globalPosition, direction } = req.params;
+  
+  try {
+    const currentCorpusId = parseInt(corpusId);
+    const currentGlobalPosition = parseInt(globalPosition);
+    
+    // Simple query using global_position for navigation
+    const query = direction === 'next' 
+      ? `
+        MATCH (c:CorpusItem) 
+        WHERE toInteger(c.corpus_id) = $corpusId 
+          AND toInteger(c.global_position) > $currentGlobalPosition
+        RETURN c
+        ORDER BY toInteger(c.global_position)
+        LIMIT 1
+      `
+      : `
+        MATCH (c:CorpusItem) 
+        WHERE toInteger(c.corpus_id) = $corpusId 
+          AND toInteger(c.global_position) < $currentGlobalPosition
+        RETURN c
+        ORDER BY toInteger(c.global_position) DESC
+        LIMIT 1
+      `;
+    
+    const queryParams = { 
+      corpusId: currentCorpusId, 
+      currentGlobalPosition
+    };
+    
+    const result = await session.run(query, queryParams);
+    
+    if (result.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+    
+    // If corpus item exists, get full inspection data
+    const corpusItemNode = result.records[0].get('c');
+    const nodeId = corpusItemNode.identity.toNumber();
+    
+    // Reuse the inspection logic from the existing endpoint
+    const inspectQuery = `
+      MATCH (n) WHERE id(n) = $nodeId
+      OPTIONAL MATCH (n)-[r]-(connected)
+      RETURN n, 
+             type(r) as rel_type, 
+             startNode(r) = n as is_outgoing,
+             count(connected) as rel_count,
+             labels(connected) as connected_labels
+    `;
+    
+    const inspectResult = await session.run(inspectQuery, { nodeId });
+    
+    if (inspectResult.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found in inspection' });
+    }
+    
+    // Process inspection results (same as existing endpoint)
+    const nodeRecord = inspectResult.records[0];
+    const nodeData = nodeRecord.get('n');
+    const nodeProperties = convertIntegers(nodeData.properties);
+    const nodeLabels = nodeData.labels;
+    const propertyKeys = Object.keys(nodeProperties);
+    
+    // Organize properties
+    const properties = {};
+    propertyKeys.forEach(key => {
+      const value = nodeProperties[key];
+      properties[key] = {
+        value: value,
+        type: typeof value,
+        isEmpty: value === null || value === undefined || value === ''
+      };
+    });
+    
+    // Build relationships and connected node counts
+    const relationshipMap = new Map();
+    const connectedNodeTypes = {};
+    
+    inspectResult.records.forEach(record => {
+      const relType = record.get('rel_type');
+      const isOutgoing = record.get('is_outgoing');
+      const relCount = convertIntegers(record.get('rel_count'));
+      const connectedLabels = record.get('connected_labels') || [];
+      
+      if (relType) {
+        const direction = isOutgoing ? 'outgoing' : 'incoming';
+        const key = `${relType}_${direction}`;
+        
+        if (!relationshipMap.has(key)) {
+          relationshipMap.set(key, {
+            type: relType,
+            direction: direction,
+            count: 0
+          });
+        }
+        
+        relationshipMap.get(key).count += relCount;
+        
+        // Count connected node types
+        connectedLabels.forEach(label => {
+          connectedNodeTypes[label] = (connectedNodeTypes[label] || 0) + relCount;
+        });
+      }
+    });
+    
+    const relationships = Array.from(relationshipMap.values());
+    
+    res.json({
+      nodeData: {
+        nodeType: nodeLabels[0],
+        nodeId: convertIntegers(nodeProperties.item_id || nodeId),
+        properties,
+        relationships,
+        connectedNodeCounts: connectedNodeTypes,
+        summary: {
+          totalProperties: propertyKeys.length,
+          totalRelationships: relationships.reduce((sum, r) => sum + r.count, 0),
+          totalConnectedNodes: Object.values(connectedNodeTypes).reduce((sum, count) => sum + count, 0)
+        }
+      }
+    });
+    
+  } catch (error) {
+    console.error('Error navigating by global position:', error);
+    res.status(500).json({ 
+      error: 'Error navigating by global position',
+      message: error.message 
+    });
+  } finally {
+    await session.close();
+  }
+});
+
 // Update validation fields for a node
 router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
   const session = req.driver.session();

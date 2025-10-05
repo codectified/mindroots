@@ -587,6 +587,18 @@ export const navigateToAdjacentNode = async (nodeType, nodeId, direction, corpus
   }
 };
 
+// Navigation using global_position for corpus items (more reliable for Quran)
+export const navigateByGlobalPosition = async (corpusId, currentGlobalPosition, direction) => {
+  try {
+    const url = `/navigate-by-position/${corpusId}/${currentGlobalPosition}/${direction}`;
+    const response = await api.get(url);
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error navigating by global position:', error);
+    throw error;
+  }
+};
+
 // Update validation fields for a node
 export const updateValidationFields = async (nodeType, nodeId, updates) => {
   try {

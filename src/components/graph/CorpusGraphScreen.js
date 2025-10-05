@@ -1,6 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import GraphVisualization from './GraphVisualization';
-import { expandGraph, navigateToAdjacentNode } from '../../services/apiService';
+import { expandGraph, navigateToAdjacentNode, navigateByGlobalPosition } from '../../services/apiService';
 import MainMenu from '../navigation/MainMenu';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useContextFilter } from '../../contexts/ContextFilterContext';
@@ -17,6 +17,7 @@ const CorpusGraphScreen = () => {
   const { selectedCorpus, selectedCorpusItem, handleSelectCorpusItem, loading } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [navigationLoading, setNavigationLoading] = useState(false);
+  const [currentNavigationItem, setCurrentNavigationItem] = useState(null);
 
 
 
@@ -50,6 +51,8 @@ const CorpusGraphScreen = () => {
         if (response && response.nodes && response.nodes.length > 0) {
           console.log('✅ CorpusGraphScreen: Graph data received:', response.nodes.length, 'nodes');
           setGraphData({ nodes: response.nodes, links: response.links });
+          // Initialize currentNavigationItem for subsequent navigation
+          setCurrentNavigationItem(selectedCorpusItem);
         } else {
           console.log('📭 CorpusGraphScreen: No graph data received');
           setGraphData({ nodes: [], links: [] });
@@ -72,14 +75,16 @@ const CorpusGraphScreen = () => {
 
   // Simple navigation: get next/previous corpus item and regenerate graph
   const handleNavigation = async (direction) => {
-    if (!selectedCorpusItem || navigationLoading) return;
+    // Use currentNavigationItem if available, fallback to selectedCorpusItem
+    const navItem = currentNavigationItem || selectedCorpusItem;
+    if (!navItem || navigationLoading) return;
 
     setNavigationLoading(true);
     
     try {
       // Extract current item ID and corpus ID
-      let currentItemId = selectedCorpusItem.item_id;
-      let corpusId = selectedCorpus?.id || selectedCorpusItem.corpus_id;
+      let currentItemId = navItem.item_id;
+      let corpusId = selectedCorpus?.id || navItem.corpus_id;
       
       // Handle wrapped property format if needed
       if (currentItemId && typeof currentItemId === 'object' && 'value' in currentItemId) {
@@ -97,8 +102,27 @@ const CorpusGraphScreen = () => {
 
       console.log('🧭 Navigation request:', { direction, currentItemId, corpusId });
 
-      // Get the next/previous corpus item using the navigation API
-      const navigationResult = await navigateToAdjacentNode('corpusitem', currentItemId, direction, corpusId);
+      // Try to use global_position for navigation (more reliable for Quran)
+      let navigationResult = null;
+      const globalPosition = navItem.global_position;
+      
+      if (globalPosition !== undefined && globalPosition !== null) {
+        // Handle wrapped property format for global_position
+        let actualGlobalPosition = globalPosition;
+        if (globalPosition && typeof globalPosition === 'object' && 'value' in globalPosition) {
+          actualGlobalPosition = globalPosition.value;
+        }
+        if (globalPosition && typeof globalPosition === 'object' && 'low' in globalPosition) {
+          actualGlobalPosition = globalPosition.low;
+        }
+        
+        console.log('🧭 Using global_position navigation:', actualGlobalPosition);
+        navigationResult = await navigateByGlobalPosition(corpusId, actualGlobalPosition, direction);
+      } else {
+        // Fallback to the old item_id based navigation
+        console.log('🧭 Fallback to item_id navigation');
+        navigationResult = await navigateToAdjacentNode('corpusitem', currentItemId, direction, corpusId);
+      }
       
       if (navigationResult && navigationResult.nodeData) {
         // Extract the new item ID
@@ -117,13 +141,16 @@ const CorpusGraphScreen = () => {
           console.log('✅ New graph generated:', response.nodes.length, 'nodes');
           setGraphData({ nodes: response.nodes, links: response.links });
           
-          // Update the selected corpus item to reflect the new item
+          // Update currentNavigationItem to the new item for next navigation
+          // Create a corpus item object from the navigation result
           const newCorpusItem = {
-            item_id: newItemId,
+            item_id: navigationResult.nodeData.nodeId,
             corpus_id: corpusId,
+            global_position: navigationResult.nodeData.properties?.global_position,
+            // Include other properties that might be needed
             ...navigationResult.nodeData.properties
           };
-          handleSelectCorpusItem(newCorpusItem);
+          setCurrentNavigationItem(newCorpusItem);
         } else {
           console.log('📭 No graph data for new corpus item');
           setGraphData({ nodes: [], links: [] });
