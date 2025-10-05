@@ -25,6 +25,7 @@ const CorpusRenderer = ({
   ayaCount,
   ayahsPerPage,
   setAyahsPerPage,
+  fontSize = 16,
   L1,
   L2,
   handleSelectCorpusItem,
@@ -337,7 +338,8 @@ const handleFreeformLineHighlight = (lineNumber) => {
           maxWidth: layout === 'prose' ? '800px' : 'none',
           margin: layout === 'prose' ? '0 auto' : '0',
           padding: layout === 'prose' ? '0 20px' : '0',
-          lineHeight: layout === 'line-by-line' ? '2.5' : '1.8'
+          lineHeight: layout === 'line-by-line' ? '2.5' : '1.8',
+          fontSize: `${fontSize}px`
         }}>
           {surahNumber !== 9 && (
             <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
@@ -395,7 +397,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
   };
 
   const renderList = (customClass = '') => (
-    <ul className={`corpus-renderer-list ${customClass}`}>
+    <ul className={`corpus-renderer-list ${customClass}`} style={{ fontSize: `${fontSize}px` }}>
       {items.map((item) => (
         <li
           key={item.item_id}
@@ -425,7 +427,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
     );
   
     return (
-      <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl' }}>
+      <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl', fontSize: `${fontSize}px` }}>
         {sortedLines.map(([lineNumber, lineItems]) => {
           const isLineHighlighted = lineItems.every((item) => item.isFreeformHighlighted);
   

@@ -19,6 +19,7 @@ const PrimaryList = () => {
   const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
   const [ayahsPerPage, setAyahsPerPage] = useState(10); // Track ayahs per page
   const [showTextSettings, setShowTextSettings] = useState(false); // Text settings collapsed by default
+  const [fontSize, setFontSize] = useState(16); // Font size control
   const { L1, L2 } = useLanguage();
   const { handleSelectCorpusItem } = useCorpus();
 
@@ -26,6 +27,10 @@ const PrimaryList = () => {
   const corpusId = queryParams.get('corpus_id');
   const corpusName = queryParams.get('corpus_name');
   const corpusType = queryParams.get('corpus_type'); // Use corpus_type for poetry and prose
+  
+  // Handle "View in Context" navigation parameters
+  const urlSurah = queryParams.get('surah');
+  const urlAya = queryParams.get('aya');
 
 
   useEffect(() => {
@@ -98,10 +103,82 @@ const PrimaryList = () => {
     }
   }, [surah, corpusId]);
 
+  // Handle "View in Context" navigation from graph screen
+  useEffect(() => {
+    const selectedCorpusItemData = sessionStorage.getItem('selectedCorpusItem');
+    if (selectedCorpusItemData) {
+      try {
+        const corpusItemData = JSON.parse(selectedCorpusItemData);
+        console.log('🎯 View in Context: Setting selected corpus item from sessionStorage:', corpusItemData);
+        handleSelectCorpusItem(corpusItemData);
+        
+        // For Corpus 2 (Quran), extract position from hierarchical ID
+        const itemCorpusId = corpusItemData.corpus_id?.low || corpusItemData.corpus_id;
+        if (itemCorpusId === 2 && typeof corpusItemData.item_id === 'string' && corpusItemData.item_id.includes(':')) {
+          const [surahFromId, ayaFromId] = corpusItemData.item_id.split(':');
+          console.log(`🎯 View in Context: Setting position from corpus item ID: Surah ${surahFromId}, Aya ${ayaFromId}`);
+          setSurah(parseInt(surahFromId));
+          setAya(parseInt(ayaFromId));
+          
+          // Force update the saved state with the correct position immediately
+          const updatedState = {
+            corpusId: itemCorpusId.toString(),
+            corpusName: corpusItemData.corpus_name || (itemCorpusId === 2 ? 'Quran' : 'Unknown'),
+            corpusType: itemCorpusId === 2 ? 'quran' : 'text',
+            surah: parseInt(surahFromId),
+            aya: parseInt(ayaFromId),
+            ayaCount: ayaCount || 7,
+            ayahsPerPage: ayahsPerPage || 10,
+            timestamp: Date.now()
+          };
+          sessionStorage.setItem('lastCorpusState', JSON.stringify(updatedState));
+          console.log('🎯 View in Context: Updated corpus state with correct position:', updatedState);
+        }
+        
+        // Clear the selectedCorpusItem data after using it
+        sessionStorage.removeItem('selectedCorpusItem');
+      } catch (error) {
+        console.error('Error parsing selected corpus item from sessionStorage:', error);
+        sessionStorage.removeItem('selectedCorpusItem'); // Clear invalid data
+      }
+    }
+  }, []); // Run only once when component mounts
+
+  // Handle URL parameters for surah/aya positioning (from "View in Context")
+  useEffect(() => {
+    console.log(`PrimaryList URL parameters: corpusId=${corpusId}, urlSurah=${urlSurah}, urlAya=${urlAya}`);
+    if (corpusId === '2' && urlSurah && urlAya) {
+      console.log(`Setting position from URL: Surah ${urlSurah}, Aya ${urlAya}`);
+      setSurah(parseInt(urlSurah));
+      setAya(parseInt(urlAya));
+    }
+  }, [corpusId, urlSurah, urlAya]);
+
   const handleItemClick = (item) => {
-    handleSelectCorpusItem(item);
+    // Ensure the item has corpus_id attached for proper graph expansion
+    const itemWithCorpusId = {
+      ...item,
+      corpus_id: parseInt(corpusId) // Add the current corpus ID to the item
+    };
+    console.log('🎯 PrimaryList handleItemClick: Adding corpus_id to item:', itemWithCorpusId);
+    handleSelectCorpusItem(itemWithCorpusId);
     navigate('/graph');
   };
+
+  // Save Quran position specifically for Corpus 2
+  useEffect(() => {
+    if (corpusId === '2') { // Only save for Quran
+      const quranPosition = {
+        surah,
+        aya,
+        ayaCount,
+        ayahsPerPage,
+        timestamp: Date.now()
+      };
+      sessionStorage.setItem('lastQuranPosition', JSON.stringify(quranPosition));
+      console.log('💾 Saved Quran position:', quranPosition);
+    }
+  }, [corpusId, surah, aya, ayaCount, ayahsPerPage]);
 
   return (
     <div>
@@ -162,6 +239,45 @@ const PrimaryList = () => {
           }}>
             <TextLayoutToggle />
             <HighlightController />
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <label style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
+                Font Size:
+              </label>
+              <input
+                type="range"
+                min="12"
+                max="32"
+                value={fontSize}
+                onChange={(e) => setFontSize(parseInt(e.target.value))}
+                style={{
+                  width: '80px',
+                  accentColor: '#4a7c4a'
+                }}
+              />
+              <span style={{ fontSize: '12px', color: '#666', minWidth: '30px' }}>
+                {fontSize}px
+              </span>
+            </div>
+            <button 
+              onClick={() => {
+                navigate('/corpus-menu');
+              }}
+              style={{
+                padding: '8px 16px',
+                backgroundColor: '#4a7c4a',
+                color: 'white',
+                border: 'none',
+                borderRadius: '6px',
+                cursor: 'pointer',
+                fontSize: '14px',
+                fontWeight: '500',
+                transition: 'background-color 0.2s'
+              }}
+              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6a3a'}
+              onMouseLeave={(e) => e.target.style.backgroundColor = '#4a7c4a'}
+            >
+              Return to Library
+            </button>
           </div>
         )}
       </div>
@@ -193,6 +309,7 @@ const PrimaryList = () => {
         ayaCount={ayaCount}
         ayahsPerPage={ayahsPerPage}
         setAyahsPerPage={setAyahsPerPage}
+        fontSize={fontSize}
         L1={L1}
         L2={L2}
         handleSelectCorpusItem={handleItemClick}
