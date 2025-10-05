@@ -1,4 +1,8 @@
 /* Profile Page Styles */
+html {
+  scroll-behavior: smooth;
+}
+
 .profile-page {
   min-height: 100vh;
   background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -34,6 +38,34 @@
   font-weight: 300;
 }
 
+/* Hero Navigation */
+.hero-navigation {
+  margin-top: 40px;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  flex-wrap: wrap;
+}
+
+.nav-link {
+  color: white;
+  text-decoration: none;
+  padding: 12px 24px;
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 25px;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  background: rgba(255,255,255,0.1);
+}
+
+.nav-link:hover {
+  background: rgba(255,255,255,0.2);
+  border-color: rgba(255,255,255,0.6);
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+}
+
 /* Section Container */
 .section-container {
   max-width: 1000px;
@@ -55,9 +87,157 @@ section h2 {
   font-weight: 300;
 }
 
+/* Articles Section */
+.articles-section {
+  background: #f8f9fa;
+  padding: 80px 0;
+}
+
+.articles-links {
+  display: grid;
+  gap: 40px;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.article-link-item h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.article-link {
+  background: white;
+  border: none;
+  border-radius: 12px;
+  padding: 20px 30px;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+  border: 1px solid rgba(0,0,0,0.05);
+  transition: all 0.3s ease;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+  font-size: 1.1rem;
+  color: #333;
+  font-weight: 500;
+  line-height: 1.4;
+}
+
+.article-link:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+  color: #667eea;
+}
+
+/* Bio Section */
+.bio-section {
+  background: white;
+  padding: 80px 0;
+}
+
+.bio-subsection {
+  margin-bottom: 50px;
+  padding-bottom: 40px;
+  border-bottom: 1px solid rgba(0,0,0,0.1);
+}
+
+.bio-subsection:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+}
+
+.bio-subsection h3 {
+  font-size: 1.5rem;
+  color: #333;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.bio-subtitle {
+  font-style: italic;
+  color: #666;
+  margin-bottom: 15px;
+  font-size: 1rem;
+}
+
+.bio-subsection p {
+  color: #555;
+  line-height: 1.7;
+  margin-bottom: 15px;
+  font-size: 1.05rem;
+}
+
+.bio-subsection ul {
+  margin: 20px 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.bio-subsection li {
+  color: #555;
+  line-height: 1.6;
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+  font-size: 1.05rem;
+}
+
+.bio-subsection li::before {
+  content: "•";
+  color: #667eea;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.bio-links {
+  margin-top: 20px;
+}
+
+.bio-links h4 {
+  font-size: 1.1rem;
+  color: #333;
+  margin-bottom: 10px;
+  font-weight: 500;
+}
+
+.bio-links-list {
+  list-style: none;
+  padding-left: 0;
+  margin: 0;
+}
+
+.bio-links-list li {
+  margin-bottom: 8px;
+  padding-left: 20px;
+  position: relative;
+}
+
+.bio-links-list li::before {
+  content: "•";
+  color: #667eea;
+  font-weight: bold;
+  position: absolute;
+  left: 0;
+}
+
+.bio-link {
+  color: #667eea;
+  text-decoration: none;
+  font-weight: 500;
+  transition: all 0.3s ease;
+  display: inline-block;
+}
+
+.bio-link:hover {
+  color: #764ba2;
+  transform: translateX(3px);
+}
+
 /* Resume Section */
 .resume-section {
-  background: white;
+  background: #f8f9fa;
 }
 
 .resume-card {
@@ -253,6 +433,16 @@ section h2 {
   
   .hero-subtext {
     font-size: 1rem;
+  }
+  
+  .hero-navigation {
+    gap: 15px;
+    margin-top: 30px;
+  }
+  
+  .nav-link {
+    padding: 10px 20px;
+    font-size: 0.9rem;
   }
   
   section {

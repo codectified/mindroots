@@ -8,7 +8,7 @@
 
 import { Link } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
-import ProfilePage from './components/ProfilePage';
+import ProfilePage from './components/staticPages/ProfilePage';
 import MainMenu from './components/navigation/MainMenu';
 import Library from './components/navigation/Library';
 import ProjectNews from './components/staticPages/ProjectNews';
