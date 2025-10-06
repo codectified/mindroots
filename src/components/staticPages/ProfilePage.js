@@ -161,12 +161,23 @@ const ProfilePage = () => {
         <div className="section-container">
           <h2>Résumé</h2>
           <div className="resume-card">
-            <h3>Graph Résumé</h3>
-            <p>Explore my professional experience through an interactive visualization.</p>
-            <button className="cta-button" disabled>
-              View Graph Résumé
-              <span className="coming-soon">(Coming Soon)</span>
-            </button>
+            <h3>Résumé</h3>
+            <p>View my professional experience and qualifications.</p>
+            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+              <a 
+                href={`${process.env.PUBLIC_URL}/OI_resume.pdf`} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="cta-button"
+                style={{ textDecoration: 'none', display: 'inline-block' }}
+              >
+                View PDF Resume
+              </a>
+              <button className="cta-button" disabled>
+                View Graph Résumé
+                <span className="coming-soon">(Coming Soon)</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
