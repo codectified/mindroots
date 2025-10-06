@@ -36,7 +36,7 @@ const ProfilePage = () => {
           <h1 className="mission-statement">
             In a world with more systems than people, an effective facilitator leverages knowledge from multiple domains to deliver the best option.
           </h1>
-          <nav className="hero-navigation">
+          <nav className="hero-navigation" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <a href="#resume" className="nav-link">Resume</a>
             <a href="#projects" className="nav-link">Projects</a>
             <a href="#availability" className="nav-link">Availability</a>
@@ -51,13 +51,13 @@ const ProfilePage = () => {
           <h2>Professional Services Bio</h2>
           
           {/* Bio Section Index */}
-          <nav style={{ marginBottom: '30px', textAlign: 'center' }}>
-            <div style={{ display: 'inline-flex', gap: '20px', padding: '10px 20px', backgroundColor: '#f8f9fa', borderRadius: '8px', fontSize: '0.9em' }}>
-              <a href="#it-consulting" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500' }}>IT Consulting</a>
+          <nav style={{ marginBottom: '30px', display: 'flex', justifyContent: 'center', width: '100%' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '15px', padding: '10px 20px', backgroundColor: '#f8f9fa', borderRadius: '8px', fontSize: '0.9em' }}>
+              <a href="#it-consulting" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap' }}>Technical Consulting</a>
               <span style={{ color: '#ccc' }}>•</span>
-              <a href="#communications" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500' }}>Communications</a>
+              <a href="#communications" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap' }}>Communications</a>
               <span style={{ color: '#ccc' }}>•</span>
-              <a href="#knowledge-architecture" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500' }}>Knowledge Architecture</a>
+              <a href="#knowledge-architecture" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap' }}>Knowledge Management</a>
             </div>
           </nav>
           
@@ -82,7 +82,7 @@ const ProfilePage = () => {
                 <li>
                   <button 
                     className="bio-link" 
-                    style={{border: 'none', background: 'none', padding: 0, color: '#667eea', cursor: 'pointer'}}
+                    style={{border: 'none', background: 'none', padding: 0, color: '#667eea', cursor: 'pointer', textDecoration: 'none', fontWeight: 'normal', fontSize: 'inherit', fontFamily: 'inherit'}}
                     onClick={() => showArticle('/theoption.life/articles/IT-strategy.md', 'General Guidelines and Strategy for IT & IS Implementations')}
                   >
                     Article: General Guidelines and Strategy for IT & IS Implentations
@@ -139,7 +139,7 @@ const ProfilePage = () => {
                 <li>
                   <button 
                     className="bio-link" 
-                    style={{border: 'none', background: 'none', padding: 0, color: '#667eea', cursor: 'pointer'}}
+                    style={{border: 'none', background: 'none', padding: 0, color: '#667eea', cursor: 'pointer', textDecoration: 'none', fontWeight: 'normal', fontSize: 'inherit', fontFamily: 'inherit'}}
                     onClick={() => showArticle('/theoption.life/articles/whygraphs.md', 'Graph Technology as the "Natural" approach')}
                   >
                     Article: Graph Technology as the "Natural" approach
@@ -176,35 +176,57 @@ const ProfilePage = () => {
         <div className="section-container">
           <h2>Projects</h2>
           <div className="project-card">
-            <div style={{ display: 'flex', justifyContent: 'center', gap: '30px', margin: '30px 0' }}>
-              <Link to="/mindroots" style={{ textDecoration: 'none' }}>
-                <img 
-                  src={`${process.env.PUBLIC_URL}/root-tree.jpeg`}
-                  alt="MindRoots" 
-                  style={{ width: '100px', height: '100px', borderRadius: '8px', cursor: 'pointer' }}
-                />
-              </Link>
-              <a href="https://chatgpt.com/g/g-6837e9a3285081919820781cf0fb2292-mindroots" target="_blank" rel="noopener noreferrer">
-                <img 
-                  src={`${process.env.PUBLIC_URL}/MindrootsGPT.png`}
-                  alt="MindRoots GPT" 
-                  style={{ width: '100px', height: '100px', borderRadius: '8px', cursor: 'pointer' }}
-                />
-              </a>
-              <a href="https://chatgpt.com/g/g-68c8fbd5dcf48191a399e8045059a8d4-quranroots" target="_blank" rel="noopener noreferrer">
-                <img 
-                  src={`${process.env.PUBLIC_URL}/qroots.png`}
-                  alt="QuranRoots GPT" 
-                  style={{ width: '100px', height: '100px', borderRadius: '8px', cursor: 'pointer' }}
-                />
-              </a>
-            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', margin: '30px 0' }}>
+              
+              {/* MindRoots */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                <Link to="/mindroots" style={{ textDecoration: 'none', flexShrink: 0 }}>
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/root-tree.jpeg`}
+                    alt="MindRoots" 
+                    style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer' }}
+                  />
+                </Link>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: '0.95em', lineHeight: '1.6' }}>
+                    <strong>MindRoots:</strong> An advanced search and language exploration tool, connecting key texts and primary sources with graph technology and cognitive-linguistic ontology design
+                  </p>
+                </div>
+              </div>
 
-            <ul style={{ listStyle: 'disc', paddingLeft: '20px', fontSize: '0.95em', lineHeight: '1.6' }}>
-              <li><strong>MindRoots:</strong> An advanced search and language exploration tool, connecting key texts and primary sources with graph technology and cognitive-linguistic ontology design</li>
-              <li><strong>MindRoots GPT:</strong> An AI chatbot which can talk to Mindroots and summarize entries from Lane's Lexicon and other data sources</li>
-              <li><strong>QuranRoots GPT (Beta):</strong> An AI chatbot with advanced search capability specifically for the quran</li>
-            </ul>
+              {/* MindRoots GPT */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                <a href="https://chatgpt.com/g/g-6837e9a3285081919820781cf0fb2292-mindroots" target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0 }}>
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/MindrootsGPT.png`}
+                    alt="MindRoots GPT" 
+                    style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer' }}
+                  />
+                </a>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: '0.95em', lineHeight: '1.6' }}>
+                    <strong>MindRoots GPT:</strong> An AI chatbot which can talk to Mindroots and summarize entries from Lane's Lexicon and other data sources
+                  </p>
+                </div>
+              </div>
+
+              {/* QuranRoots GPT */}
+              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
+                <a href="https://chatgpt.com/g/g-68c8fbd5dcf48191a399e8045059a8d4-quranroots" target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0 }}>
+                  <img 
+                    src={`${process.env.PUBLIC_URL}/qroots.png`}
+                    alt="QuranRoots GPT" 
+                    style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer' }}
+                  />
+                </a>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: '0.95em', lineHeight: '1.6' }}>
+                    <strong>QuranRoots GPT (Beta):</strong> An AI chatbot with advanced search capability specifically for the quran
+                  </p>
+                </div>
+              </div>
+
+            </div>
           </div>
         </div>
       </section>
