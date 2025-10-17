@@ -34,7 +34,7 @@ const ProfilePage = () => {
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="mission-statement">
-            In a world with more systems than people, an effective facilitator leverages knowledge from multiple domains to deliver the best option.
+            In a world with more options than people, you need someone on your side who knows <em>both</em> systems and people.
           </h1>
           <nav className="hero-navigation" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <a href="#resume" className="nav-link">Resume</a>
@@ -48,7 +48,7 @@ const ProfilePage = () => {
       {/* Professional Services Bio Section */}
       <section id="bio" className="bio-section">
         <div className="section-container">
-          <h2>Professional Services Bio</h2>
+          <h2>Professional Services</h2>
           
           {/* Bio Section Index */}
           <nav style={{ marginBottom: '30px', display: 'flex', justifyContent: 'center', width: '100%' }}>
@@ -60,6 +60,47 @@ const ProfilePage = () => {
               <a href="#knowledge-architecture" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap' }}>Knowledge Management</a>
             </div>
           </nav>
+          
+          {/* About Me Section */}
+          <div style={{ 
+            backgroundColor: '#f8f9fa', 
+            borderRadius: '12px', 
+            padding: '25px 30px', 
+            marginBottom: '40px',
+            border: '1px solid #e9ecef',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
+          }}>
+            <p style={{ 
+              fontSize: '1.1rem', 
+              lineHeight: '1.7', 
+              color: '#495057', 
+              margin: '0 0 15px 0',
+              textAlign: 'center',
+              fontStyle: 'italic'
+            }}>
+              I build intelligent systems that translate complexity into clarity enabling effective knowledge transfer and management
+              by bridging language, cognition, and technology.
+            </p>
+            <div style={{ textAlign: 'center' }}>
+              <button 
+                className="bio-link" 
+                style={{
+                  border: 'none', 
+                  background: 'none', 
+                  padding: 0, 
+                  color: '#667eea', 
+                  cursor: 'pointer', 
+                  textDecoration: 'none', 
+                  fontWeight: 'normal', 
+                  fontSize: '0.95em', 
+                  fontFamily: 'inherit'
+                }}
+                onClick={() => showArticle('/theoption.life/articles/about-my-work.md', 'About My Work and Motivations')}
+              >
+                More about my work and motivations →
+              </button>
+            </div>
+          </div>
           
           {/* Information Technology Consulting */}
           <div id="it-consulting" className="bio-subsection">
