@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
-import { executeQuery } from '../../services/apiService';
+import { executeQuery, expandGraph } from '../../services/apiService';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
@@ -12,19 +13,38 @@ import { useCorpus } from '../../contexts/CorpusContext';
 import InfoBubble from '../layout/InfoBubble';
 
 const Explore = () => {
+  const location = useLocation();
   const { L1, L2 } = useLanguage();
   const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [markdownContent, setMarkdownContent] = useState('');
 
-  
+
   // Multi-select state for filters
   const [selectedFilters, setSelectedFilters] = useState({
     word: [],
     root: [],
     form: [],
   });
+
+  // Auto-expand root when navigating from analysis
+  useEffect(() => {
+    const autoExpandRootId = location.state?.autoExpandRootId;
+    if (autoExpandRootId) {
+      const loadRootGraph = async () => {
+        try {
+          const result = await expandGraph('root', autoExpandRootId, 'word', { L1, L2 });
+          if (result && result.nodes) {
+            setGraphData(result);
+          }
+        } catch (error) {
+          console.error('Error auto-expanding root:', error);
+        }
+      };
+      loadRootGraph();
+    }
+  }, [location.state, L1, L2, setGraphData]);
 
   const [expanded, setExpanded] = useState({ word: false, root: false, form: false });
 
