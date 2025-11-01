@@ -15,7 +15,7 @@ import {
   faYoutube,
   faGithub
 } from '@fortawesome/free-brands-svg-icons';
-import { fetchLatestAnalysis, fetchAnalysisHeaders, fetchLatestArticle, fetchArticleHeaders } from '../../services/apiService';
+import { fetchLatestAnalysis, fetchAnalysisHeaders, fetchLatestArticle, fetchArticleHeaders, expandGraph } from '../../services/apiService';
 import InfoBubble from '../layout/InfoBubble';
 
 const MainMenu = () => {
@@ -49,7 +49,7 @@ const MainMenu = () => {
     navigate(path);
   };
 
-  const handleShowAnalysis = (event) => {
+  const handleShowAnalysis = async (event) => {
     if (latestAnalysis) {
       const nodeInfoData = {
         analyses: [latestAnalysis.analysis],
@@ -67,6 +67,17 @@ const MainMenu = () => {
       }
       if (latestAnalysis.root.hanswehr_entry) {
         nodeInfoData.hanswehr_entry = latestAnalysis.root.hanswehr_entry;
+      }
+
+      // Fetch graph data for mini preview
+      try {
+        const graphData = await expandGraph('root', latestAnalysis.root.root_id, 'word', { L1: 'arabic', L2: 'english' });
+        if (graphData && graphData.nodes) {
+          nodeInfoData.graphData = graphData;
+        }
+      } catch (error) {
+        console.error('Error loading graph data for preview:', error);
+        // Continue without graph data
       }
 
       calculateAndShowBubble(event, nodeInfoData);
@@ -94,7 +105,7 @@ const MainMenu = () => {
     }
   };
 
-  const handleShowArticle = (event) => {
+  const handleShowArticle = async (event) => {
     if (latestArticle && latestArticle.article) {
       const nodeInfoData = {
         articles: [latestArticle.article],
@@ -108,6 +119,17 @@ const MainMenu = () => {
           arabic: latestArticle.root.arabic,
           english: latestArticle.root.english
         };
+
+        // Fetch graph data for mini preview
+        try {
+          const graphData = await expandGraph('root', latestArticle.root.root_id, 'word', { L1: 'arabic', L2: 'english' });
+          if (graphData && graphData.nodes) {
+            nodeInfoData.graphData = graphData;
+          }
+        } catch (error) {
+          console.error('Error loading graph data for preview:', error);
+          // Continue without graph data
+        }
       }
 
       calculateAndShowBubble(event, nodeInfoData);
