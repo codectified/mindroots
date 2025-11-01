@@ -1,6 +1,7 @@
 // src/layout/InfoBubble.jsx
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
+import { useNavigate } from 'react-router-dom';
 import Draggable from 'react-draggable';
 import Markdown from 'markdown-to-jsx';
 import { fetchAnalysisByRoot, fetchArticleById } from '../../services/apiService';
@@ -28,6 +29,7 @@ const convertNeo4jDate = (dateValue) => {
 
 // Lazy-loaded analysis component
 const LazyAnalysisItem = ({ header, isLast }) => {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -141,6 +143,11 @@ const LazyAnalysisItem = ({ header, isLast }) => {
     </div>
   );
 
+  const handleViewGraph = (e) => {
+    e.stopPropagation(); // Prevent toggle when clicking View Graph
+    navigate('/start', { state: { autoExpandRootId: header.root.root_id } });
+  };
+
   return (
     <div className="compact-analysis-item">
       <div className="analysis-header" onClick={handleToggle} style={{ cursor: 'pointer' }}>
@@ -152,12 +159,38 @@ const LazyAnalysisItem = ({ header, isLast }) => {
           {convertNeo4jDate(header.analysis_meta?.timestamp) || convertNeo4jDate(header.created_at)}
         </span>
       </div>
-      
+
       {isExpanded && (
         <div className="analysis-content">
           {isLoading && <div className="loading-indicator">Loading analysis...</div>}
           {error && <div className="error-indicator">{error}</div>}
-          {analysisData && renderAnalysis(analysisData)}
+          {analysisData && (
+            <>
+              <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
+                  {header.root.arabic} {header.root.english && `(${header.root.english})`}
+                </span>
+                <button
+                  onClick={handleViewGraph}
+                  style={{
+                    padding: '8px 16px',
+                    backgroundColor: '#2c7fb8',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '14px',
+                    fontWeight: 500
+                  }}
+                  onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
+                  onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
+                >
+                  View Graph →
+                </button>
+              </div>
+              {renderAnalysis(analysisData)}
+            </>
+          )}
         </div>
       )}
     </div>
@@ -166,6 +199,7 @@ const LazyAnalysisItem = ({ header, isLast }) => {
 
 // Lazy-loaded article component
 const LazyArticleItem = ({ header, isLast }) => {
+  const navigate = useNavigate();
   const [isExpanded, setIsExpanded] = useState(false);
   const [articleData, setArticleData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -178,7 +212,7 @@ const LazyArticleItem = ({ header, isLast }) => {
       setError(null);
       try {
         const data = await fetchArticleById(header.article_id);
-        setArticleData(data.article);
+        setArticleData(data);
       } catch (err) {
         setError('Failed to load article');
         console.error('Error loading article:', err);
@@ -187,6 +221,13 @@ const LazyArticleItem = ({ header, isLast }) => {
       }
     }
     setIsExpanded(!isExpanded);
+  };
+
+  const handleViewGraph = (e) => {
+    e.stopPropagation(); // Prevent toggle when clicking View Graph
+    if (articleData?.root?.root_id) {
+      navigate('/start', { state: { autoExpandRootId: articleData.root.root_id } });
+    }
   };
 
   const renderArticle = (article) => (
@@ -233,7 +274,35 @@ const LazyArticleItem = ({ header, isLast }) => {
         <div className="analysis-content">
           {isLoading && <div className="loading-indicator">Loading article...</div>}
           {error && <div className="error-indicator">{error}</div>}
-          {articleData && renderArticle(articleData)}
+          {articleData && (
+            <>
+              {articleData.root && articleData.root.root_id && (
+                <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                  <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
+                    {articleData.root.arabic} {articleData.root.english && `(${articleData.root.english})`}
+                  </span>
+                  <button
+                    onClick={handleViewGraph}
+                    style={{
+                      padding: '8px 16px',
+                      backgroundColor: '#2c7fb8',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      fontSize: '14px',
+                      fontWeight: 500
+                    }}
+                    onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
+                    onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
+                  >
+                    View Graph →
+                  </button>
+                </div>
+              )}
+              {renderArticle(articleData.article)}
+            </>
+          )}
         </div>
       )}
     </div>
@@ -241,6 +310,7 @@ const LazyArticleItem = ({ header, isLast }) => {
 };
 
 export default function InfoBubble({ nodeData, filePath, title, onClose, style }) {
+  const navigate = useNavigate();
   const infoBubbleRef = useRef(null);
   const [centeredStyle, setCenteredStyle] = useState(style);
   const [markdownContent, setMarkdownContent] = useState('');
@@ -397,6 +467,12 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                       const sortedAnalyses = [...nodeData.analyses].sort((a, b) => (b.version || 0) - (a.version || 0));
                       const latestAnalysis = sortedAnalyses[0];
                       const olderAnalyses = sortedAnalyses.slice(1);
+
+                      const handleViewGraphFromAnalysis = () => {
+                        if (nodeData.rootId) {
+                          navigate('/start', { state: { autoExpandRootId: nodeData.rootId } });
+                        }
+                      };
                       
                       const renderAnalysis = (analysis, isOlder = false) => (
                         <div className="analysis-entry">
@@ -488,6 +564,32 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                       
                       return (
                         <>
+                          {/* View Graph button for analysis with root title */}
+                          {nodeData.rootId && nodeData.rootInfo && (
+                            <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                              <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
+                                {nodeData.rootInfo.arabic} {nodeData.rootInfo.english && `(${nodeData.rootInfo.english})`}
+                              </span>
+                              <button
+                                onClick={handleViewGraphFromAnalysis}
+                                style={{
+                                  padding: '8px 16px',
+                                  backgroundColor: '#2c7fb8',
+                                  color: 'white',
+                                  border: 'none',
+                                  borderRadius: '4px',
+                                  cursor: 'pointer',
+                                  fontSize: '14px',
+                                  fontWeight: 500
+                                }}
+                                onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
+                                onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
+                              >
+                                View Graph →
+                              </button>
+                            </div>
+                          )}
+
                           {/* Latest analysis always visible */}
                           {renderAnalysis(latestAnalysis, false)}
                           
@@ -537,6 +639,31 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                     {/* Individual Articles */}
                     {nodeData.articles && nodeData.articles.length > 0 && (
                       <div>
+                        {/* View Graph button for articles with root title */}
+                        {nodeData.rootId && nodeData.rootInfo && (
+                          <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
+                            <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
+                              {nodeData.rootInfo.arabic} {nodeData.rootInfo.english && `(${nodeData.rootInfo.english})`}
+                            </span>
+                            <button
+                              onClick={() => navigate('/start', { state: { autoExpandRootId: nodeData.rootId } })}
+                              style={{
+                                padding: '8px 16px',
+                                backgroundColor: '#2c7fb8',
+                                color: 'white',
+                                border: 'none',
+                                borderRadius: '4px',
+                                cursor: 'pointer',
+                                fontSize: '14px',
+                                fontWeight: 500
+                              }}
+                              onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
+                              onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
+                            >
+                              View Graph →
+                            </button>
+                          </div>
+                        )}
                         {nodeData.articles.map((article, index) => (
                           <div key={`article-${index}`} style={{ marginBottom: '20px' }}>
                             <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
@@ -550,8 +677,8 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                             <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#888' }}>
                               by {article.signature}
                             </p>
-                            <div style={{ 
-                              whiteSpace: 'pre-wrap', 
+                            <div style={{
+                              whiteSpace: 'pre-wrap',
                               lineHeight: '1.6',
                               fontSize: '14px',
                               maxHeight: '400px',
