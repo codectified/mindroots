@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Draggable from 'react-draggable';
 import Markdown from 'markdown-to-jsx';
 import { fetchAnalysisByRoot, fetchArticleById } from '../../services/apiService';
+import MiniGraphPreview from '../graph/MiniGraphPreview';
 import '../../styles/info-bubble.css'; // ensure your CSS is here
 
 // Helper function to convert Neo4j date format
@@ -590,6 +591,13 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                             </div>
                           )}
 
+                          {/* Mini Graph Preview */}
+                          {nodeData.graphData && nodeData.graphData.nodes && nodeData.graphData.nodes.length > 0 && (
+                            <div style={{ marginBottom: '20px' }}>
+                              <MiniGraphPreview data={nodeData.graphData} width={450} height={300} />
+                            </div>
+                          )}
+
                           {/* Latest analysis always visible */}
                           {renderAnalysis(latestAnalysis, false)}
                           
@@ -664,6 +672,14 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                             </button>
                           </div>
                         )}
+
+                        {/* Mini Graph Preview */}
+                        {nodeData.graphData && nodeData.graphData.nodes && nodeData.graphData.nodes.length > 0 && (
+                          <div style={{ marginBottom: '20px' }}>
+                            <MiniGraphPreview data={nodeData.graphData} width={450} height={300} />
+                          </div>
+                        )}
+
                         {nodeData.articles.map((article, index) => (
                           <div key={`article-${index}`} style={{ marginBottom: '20px' }}>
                             <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
