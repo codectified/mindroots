@@ -27,7 +27,13 @@
       "Bash(node:*)",
       "WebSearch",
       "WebFetch(domain:fontawesome.com)",
-      "Bash(npm --version)"
+      "Bash(npm --version)",
+      "Bash(npx react-native:*)",
+      "Bash(xcode-select:*)",
+      "Read(//Users/omaribrahim/dev/**)",
+      "Bash(npx @react-native-community/cli init:*)",
+      "Bash(npm install:*)",
+      "Bash(python3:*)"
     ],
     "deny": []
   }

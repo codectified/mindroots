@@ -33,7 +33,7 @@ const MainMenu = () => {
         // Load latest analysis
         const analysisData = await fetchLatestAnalysis();
         setLatestAnalysis(analysisData.latest_analysis);
-        
+
         // Load latest article
         const articleData = await fetchLatestArticle();
         setLatestArticle(articleData.latest_article);
@@ -52,7 +52,12 @@ const MainMenu = () => {
   const handleShowAnalysis = (event) => {
     if (latestAnalysis) {
       const nodeInfoData = {
-        analyses: [latestAnalysis.analysis]
+        analyses: [latestAnalysis.analysis],
+        rootId: latestAnalysis.root.root_id, // Pass root_id for graph navigation
+        rootInfo: {  // Pass root info for display
+          arabic: latestAnalysis.root.arabic,
+          english: latestAnalysis.root.english
+        }
       };
       if (latestAnalysis.root.meaning) {
         nodeInfoData.meaning = latestAnalysis.root.meaning;
@@ -63,9 +68,14 @@ const MainMenu = () => {
       if (latestAnalysis.root.hanswehr_entry) {
         nodeInfoData.hanswehr_entry = latestAnalysis.root.hanswehr_entry;
       }
-      
+
       calculateAndShowBubble(event, nodeInfoData);
     }
+  };
+
+  const handleViewGraph = (rootId) => {
+    // Navigate to graph exploration with root_id to auto-expand
+    navigate('/start', { state: { autoExpandRootId: rootId } });
   };
 
   const handleShowAllAnalyses = async (event) => {
@@ -85,12 +95,21 @@ const MainMenu = () => {
   };
 
   const handleShowArticle = (event) => {
-    if (latestArticle) {
+    if (latestArticle && latestArticle.article) {
       const nodeInfoData = {
-        articles: [latestArticle],
-        signature: latestArticle.signature
+        articles: [latestArticle.article],
+        signature: latestArticle.article.signature
       };
-      
+
+      // Only add rootId and rootInfo if root exists
+      if (latestArticle.root && latestArticle.root.root_id) {
+        nodeInfoData.rootId = latestArticle.root.root_id;
+        nodeInfoData.rootInfo = {
+          arabic: latestArticle.root.arabic,
+          english: latestArticle.root.english
+        };
+      }
+
       calculateAndShowBubble(event, nodeInfoData);
     }
   };
@@ -177,15 +196,15 @@ const MainMenu = () => {
       <div className="news-section">
         <h3>Latest Updates</h3>
         
-        {/* Dynamic Latest Analysis */}
+        {/* Dynamic Latest Report */}
         {latestAnalysis && (
           <div className="latest-analysis">
             <p>
-              <strong>Latest Analysis:</strong> Root{' '}
-              <span 
+              <strong>Latest Report:</strong> Root{' '}
+              <span
                 onClick={(e) => handleShowAnalysis(e)}
-                title="Click to view full analysis"
-                style={{ 
+                title="Click to view full report"
+                style={{
                   cursor: 'pointer'
                 }}
               >
@@ -194,43 +213,43 @@ const MainMenu = () => {
               </span>
             </p>
             <div style={{ marginTop: '10px' }}>
-              <span 
+              <span
                 onClick={(e) => handleShowAllAnalyses(e)}
-                title="View all previous analyses"
-                style={{ 
+                title="View all previous reports"
+                style={{
                   cursor: 'pointer',
                   textDecoration: 'underline'
                 }}
               >
-                Previous Analyses
+                Previous Reports
               </span>
             </div>
           </div>
         )}
 
         {/* Dynamic Latest Article */}
-        {latestArticle && (
+        {latestArticle && latestArticle.article && (
           <div className="latest-analysis">
             <p>
               <strong>Latest Article:</strong>{' '}
-              <span 
+              <span
                 onClick={(e) => handleShowArticle(e)}
                 title="Click to view full article"
-                style={{ 
+                style={{
                   cursor: 'pointer'
                 }}
               >
-                <em>{latestArticle.title}</em>{' '}
+                <em>{latestArticle.article.title}</em>{' '}
                 <span style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>
-                  by {latestArticle.signature}
+                  by {latestArticle.article.signature}
                 </span>
               </span>
             </p>
             <div style={{ marginTop: '10px' }}>
-              <span 
+              <span
                 onClick={(e) => handleShowAllArticles(e)}
                 title="View all previous articles"
-                style={{ 
+                style={{
                   cursor: 'pointer',
                   textDecoration: 'underline'
                 }}

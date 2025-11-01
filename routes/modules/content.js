@@ -244,33 +244,41 @@ router.get('/latest-article', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (a:Article)
+      OPTIONAL MATCH (r:Root)-[:HAS_ARTICLE]->(a)
       ORDER BY a.created_at DESC
       LIMIT 1
       RETURN {
-        article_id: id(a),
-        signature: a.signature,
-        title: a.title,
-        subtitle: a.subtitle,
-        text: a.text,
-        created_at: a.created_at
+        root: CASE WHEN r IS NOT NULL THEN {
+          root_id: r.root_id,
+          arabic: r.arabic,
+          english: r.english
+        } ELSE null END,
+        article: {
+          article_id: id(a),
+          signature: a.signature,
+          title: a.title,
+          subtitle: a.subtitle,
+          text: a.text,
+          created_at: a.created_at
+        }
       } as latest_article
     `);
 
     if (result.records.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'No articles found',
-        message: 'No articles found in database' 
+        message: 'No articles found in database'
       });
     }
 
     const latestArticle = convertIntegers(result.records[0].get('latest_article'));
     res.json({ latest_article: latestArticle });
-    
+
   } catch (error) {
     console.error('Error fetching latest article:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Error fetching latest article',
-      message: error.message 
+      message: error.message
     });
   } finally {
     await session.close();
@@ -283,8 +291,14 @@ router.get('/article-headers', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (a:Article)
+      OPTIONAL MATCH (r:Root)-[:HAS_ARTICLE]->(a)
       ORDER BY a.created_at DESC
       RETURN {
+        root: CASE WHEN r IS NOT NULL THEN {
+          root_id: r.root_id,
+          arabic: r.arabic,
+          english: r.english
+        } ELSE null END,
         article_id: id(a),
         signature: a.signature,
         title: a.title,
@@ -294,17 +308,17 @@ router.get('/article-headers', async (req, res) => {
       } as article_header
     `);
 
-    const headers = result.records.map(record => 
+    const headers = result.records.map(record =>
       convertIntegers(record.get('article_header'))
     );
-    
+
     res.json({ headers });
-    
+
   } catch (error) {
     console.error('Error fetching article headers:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Error fetching article headers',
-      message: error.message 
+      message: error.message
     });
   } finally {
     await session.close();
@@ -316,35 +330,43 @@ router.get('/article-by-id/:articleId', async (req, res) => {
   const session = req.driver.session();
   try {
     const { articleId } = req.params;
-    
+
     const result = await session.run(`
       MATCH (a:Article)
       WHERE id(a) = toInteger($articleId)
+      OPTIONAL MATCH (r:Root)-[:HAS_ARTICLE]->(a)
       RETURN {
-        article_id: id(a),
-        signature: a.signature,
-        title: a.title,
-        subtitle: a.subtitle,
-        text: a.text,
-        created_at: a.created_at
+        root: CASE WHEN r IS NOT NULL THEN {
+          root_id: r.root_id,
+          arabic: r.arabic,
+          english: r.english
+        } ELSE null END,
+        article: {
+          article_id: id(a),
+          signature: a.signature,
+          title: a.title,
+          subtitle: a.subtitle,
+          text: a.text,
+          created_at: a.created_at
+        }
       } as article_data
     `, { articleId: parseInt(articleId) });
 
     if (result.records.length === 0) {
-      return res.status(404).json({ 
+      return res.status(404).json({
         error: 'Article not found',
-        message: `No article found with ID ${articleId}` 
+        message: `No article found with ID ${articleId}`
       });
     }
 
     const articleData = convertIntegers(result.records[0].get('article_data'));
     res.json({ article: articleData });
-    
+
   } catch (error) {
     console.error('Error fetching article by ID:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       error: 'Error fetching article by ID',
-      message: error.message 
+      message: error.message
     });
   } finally {
     await session.close();
