@@ -701,4 +701,194 @@ router.get('/root/:rootId/lexicon', async (req, res) => {
   }
 });
 
+// Get available filter options for each node type (dynamic)
+router.get('/filter-options/:nodeType', async (req, res) => {
+  const { nodeType } = req.params;
+  const session = req.driver.session();
+
+  try {
+    let options = {};
+
+    if (nodeType === 'word') {
+      // Get distinct word_type values
+      const wordTypeResult = await session.run(
+        'MATCH (w:Word) WHERE w.word_type IS NOT NULL RETURN DISTINCT w.word_type as value ORDER BY value'
+      );
+      options.word_type = wordTypeResult.records.map(r => r.get('value'));
+
+      // Get distinct sem_lang values
+      const semLangResult = await session.run(
+        'MATCH (w:Word) WHERE w.sem_lang IS NOT NULL RETURN DISTINCT w.sem_lang as value ORDER BY value'
+      );
+      options.sem_lang = semLangResult.records.map(r => r.get('value'));
+
+    } else if (nodeType === 'root') {
+      // Get distinct root_type values
+      const rootTypeResult = await session.run(
+        'MATCH (r:Root) WHERE r.root_type IS NOT NULL RETURN DISTINCT r.root_type as value ORDER BY value'
+      );
+      options.root_type = rootTypeResult.records.map(r => r.get('value'));
+
+    } else if (nodeType === 'form') {
+      // Get form_id and names for Grammatical and Morphological
+      const formResult = await session.run(
+        'MATCH (f:Form) WHERE f.form_id IN [1,2,3,4,5,6,7,8,9,12,13,14,15,16,17,18,19] RETURN f.form_id as id, f.english as name ORDER BY id'
+      );
+      options.forms = formResult.records.map(r => ({
+        id: r.get('id').low || r.get('id'),
+        name: r.get('name')
+      }));
+    }
+
+    res.json(options);
+
+  } catch (error) {
+    console.error('Error fetching filter options:', error);
+    res.status(500).json({ error: 'Error fetching filter options', details: error.message });
+  } finally {
+    await session.close();
+  }
+});
+
+// Get random nodes with filter support
+// Replaces client-side Cypher generation in Explore.js
+router.get('/random-nodes/:nodeType', async (req, res) => {
+  const { nodeType } = req.params;
+  const { count = 1, L1 = 'arabic', L2 = 'english', formClassifications, wordTypes, semLangs, rootTypes } = req.query;
+
+  const session = req.driver.session();
+
+  try {
+    let query = '';
+    const limit = parseInt(count, 10) || 1;
+
+    // Build filter-aware queries based on node type
+    if (nodeType === 'word') {
+      // Word filters: word_type and sem_lang
+      const conditions = [];
+
+      if (wordTypes) {
+        const types = wordTypes.split(',').map(t => `'${t}'`);
+        conditions.push(`n.word_type IN [${types.join(',')}]`);
+      }
+
+      if (semLangs) {
+        const langs = semLangs.split(',').map(l => `'${l}'`);
+        conditions.push(`n.sem_lang IN [${langs.join(',')}]`);
+      }
+
+      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
+
+      query = `
+        MATCH (n:Word)
+        ${whereClause}
+        RETURN n
+        ORDER BY rand()
+        LIMIT ${limit}
+      `;
+
+    } else if (nodeType === 'root') {
+      // Root filters: root_type (Geminate/Triliteral/Other)
+      let whereClause = '';
+      if (rootTypes) {
+        const types = rootTypes.split(',');
+        const conditions = [];
+
+        types.forEach(type => {
+          if (type === 'Geminate') {
+            conditions.push("r.root_type = 'Geminate'");
+          } else if (type === 'Triliteral') {
+            conditions.push("r.root_type = 'Triliteral'");
+          } else if (type === 'Other') {
+            conditions.push("(r.root_type IS NULL OR NOT r.root_type IN ['Geminate', 'Triliteral'])");
+          }
+        });
+
+        if (conditions.length > 0) {
+          whereClause = `WHERE ${conditions.join(' OR ')}`;
+        }
+      }
+
+      query = `
+        MATCH (r:Root)
+        ${whereClause}
+        RETURN r
+        ORDER BY rand()
+        LIMIT ${limit}
+      `;
+
+    } else if (nodeType === 'form') {
+      // Form filters: classification (Grammatical/Morphological)
+      // Grammatical: form_id 1-9
+      // Morphological: form_id 12-19
+      // Note: Ontological (10-11) removed per user request
+      let whereClause = '';
+      if (formClassifications) {
+        const classifications = formClassifications.split(',');
+        const conditions = [];
+
+        classifications.forEach(cls => {
+          if (cls === 'Grammatical') {
+            conditions.push('f.form_id IN [1,2,3,4,5,6,7,8,9]');
+          } else if (cls === 'Morphological') {
+            conditions.push('f.form_id IN [12,13,14,15,16,17,18,19]');
+          }
+        });
+
+        if (conditions.length > 0) {
+          whereClause = `WHERE ${conditions.join(' OR ')}`;
+        }
+      }
+
+      query = `
+        MATCH (f:Form)
+        ${whereClause}
+        RETURN f
+        ORDER BY rand()
+        LIMIT ${limit}
+      `;
+
+    } else {
+      return res.status(400).json({
+        error: `Invalid nodeType: ${nodeType}. Supported types: word, root, form`
+      });
+    }
+
+    console.log('=== RANDOM NODES REQUEST ===');
+    console.log('Node Type:', nodeType);
+    console.log('Count:', limit);
+    console.log('Filters:', { formClassifications, wordTypes, semLangs, rootTypes });
+    console.log('Generated Query:', query);
+    console.log('=== END ===');
+
+    const result = await session.run(query);
+    const nodes = [];
+
+    // Format nodes for graph visualization
+    result.records.forEach(record => {
+      const node = record.get(nodeType === 'root' ? 'r' : nodeType === 'form' ? 'f' : 'n');
+      if (node && node.properties) {
+        const props = convertIntegers(node.properties);
+        const idProp = nodeType === 'word' ? 'word_id' : nodeType === 'root' ? 'root_id' : 'form_id';
+
+        nodes.push({
+          id: `${nodeType}_${props[idProp]}`,
+          label: L2 === 'off' ? props[L1] : `${props[L1]} / ${props[L2]}`,
+          ...props,
+          type: nodeType
+        });
+      }
+    });
+
+    console.log(`Returning ${nodes.length} random ${nodeType} nodes`);
+    res.json({ nodes, links: [] }); // No links for random nodes
+
+  } catch (error) {
+    console.error('Error generating random nodes:', error);
+    res.status(500).json({ error: 'Error generating random nodes', details: error.message });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;
