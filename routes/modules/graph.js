@@ -763,18 +763,21 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
     const limit = parseInt(count, 10) || 1;
 
     // Build filter-aware queries based on node type
+    // Use parameterized queries to avoid SQL injection and handle special characters
+    const params = {};
+
     if (nodeType === 'word') {
       // Word filters: word_type and sem_lang
       const conditions = [];
 
       if (wordTypes) {
-        const types = wordTypes.split(',').map(t => `'${t}'`);
-        conditions.push(`n.word_type IN [${types.join(',')}]`);
+        params.wordTypes = wordTypes.split(',');
+        conditions.push(`n.word_type IN $wordTypes`);
       }
 
       if (semLangs) {
-        const langs = semLangs.split(',').map(l => `'${l}'`);
-        conditions.push(`n.sem_lang IN [${langs.join(',')}]`);
+        params.semLangs = semLangs.split(',');
+        conditions.push(`n.sem_lang IN $semLangs`);
       }
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
@@ -858,10 +861,11 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
     console.log('Node Type:', nodeType);
     console.log('Count:', limit);
     console.log('Filters:', { formClassifications, wordTypes, semLangs, rootTypes });
+    console.log('Query params:', params);
     console.log('Generated Query:', query);
     console.log('=== END ===');
 
-    const result = await session.run(query);
+    const result = await session.run(query, params);
     const nodes = [];
 
     // Format nodes for graph visualization
