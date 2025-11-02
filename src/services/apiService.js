@@ -688,3 +688,41 @@ export const fetchArticleById = async (articleId) => {
     throw error;
   }
 };
+
+// Fetch available filter options for a node type (dynamic)
+export const fetchFilterOptions = async (nodeType) => {
+  try {
+    const response = await api.get(`/filter-options/${nodeType}`);
+    return response.data;
+  } catch (error) {
+    console.error(`Error fetching filter options for ${nodeType}:`, error);
+    throw error;
+  }
+};
+
+// Fetch random nodes with filter support (replaces hardcoded Explore queries)
+export const fetchRandomNodes = async (nodeType, count = 1, filters = {}) => {
+  try {
+    const params = {
+      count,
+      L1: filters.L1 || 'arabic',
+      L2: filters.L2 || 'english'
+    };
+
+    // Add filter parameters based on node type
+    if (nodeType === 'form' && filters.formClassifications) {
+      params.formClassifications = filters.formClassifications.join(',');
+    } else if (nodeType === 'word') {
+      if (filters.wordTypes) params.wordTypes = filters.wordTypes.join(',');
+      if (filters.semLangs) params.semLangs = filters.semLangs.join(',');
+    } else if (nodeType === 'root' && filters.rootTypes) {
+      params.rootTypes = filters.rootTypes.join(',');
+    }
+
+    const response = await api.get(`/random-nodes/${nodeType}`, { params });
+    return convertIntegers(response.data);
+  } catch (error) {
+    console.error('Error fetching random nodes:', error);
+    throw error;
+  }
+};
