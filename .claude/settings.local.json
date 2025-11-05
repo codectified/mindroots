@@ -33,7 +33,8 @@
       "Read(//Users/omaribrahim/dev/**)",
       "Bash(npx @react-native-community/cli init:*)",
       "Bash(npm install:*)",
-      "Bash(python3:*)"
+      "Bash(python3:*)",
+      "Bash(npm run build:*)"
     ],
     "deny": []
   }
