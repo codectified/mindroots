@@ -18,6 +18,7 @@ import Settings from './components/staticPages/Settings';
 import About from './components/staticPages/About';
 import Explore from './components/graph/Explore';
 import Search from './components/graph/Search';
+import ArticleViewer from './components/staticPages/ArticleViewer';
 
 import MarkdownRenderer from './components/utils/MarkdownRenderer';
 import Layout from './components/layout/Layout';
@@ -51,6 +52,7 @@ import './styles/node-context-menu.css';
 import './styles/markdown.css';
 import './styles/content.css';
 import './styles/media-queries.css';
+import './styles/article-viewer.css';
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
@@ -93,6 +95,7 @@ const App = () => {
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />
                   <Route path="/lisan-lab" element={<Layout><LisanLab /></Layout>} />
                   <Route path="/lisan-lab/reports" element={<Layout><LisanLabReports /></Layout>}/>
+                  <Route path="/article" element={<ArticleViewer />}/>
                   <Route path="/acknowledgements" element={<Layout><Acknowledgements /></Layout>} />
                   <Route path="/news" element={<Layout><MarkdownRenderer filePath="/mindroots/news.md" /></Layout>} />
                   

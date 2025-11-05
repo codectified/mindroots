@@ -44,6 +44,7 @@ const Explore = () => {
     }
   }, [location.state, L1, L2, setGraphData]);
 
+
   const loadMarkdownAndFetchData = async (category) => {
     try {
       // Load markdown content

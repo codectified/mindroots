@@ -4,6 +4,8 @@ import ReactDOM from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import Draggable from 'react-draggable';
 import Markdown from 'markdown-to-jsx';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faShare, faNetworkWired } from '@fortawesome/free-solid-svg-icons';
 import { fetchAnalysisByRoot, fetchArticleById } from '../../services/apiService';
 import '../../styles/info-bubble.css'; // ensure your CSS is here
 
@@ -277,27 +279,33 @@ const LazyArticleItem = ({ header, isLast }) => {
           {articleData && (
             <>
               {articleData.root && articleData.root.root_id && (
-                <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                  <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
-                    {articleData.root.arabic} {articleData.root.english && `(${articleData.root.english})`}
-                  </span>
+                <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', gap: '12px' }}>
                   <button
                     onClick={handleViewGraph}
                     style={{
-                      padding: '8px 16px',
+                      padding: '8px 14px',
                       backgroundColor: '#2c7fb8',
                       color: 'white',
                       border: 'none',
                       borderRadius: '4px',
                       cursor: 'pointer',
                       fontSize: '14px',
-                      fontWeight: 500
+                      fontWeight: 500,
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      justifyContent: 'center'
                     }}
                     onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
                     onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
                   >
-                    View Graph →
+                    <FontAwesomeIcon icon={faNetworkWired} />
+                    View Graph
                   </button>
+                  <span style={{ fontSize: '16px', fontWeight: 600, color: '#333', textAlign: 'center' }}>
+                    {articleData.root.arabic} {articleData.root.english && `(${articleData.root.english})`}
+                  </span>
+                  <div />
                 </div>
               )}
               {renderArticle(articleData.article)}
@@ -314,6 +322,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
   const infoBubbleRef = useRef(null);
   const [centeredStyle, setCenteredStyle] = useState(style);
   const [markdownContent, setMarkdownContent] = useState('');
+  const [shareUrl, setShareUrl] = useState('');
 
   // Load markdown content if filePath is provided
   useEffect(() => {
@@ -327,6 +336,27 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
         });
     }
   }, [filePath]);
+
+  // Generate share URL based on content type
+  useEffect(() => {
+    if (filePath && title) {
+      // For markdown files (articles/reports) - share via ArticleViewer
+      const params = new URLSearchParams({
+        file: filePath,
+        title: title
+      });
+      const baseUrl = window.location.origin;
+      setShareUrl(`${baseUrl}/article?${params.toString()}`);
+    } else if (nodeData && nodeData.rootId && nodeData.rootInfo) {
+      // For node data (articles/analyses from main menu) - share via Explore with root ID and title
+      const params = new URLSearchParams({
+        root: nodeData.rootId,
+        title: `${nodeData.rootInfo.arabic} ${nodeData.rootInfo.english ? `(${nodeData.rootInfo.english})` : ''}`
+      });
+      const baseUrl = window.location.origin;
+      setShareUrl(`${baseUrl}/start?${params.toString()}`);
+    }
+  }, [filePath, title, nodeData]);
 
   // Handle click outside to close
   useEffect(() => {
@@ -385,7 +415,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
   const bubble = (
     <Draggable nodeRef={infoBubbleRef} cancel=".info-bubble-content, .close-button">
       <div ref={infoBubbleRef} className="info-bubble" style={centeredStyle}>
-        <div className="info-bubble-header">
+        <div className="info-bubble-header" style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button
             className="close-button"
             onClick={onClose}
@@ -395,10 +425,84 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
           </button>
         </div>
         <div className="info-bubble-content">
-          {title && (
-            <h2 style={{ margin: '0 0 20px 0', fontSize: '1.5rem', color: '#333' }}>
-              {title}
-            </h2>
+          {(title || (nodeData && nodeData.rootInfo)) && (
+            <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px', alignItems: 'center', marginBottom: '20px', gap: '8px' }}>
+              {/* View Graph button - only show for node data */}
+              {nodeData && nodeData.rootId ? (
+                <button
+                  onClick={() => {
+                    if (nodeData.rootId) {
+                      navigate('/start', { state: { autoExpandRootId: nodeData.rootId } });
+                    }
+                  }}
+                  style={{
+                    padding: '6px',
+                    backgroundColor: 'transparent',
+                    color: '#2c7fb8',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '32px',
+                    minHeight: '32px'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = '#f0f0f0';
+                    e.target.style.color = '#1e5a8a';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = '#2c7fb8';
+                  }}
+                  title="View Graph"
+                >
+                  <FontAwesomeIcon icon={faNetworkWired} />
+                </button>
+              ) : (
+                <div />
+              )}
+              <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#333', textAlign: 'center' }}>
+                {title || (nodeData && nodeData.rootInfo ? `${nodeData.rootInfo.arabic} ${nodeData.rootInfo.english ? `(${nodeData.rootInfo.english})` : ''}` : '')}
+              </h2>
+              {/* Share button - show for all */}
+              {shareUrl && (
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(shareUrl);
+                    alert('Share link copied to clipboard!');
+                  }}
+                  style={{
+                    padding: '6px',
+                    backgroundColor: 'transparent',
+                    color: '#2c7fb8',
+                    border: 'none',
+                    borderRadius: '4px',
+                    cursor: 'pointer',
+                    fontSize: '16px',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    minWidth: '32px',
+                    minHeight: '32px'
+                  }}
+                  onMouseOver={(e) => {
+                    e.target.style.backgroundColor = '#f0f0f0';
+                    e.target.style.color = '#1e5a8a';
+                  }}
+                  onMouseOut={(e) => {
+                    e.target.style.backgroundColor = 'transparent';
+                    e.target.style.color = '#2c7fb8';
+                  }}
+                  title="Copy share link to clipboard"
+                >
+                  <FontAwesomeIcon icon={faShare} />
+                </button>
+              )}
+              {!shareUrl && <div />}
+            </div>
           )}
           {filePath ? (
             <div className="markdown-content">
@@ -564,32 +668,6 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                       
                       return (
                         <>
-                          {/* View Graph button for analysis with root title */}
-                          {nodeData.rootId && nodeData.rootInfo && (
-                            <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                              <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
-                                {nodeData.rootInfo.arabic} {nodeData.rootInfo.english && `(${nodeData.rootInfo.english})`}
-                              </span>
-                              <button
-                                onClick={handleViewGraphFromAnalysis}
-                                style={{
-                                  padding: '8px 16px',
-                                  backgroundColor: '#2c7fb8',
-                                  color: 'white',
-                                  border: 'none',
-                                  borderRadius: '4px',
-                                  cursor: 'pointer',
-                                  fontSize: '14px',
-                                  fontWeight: 500
-                                }}
-                                onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
-                                onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
-                              >
-                                View Graph →
-                              </button>
-                            </div>
-                          )}
-
                           {/* Latest analysis always visible */}
                           {renderAnalysis(latestAnalysis, false)}
                           
@@ -639,31 +717,6 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                     {/* Individual Articles */}
                     {nodeData.articles && nodeData.articles.length > 0 && (
                       <div>
-                        {/* View Graph button for articles with root title */}
-                        {nodeData.rootId && nodeData.rootInfo && (
-                          <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                            <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
-                              {nodeData.rootInfo.arabic} {nodeData.rootInfo.english && `(${nodeData.rootInfo.english})`}
-                            </span>
-                            <button
-                              onClick={() => navigate('/start', { state: { autoExpandRootId: nodeData.rootId } })}
-                              style={{
-                                padding: '8px 16px',
-                                backgroundColor: '#2c7fb8',
-                                color: 'white',
-                                border: 'none',
-                                borderRadius: '4px',
-                                cursor: 'pointer',
-                                fontSize: '14px',
-                                fontWeight: 500
-                              }}
-                              onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
-                              onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
-                            >
-                              View Graph →
-                            </button>
-                          </div>
-                        )}
                         {nodeData.articles.map((article, index) => (
                           <div key={`article-${index}`} style={{ marginBottom: '20px' }}>
                             <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
