@@ -52,7 +52,6 @@ import './styles/node-context-menu.css';
 import './styles/markdown.css';
 import './styles/content.css';
 import './styles/media-queries.css';
-import './styles/article-viewer.css';
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';

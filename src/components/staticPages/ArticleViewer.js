@@ -1,7 +1,14 @@
 import React, { useEffect, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import Markdown from 'markdown-to-jsx';
-import '../../styles/article-viewer.css';
+
+const CustomListItem = ({ children }) => {
+  return <li style={{ fontSize: '1em' }}>{children}</li>;
+};
+
+const CustomList = ({ children }) => {
+  return <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>{children}</ul>;
+};
 
 const ArticleViewer = () => {
   const [searchParams] = useSearchParams();
@@ -9,6 +16,19 @@ const ArticleViewer = () => {
   const [title, setTitle] = useState('');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  // Convert bullet characters to markdown list syntax
+  const preprocessContent = (text) => {
+    // Convert lines that start with tab + bullet + tab to markdown list syntax
+    return text.split('\n').map((line) => {
+      // Match lines like "\t•\ttext" and convert to "- text"
+      const bulletMatch = line.match(/^\t+•\t+(.+)$/);
+      if (bulletMatch) {
+        return `- ${bulletMatch[1]}`;
+      }
+      return line;
+    }).join('\n');
+  };
 
   useEffect(() => {
     const filePath = searchParams.get('file');
@@ -22,7 +42,8 @@ const ArticleViewer = () => {
           return res.text();
         })
         .then((text) => {
-          setContent(text);
+          const processedContent = preprocessContent(text);
+          setContent(processedContent);
           setLoading(false);
         })
         .catch((err) => {
@@ -38,8 +59,8 @@ const ArticleViewer = () => {
 
   if (loading) {
     return (
-      <div className="article-viewer-container">
-        <div className="article-viewer-content">
+      <div className="markdown-page">
+        <div className="markdown-mindroots">
           <p>Loading...</p>
         </div>
       </div>
@@ -48,8 +69,8 @@ const ArticleViewer = () => {
 
   if (error) {
     return (
-      <div className="article-viewer-container">
-        <div className="article-viewer-content">
+      <div className="markdown-page">
+        <div className="markdown-mindroots">
           <p style={{ color: '#d32f2f' }}>{error}</p>
         </div>
       </div>
@@ -57,21 +78,19 @@ const ArticleViewer = () => {
   }
 
   return (
-    <div className="article-viewer-container">
-      <div className="article-viewer-content">
-        <h1 className="article-viewer-title">{title}</h1>
-        <div className="article-viewer-body">
-          <Markdown
-            options={{
-              overrides: {
-                li: { component: ({ children }) => <li style={{ fontSize: '1em' }}>{children}</li> },
-                ul: { component: ({ children }) => <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>{children}</ul> },
-              },
-            }}
-          >
-            {content}
-          </Markdown>
-        </div>
+    <div className="markdown-page">
+      <div className="markdown-mindroots">
+        <h1>{title}</h1>
+        <Markdown
+          options={{
+            overrides: {
+              li: { component: CustomListItem },
+              ul: { component: CustomList },
+            },
+          }}
+        >
+          {content}
+        </Markdown>
       </div>
     </div>
   );
