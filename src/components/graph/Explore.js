@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
-import { fetchRandomNodes, expandGraph } from '../../services/apiService';
+import { fetchRandomNodes, expandGraph, inspectNode } from '../../services/apiService';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
@@ -43,6 +43,37 @@ const Explore = () => {
       loadRootGraph();
     }
   }, [location.state, L1, L2, setGraphData]);
+
+  // Handle share link parameters (e.g., ?root=2063)
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const rootParam = searchParams.get('root');
+
+    if (rootParam) {
+      const loadSharedRoot = async () => {
+        try {
+          // Expand the graph for the root
+          const result = await expandGraph('root', rootParam, 'word', { L1, L2 });
+          if (result && result.nodes) {
+            setGraphData(result);
+          }
+
+          // Fetch and display the node data in InfoBubble
+          const nodeData = await inspectNode('root', rootParam);
+          if (nodeData) {
+            setInfoBubble({
+              nodeData,
+              position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+            });
+          }
+        } catch (error) {
+          console.error('Error loading shared root:', error);
+        }
+      };
+      loadSharedRoot();
+    }
+  }, [location.search, L1, L2, setGraphData, setInfoBubble]);
+
 
   const loadMarkdownAndFetchData = async (category) => {
     try {
