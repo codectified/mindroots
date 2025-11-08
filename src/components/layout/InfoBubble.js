@@ -348,10 +348,10 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
       const baseUrl = window.location.origin;
       setShareUrl(`${baseUrl}/article?${params.toString()}`);
     } else if (nodeData && nodeData.rootId && nodeData.rootInfo) {
-      // For node data (articles/analyses from main menu) - share via Explore with root ID and title
+      // For node data (articles/analyses from main menu) - share via Explore with root ID
+      // The Explore page will fetch the node data when it loads
       const params = new URLSearchParams({
-        root: nodeData.rootId,
-        title: `${nodeData.rootInfo.arabic} ${nodeData.rootInfo.english ? `(${nodeData.rootInfo.english})` : ''}`
+        root: nodeData.rootId
       });
       const baseUrl = window.location.origin;
       setShareUrl(`${baseUrl}/start?${params.toString()}`);
