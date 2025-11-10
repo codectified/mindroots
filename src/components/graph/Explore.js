@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
-import { fetchRandomNodes, expandGraph, inspectNode } from '../../services/apiService';
+import { fetchRandomNodes, expandGraph, inspectNode, fetchAnalysisData, fetchArticleHeaders, fetchArticleById, fetchRootEntry } from '../../services/apiService';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
@@ -58,14 +58,55 @@ const Explore = () => {
             setGraphData(result);
           }
 
-          // Fetch and display the node data in InfoBubble
-          const nodeData = await inspectNode('root', rootParam);
-          if (nodeData) {
-            setInfoBubble({
-              nodeData,
-              position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
-            });
+          // Fetch node data similar to 'more-info' action
+          let nodeData = {
+            rootId: rootParam,
+            rootInfo: { arabic: '', english: '' }
+          };
+
+          // Try to fetch root entry
+          try {
+            const entryData = await fetchRootEntry(rootParam);
+            if (entryData) {
+              nodeData.entry = entryData;
+            }
+          } catch (error) {
+            console.error('Error fetching root entry:', error);
           }
+
+          // Try to fetch analysis data
+          try {
+            const analysisData = await fetchAnalysisData('root', rootParam);
+            if (analysisData && analysisData.analyses) {
+              nodeData.analyses = analysisData.analyses;
+            }
+          } catch (error) {
+            console.error('Error fetching analysis data:', error);
+          }
+
+          // Try to fetch article data for this root
+          try {
+            const articlesData = await fetchArticleHeaders();
+            if (articlesData && Array.isArray(articlesData)) {
+              // Filter articles for this root
+              const rootArticles = articlesData.filter(article => article.root_id === parseInt(rootParam));
+              if (rootArticles.length > 0) {
+                // Fetch full article data for each
+                const fullArticles = await Promise.all(
+                  rootArticles.map(header => fetchArticleById(header.article_id))
+                );
+                nodeData.articles = fullArticles.filter(a => a !== null);
+              }
+            }
+          } catch (error) {
+            console.error('Error fetching article data:', error);
+          }
+
+          // Set the InfoBubble with the collected data
+          setInfoBubble({
+            nodeData,
+            position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
+          });
         } catch (error) {
           console.error('Error loading shared root:', error);
         }
