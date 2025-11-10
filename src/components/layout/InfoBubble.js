@@ -472,7 +472,6 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                 <button
                   onClick={() => {
                     navigator.clipboard.writeText(shareUrl);
-                    alert('Share link copied to clipboard!');
                   }}
                   style={{
                     padding: '6px',
