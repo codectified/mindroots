@@ -1,6 +1,6 @@
 # 🌿 Mindroots Project Roadmap
 
-*Last Updated: September 16, 2025*
+*Last Updated: November 10, 2025*
 
 ## 📋 Table of Contents
 
@@ -17,35 +17,52 @@
 
 ## 🧠 Top-Level Priority Summary
 
-### **Primary Goal**
-- ✅ **Finish and secure GraphRAG system** (GPT + Neo4j interface)
+### **Primary Goal** (November 2025)
+- 🎯 **Develop Agentic Infrastructure for Graph Database Navigation**
+  - Extend "invisible interface" philosophy with custom GPT actions
+  - Build dedicated route handlers in Mindroots for agentic workflows
+  - Implement OpenAI/Anthropic agent orchestration
 
 ### **Strategic Direction**
-- 🎯 Embrace "invisible interface" philosophy: GPT as main entrypoint
+- 🎯 **Invisible Interface Philosophy** + **Agentic AI**
+  - Custom GPTs with dedicated action routes
+  - Multi-agent network (Hub, Explainer, Validator, Quiz, Onboarding)
+  - Natural language → Graph navigation → LLM synthesis
+- ✅ GraphRAG system complete and production-ready
 - ✅ Begin light public testing *(Active)*
 - 🔄 Plan split instances *(In Progress)*
   - **Quranroots** – free Qur'an, Names of God, open to all
   - **Mindroots: Modular/Research** – extended linguistic corpora
-- 🔄 Long-term: unify Lisān Lab insights, podcast content, GPT-generated reports
+- 🔄 Long-term: unify Lisān Lab insights, podcast content, GPT-generated reports via agents
 
 ---
 
 ## 🔧 Backend Engineering
 
 ### **Pending Development** ⏳
-- **Context Menu Endpoints**
-  - `/report_issue` *(Planned)*
-  - `/get_more_info` (may call GPT) *(Planned)*
-  - Node-type-based routing for summary logic
-- **GraphRAG Route Hardening**
-  - Add logging/sandboxing if needed
-  - Enhanced query validation & permissions
+- **Agentic Route Handlers** *(HIGH PRIORITY)*
+  - `/agent/query` - Hub agent dispatcher
+  - `/agent/explain` - Explainer agent endpoint
+  - `/agent/validate` - Validator agent endpoint
+  - `/agent/quiz` - Quiz agent endpoint
+  - `/agent/onboard` - Onboarding agent endpoint
+  - OpenAI/Anthropic API integration and routing
+- **Share Link Optimization**
+  - Caching for frequently shared roots
+  - Analytics on share link usage
 
 ### **Active Development** 🔄
+- **Agentic Infrastructure**
+  - Agent orchestration system design
+  - Route handler architecture for agent actions
+  - Integration with graph traversal for LLM context
 - **Data Architecture Improvements**
   - **RadicalPosition Layer** - Ongoing improvements to flexible radical indexing system
 
 ### **Recently Completed** ✅
+- **Share Link System** *(2025-11-10)* - Shareable links for articles, reports, and graph nodes with auto-open InfoBubble
+- **Article Viewer Component** *(2025-11-10)* - Standalone article/report reader with persistent navigation
+- **Markdown Bullet Rendering Fix** *(2025-11-10)* - Proper Unicode bullet conversion to markdown syntax
 - **Analysis Nodes System** *(2025-09-16)* - LLM-generated linguistic analysis with versioned storage and GPT integration
 - **News Section Backend** *(2025-09-16)* - Latest analysis endpoint with proper timestamp ordering
 - **Validation System Enhancement** *(2025-09-12)* - Nested-only API format for better GPT compatibility
@@ -72,13 +89,19 @@
 ## 🎨 Frontend & UI/UX
 
 ### **Pending Development** ⏳
+- **Agent Interface Components** - UI for agent interactions and responses
 - **Enhanced Mobile Experience** - Continued responsive improvements
 - **Etymon Highlighting** - Now unblocked with link data availability
 
 ### **Active Development** 🔄
+- **Share Link UI** - Visual indicators for shareable content
 - **Context Menu UI Enhancement** - Connect remaining backend endpoints
 
 ### **Recently Completed** ✅
+- **Share Link UI** *(2025-11-10)* - Minimal icon buttons for sharing articles, reports, and graph nodes
+- **Article Viewer Layout** *(2025-11-10)* - Clean, centered layout with persistent bottom navigation
+- **InfoBubble Title Bar** *(2025-11-10)* - View Graph icon (left) | Root Title (center) | Share icon (right)
+- **Markdown Rendering** *(2025-11-10)* - Fixed bullet rendering with proper CSS styling
 - **News Section Implementation** *(2025-09-16)* - Dynamic latest analysis display with InfoBubble integration
 - **InfoBubble Positioning System** *(2025-09-16)* - Smart click-based positioning with comprehensive documentation
 - **Validation System UI** *(2025-09-12)* - Inline editing with approval workflow and spam protection
@@ -182,25 +205,38 @@
 
 ### **Pending Development** ⏳
 
-#### **Planned Agent Roles**
-- **Hub Agent** – dispatch
-- **Explainer Agent** – system Q&A
-- **Validator Agent** – QA forms, grammar, translation
-- **Quiz Agent** – gamified learning
-- **Onboarding Agent** – user tracking, session memory
+#### **Agentic Infrastructure** *(HIGH PRIORITY)*
+- **Agent Framework**
+  - Hub Agent – dispatch and coordinate other agents
+  - Explainer Agent – system Q&A and documentation
+  - Validator Agent – QA forms, grammar, translation
+  - Quiz Agent – gamified learning and assessment
+  - Onboarding Agent – user tracking, session memory
+- **Integration Architecture**
+  - Dedicated route handlers for agent actions
+  - Context passing from graph to agents
+  - Response synthesis and formatting
+  - State management across agent calls
+- **LLM Integration**
+  - OpenAI GPT-4 integration
+  - Anthropic Claude integration
+  - Agent orchestration and fallback logic
 
 #### **Security & Operations Planning**
 - Adjust Nginx and React URLs for distinct routes (`option.life/qroots` vs `mindroots/mindroots`)
-- Enhanced monitoring and logging systems
-- Query validation and sandboxing
+- Enhanced monitoring and logging for agent calls
+- Query validation and sandboxing for agent-generated Cypher
+- Rate limiting for agent endpoints
 
 ### **Active Development** 🔄
+- **Agentic Infrastructure Design** - Agent orchestration and route handler architecture
 - **Infrastructure Planning** - Split Mindroots Instances
-- **Security Measures** - Cypher query route hardening (roles or whitelisted query types)
+- **Security Measures** - Agent-aware query validation
 
 ### **Recently Completed** ✅
 
-#### **Agentic System**
+#### **Agentic System Foundation**
+- **Share Link System** *(2025-11-10)* - Foundation for agent-driven content sharing and navigation
 - **Current GPT Workflow**: Input → Arabic → Root → Cypher → Summary *(working well)*
 - **Dual API Key System** *(2025-09-12)* - Public/Admin access control for GPT orchestration
 - **Analysis Node Integration** *(2025-09-12)* - GPT-generated linguistic analysis system
@@ -213,6 +249,13 @@
 ---
 
 ## 📊 Recent Development Velocity
+
+### **November 2025 Sprint** *(Share Links & Navigation)*
+- 🚀 **Share Link System** - Shareable links for articles, reports, and graph nodes with auto-open InfoBubble
+- 🚀 **Article Viewer Component** - Standalone reader with persistent navigation
+- 🚀 **Markdown Rendering Fix** - Unicode bullet conversion to proper markdown syntax
+- 🚀 **UI Polish** - Icon buttons, centered titles, layout refinements
+- 🎯 **Agentic Infrastructure Planning** - Defined agent roles and integration architecture
 
 ### **September 2025 Sprint** *(Highly Productive)*
 - 🚀 **News Section Implementation** - Dynamic latest analysis with InfoBubble integration
@@ -231,14 +274,16 @@
 - ✅ **Acknowledgements page** - Legal attribution and licensing
 
 ### **Key Technical Achievements**
-1. **Analysis Nodes Architecture** - LLM-generated linguistic analysis with versioning
-2. **Smart InfoBubble Positioning** - Four documented positioning patterns
-3. **Validation System** - Inline editing with approval workflow
-4. **Enhanced backend architecture** - Link and node data integration
-5. **Dual API key security** - Public/Admin access control
-6. **Full semantic language support** across all components
-7. **Professional typography system** without external framework
-8. **Comprehensive node inspection** with relationship mapping
+1. **Share Link System** - Automatic InfoBubble opening for shared articles, reports, and graph nodes
+2. **Article Viewer Component** - Standalone markdown reader with Unicode bullet conversion
+3. **Analysis Nodes Architecture** - LLM-generated linguistic analysis with versioning
+4. **Smart InfoBubble Positioning** - Four documented positioning patterns with minimal icon UI
+5. **Validation System** - Inline editing with approval workflow
+6. **Enhanced backend architecture** - Link and node data integration
+7. **Dual API key security** - Public/Admin access control
+8. **Full semantic language support** across all components
+9. **Professional typography system** without external framework
+10. **Comprehensive node inspection** with relationship mapping
 
 ---
 
