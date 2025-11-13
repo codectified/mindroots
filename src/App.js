@@ -39,6 +39,7 @@ import { ShowLinksProvider } from './components/selectors/ShowLinksToggle';
 import { FormFilterProvider } from './contexts/FormFilterContext';
 import { SemiticLanguageFilterProvider } from './contexts/SemiticLanguageFilterContext';
 
+import './styles/typography.css';
 import './styles/base.css';
 import './styles/buttons.css';
 import './styles/lists.css';
@@ -51,6 +52,7 @@ import './styles/info-bubble.css';
 import './styles/node-context-menu.css';
 import './styles/markdown.css';
 import './styles/content.css';
+import './styles/settings.css';
 import './styles/media-queries.css';
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';

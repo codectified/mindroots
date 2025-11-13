@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faChevronDown, faChevronUp, faMapMarked, faSearch, faHome } from '@fortawesome/free-solid-svg-icons';
+import { faGlobe, faChevronDown, faChevronUp, faMapMarked, faSearch, faHome, faSliders } from '@fortawesome/free-solid-svg-icons';
 import { RiBookShelfLine } from 'react-icons/ri';
 import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
@@ -11,6 +11,7 @@ import WordShadeSelector from '../selectors/WordShadeSelector';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
+import FontScaleSelector from '../selectors/FontScaleSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 
@@ -83,6 +84,38 @@ const MiniMenu = () => {
               </div>
               {showOtherSettings && (
                 <>
+                  <div style={{ marginBottom: '15px' }}>
+                    <FontScaleSelector />
+                  </div>
+                  <button
+                    onClick={() => navigate('/settings')}
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      padding: '8px 12px',
+                      marginBottom: '15px',
+                      backgroundColor: '#f0f7fd',
+                      border: '1px solid #bfe7fd',
+                      borderRadius: '4px',
+                      cursor: 'pointer',
+                      color: '#2c7fb8',
+                      fontWeight: '500',
+                      fontSize: '0.9rem',
+                      transition: 'all 0.2s',
+                    }}
+                    onMouseEnter={(e) => {
+                      e.target.style.backgroundColor = '#e3f2fd';
+                      e.target.style.borderColor = '#2c7fb8';
+                    }}
+                    onMouseLeave={(e) => {
+                      e.target.style.backgroundColor = '#f0f7fd';
+                      e.target.style.borderColor = '#bfe7fd';
+                    }}
+                  >
+                    <FontAwesomeIcon icon={faSliders} />
+                    Advanced Typography Settings
+                  </button>
                   <ShowLinksToggle />
                   <NodeLimitSlider />
                   <WordShadeSelector />

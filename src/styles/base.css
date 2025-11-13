@@ -44,7 +44,7 @@ ul {
 
 li {
   margin: 10px 0;
-  font-size: 12px;
+  font-size: var(--list-item-size);
   cursor: pointer;
 }
 
