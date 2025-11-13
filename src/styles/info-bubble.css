@@ -296,8 +296,8 @@
 .property-key {
   font-weight: 500;
   color: #2c3e50;
-  font-family: monospace;
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--property-key-size);
   background: #f8f9fa;
   justify-content: space-between;
 }
@@ -319,8 +319,8 @@
 }
 
 .property-value {
-  font-family: monospace;
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--property-value-size);
   word-break: break-word;
   overflow-wrap: break-word;
 }
@@ -632,8 +632,8 @@
 .field-name {
   font-weight: 500;
   color: #2c3e50;
-  font-family: monospace;
-  font-size: 0.9rem;
+  font-family: var(--font-mono);
+  font-size: var(--property-key-size);
   text-transform: capitalize;
 }
 
@@ -682,8 +682,8 @@
   padding: 8px 10px;
   border: 1px solid #dee2e6;
   border-radius: 4px;
-  font-size: 0.9rem;
-  font-family: monospace;
+  font-size: var(--property-value-size);
+  font-family: var(--font-mono);
   transition: all 0.2s;
 }
 
@@ -869,10 +869,10 @@
 
 .root-header h3 {
   margin: 0;
-  font-size: 16px;
+  font-size: var(--arabic-base);
   font-weight: 600;
   color: #1565c0;
-  font-family: 'Amiri', serif;
+  font-family: var(--font-arabic);
 }
 
 .analysis-separator {
