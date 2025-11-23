@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import FontScaleSelector from '../selectors/FontScaleSelector';
+import DualFontScaleSelector from '../selectors/DualFontScaleSelector';
 import { useNavigate } from 'react-router-dom';
 
 const Settings = () => {
@@ -10,16 +10,34 @@ const Settings = () => {
   });
 
   const arabicFonts = [
-    { id: 'amiri', name: 'Amiri', value: 'amiri' },
-    { id: 'noto', name: 'Noto Serif Arabic', value: 'noto' },
-    { id: 'kufi', name: 'Noto Kufi Arabic', value: 'kufi' },
+    {
+      id: 'amiri',
+      name: 'Amiri',
+      description: 'Classic Arabic serif font - elegant and traditional',
+      sample: 'ٱلْخَبِيرُ',
+      fontFamily: "'Amiri', serif"
+    },
+    {
+      id: 'noto',
+      name: 'Noto Serif Arabic',
+      description: 'Modern serif font - consistent with Latin typography',
+      sample: 'ٱلْخَبِيرُ',
+      fontFamily: "'Noto Serif Arabic', serif"
+    },
+    {
+      id: 'kufi',
+      name: 'Noto Kufi Arabic',
+      description: 'Contemporary sans-serif style - clean and geometric',
+      sample: 'ٱلْخَبِيرُ',
+      fontFamily: "'Noto Kufi Arabic', sans-serif"
+    },
   ];
 
   useEffect(() => {
     localStorage.setItem('arabicFont', arabicFont);
     // Apply the font to document
     const fontFamilyMap = {
-      amiri: "'Amiri', 'Arabic Typesetting', serif",
+      amiri: "'Amiri', serif",
       noto: "'Noto Serif Arabic', serif",
       kufi: "'Noto Kufi Arabic', sans-serif",
     };
@@ -33,40 +51,64 @@ const Settings = () => {
         Adjust font sizes and styles across the application. Changes are applied instantly.
       </p>
 
-      {/* Font Size Control */}
+      {/* Font Size Control - Separate scales for Latin and Semitic */}
       <div className="settings-section">
         <h3>Font Size Control</h3>
-        <FontScaleSelector />
+        <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '15px' }}>
+          Control font sizes independently for English and Arabic text. Arabic text often appears smaller at the same size, so you can adjust it separately.
+        </p>
+        <DualFontScaleSelector />
       </div>
 
       {/* Font Family Control */}
       <div className="settings-section">
         <h3>Arabic Font Style</h3>
         <p style={{ color: '#666', fontSize: '0.95rem', marginBottom: '15px' }}>
-          Choose your preferred Arabic typography style:
+          Choose your preferred Arabic typography style. Each font has a distinct visual character:
         </p>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
           {arabicFonts.map((font) => (
-            <label key={font.id} style={{ display: 'flex', alignItems: 'center', cursor: 'pointer', marginBottom: '0' }}>
+            <label
+              key={font.id}
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '12px',
+                cursor: 'pointer',
+                padding: '12px',
+                borderRadius: '6px',
+                border: arabicFont === font.id ? '2px solid #2c7fb8' : '1px solid #e0e0e0',
+                backgroundColor: arabicFont === font.id ? '#f0f7fd' : '#fafafa',
+                transition: 'all 0.2s',
+              }}
+            >
               <input
                 type="radio"
                 name="arabicFont"
                 value={font.id}
                 checked={arabicFont === font.id}
                 onChange={(e) => setArabicFont(e.target.value)}
-                style={{ marginRight: '10px', cursor: 'pointer' }}
+                style={{ marginTop: '2px', cursor: 'pointer', minWidth: '18px' }}
               />
-              <span style={{ fontWeight: '500', color: '#2c3e50' }}>{font.name}</span>
-              <span
-                style={{
-                  marginLeft: '20px',
-                  fontSize: 'var(--arabic-base)',
-                  fontFamily: font.id === 'amiri' ? "'Amiri', serif" : font.id === 'noto' ? "'Noto Serif Arabic', serif" : "'Noto Kufi Arabic', sans-serif",
-                  color: '#666'
-                }}
-              >
-                ٱلْخَبِيرُ
-              </span>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: '600', color: '#2c3e50', marginBottom: '4px' }}>
+                  {font.name}
+                </div>
+                <div style={{ fontSize: '0.85rem', color: '#666', marginBottom: '8px' }}>
+                  {font.description}
+                </div>
+                <div
+                  style={{
+                    fontSize: '1.5rem',
+                    fontFamily: font.fontFamily,
+                    color: '#333',
+                    padding: '8px 0',
+                    letterSpacing: '0.05em',
+                  }}
+                >
+                  {font.sample}
+                </div>
+              </div>
             </label>
           ))}
         </div>
