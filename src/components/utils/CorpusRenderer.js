@@ -400,9 +400,9 @@ const handleFreeformLineHighlight = (lineNumber) => {
     <div className={`corpus-list-container ${customClass}`}>
       {/* Header Row */}
       <div className="corpus-list-header">
-        {L2 !== 'off' && <div className="header-left">{L2 === 'english' ? 'English' : L2}</div>}
+        {L2 !== 'off' && <div className="header-spacer" />}
         <div className="header-center">Quranic Root Frequency</div>
-        <div className="header-right">{L1 === 'arabic' ? 'Arabic' : L1}</div>
+        <div className="header-spacer" />
       </div>
 
       {/* Data Rows */}
