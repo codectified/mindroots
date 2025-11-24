@@ -3,22 +3,213 @@
    Corpus and Article Lists
    ============================================ */
 
-/* Corpus Renderer List */
-.corpus-renderer-list {
-  list-style: none;
-  padding: 0;
-  font-size: 24px; /* Default font size */
+/* Corpus List Container */
+.corpus-list-container {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  font-family: 'Noto Serif', 'Georgia', serif;
 }
 
-.corpus-renderer-list li {
-  margin: 5px 0;
-  color: inherit; /* Default text color */
-  cursor: default;
-  font-size: 20px; /* Specific size for library items */
+/* Header Row */
+.corpus-list-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 2px solid #2c3e50;
+  margin-bottom: 12px;
+  font-weight: 600;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #2c3e50;
 }
 
-.corpus-renderer-list li:hover {
-  color: #007BFF;
+.header-left {
+  flex: 1;
+  text-align: left;
+  min-width: 0;
+}
+
+.header-center {
+  width: 95px;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.header-right {
+  flex: 0 0 150px;
+  text-align: right;
+}
+
+/* Individual Item Card */
+.corpus-item-card {
+  padding: 18px 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-left: 4px solid transparent;
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(75,0,130,0.02));
+}
+
+.corpus-item-card:hover {
+  background: linear-gradient(90deg, rgba(255,255,255,0), rgba(75,0,130,0.08));
+  border-left-color: #4b0082;
+  padding-left: 28px;
+}
+
+/* Item Content Structure */
+.item-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+}
+
+/* Left Side: L2 language & Transliteration (only shows if L2 !== 'off') */
+.item-left {
+  flex: 1;
+  text-align: left;
+  min-width: 100px;
+}
+
+.item-english {
+  font-size: 15px;
+  color: #2c3e50;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 4px;
+}
+
+.item-transliteration {
+  font-size: 13px;
+  color: #7f8c8d;
+  font-style: italic;
+  font-family: 'Courier New', monospace;
+}
+
+/* Center: Quranic Root Frequency */
+.item-frequency {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  text-align: center;
+  flex-shrink: 0;
+  width: 95px;
+}
+
+.freq-label {
+  font-size: 10px;
+  color: #7f8c8d;
+  font-weight: 500;
+  line-height: 1.2;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  word-break: break-word;
+}
+
+.freq-count {
+  font-size: 22px;
+  font-weight: 700;
+  color: #2c3e50;
+  line-height: 1;
+}
+
+/* Right Side: Arabic */
+.item-right {
+  flex: 0 0 150px;
+  text-align: right;
+}
+
+.item-arabic {
+  color: #1a1a1a;
+  font-weight: 600;
+  font-family: 'Noto Sans Arabic', 'Amiri', serif;
+  line-height: 1.6;
+}
+
+/* Item Separator */
+.item-separator {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #ecf0f1, transparent);
+  margin: 0 24px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .header-center {
+    font-size: 11px;
+    width: 85px;
+  }
+
+  .item-frequency {
+    width: 85px;
+  }
+
+  .header-right {
+    flex: 0 0 120px;
+  }
+
+  .item-right {
+    flex: 0 0 120px;
+  }
+}
+
+@media (max-width: 768px) {
+  .corpus-list-header {
+    display: flex;
+  }
+
+  .item-content {
+    flex-direction: row;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .item-left {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .item-frequency {
+    width: 80px;
+    flex-direction: column;
+    flex-shrink: 0;
+  }
+
+  .freq-count {
+    font-size: 18px;
+  }
+
+  .item-right {
+    flex: 0 0 100px;
+  }
+
+  .item-separator {
+    margin: 12px 0;
+  }
+
+  .corpus-item-card {
+    padding: 12px 16px;
+  }
+
+  .corpus-item-card:hover {
+    padding-left: 20px;
+  }
+
+  .header-center {
+    width: 80px;
+    font-size: 9px;
+  }
+
+  .header-right {
+    flex: 0 0 100px;
+    font-size: 11px;
+  }
 }
 
 /* Primary List */
