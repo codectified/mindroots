@@ -27,8 +27,15 @@
 }
 
 .header-spacer {
-  flex: 1;
   visibility: hidden;
+}
+
+.header-spacer:first-child {
+  flex: 1;
+}
+
+.header-spacer:last-child {
+  flex: 0 0 150px;
 }
 
 .header-center {
