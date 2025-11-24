@@ -397,17 +397,51 @@ const handleFreeformLineHighlight = (lineNumber) => {
   };
 
   const renderList = (customClass = '') => (
-    <ul className={`corpus-renderer-list ${customClass}`} style={{ fontSize: `${fontSize}px` }}>
-      {items.map((item) => (
-        <li
+    <div className={`corpus-list-container ${customClass}`}>
+      {/* Header Row */}
+      <div className="corpus-list-header">
+        {L2 !== 'off' && <div className="header-left">{L2 === 'english' ? 'English' : L2}</div>}
+        <div className="header-center">Quranic Root Frequency</div>
+        <div className="header-right">{L1 === 'arabic' ? 'Arabic' : L1}</div>
+      </div>
+
+      {/* Data Rows */}
+      {items.map((item, index) => (
+        <div
           key={item.item_id}
+          className="corpus-item-card"
           onClick={() => handleSelectCorpusItem(item)}
           style={getWordStyle(item)}
         >
-          {L2 === 'off' ? (item[L1] || item.arabic) : `${item[L1] || item.arabic} / ${item[L2] || ''}`}
-        </li>
+          <div className="item-content">
+            {/* Left side: L2 language (if set) */}
+            {L2 !== 'off' && (
+              <div className="item-left">
+                <div className="item-english">{item[L2] || '—'}</div>
+                {item.transliteration && (
+                  <div className="item-transliteration">{item.transliteration}</div>
+                )}
+              </div>
+            )}
+
+            {/* Center: Quranic Root Frequency */}
+            {item.qrootfreq && (
+              <div className="item-frequency">
+                <div className="freq-count">{item.qrootfreq}</div>
+              </div>
+            )}
+
+            {/* Right side: Arabic */}
+            <div className="item-right">
+              <div className="item-arabic" style={{ fontSize: `${fontSize}px` }}>
+                {item[L1] || item.arabic || '—'}
+              </div>
+            </div>
+          </div>
+          {index < items.length - 1 && <div className="item-separator" />}
+        </div>
       ))}
-    </ul>
+    </div>
   );
 
   const renderPoetry = () => {

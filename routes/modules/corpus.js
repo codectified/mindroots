@@ -190,7 +190,7 @@ router.get('/list/corpus_items', async (req, res) => {
   try {
     const result = await session.run(`
       MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
-      RETURN item.arabic AS arabic, item.transliteration AS transliteration, item.item_id AS item_id, item.english AS english, item.sem AS sem
+      RETURN item.arabic AS arabic, item.transliteration AS transliteration, item.item_id AS item_id, item.english AS english, item.sem AS sem, item.qrootfreq AS qrootfreq
       LIMIT 100
     `, { corpus_id });
 
