@@ -14,7 +14,6 @@
 /* Header Row */
 .corpus-list-header {
   display: flex;
-  justify-content: space-between;
   align-items: center;
   gap: 12px;
   padding: 12px 24px;
@@ -27,21 +26,15 @@
   color: #2c3e50;
 }
 
-.header-left {
+.header-spacer {
   flex: 1;
-  text-align: left;
-  min-width: 0;
+  visibility: hidden;
 }
 
 .header-center {
   width: 95px;
   text-align: center;
   flex-shrink: 0;
-}
-
-.header-right {
-  flex: 0 0 150px;
-  text-align: right;
 }
 
 /* Individual Item Card */
@@ -150,10 +143,6 @@
     width: 85px;
   }
 
-  .header-right {
-    flex: 0 0 120px;
-  }
-
   .item-right {
     flex: 0 0 120px;
   }
@@ -203,12 +192,7 @@
 
   .header-center {
     width: 80px;
-    font-size: 9px;
-  }
-
-  .header-right {
-    flex: 0 0 100px;
-    font-size: 11px;
+    font-size: 10px;
   }
 }
 
