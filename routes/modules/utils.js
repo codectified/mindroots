@@ -22,7 +22,8 @@ const formatSimpleData = (records) => {
     english: record.get('english'),
     transliteration: record.get('transliteration'),
     sem: record.get('sem'),
-    qrootfreq: record.get('qrootfreq')
+    qrootfreq: record.get('qrootfreq'),
+    quran_frequency: record.get('quran_frequency')
   }));
 };
 
