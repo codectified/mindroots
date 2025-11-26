@@ -33,7 +33,7 @@
   right: -5px;
   background: none;
   border: none;
-  font-size: 18px;
+  font-size: calc(1.125rem * var(--font-scale-latin));
   cursor: pointer;
   color: #333;
   font-weight: bold;
@@ -789,7 +789,7 @@
 }
 
 .analysis-section h4 {
-  font-size: 14px;
+  font-size: calc(0.875rem * var(--font-scale-latin));
   font-weight: 600;
   color: #2c3e50;
   margin: 0 0 8px 0;

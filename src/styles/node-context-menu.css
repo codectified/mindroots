@@ -21,7 +21,7 @@
   height: 20px;
   background: none;
   border: none;
-  font-size: 16px;
+  font-size: calc(1rem * var(--font-scale-latin));
   cursor: pointer;
   color: #666;
   font-weight: bold;
@@ -61,7 +61,7 @@
   padding: 8px 12px;
   cursor: pointer;
   font-family: 'Noto Serif', serif;
-  font-size: 14px;
+  font-size: calc(0.875rem * var(--font-scale-latin));
   color: #333;
   text-align: center;
   transition: background-color 0.2s, border-color 0.2s;
@@ -90,7 +90,7 @@
 }
 
 .submenu-arrow {
-  font-size: 12px;
+  font-size: calc(0.75rem * var(--font-scale-latin));
   color: #666;
   margin-left: 8px;
 }
@@ -130,7 +130,7 @@
   margin: 2px 0;
   cursor: pointer;
   font-family: 'Noto Serif', serif;
-  font-size: 13px;
+  font-size: calc(0.8125rem * var(--font-scale-latin));
   color: #333;
   text-align: center;
   transition: background-color 0.2s;
@@ -154,28 +154,28 @@
     padding: 12px;
     min-height: auto;
   }
-  
+
   .context-menu-option {
     padding: 10px 12px;
-    font-size: 15px;
+    font-size: calc(0.9375rem * var(--font-scale-latin));
     min-height: 40px; /* Touch-friendly but more compact */
   }
-  
+
   .context-menu-close-button {
     width: 24px;
     height: 24px;
-    font-size: 18px;
+    font-size: calc(1.125rem * var(--font-scale-latin));
     top: 6px;
     right: 6px;
   }
-  
+
   .context-submenu {
     min-width: 120px;
     max-width: 60vw;
   }
-  
+
   .context-submenu-option {
     padding: 8px 10px;
-    font-size: 14px;
+    font-size: calc(0.875rem * var(--font-scale-latin));
   }
 }

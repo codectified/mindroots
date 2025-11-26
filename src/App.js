@@ -38,6 +38,7 @@ import { AdvancedModeProvider } from './contexts/AdvancedModeContext';
 import { ShowLinksProvider } from './components/selectors/ShowLinksToggle';
 import { FormFilterProvider } from './contexts/FormFilterContext';
 import { SemiticLanguageFilterProvider } from './contexts/SemiticLanguageFilterContext';
+import { useEffect } from 'react';
 
 import './styles/typography.css';
 import './styles/base.css';
@@ -59,6 +60,19 @@ import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
 
 const App = () => {
+  // Restore font scales from localStorage on app mount
+  useEffect(() => {
+    const savedLatinScale = localStorage.getItem('fontScaleLatín');
+    const savedSemiticScale = localStorage.getItem('fontScaleSemitic');
+
+    if (savedLatinScale) {
+      document.documentElement.style.setProperty('--font-scale-latin', savedLatinScale);
+    }
+    if (savedSemiticScale) {
+      document.documentElement.style.setProperty('--font-scale-semitic', savedSemiticScale);
+    }
+  }, []);
+
   return (
     <AdvancedModeProvider>
     <DisplayModeProvider>

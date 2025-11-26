@@ -58,7 +58,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 18px;
+  font-size: calc(1.125rem * var(--font-scale-latin));
   transition: all 0.3s ease;
 }
 
@@ -160,7 +160,7 @@ body {
   .nav-button {
     width: 45px;
     height: 45px;
-    font-size: 16px;
+    font-size: calc(1rem * var(--font-scale-latin));
   }
   
   .mindroots-nav-button {
@@ -194,7 +194,7 @@ body {
   .nav-button {
     width: 40px;
     height: 40px;
-    font-size: 14px;
+    font-size: calc(0.875rem * var(--font-scale-latin));
   }
   
   .mindroots-nav-button {

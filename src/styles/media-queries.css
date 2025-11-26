@@ -12,29 +12,29 @@
 
   button {
     padding: 8px 16px;
-    font-size: 14px;
+    font-size: calc(0.875rem * var(--font-scale-latin));
   }
 
   select {
     padding: 4px;
-    font-size: 14px;
+    font-size: calc(0.875rem * var(--font-scale-latin));
   }
 
   li {
-    font-size: 20px;
+    font-size: calc(1.25rem * var(--font-scale-latin));
   }
 
   .menu-button {
     padding: 8px;
-    font-size: 16px;
+    font-size: calc(1rem * var(--font-scale-latin));
   }
 
   .mainmenu-title {
-    font-size: 36px;
+    font-size: calc(2.25rem * var(--font-scale-latin));
   }
 
   .mainmenu-item {
-    font-size: 20px;
+    font-size: calc(1.25rem * var(--font-scale-latin));
   }
 
 
@@ -45,7 +45,7 @@
   }
 
   .close-button {
-    font-size: 20px; /* Larger close button for better tapability */
+    font-size: calc(1.25rem * var(--font-scale-latin));
   }
 }
 
@@ -58,29 +58,29 @@
 
   button {
     padding: 6px 12px;
-    font-size: 12px;
+    font-size: calc(0.75rem * var(--font-scale-latin));
   }
 
   select {
     padding: 3px;
-    font-size: 12px;
+    font-size: calc(0.75rem * var(--font-scale-latin));
   }
 
   li {
-    font-size: 18px;
+    font-size: calc(1.125rem * var(--font-scale-latin));
   }
 
   .menu-button {
     padding: 6px;
-    font-size: 14px;
+    font-size: calc(0.875rem * var(--font-scale-latin));
   }
 
   .mainmenu-title {
-    font-size: 28px;
+    font-size: calc(1.75rem * var(--font-scale-latin));
   }
 
   .mainmenu-item {
-    font-size: 18px;
+    font-size: calc(1.125rem * var(--font-scale-latin));
   }
 
   .info-bubble-content {
@@ -90,6 +90,6 @@
   }
 
   .close-button {
-    font-size: 18px; /* Slightly smaller for mobile */
+    font-size: calc(1.125rem * var(--font-scale-latin));
   }
 }
