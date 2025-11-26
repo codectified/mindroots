@@ -12,6 +12,7 @@ import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
 import FontScaleSelector from '../selectors/FontScaleSelector';
+import DualFontScaleSelector from '../selectors/DualFontScaleSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 
@@ -24,14 +25,41 @@ const MiniMenu = () => {
   const [showFilterSettings, setShowFilterSettings] = useState(false);
   const [showContextSettings, setShowContextSettings] = useState(false);
   const [showOtherSettings, setShowOtherSettings] = useState(false);
-  const [isMenuExpanded, setIsMenuExpanded] = useState(true);
+  const [showGraphSettings, setShowGraphSettings] = useState(false);
+  const [showAdvancedFontSettings, setShowAdvancedFontSettings] = useState(false);
+  const [isMenuExpanded, setIsMenuExpanded] = useState(() => {
+    const saved = localStorage.getItem('miniMenuExpanded');
+    return saved ? JSON.parse(saved) : true;
+  });
   const holdTimeout = useRef(null);
 
+  // Keep menu expanded on main menu screen, persist expansion state
   useEffect(() => {
+    if (location.pathname === '/mindroots') {
+      setIsMenuExpanded(true);
+    }
     if (location.pathname === '/start' || location.pathname === '/sandbox' || location.pathname === '/corpus-menu') {
       setSelectedOption(null);
     }
   }, [location.pathname]);
+
+  // Persist menu expansion state to localStorage
+  useEffect(() => {
+    localStorage.setItem('miniMenuExpanded', JSON.stringify(isMenuExpanded));
+  }, [isMenuExpanded]);
+
+  // Load font scales from localStorage on mount
+  useEffect(() => {
+    const savedLatinScale = localStorage.getItem('fontScaleLatín');
+    const savedSemiticScale = localStorage.getItem('fontScaleSemitic');
+
+    if (savedLatinScale) {
+      document.documentElement.style.setProperty('--font-scale-latin', savedLatinScale);
+    }
+    if (savedSemiticScale) {
+      document.documentElement.style.setProperty('--font-scale-semitic', savedSemiticScale);
+    }
+  }, []);
 
 
   const toggleOption = (option) => {
@@ -73,7 +101,7 @@ const MiniMenu = () => {
           {/* Advanced Mode Only Sections */}
           {isAdvancedMode && (
             <>
-              {/* 3. General */}
+              {/* General Section - Font Settings */}
               <div
                 className="collapsible-section"
                 onClick={() => setShowOtherSettings((prev) => !prev)}
@@ -85,40 +113,31 @@ const MiniMenu = () => {
               {showOtherSettings && (
                 <>
                   <div style={{ marginBottom: '15px' }}>
-                    <FontScaleSelector />
+                    <DualFontScaleSelector />
                   </div>
-                  <button
-                    onClick={() => navigate('/settings')}
-                    style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      padding: '8px 12px',
-                      marginBottom: '15px',
-                      backgroundColor: '#f0f7fd',
-                      border: '1px solid #bfe7fd',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      color: '#2c7fb8',
-                      fontWeight: '500',
-                      fontSize: '0.9rem',
-                      transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={(e) => {
-                      e.target.style.backgroundColor = '#e3f2fd';
-                      e.target.style.borderColor = '#2c7fb8';
-                    }}
-                    onMouseLeave={(e) => {
-                      e.target.style.backgroundColor = '#f0f7fd';
-                      e.target.style.borderColor = '#bfe7fd';
-                    }}
-                  >
-                    <FontAwesomeIcon icon={faSliders} />
-                    Advanced Typography Settings
-                  </button>
-                  <ShowLinksToggle />
-                  <NodeLimitSlider />
-                  <WordShadeSelector />
+                </>
+              )}
+
+              {/* Graph Section */}
+              <div
+                className="collapsible-section"
+                onClick={() => setShowGraphSettings((prev) => !prev)}
+                style={{ cursor: 'pointer', marginBottom: '10px' }}
+              >
+                Graph
+                <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+              </div>
+              {showGraphSettings && (
+                <>
+                  <div style={{ marginBottom: '15px' }}>
+                    <ShowLinksToggle />
+                  </div>
+                  <div style={{ marginBottom: '15px' }}>
+                    <NodeLimitSlider />
+                  </div>
+                  <div style={{ marginBottom: '15px' }}>
+                    <WordShadeSelector />
+                  </div>
                 </>
               )}
               

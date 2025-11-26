@@ -25,7 +25,7 @@
   background-color: #333;
   color: #fff;
   cursor: pointer;
-  font-size: 20px;
+  font-size: calc(1.25rem * var(--font-scale-latin));
   border: none;
 }
 
@@ -88,7 +88,7 @@
   background-color: #333;
   color: #fff;
   cursor: pointer;
-  font-size: 16px;
+  font-size: calc(1rem * var(--font-scale-latin));
   border: none;
 }
 
@@ -159,7 +159,7 @@
   font-weight: 600 !important;
   font-family: 'Noto Serif', serif !important;
   color: #333 !important;
-  font-size: 14px !important;
+  font-size: calc(0.875rem * var(--font-scale-latin)) !important;
 }
 
 /* Mobile: settings panel above menu */

@@ -45,7 +45,7 @@ button:hover {
   background-color: white;
   color: #333;
   cursor: pointer;
-  font-size: 16px;
+  font-size: calc(1rem * var(--font-scale-latin));
   transition: background-color 0.3s;
   font-weight: bold;
 }
@@ -191,22 +191,22 @@ button:hover {
     gap: 10px;
     justify-content: space-between;
   }
-  
+
   .button-row > div {
     flex: 1;
     min-width: 0;
     max-width: 48%;
   }
-  
+
   .uniform-select {
     min-width: 80px;
     width: 100%;
-    font-size: 14px;
+    font-size: calc(0.875rem * var(--font-scale-latin));
     padding: 4px 6px;
   }
-  
+
   .button-row label {
-    font-size: 14px;
+    font-size: calc(0.875rem * var(--font-scale-latin));
     margin-right: 5px;
   }
 }

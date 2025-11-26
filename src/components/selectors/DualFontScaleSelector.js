@@ -22,13 +22,15 @@ const DualFontScaleSelector = () => {
 
   // Update font scales in CSS and localStorage
   useEffect(() => {
-    document.documentElement.style.setProperty('--font-scale-latin', latinScale);
-    localStorage.setItem('fontScaleLatín', latinScale);
+    const value = String(latinScale);
+    document.documentElement.style.setProperty('--font-scale-latin', value);
+    localStorage.setItem('fontScaleLatín', value);
   }, [latinScale]);
 
   useEffect(() => {
-    document.documentElement.style.setProperty('--font-scale-semitic', semiticScale);
-    localStorage.setItem('fontScaleSemitic', semiticScale);
+    const value = String(semiticScale);
+    document.documentElement.style.setProperty('--font-scale-semitic', value);
+    localStorage.setItem('fontScaleSemitic', value);
   }, [semiticScale]);
 
   return (
@@ -127,49 +129,6 @@ const DualFontScaleSelector = () => {
         </div>
       </div>
 
-      {/* Reset buttons */}
-      <div style={{ display: 'flex', gap: '8px' }}>
-        <button
-          onClick={() => setLatinScale(1)}
-          style={{
-            flex: 1,
-            padding: '6px 10px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            transition: 'background-color 0.2s',
-            fontWeight: '500',
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
-          title="Reset English & Latin text to normal size"
-        >
-          Reset English
-        </button>
-        <button
-          onClick={() => setSemiticScale(1)}
-          style={{
-            flex: 1,
-            padding: '6px 10px',
-            backgroundColor: '#6c757d',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-            fontSize: '0.85rem',
-            transition: 'background-color 0.2s',
-            fontWeight: '500',
-          }}
-          onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
-          onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
-          title="Reset Arabic & Semitic text to normal size"
-        >
-          Reset Arabic
-        </button>
-      </div>
     </div>
   );
 };

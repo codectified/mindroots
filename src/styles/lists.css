@@ -20,7 +20,7 @@
   border-bottom: 2px solid #2c3e50;
   margin-bottom: 12px;
   font-weight: 600;
-  font-size: 12px;
+  font-size: calc(0.75rem * var(--font-scale-latin));
   text-transform: uppercase;
   letter-spacing: 0.5px;
   color: #2c3e50;
@@ -76,7 +76,7 @@
 }
 
 .item-english {
-  font-size: 15px;
+  font-size: calc(0.9375rem * var(--font-scale-latin));
   color: #2c3e50;
   font-weight: 500;
   line-height: 1.4;
@@ -84,7 +84,7 @@
 }
 
 .item-transliteration {
-  font-size: 13px;
+  font-size: calc(0.8125rem * var(--font-scale-latin));
   color: #7f8c8d;
   font-style: italic;
   font-family: 'Courier New', monospace;
@@ -103,7 +103,7 @@
 }
 
 .freq-label {
-  font-size: 10px;
+  font-size: calc(0.625rem * var(--font-scale-latin));
   color: #7f8c8d;
   font-weight: 500;
   line-height: 1.2;
@@ -113,7 +113,7 @@
 }
 
 .freq-count {
-  font-size: 22px;
+  font-size: calc(1.375rem * var(--font-scale-latin));
   font-weight: 700;
   color: #2c3e50;
   line-height: 1;
@@ -142,7 +142,7 @@
 /* Responsive Design */
 @media (max-width: 1024px) {
   .header-center {
-    font-size: 11px;
+    font-size: calc(0.6875rem * var(--font-scale-latin));
     width: 85px;
   }
 
@@ -178,7 +178,7 @@
   }
 
   .freq-count {
-    font-size: 18px;
+    font-size: calc(1.125rem * var(--font-scale-latin));
   }
 
   .item-right {
@@ -199,14 +199,14 @@
 
   .header-center {
     width: 80px;
-    font-size: 10px;
+    font-size: calc(0.625rem * var(--font-scale-latin));
   }
 }
 
 /* Primary List */
 .primary-list li {
   margin: 10px 0;
-  font-size: 24px; /* Larger font for primary list */
+  font-size: calc(1.5rem * var(--font-scale-semitic));
   cursor: pointer; /* Pointer cursor for clickable items */
 }
 
@@ -218,14 +218,13 @@
 .corpus-library-list {
   list-style: none;
   padding: 0;
-  font-size: 24px; /* Specific size for library items */
 }
 
 .corpus-library-list li {
   margin: 8px 0;
   color: #333;
   cursor: pointer;
-  font-size: 20px; /* Specific size for library items */
+  font-size: calc(1.25rem * var(--font-scale-semitic));
 }
 
 .corpus-library-list li:hover {
@@ -236,13 +235,12 @@
 .articles-list {
   list-style: none;
   padding: 0;
-  font-size: 18px;
 }
 
 .articles-list li {
   margin: 5px 0;
   color: #444;
-  font-size: 20px; /* Specific size for library items */
+  font-size: calc(1.25rem * var(--font-scale-latin));
 }
 
 .articles-list li a {
@@ -275,7 +273,7 @@
 }
 
 .statistics-list li {
-  font-size: 14px; /* Smaller font size for statistics */
+  font-size: calc(0.875rem * var(--font-scale-latin));
   cursor: default; /* Remove pointer cursor */
   color: inherit; /* Use the default text color */
 }

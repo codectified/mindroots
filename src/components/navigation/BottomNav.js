@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGlobe, faMapMarked, faSearch, faChevronDown, faChevronUp, faSliders } from '@fortawesome/free-solid-svg-icons';
@@ -11,7 +11,7 @@ import SemiticLanguageFilter from '../selectors/SemiticLanguageFilter';
 import WordShadeSelector from '../selectors/WordShadeSelector';
 import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
-import FontScaleSelector from '../selectors/FontScaleSelector';
+import DualFontScaleSelector from '../selectors/DualFontScaleSelector';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 
 const BottomNav = () => {
@@ -26,6 +26,19 @@ const BottomNav = () => {
   const holdTimeout = useRef(null);
   const tapCount = useRef(0);
   const tapTimeout = useRef(null);
+
+  // Load font scales from localStorage on mount
+  useEffect(() => {
+    const savedLatinScale = localStorage.getItem('fontScaleLatín');
+    const savedSemiticScale = localStorage.getItem('fontScaleSemitic');
+
+    if (savedLatinScale) {
+      document.documentElement.style.setProperty('--font-scale-latin', savedLatinScale);
+    }
+    if (savedSemiticScale) {
+      document.documentElement.style.setProperty('--font-scale-semitic', savedSemiticScale);
+    }
+  }, []);
 
   // Don't show on homepage or main menu
   if (location.pathname === '/' || location.pathname === '/mindroots') {
@@ -76,12 +89,24 @@ const BottomNav = () => {
       {showSettings && (
         <div className="bottom-settings-panel">
           <div className="settings-content">
-            {/* Always visible controls */}
-            <div style={{ marginBottom: '15px' }}>
+            {/* Mode Selector - Always at top */}
+            <div style={{ marginBottom: '20px' }}>
+              <ModeSelector />
+            </div>
+
+            {/* Language Selector */}
+            <div style={{ marginBottom: '20px' }}>
               <LanguageSelector />
             </div>
-            <div style={{ marginBottom: '15px' }}>
-              <ModeSelector />
+
+            {/* Font Scale Selector - Simple, always visible */}
+            <div style={{ marginBottom: '20px' }}>
+              <h4 style={{ marginTop: '0', marginBottom: '12px', fontSize: 'calc(0.875rem * var(--font-scale-latin))', fontWeight: '600', color: '#2c3e50' }}>
+                Font Size
+              </h4>
+              <div style={{ paddingLeft: '10px' }}>
+                <DualFontScaleSelector />
+              </div>
             </div>
 
             {/* Advanced mode controls with proper groupings */}
@@ -98,45 +123,12 @@ const BottomNav = () => {
                 </div>
                 {showOtherSettings && (
                   <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
-                    <div style={{ marginBottom: '15px' }}>
-                      <FontScaleSelector />
-                    </div>
-                    <button
-                      onClick={() => navigate('/settings')}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 12px',
-                        marginBottom: '15px',
-                        backgroundColor: '#f0f7fd',
-                        border: '1px solid #bfe7fd',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        color: '#2c7fb8',
-                        fontWeight: '500',
-                        fontSize: '0.9rem',
-                        transition: 'all 0.2s',
-                        width: '100%'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#e3f2fd';
-                        e.target.style.borderColor = '#2c7fb8';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#f0f7fd';
-                        e.target.style.borderColor = '#bfe7fd';
-                      }}
-                    >
-                      <FontAwesomeIcon icon={faSliders} />
-                      Advanced Typography Settings
-                    </button>
                     <ShowLinksToggle />
                     <NodeLimitSlider />
                     <WordShadeSelector />
                   </div>
                 )}
-                
+
                 {/* Contexts Section */}
                 <div
                   className="collapsible-section"
@@ -151,7 +143,7 @@ const BottomNav = () => {
                     <ContextShiftSelector />
                   </div>
                 )}
-        
+
                 {/* Filters Section */}
                 <div
                   className="collapsible-section"
