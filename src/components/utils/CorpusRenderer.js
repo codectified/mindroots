@@ -401,7 +401,12 @@ const handleFreeformLineHighlight = (lineNumber) => {
       {/* Header Row */}
       <div className="corpus-list-header">
         {L2 !== 'off' && <div className="header-spacer" />}
-        <div className="header-center">Quranic Root Frequency</div>
+        <div className="header-center">
+          <div className="freq-label">Root</div>
+        </div>
+        <div className="header-center">
+          <div className="freq-label">Word</div>
+        </div>
         <div className="header-spacer" />
       </div>
 
@@ -424,10 +429,17 @@ const handleFreeformLineHighlight = (lineNumber) => {
               </div>
             )}
 
-            {/* Center: Quranic Root Frequency */}
+            {/* Center-Left: Quranic Root Frequency */}
             {item.qrootfreq && (
               <div className="item-frequency">
                 <div className="freq-count">{item.qrootfreq}</div>
+              </div>
+            )}
+
+            {/* Center-Right: Word Frequency */}
+            {item.quran_frequency && (
+              <div className="item-frequency">
+                <div className="freq-count">{item.quran_frequency}</div>
               </div>
             )}
 

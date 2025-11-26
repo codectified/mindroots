@@ -39,9 +39,12 @@
 }
 
 .header-center {
-  width: 95px;
+  width: 80px;
   text-align: center;
   flex-shrink: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 /* Individual Item Card */
@@ -143,11 +146,11 @@
 @media (max-width: 1024px) {
   .header-center {
     font-size: 11px;
-    width: 85px;
+    width: 70px;
   }
 
   .item-frequency {
-    width: 85px;
+    width: 70px;
   }
 
   .item-right {
