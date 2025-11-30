@@ -10,6 +10,7 @@ import * as d3 from 'd3';
 const GraphVisualization = ({ data, onNodeClick }) => {
   const svgRef = useRef();
   const containerRef = useRef();
+  const zoomStateRef = useRef(null); // Preserve zoom state across re-renders
   const [simulation, setSimulation] = useState(null);
 
   const { isAdvancedMode } = useAdvancedMode();
@@ -59,6 +60,9 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       simulation.stop();
     }
 
+    // Save current zoom state before clearing
+    const currentTransform = zoomStateRef.current;
+
     svg.selectAll('*').remove(); // Clear previous contents
 
     // Create a group that will be zoomable
@@ -70,10 +74,16 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     const zoom = d3.zoom()
       .scaleExtent([0.1, 5]) // Set zoom limits
       .on('zoom', (event) => {
+        zoomStateRef.current = event.transform; // Save zoom state
         zoomLayer.attr('transform', event.transform); // Apply zoom and pan
       });
 
     svg.call(zoom); // Bind zoom behavior to the SVG element
+
+    // Restore previous zoom state if it exists
+    if (currentTransform) {
+      svg.call(zoom.transform, currentTransform);
+    }
 
     // Custom node color function based on type and word_type
 
