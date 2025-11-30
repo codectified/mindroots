@@ -231,18 +231,27 @@ const PrimaryList = () => {
           </button>
         </div>
         {showTextSettings && (
-          <div style={{ 
+          <div style={{
             paddingTop: '15px',
             borderTop: '1px solid #d4edd4',
-            display: 'flex', 
-            gap: '25px', 
-            flexWrap: 'wrap', 
-            alignItems: 'center' 
+            display: 'grid',
+            gridTemplateColumns: 'repeat(2, 1fr)',
+            gap: '15px',
+            alignItems: 'center'
           }}>
-            <TextLayoutToggle />
-            <HighlightController />
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-              <label style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
+            {/* Row 1: Text Layout Toggle */}
+            <div style={{ gridColumn: '1 / 2' }}>
+              <TextLayoutToggle />
+            </div>
+
+            {/* Row 1: Highlight Controller */}
+            <div style={{ gridColumn: '2 / 3' }}>
+              <HighlightController />
+            </div>
+
+            {/* Row 2: Font Size */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: '1 / 2' }}>
+              <label style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500', whiteSpace: 'nowrap' }}>
                 Font Size:
               </label>
               <input
@@ -252,7 +261,7 @@ const PrimaryList = () => {
                 value={fontSize}
                 onChange={(e) => setFontSize(parseInt(e.target.value))}
                 style={{
-                  width: '80px',
+                  width: '60px',
                   accentColor: '#4a7c4a'
                 }}
               />
@@ -260,17 +269,21 @@ const PrimaryList = () => {
                 {fontSize}px
               </span>
             </div>
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+
+            {/* Row 2: Show Statistics */}
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', gridColumn: '2 / 3' }}>
               <input
                 type="checkbox"
                 checked={showStatistics}
                 onChange={handleToggleStatistics}
-                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#4a7c4a' }}
+                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#4a7c4a', flexShrink: 0 }}
               />
               <span style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
                 Show Statistics
               </span>
             </label>
+
+            {/* Row 3: Return to Library Button - spans both columns */}
             <button
               onClick={() => {
                 navigate('/corpus-menu');
@@ -284,7 +297,9 @@ const PrimaryList = () => {
                 cursor: 'pointer',
                 fontSize: '14px',
                 fontWeight: '500',
-                transition: 'background-color 0.2s'
+                transition: 'background-color 0.2s',
+                gridColumn: '1 / -1',
+                justifySelf: 'start'
               }}
               onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6a3a'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#4a7c4a'}
