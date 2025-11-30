@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
+import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 
@@ -40,6 +41,7 @@ const CorpusRenderer = ({
     highlightColor, // Access the selected highlight color
   } = useHighlight();
   const { layout } = useTextLayout(); // Access the text layout setting
+  const { showStatistics } = useCorpusStatistics(); // Access statistics visibility toggle
 
   // Sync temp state with parent prop changes
   useEffect(() => {
@@ -399,15 +401,19 @@ const handleFreeformLineHighlight = (lineNumber) => {
   const renderList = (customClass = '') => (
     <div className={`corpus-list-container ${customClass}`}>
       {/* Header Row */}
-      <div className="corpus-list-header">
-        {L2 !== 'off' && <div className="header-spacer" />}
-        <div className="header-center">
-          <div className="freq-label">Root</div>
-        </div>
-        <div className="header-center">
-          <div className="freq-label">Word</div>
-        </div>
-        <div className="header-spacer" />
+      <div className="corpus-list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', padding: '12px 24px' }}>
+        {L2 !== 'off' && <div style={{ flex: 1 }} />}
+        {showStatistics && (
+          <div style={{ width: '110px', textAlign: 'center', flexShrink: 0 }}>
+            <div className="freq-label">Quranic Root<br />Frequency</div>
+          </div>
+        )}
+        {showStatistics && (
+          <div style={{ width: '110px', textAlign: 'center', flexShrink: 0 }}>
+            <div className="freq-label">Quranic Word<br />Frequency</div>
+          </div>
+        )}
+        <div style={{ flex: '0 0 150px' }} />
       </div>
 
       {/* Data Rows */}
@@ -430,16 +436,16 @@ const handleFreeformLineHighlight = (lineNumber) => {
             )}
 
             {/* Center-Left: Quranic Root Frequency */}
-            {item.qrootfreq && (
+            {showStatistics && (
               <div className="item-frequency">
-                <div className="freq-count">{item.qrootfreq}</div>
+                <div className="freq-count">{item.qrootfreq || '—'}</div>
               </div>
             )}
 
             {/* Center-Right: Word Frequency */}
-            {item.quran_frequency && (
+            {showStatistics && (
               <div className="item-frequency">
-                <div className="freq-count">{item.quran_frequency}</div>
+                <div className="freq-count">{item.quran_frequency || '—'}</div>
               </div>
             )}
 

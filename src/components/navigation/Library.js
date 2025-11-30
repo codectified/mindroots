@@ -98,11 +98,10 @@ const ArticlesAndReferences = () => {
 
   return (
     <div className="corpus-library-container">
-      
+
       <div className="corpus-library-header">
         <h1 className="library-title">Corpus Library</h1>
       </div>
-
 
       {/* Top Row: Quran (left) and 99 Names (right) */}
       <div className="corpus-top-row">

@@ -11,6 +11,10 @@
 - **[CLAUDE.md](../CLAUDE.md)** - Main architecture reference and Claude's knowledge base
 - **[README.md](../README.md)** - Project overview and getting started guide
 
+### **Frontend Design & Development**
+- **[Frontend Design Guide](FRONTEND-DESIGN-GUIDE.md)** - Comprehensive guide to frontend architecture, layout patterns, flexbox alignment, styling conventions, and common pitfalls
+- **[Component Patterns](COMPONENT-PATTERNS.md)** - Reusable component patterns, code examples, and best practices for lists, headers, selectors, modals, and forms
+
 ### **Feature Documentation**
 - **[Analysis Nodes](features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system with v2 schema
 - **[Corpus Navigation System](features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position for reliable sequential corpus browsing
