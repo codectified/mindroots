@@ -8,6 +8,7 @@ import TextLayoutToggle from '../selectors/TextLayoutSelector';
 import HighlightController from '../selectors/HighlightController';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
 
 const PrimaryList = () => {
   const navigate = useNavigate();
@@ -22,6 +23,7 @@ const PrimaryList = () => {
   const [fontSize, setFontSize] = useState(16); // Font size control
   const { L1, L2 } = useLanguage();
   const { handleSelectCorpusItem } = useCorpus();
+  const { showStatistics, handleToggleStatistics } = useCorpusStatistics();
 
   const queryParams = new URLSearchParams(location.search);
   const corpusId = queryParams.get('corpus_id');
@@ -258,7 +260,18 @@ const PrimaryList = () => {
                 {fontSize}px
               </span>
             </div>
-            <button 
+            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={showStatistics}
+                onChange={handleToggleStatistics}
+                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#4a7c4a' }}
+              />
+              <span style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
+                Show Statistics
+              </span>
+            </label>
+            <button
               onClick={() => {
                 navigate('/corpus-menu');
               }}

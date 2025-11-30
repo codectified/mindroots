@@ -38,6 +38,7 @@ import { AdvancedModeProvider } from './contexts/AdvancedModeContext';
 import { ShowLinksProvider } from './components/selectors/ShowLinksToggle';
 import { FormFilterProvider } from './contexts/FormFilterContext';
 import { SemiticLanguageFilterProvider } from './contexts/SemiticLanguageFilterContext';
+import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 
 import './styles/typography.css';
 import './styles/base.css';
@@ -60,6 +61,7 @@ import Acknowledgements from './components/staticPages/Acknowledgements';
 
 const App = () => {
   return (
+    <CorpusStatisticsProvider>
     <AdvancedModeProvider>
     <DisplayModeProvider>
     <SettingsProvider>
@@ -119,6 +121,7 @@ const App = () => {
     </SettingsProvider>
     </DisplayModeProvider>
     </AdvancedModeProvider>
+    </CorpusStatisticsProvider>
 
   );
 };
