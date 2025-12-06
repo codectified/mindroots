@@ -15,7 +15,6 @@
 .corpus-list-header {
   display: flex;
   align-items: center;
-  gap: 12px;
   padding: 12px 24px;
   border-bottom: 2px solid #2c3e50;
   margin-bottom: 12px;
@@ -65,9 +64,7 @@
 /* Item Content Structure */
 .item-content {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 12px;
   width: 100%;
 }
 
@@ -166,7 +163,6 @@
   .item-content {
     flex-direction: row;
     align-items: center;
-    gap: 12px;
   }
 
   .item-left {
