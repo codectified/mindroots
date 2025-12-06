@@ -449,10 +449,32 @@ const handleFreeformLineHighlight = (lineNumber) => {
     const sortedItems = getSortedItems(items);
 
     return (
-    <div className={`corpus-list-container ${customClass}`}>
+    <div className={`corpus-list-container ${customClass}`} style={{ direction: 'ltr' }}>
       {/* Header Row */}
-      <div className="corpus-list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', padding: '12px 24px' }}>
-        {L2 !== 'off' && <div style={{ flex: 1 }} />}
+      <div className="corpus-list-header" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '12px 24px' }}>
+        {/* Number Column Header */}
+        <div
+          style={{ width: '50px', minWidth: '50px', flexShrink: 0, textAlign: 'center', cursor: 'pointer', userSelect: 'none', borderRight: '1px solid #ddd', paddingRight: '12px' }}
+          onClick={() => handleColumnSort('original')}
+        >
+          <div className="freq-label" style={{ color: sortBy === 'original' ? '#2d5a2d' : '#666', fontSize: '11px' }}>
+            № ↑
+          </div>
+        </div>
+
+        {/* Name Column Header */}
+        <div style={{ flex: 1, paddingLeft: '12px', textAlign: 'right' }}>
+          <div className="freq-label" style={{ color: '#666', fontSize: '13px' }}>Name</div>
+        </div>
+
+        {/* L2 Translation Column Header (only if enabled) */}
+        {L2 !== 'off' && (
+          <div style={{ flex: 1 }}>
+            <div className="freq-label" style={{ color: '#666', fontSize: '13px' }}></div>
+          </div>
+        )}
+
+        {/* Statistics Headers */}
         {showStatistics && (
           <div
             style={{ width: '110px', textAlign: 'center', flexShrink: 0, cursor: 'pointer', userSelect: 'none' }}
@@ -473,7 +495,9 @@ const handleFreeformLineHighlight = (lineNumber) => {
             </div>
           </div>
         )}
-        <div style={{ flex: '0 0 150px' }} />
+
+        {/* Right padding spacer */}
+        <div style={{ width: '150px', flexShrink: 0 }} />
       </div>
 
       {/* Data Rows */}
@@ -484,10 +508,22 @@ const handleFreeformLineHighlight = (lineNumber) => {
           onClick={() => handleSelectCorpusItem(item)}
           style={getWordStyle(item)}
         >
-          <div className="item-content">
+          <div className="item-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
+            {/* Number Column */}
+            <div style={{ width: '50px', minWidth: '50px', textAlign: 'center', flexShrink: 0, color: '#666', fontWeight: '500', borderRight: '1px solid #ddd', paddingRight: '12px' }}>
+              {item.item_id}
+            </div>
+
+            {/* Names Column - Arabic */}
+            <div style={{ flex: 1, paddingLeft: '12px' }}>
+              <div className="item-arabic" style={{ fontSize: `${fontSize}px`, textAlign: 'right' }}>
+                {item[L1] || item.arabic || '—'}
+              </div>
+            </div>
+
             {/* Left side: L2 language (if set) */}
             {L2 !== 'off' && (
-              <div className="item-left">
+              <div className="item-left" style={{ flex: 1 }}>
                 <div className="item-english">{item[L2] || '—'}</div>
                 {item.transliteration && (
                   <div className="item-transliteration">{item.transliteration}</div>
@@ -497,24 +533,19 @@ const handleFreeformLineHighlight = (lineNumber) => {
 
             {/* Center-Left: Quranic Root Frequency */}
             {showStatistics && (
-              <div className="item-frequency">
+              <div className="item-frequency" style={{ width: '110px', textAlign: 'center' }}>
                 <div className="freq-count">{item.qrootfreq || '—'}</div>
               </div>
             )}
 
             {/* Center-Right: Word Frequency */}
             {showStatistics && (
-              <div className="item-frequency">
+              <div className="item-frequency" style={{ width: '110px', textAlign: 'center' }}>
                 <div className="freq-count">{item.quran_frequency || '—'}</div>
               </div>
             )}
 
-            {/* Right side: Arabic */}
-            <div className="item-right">
-              <div className="item-arabic" style={{ fontSize: `${fontSize}px` }}>
-                {item[L1] || item.arabic || '—'}
-              </div>
-            </div>
+            <div style={{ width: '150px', flexShrink: 0 }} />
           </div>
           {index < sortedItems.length - 1 && <div className="item-separator" />}
         </div>
