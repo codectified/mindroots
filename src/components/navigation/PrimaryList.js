@@ -279,7 +279,7 @@ const PrimaryList = () => {
                 style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#4a7c4a', flexShrink: 0 }}
               />
               <span style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
-                Show Statistics
+                Show Statistics <span style={{ fontSize: '13px', color: '#666' }}>(data validation in progress)</span>
               </span>
             </label>
 
