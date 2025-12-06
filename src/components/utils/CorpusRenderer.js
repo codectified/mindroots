@@ -33,6 +33,8 @@ const CorpusRenderer = ({
 }) => {
   const [showQuranControls, setShowQuranControls] = useState(false); // Quran controls collapsed by default
   const [tempAyahsPerPage, setTempAyahsPerPage] = useState(ayahsPerPage); // Local state for input
+  const [sortBy, setSortBy] = useState('original'); // 'original', 'root_freq', 'word_freq'
+  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
   const {
     highlightGender,
     highlightVerb,
@@ -68,6 +70,51 @@ const CorpusRenderer = ({
       applyAyahsPerPageChange();
       e.target.blur(); // Remove focus after applying
     }
+  };
+
+  // Handle column sorting
+  const handleColumnSort = (sortType) => {
+    // If clicking the same column, toggle sort order; otherwise reset to ascending
+    if (sortBy === sortType) {
+      setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortBy(sortType);
+      setSortOrder('asc');
+    }
+  };
+
+  // Get sorted items based on current sort configuration
+  const getSortedItems = (itemsToSort) => {
+    if (sortBy === 'original') {
+      // Return in original order
+      return [...itemsToSort];
+    }
+
+    const sorted = [...itemsToSort].sort((a, b) => {
+      let aVal, bVal;
+
+      if (sortBy === 'root_freq') {
+        aVal = parseFloat(a.qrootfreq) || 0;
+        bVal = parseFloat(b.qrootfreq) || 0;
+      } else if (sortBy === 'word_freq') {
+        aVal = parseFloat(a.quran_frequency) || 0;
+        bVal = parseFloat(b.quran_frequency) || 0;
+      }
+
+      if (sortOrder === 'asc') {
+        return aVal - bVal;
+      } else {
+        return bVal - aVal;
+      }
+    });
+
+    return sorted;
+  };
+
+  // Get sort indicator for column headers
+  const getSortIndicator = (columnType) => {
+    if (sortBy !== columnType) return '';
+    return sortOrder === 'asc' ? ' ↑' : ' ↓';
   };
 
 
@@ -398,26 +445,39 @@ const handleFreeformLineHighlight = (lineNumber) => {
     );
   };
 
-  const renderList = (customClass = '') => (
+  const renderList = (customClass = '') => {
+    const sortedItems = getSortedItems(items);
+
+    return (
     <div className={`corpus-list-container ${customClass}`}>
       {/* Header Row */}
       <div className="corpus-list-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', padding: '12px 24px' }}>
         {L2 !== 'off' && <div style={{ flex: 1 }} />}
         {showStatistics && (
-          <div style={{ width: '110px', textAlign: 'center', flexShrink: 0 }}>
-            <div className="freq-label">Quranic Root<br />Frequency</div>
+          <div
+            style={{ width: '110px', textAlign: 'center', flexShrink: 0, cursor: 'pointer', userSelect: 'none' }}
+            onClick={() => handleColumnSort('root_freq')}
+          >
+            <div className="freq-label" style={{ color: sortBy === 'root_freq' ? '#2d5a2d' : '#666' }}>
+              Quranic Root<br />Frequency{getSortIndicator('root_freq')}
+            </div>
           </div>
         )}
         {showStatistics && (
-          <div style={{ width: '110px', textAlign: 'center', flexShrink: 0 }}>
-            <div className="freq-label">Quranic Word<br />Frequency</div>
+          <div
+            style={{ width: '110px', textAlign: 'center', flexShrink: 0, cursor: 'pointer', userSelect: 'none' }}
+            onClick={() => handleColumnSort('word_freq')}
+          >
+            <div className="freq-label" style={{ color: sortBy === 'word_freq' ? '#2d5a2d' : '#666' }}>
+              Quranic Word<br />Frequency{getSortIndicator('word_freq')}
+            </div>
           </div>
         )}
         <div style={{ flex: '0 0 150px' }} />
       </div>
 
       {/* Data Rows */}
-      {items.map((item, index) => (
+      {sortedItems.map((item, index) => (
         <div
           key={item.item_id}
           className="corpus-item-card"
@@ -456,11 +516,12 @@ const handleFreeformLineHighlight = (lineNumber) => {
               </div>
             </div>
           </div>
-          {index < items.length - 1 && <div className="item-separator" />}
+          {index < sortedItems.length - 1 && <div className="item-separator" />}
         </div>
       ))}
     </div>
-  );
+    );
+  };
 
   const renderPoetry = () => {
     // Group items by line_number
