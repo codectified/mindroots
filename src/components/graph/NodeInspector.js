@@ -8,7 +8,12 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const [navigationStatus, setNavigationStatus] = useState({ loading: false, message: '' });
   
   // Target fields for validation and editing
-  const validationFields = ['english', 'wazn', 'spanish', 'urdu', 'classification', 'transliteration', 'frame', 'opposite', 'metaphor', 'dua', 'notes'];
+  // CorpusItem nodes have their own editable fields (statistics)
+  const { nodeType } = nodeData || {};
+  const isCorpusItem = nodeType === 'corpusitem' || nodeType === 'CorpusItem';
+  const validationFields = isCorpusItem
+    ? ['english', 'transliteration', 'qrootfreq', 'quran_frequency']
+    : ['english', 'wazn', 'spanish', 'urdu', 'classification', 'transliteration', 'frame', 'opposite', 'metaphor', 'dua', 'notes'];
   
   // State for editable field values
   const [fieldValues, setFieldValues] = useState(() => {
@@ -73,20 +78,31 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
 
   if (!nodeData) return null;
 
-  const { nodeType, nodeId, properties, relationships, connectedNodeCounts, summary } = nodeData;
+  const { nodeId, properties, relationships, connectedNodeCounts, summary } = nodeData;
 
   // Helper to organize properties more intuitively
   const getOrganizedProperties = (properties) => {
     const entries = Object.entries(properties);
-    
-    // Reordered priority as requested: arabic, definitions, wazn, english, transliteration, urdu, spanish, then everything else
-    const priorityOrder = [
-      'arabic', 'definitions', 'wazn', 'english', 'transliteration', 'urdu', 'spanish',
-      'hanswehr_entry', 'frame', 'opposite', 'metaphor', 'dua', 'notes', 'classification',
-      // IDs
-      'word_id', 'root_id', 'entry_id', 'item_id', 'corpus_id'
-      // Everything else will be added after
-    ];
+
+    // Different priority order for CorpusItem nodes (statistics-focused)
+    let priorityOrder;
+    if (isCorpusItem) {
+      priorityOrder = [
+        'arabic', 'english', 'transliteration', 'qrootfreq', 'quran_frequency',
+        // IDs
+        'item_id', 'corpus_id'
+        // Everything else will be added after
+      ];
+    } else {
+      // Original priority for Word/Root nodes
+      priorityOrder = [
+        'arabic', 'definitions', 'wazn', 'english', 'transliteration', 'urdu', 'spanish',
+        'hanswehr_entry', 'frame', 'opposite', 'metaphor', 'dua', 'notes', 'classification',
+        // IDs
+        'word_id', 'root_id', 'entry_id', 'item_id', 'corpus_id'
+        // Everything else will be added after
+      ];
+    }
     
     // Separate into priority and remaining fields
     const priorityFields = [];
@@ -123,13 +139,13 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     const fieldValue = isValidatable ? fieldValues[fieldName] : null;
 
     if (isValidatable) {
-      const isEmpty = !fieldValue?.trim();
-      
+      const isEmpty = !String(fieldValue || '').trim();
+
       return (
         <div className="validation-input-container">
           <input
             type="text"
-            value={fieldValue || ''}
+            value={String(fieldValue || '')}
             onChange={(e) => handleFieldChange(fieldName, e.target.value)}
             disabled={validation?.locked}
             className={`validation-input ${validation?.locked ? 'locked' : ''} ${isEmpty ? 'empty' : ''}`}
@@ -181,7 +197,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   
   // Handle approve action - DISABLED: No longer creating approval nodes
   const handleApprove = async (field) => {
-    const value = fieldValues[field]?.trim();
+    const value = String(fieldValues[field] || '').trim();
     
     // Block approving empty values
     if (!value) {
@@ -357,7 +373,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                 const isValidatable = isValidationField(key);
                 const validation = isValidatable ? validationData[key] : null;
                 const fieldValue = isValidatable ? fieldValues[key] : null;
-                const isEmpty = isValidatable ? !fieldValue?.trim() : false;
+                const isEmpty = isValidatable ? !String(fieldValue || '').trim() : false;
                 
                 return (
                   <div key={key} className="property-row">

@@ -1,5 +1,6 @@
 import React, { useEffect, useCallback, useState } from 'react';
 import GraphVisualization from './GraphVisualization';
+import NodeInspector from './NodeInspector';
 import { expandGraph, navigateToAdjacentNode, navigateByGlobalPosition } from '../../services/apiService';
 import MainMenu from '../navigation/MainMenu';
 import { useLanguage } from '../../contexts/LanguageContext';
@@ -13,9 +14,9 @@ import InfoBubble from '../layout/InfoBubble';
 
 const CorpusGraphScreen = () => {
   const { L1, L2 } = useLanguage();
-  const { contextFilterRoot, contextFilterForm } = useContextFilter(); 
+  const { contextFilterRoot, contextFilterForm } = useContextFilter();
   const { selectedCorpus, selectedCorpusItem, handleSelectCorpusItem, loading } = useCorpus();
-  const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
+  const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble, nodeInspectorData, setNodeInspectorData, handleNodeNavigation } = useGraphData();
   const [navigationLoading, setNavigationLoading] = useState(false);
   const [currentNavigationItem, setCurrentNavigationItem] = useState(null);
 
@@ -71,6 +72,10 @@ const CorpusGraphScreen = () => {
 
   const closeInfoBubble = () => {
     setInfoBubble(null);
+  };
+
+  const closeNodeInspector = () => {
+    setNodeInspectorData(null);
   };
 
   // Simple navigation: get next/previous corpus item and regenerate graph
@@ -210,6 +215,15 @@ const CorpusGraphScreen = () => {
             top: `${infoBubble.position.y}px`,
             left: `${infoBubble.position.x}px`,
           }}
+        />
+      )}
+
+      {/* Render node inspector if nodeInspectorData is set */}
+      {nodeInspectorData && (
+        <NodeInspector
+          nodeData={nodeInspectorData}
+          onClose={closeNodeInspector}
+          onNavigate={handleNodeNavigation}
         />
       )}
     </div>
