@@ -372,7 +372,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
     };
   }, [onClose]);
 
-  // Calculate positioning: X centered in viewport, Y follows click
+  // Calculate positioning: X centered in viewport, Y follows click with bounds clamping
   useEffect(() => {
     if (!infoBubbleRef.current || !style) return;
 
@@ -402,7 +402,24 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
     const centeredLeft = (viewportWidth - bubbleWidth) / 2;
 
     // Y: Offset by half the bubble height to center vertically on click Y coordinate
-    const centeredTop = originalTop - bubbleHeight / 2;
+    let centeredTop = originalTop - bubbleHeight / 2;
+
+    // Mobile bounds clamping: Ensure bubble stays within viewport on mobile devices
+    const isMobile = viewportWidth <= 768;
+    if (isMobile) {
+      const viewportHeight = window.innerHeight;
+      const minMargin = 10; // Minimum margin from edges
+
+      // Clamp top position to keep bubble visible
+      const minTop = minMargin;
+      const maxTop = viewportHeight - bubbleHeight - minMargin;
+
+      if (centeredTop < minTop) {
+        centeredTop = minTop;
+      } else if (centeredTop > maxTop) {
+        centeredTop = maxTop;
+      }
+    }
 
     setCenteredStyle({
       ...style,
