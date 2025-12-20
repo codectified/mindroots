@@ -284,18 +284,30 @@ InfoBubble has smart positioning built-in:
 ### Issue: InfoBubble appears outside viewport
 **Solution**: Implement bounds checking or use `useInfoBubbles` which handles this automatically
 
+## Known Issues & Fixes
+
+### Mobile Table Mode - InfoBubble Jumps Off-Screen
+**Issue**: When clicking on words in table mode on mobile, InfoBubble sometimes appears off-screen or jumps around when scrolling.
+
+**Root Cause**: The auto-centering logic in InfoBubble.js (useEffect lines 375-412) uses `pageY` coordinates without accounting for scroll position. On mobile, this causes the bubble to position relative to the full page height rather than the viewport.
+
+**Solution**: The positioning calculation should use `clientY` (viewport-relative) for mobile views, or clamp the final position to viewport bounds with adequate margin.
+
+**Implementation Note**: The fix involves adding bounds checking in the `useEffect` that calculates `centeredTop` to ensure it stays within viewport bounds on mobile devices.
+
 ## Future Improvements
 
 ### Potential Enhancements
 - **Smart positioning**: Automatically avoid viewport edges
 - **Animation**: Smooth entrance/exit animations
-- **Mobile optimization**: Touch-friendly positioning
+- **Mobile optimization**: Touch-friendly positioning with bounds clamping (PRIORITY)
 - **Multiple positioning modes**: Prop to choose positioning strategy
 
 ### Standardization Opportunities
 - **Unified hook**: Single hook for all positioning needs
 - **Default centering**: Make center-screen positioning the default
 - **Position props**: Standardized props for common positions
+- **Mobile-specific positioning**: Separate logic path for mobile table views
 
 ---
 
