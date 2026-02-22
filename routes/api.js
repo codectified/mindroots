@@ -29,6 +29,7 @@ const gptAdminRoutes = require('./modules/gpt-admin');
 const lexiconRoutes = require('./modules/lexicon');
 const inspectionRoutes = require('./modules/inspection');
 const contentRoutes = require('./modules/content');
+const flyerRoutes = require('./modules/flyer');
 
 // Mount modular route modules
 router.use('/', corpusRoutes);           // Corpus data operations
@@ -39,5 +40,6 @@ router.use('/', gptAdminRoutes);         // GPT integration and admin queries
 router.use('/', lexiconRoutes);          // Dictionary and lexicon entries
 router.use('/', inspectionRoutes);       // Node inspection, navigation, and validation
 router.use('/', contentRoutes);          // Articles and analyses content
+router.use('/', flyerRoutes);            // Flyer generation module (Custom GPT integration)
 
 module.exports = router;

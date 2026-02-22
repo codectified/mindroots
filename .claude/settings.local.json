@@ -34,7 +34,9 @@
       "Bash(npx @react-native-community/cli init:*)",
       "Bash(npm install:*)",
       "Bash(python3:*)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(source:*)",
+      "Bash(file:*)"
     ],
     "deny": []
   }
