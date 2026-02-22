@@ -1,44 +1,46 @@
 const authenticateAPI = (req, res, next) => {
   const authHeader = req.headers.authorization;
-  
+
   // Core API keys
   const mainKey = process.env.API_KEY; // Main production key
   const publicKey = process.env.PUBLIC_API_KEY; // GPT read-only key
   const adminKey = process.env.ADMIN_API_KEY; // GPT admin key
+  const flyerKey = process.env.FLYER_API_KEY; // Flyer module key (Custom GPT)
 
-  if (!mainKey && !publicKey && !adminKey) {
+  if (!mainKey && !publicKey && !adminKey && !flyerKey) {
     console.error("No API keys configured in environment");
-    return res.status(500).json({ 
-      error: "Server configuration error" 
+    return res.status(500).json({
+      error: "Server configuration error"
     });
   }
 
   if (!authHeader) {
-    return res.status(401).json({ 
-      error: "Missing Authorization header. Include: Authorization: Bearer <api-key>" 
+    return res.status(401).json({
+      error: "Missing Authorization header. Include: Authorization: Bearer <api-key>"
     });
   }
 
   // Support both "Bearer <key>" and direct key formats
-  const token = authHeader.startsWith("Bearer ") 
-    ? authHeader.slice(7) 
+  const token = authHeader.startsWith("Bearer ")
+    ? authHeader.slice(7)
     : authHeader;
 
   // Check if token matches any valid key
   const isMainKey = mainKey && token === mainKey;
   const isPublicKey = publicKey && token === publicKey;
   const isAdminKey = adminKey && token === adminKey;
+  const isFlyerKey = flyerKey && token === flyerKey;
 
-  if (!isMainKey && !isPublicKey && !isAdminKey) {
+  if (!isMainKey && !isPublicKey && !isAdminKey && !isFlyerKey) {
     console.log(`Authentication failed for IP: ${req.ip}, Key: ${token.substring(0, 8)}...`);
-    return res.status(403).json({ 
-      error: "Invalid API key" 
+    return res.status(403).json({
+      error: "Invalid API key"
     });
   }
 
   // Store auth level in request for later use
-  req.authLevel = isAdminKey ? 'admin' : (isMainKey ? 'main' : 'public');
-  
+  req.authLevel = isAdminKey ? 'admin' : (isMainKey ? 'main' : (isFlyerKey ? 'flyer' : 'public'));
+
   // Log successful authentication
   console.log(`API access granted (${req.authLevel}) for IP: ${req.ip} at ${new Date().toISOString()}`);
   next();
