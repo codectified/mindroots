@@ -11,6 +11,7 @@ require('dotenv').config(); // Load environment variables
 const express = require('express');
 const neo4j = require('neo4j-driver');
 const cors = require('cors');
+const path = require('path');
 const apiRoutes = require('./routes/api');
 
 const app = express();
@@ -18,6 +19,9 @@ const port = 5001;
 
 app.use(cors());
 app.use(express.json());
+
+// Static file serving for flyer previews and PDFs
+app.use('/flyers', express.static(path.join(__dirname, 'flyers')));
 
 // Neo4j driver setup using environment variables
 const driver = neo4j.driver(
