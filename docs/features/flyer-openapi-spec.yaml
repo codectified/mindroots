@@ -1,0 +1,338 @@
+openapi: 3.1.0
+info:
+  title: MindRoots Flyer API
+  description: API for creating, versioning, and rendering flyers via Custom GPT
+  version: 1.0.0
+servers:
+  - url: https://your-domain.com/api
+    description: Production server
+  - url: http://localhost:5001/api
+    description: Development server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      description: API key for flyer operations
+
+  schemas:
+    FlyerMetadata:
+      type: object
+      properties:
+        eventName:
+          type: string
+          description: Name of the event
+        format:
+          type: string
+          description: Intended output format
+        notes:
+          type: string
+          description: Additional notes about the flyer
+
+    CreateFlyerRequest:
+      type: object
+      required:
+        - html
+      properties:
+        html:
+          type: string
+          description: HTML content for the flyer (no script tags or event handlers allowed)
+        css:
+          type: string
+          description: CSS styles for the flyer
+        metadata:
+          $ref: '#/components/schemas/FlyerMetadata'
+
+    CreateFlyerResponse:
+      type: object
+      properties:
+        flyerId:
+          type: string
+          description: Unique identifier for the flyer
+        version:
+          type: integer
+          description: Version number (starts at 1)
+        previewUrl:
+          type: string
+          format: uri
+          description: URL to preview the flyer HTML
+        message:
+          type: string
+
+    CreateVersionRequest:
+      type: object
+      required:
+        - html
+      properties:
+        html:
+          type: string
+          description: Updated HTML content
+        css:
+          type: string
+          description: Updated CSS styles
+        notes:
+          type: string
+          description: Notes about this version change
+
+    RenderImageRequest:
+      type: object
+      properties:
+        version:
+          type: integer
+          description: Version to render (defaults to latest)
+        format:
+          type: string
+          enum: [letter, a4, ig_square, ig_story]
+          default: letter
+          description: Output format dimensions
+
+    RenderImageResponse:
+      type: object
+      properties:
+        flyerId:
+          type: string
+        version:
+          type: integer
+        format:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+          description: URL to the rendered PNG image
+        message:
+          type: string
+
+    AssetList:
+      type: object
+      properties:
+        assets:
+          type: object
+          description: Assets grouped by category
+          additionalProperties:
+            type: array
+            items:
+              type: object
+              properties:
+                filename:
+                  type: string
+                url:
+                  type: string
+                  format: uri
+
+    FlyerInfo:
+      type: object
+      properties:
+        flyerId:
+          type: string
+        versions:
+          type: array
+          items:
+            type: object
+            properties:
+              version:
+                type: integer
+              timestamp:
+                type: string
+                format: date-time
+              notes:
+                type: string
+              renderStatus:
+                type: string
+              previewUrl:
+                type: string
+                format: uri
+        latestVersion:
+          type: integer
+        latestPreviewUrl:
+          type: string
+          format: uri
+
+    FlyerList:
+      type: object
+      properties:
+        count:
+          type: integer
+        flyers:
+          type: array
+          items:
+            type: object
+            properties:
+              flyerId:
+                type: string
+              latestVersion:
+                type: integer
+              createdAt:
+                type: string
+                format: date-time
+              previewUrl:
+                type: string
+                format: uri
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /flyers:
+    post:
+      operationId: createFlyer
+      summary: Create a new flyer
+      description: Creates a new flyer with HTML/CSS content. Returns a preview URL.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateFlyerRequest'
+      responses:
+        '201':
+          description: Flyer created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateFlyerResponse'
+        '400':
+          description: Invalid input (missing HTML or security violation)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
+
+    get:
+      operationId: listFlyers
+      summary: List all flyers
+      description: Returns a summary of all flyers with their latest versions
+      responses:
+        '200':
+          description: List of flyers
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlyerList'
+
+  /flyers/{flyerId}:
+    get:
+      operationId: getFlyerInfo
+      summary: Get flyer information
+      description: Returns metadata and all versions for a specific flyer
+      parameters:
+        - name: flyerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The flyer ID (16-character hex string)
+      responses:
+        '200':
+          description: Flyer information
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FlyerInfo'
+        '404':
+          description: Flyer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /flyers/{flyerId}/versions:
+    post:
+      operationId: createVersion
+      summary: Create a new version
+      description: Creates a new version of an existing flyer with updated HTML/CSS
+      parameters:
+        - name: flyerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The flyer ID
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateVersionRequest'
+      responses:
+        '201':
+          description: New version created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateFlyerResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Flyer not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /flyers/{flyerId}/render:
+    post:
+      operationId: renderImage
+      summary: Render flyer to PNG image
+      description: Renders the flyer HTML/CSS to a high-resolution PNG image. Supports letter, A4, Instagram square, and Instagram story formats. The resulting image URL can be viewed directly.
+      parameters:
+        - name: flyerId
+          in: path
+          required: true
+          schema:
+            type: string
+          description: The flyer ID
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderImageRequest'
+      responses:
+        '200':
+          description: Image rendered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenderImageResponse'
+        '404':
+          description: Flyer or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '503':
+          description: Image rendering unavailable (Puppeteer not installed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /flyers/assets:
+    get:
+      operationId: listAssets
+      summary: List available assets
+      description: Lists all available assets (logos, backgrounds, templates, etc.) organized by category. Assets are files stored on the server that can be referenced or incorporated into flyer designs and image enhancements.
+      responses:
+        '200':
+          description: Asset listing
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AssetList'

@@ -18,6 +18,8 @@
 ### **Feature Documentation**
 - **[Analysis Nodes](features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system with v2 schema
 - **[Corpus Navigation System](features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position for reliable sequential corpus browsing
+- **[Flyer Module](features/FLYER-MODULE-DOCUMENTATION.md)** - ✅ AI-assisted flyer generation via Custom GPT with versioned storage and PNG rendering
+- **[AIF GPT Instructions](features/AIF-GPT-INSTRUCTIONS.md)** - Custom GPT setup and system prompt for AIF client
 - **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
 - **[Radical Search Integration](features/RADICAL-SEARCH-INTEGRATION.md)** - RadicalPosition-based search system architecture
 - **[Validation System](features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - Inline editing and approval workflow for linguistic data
@@ -50,6 +52,9 @@ docs/
 ├── DOCUMENTATION-INDEX.md          # This file - navigation hub
 ├── features/                       # Current feature documentation
 │   ├── ANALYSIS-NODES-DOCUMENTATION.md
+│   ├── FLYER-MODULE-DOCUMENTATION.md
+│   ├── AIF-GPT-INSTRUCTIONS.md
+│   ├── flyer-openapi-spec.yaml
 │   ├── RADICAL-SEARCH-INTEGRATION.md
 │   ├── VALIDATION-SYSTEM-DOCUMENTATION.md
 │   └── NODE-INSPECTOR-DOCUMENTATION.md
