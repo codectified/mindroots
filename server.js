@@ -20,8 +20,9 @@ const port = 5001;
 app.use(cors());
 app.use(express.json());
 
-// Static file serving for flyer previews and PDFs
-app.use('/flyers', express.static(path.join(__dirname, 'flyers')));
+// Static file serving for projects and assets
+app.use('/projects', express.static(path.join(__dirname, 'projects')));
+app.use('/assets', express.static(path.join(__dirname, 'assets')));
 
 // Neo4j driver setup using environment variables
 const driver = neo4j.driver(
