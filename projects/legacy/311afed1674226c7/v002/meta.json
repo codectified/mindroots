@@ -1,0 +1,14 @@
+{
+  "flyerId": "311afed1674226c7",
+  "version": 2,
+  "timestamp": "2026-01-29T09:58:03.662Z",
+  "author": "main",
+  "source": "custom_gpt",
+  "notes": "Added RSVP info and updated title",
+  "renderStatus": "completed",
+  "lastRender": {
+    "timestamp": "2026-01-29T09:58:14.664Z",
+    "format": "letter",
+    "filename": "flyer_311afed1674226c7_v2_letter.pdf"
+  }
+}
