@@ -555,6 +555,39 @@ async function createVersionDir(graphicDir, startVersion) {
 }
 
 /**
+ * Build a full HTML document that links to styles.css.
+ * If the submitted HTML is already a full document, inject the stylesheet link.
+ * If it's a fragment, wrap it in a proper document shell.
+ */
+function buildPreviewHTML(html, css) {
+  const isFullDocument = /^\s*<!doctype\s/i.test(html) || /^\s*<html[\s>]/i.test(html);
+
+  if (isFullDocument) {
+    // Already a full document — inject stylesheet link if not present
+    if (!/<link[^>]*styles\.css/i.test(html)) {
+      // Insert before </head> if it exists, otherwise before </html>
+      if (/<\/head>/i.test(html)) {
+        return html.replace(/<\/head>/i, '  <link rel="stylesheet" href="./styles.css">\n</head>');
+      }
+    }
+    return html;
+  }
+
+  // Fragment — wrap in full document
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+${html}
+</body>
+</html>`;
+}
+
+/**
  * Write index.html, styles.css, and meta.json for a version
  */
 async function writeVersionFiles(versionDir, { id, project, version, html, css, notes, author }) {
@@ -570,8 +603,10 @@ async function writeVersionFiles(versionDir, { id, project, version, html, css, 
     renders: {}
   };
 
+  const previewHTML = buildPreviewHTML(html, css);
+
   await Promise.all([
-    fs.writeFile(path.join(versionDir, 'index.html'), html, 'utf8'),
+    fs.writeFile(path.join(versionDir, 'index.html'), previewHTML, 'utf8'),
     fs.writeFile(path.join(versionDir, 'styles.css'), css || '', 'utf8'),
     fs.writeFile(path.join(versionDir, 'meta.json'), JSON.stringify(meta, null, 2), 'utf8')
   ]);
