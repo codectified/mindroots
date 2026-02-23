@@ -4,7 +4,7 @@ info:
   description: API for creating, versioning, and rendering graphical media via Custom GPT
   version: 2.0.0
 servers:
-  - url: https://your-domain.com/api
+  - url: https://theoption.life/api
     description: Production server
   - url: http://localhost:5001/api
     description: Development server
@@ -14,7 +14,7 @@ components:
     ApiKeyAuth:
       type: http
       scheme: bearer
-      description: API key for workspace operations
+      description: API key for workspace operations. Use the FLYER_API_KEY value.
 
   schemas:
     CreateGraphicRequest:
@@ -180,6 +180,10 @@ paths:
                   graphic:
                     type: object
                     description: Single graphic detail (when id param used)
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
 
   /workspace/create:
     post:
@@ -207,6 +211,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
         '404':
           description: Graphic not found (when using id)
           content:
@@ -238,6 +246,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
         '503':
           description: Image rendering unavailable (Puppeteer not installed)
           content:
@@ -269,3 +281,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key

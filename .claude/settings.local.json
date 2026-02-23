@@ -36,7 +36,12 @@
       "Bash(python3:*)",
       "Bash(npm run build:*)",
       "Bash(source:*)",
-      "Bash(file:*)"
+      "Bash(file:*)",
+      "Bash(KEY=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\" __NEW_LINE_a25fd7c9dc7a132b__ echo \"=== TEST 1: GET /api/workspace \\(lightweight\\) ===\" curl -s http://localhost:5001/api/workspace -H \"Authorization: Bearer $KEY\")",
+      "Bash(KEY=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\")",
+      "Bash(KEY=\"ac71ca1f696aee3144a30a1d8bdd901e56367fa8ab4bcf80e3e7c65a46c0977e\")",
+      "Bash(K=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\")",
+      "Bash(export K=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\")"
     ],
     "deny": []
   }
