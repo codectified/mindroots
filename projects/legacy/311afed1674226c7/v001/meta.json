@@ -1,0 +1,16 @@
+{
+  "flyerId": "311afed1674226c7",
+  "version": 1,
+  "timestamp": "2026-01-29T09:57:48.035Z",
+  "author": "main",
+  "source": "custom_gpt",
+  "notes": "Initial design for testing",
+  "eventName": "Community Iftar",
+  "format": "letter",
+  "renderStatus": "completed",
+  "lastRender": {
+    "timestamp": "2026-01-29T09:58:21.062Z",
+    "format": "ig_square",
+    "filename": "flyer_311afed1674226c7_v1_ig_square.pdf"
+  }
+}
