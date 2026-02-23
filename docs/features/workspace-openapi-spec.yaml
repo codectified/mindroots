@@ -1,0 +1,287 @@
+openapi: 3.1.0
+info:
+  title: MindRoots Creative Workspace API
+  description: API for creating, versioning, and rendering graphical media via Custom GPT
+  version: 2.0.0
+servers:
+  - url: https://theoption.life/api
+    description: Production server
+  - url: http://localhost:5001/api
+    description: Development server
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      description: API key for workspace operations. Use the FLYER_API_KEY value.
+
+  schemas:
+    CreateGraphicRequest:
+      type: object
+      required:
+        - html
+      properties:
+        project:
+          type: string
+          description: Project name for new graphic (required if no id)
+        id:
+          type: string
+          description: Existing graphic ID for new version (required if no project)
+        html:
+          type: string
+          description: HTML content (no script tags or event handlers allowed)
+        css:
+          type: string
+          description: CSS styles
+        metadata:
+          type: object
+          properties:
+            notes:
+              type: string
+              description: Notes about this graphic/version
+        notes:
+          type: string
+          description: Notes (alternative to metadata.notes)
+
+    CreateGraphicResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique graphic identifier
+        project:
+          type: string
+          description: Project name
+        version:
+          type: integer
+          description: Version number
+        previewUrl:
+          type: string
+          format: uri
+          description: URL to preview the HTML
+        message:
+          type: string
+
+    RenderRequest:
+      type: object
+      required:
+        - id
+      properties:
+        id:
+          type: string
+          description: Graphic ID
+        version:
+          type: integer
+          description: Version to render (defaults to latest)
+        format:
+          type: string
+          enum: [letter, a4, ig_square, ig_story]
+          default: letter
+          description: Output format dimensions
+
+    RenderResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        project:
+          type: string
+        version:
+          type: integer
+        format:
+          type: string
+        imageUrl:
+          type: string
+          format: uri
+          description: URL to the rendered PNG image
+        message:
+          type: string
+
+    OrganizeRequest:
+      type: object
+      required:
+        - project
+      properties:
+        project:
+          type: string
+          description: Project path to create (e.g. "ramadan-2026" or "ramadan-2026/social-media")
+
+    OrganizeResponse:
+      type: object
+      properties:
+        project:
+          type: string
+        message:
+          type: string
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /workspace:
+    get:
+      operationId: getWorkspace
+      summary: Browse workspace
+      description: |
+        Returns asset categories and project listings. Lightweight by default (counts only).
+        Use query params to expand: assets=true for file listings, project=name for full project detail,
+        id=xxx for single graphic detail, includeVersions=true for version arrays.
+      parameters:
+        - name: assets
+          in: query
+          schema:
+            type: string
+            enum: ["true"]
+          description: Set to "true" to include full asset file listings with URLs
+        - name: project
+          in: query
+          schema:
+            type: string
+          description: Project name to get full detail for
+        - name: id
+          in: query
+          schema:
+            type: string
+          description: Graphic ID to get full detail for
+        - name: includeVersions
+          in: query
+          schema:
+            type: string
+            enum: ["true"]
+          description: Include version arrays when listing projects
+        - name: maxVersions
+          in: query
+          schema:
+            type: integer
+          description: Limit version entries returned per graphic
+      responses:
+        '200':
+          description: Workspace data
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  assets:
+                    type: object
+                    description: Asset categories (counts or full listings)
+                  projects:
+                    type: object
+                    description: Project listings (counts or full detail)
+                  graphic:
+                    type: object
+                    description: Single graphic detail (when id param used)
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
+
+  /workspace/create:
+    post:
+      operationId: createGraphic
+      summary: Create graphic or new version
+      description: |
+        Creates a new graphic (provide "project") or a new version of an existing graphic (provide "id").
+        Returns id, project, version, and previewUrl.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateGraphicRequest'
+      responses:
+        '201':
+          description: Graphic/version created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateGraphicResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
+        '404':
+          description: Graphic not found (when using id)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /workspace/render:
+    post:
+      operationId: renderGraphic
+      summary: Render graphic to PNG
+      description: Renders the graphic HTML/CSS to a high-resolution PNG. Supports letter, A4, Instagram square, and Instagram story formats. Multiple formats can be rendered per version.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RenderRequest'
+      responses:
+        '200':
+          description: Image rendered successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RenderResponse'
+        '404':
+          description: Graphic or version not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
+        '503':
+          description: Image rendering unavailable (Puppeteer not installed)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /workspace/organize:
+    post:
+      operationId: organizeProject
+      summary: Create project folder
+      description: Creates a project folder structure. Supports nested paths (e.g. "ramadan-2026/social-media"). Path traversal is rejected.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrganizeRequest'
+      responses:
+        '201':
+          description: Project folder created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrganizeResponse'
+        '400':
+          description: Invalid project path
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key
