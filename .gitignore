@@ -25,6 +25,8 @@ yarn-error.log*
 server.log
 *.log
 
-# Generated flyers (user-generated content)
-/flyers/*
-!/flyers/.gitkeep
+# Runtime data (GPT-created content)
+/projects/*
+!/projects/.gitkeep
+/assets/*
+!/assets/.gitkeep
