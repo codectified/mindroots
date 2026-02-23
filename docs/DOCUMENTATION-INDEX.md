@@ -1,6 +1,6 @@
 # MindRoots Documentation Index
 
-**Last Updated**: September 12, 2025  
+**Last Updated**: February 22, 2026
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
