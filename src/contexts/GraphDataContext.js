@@ -561,10 +561,11 @@ const handleNodeClick = async (
     return;
   }
   
-  // Always capture the true click point
+  // Capture viewport-relative click point (clientX/Y, not pageX/Y)
+  // InfoBubble uses position: fixed, so coordinates must be viewport-relative
   const position = {
-    x: event.pageX,
-    y: event.pageY,
+    x: event.clientX,
+    y: event.clientY,
   };
 
   if (node.type === 'form') {
