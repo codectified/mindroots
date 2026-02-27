@@ -1,6 +1,6 @@
 /* info-bubble.css - Modal components including InfoBubble and NodeInspector */
 .info-bubble {
-  position: absolute;      /* ← must be absolute, not fixed */
+  position: fixed;
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 5px;

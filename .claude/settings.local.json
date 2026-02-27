@@ -41,7 +41,9 @@
       "Bash(KEY=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\")",
       "Bash(KEY=\"ac71ca1f696aee3144a30a1d8bdd901e56367fa8ab4bcf80e3e7c65a46c0977e\")",
       "Bash(K=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\")",
-      "Bash(export K=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\")"
+      "Bash(export K=\"0e8f5f7ec6a5589b4f2d89aba194d23bcd302578b81f73fba35970a8fe392ba1\")",
+      "Bash(git show:*)",
+      "Bash(npx react-scripts build:*)"
     ],
     "deny": []
   }

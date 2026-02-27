@@ -373,6 +373,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
   }, [onClose]);
 
   // Calculate positioning: X centered in viewport, Y follows click with bounds clamping
+  // All coordinates are viewport-relative (clientX/Y) since InfoBubble uses position: fixed
   useEffect(() => {
     if (!infoBubbleRef.current || !style) return;
 
@@ -387,7 +388,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
     const bubbleWidth = rect.width;
     const bubbleHeight = rect.height;
 
-    // Parse the original click coordinates
+    // Parse the original click coordinates (viewport-relative)
     const parsePosition = (value) => {
       if (typeof value === 'string') {
         return parseFloat(value.replace('px', ''));
@@ -395,30 +396,26 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
       return value || 0;
     };
 
-    const originalTop = parsePosition(style.top);
+    const clickY = parsePosition(style.top);
 
     // X: Center horizontally in viewport
     const viewportWidth = document.documentElement.clientWidth;
     const centeredLeft = (viewportWidth - bubbleWidth) / 2;
 
-    // Y: Offset by half the bubble height to center vertically on click Y coordinate
-    let centeredTop = originalTop - bubbleHeight / 2;
+    // Y: Center the bubble vertically on the click point
+    let centeredTop = clickY - bubbleHeight / 2;
 
-    // Mobile bounds clamping: Ensure bubble stays within viewport on mobile devices
-    const isMobile = viewportWidth <= 768;
-    if (isMobile) {
-      const viewportHeight = window.innerHeight;
-      const minMargin = 10; // Minimum margin from edges
+    // Bounds clamping: keep bubble within viewport (works for all devices
+    // since coordinates and position:fixed are both viewport-relative)
+    const viewportHeight = window.innerHeight;
+    const minMargin = 10;
+    const minTop = minMargin;
+    const maxTop = viewportHeight - bubbleHeight - minMargin;
 
-      // Clamp top position to keep bubble visible
-      const minTop = minMargin;
-      const maxTop = viewportHeight - bubbleHeight - minMargin;
-
-      if (centeredTop < minTop) {
-        centeredTop = minTop;
-      } else if (centeredTop > maxTop) {
-        centeredTop = maxTop;
-      }
+    if (centeredTop < minTop) {
+      centeredTop = minTop;
+    } else if (centeredTop > maxTop) {
+      centeredTop = maxTop;
     }
 
     setCenteredStyle({
