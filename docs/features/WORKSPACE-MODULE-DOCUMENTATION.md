@@ -21,27 +21,42 @@ This module operates independently of the MindRoots graph database and linguisti
 
 ## Architecture
 
-### Storage Structure
+### Multi-Tenant Storage Structure
+
+Each tenant (Custom GPT) gets an isolated workspace under `/workspaces/{tenant}/`:
 
 ```
-assets/                              # Top-level shared raw materials
-├── logos/
-├── backgrounds/
-└── templates/
-
-projects/                            # GPT's organized work
-├── .index.json                      # ID→project lookup map
-├── ramadan-2026/
-│   ├── {id}/v001/
-│   │   ├── index.html
-│   │   ├── styles.css
-│   │   └── meta.json
-│   └── {id}/v002/
-├── family-social/
-│   └── {id}/v001/
-└── legacy/                          # Migrated from old flyer system
-    └── 311afed1674226c7/
+workspaces/                          # Top-level — all tenant data
+├── aif/                             # AIF GPT workspace
+│   ├── assets/
+│   │   ├── logos/
+│   │   ├── backgrounds/
+│   │   └── templates/
+│   └── projects/
+│       ├── .index.json              # ID→project lookup map
+│       ├── ramadan-2026/
+│       │   └── {id}/v001/
+│       └── legacy/
+├── mindroots/                       # MindRoots branding GPT workspace
+│   ├── assets/
+│   │   ├── logos/
+│   │   ├── backgrounds/
+│   │   └── templates/
+│   └── projects/
+│       └── .index.json
 ```
+
+### Tenant Resolution
+
+Workspace identity is encoded in self-describing API tokens:
+
+```
+ws_<workspaceId>_<randomSecret>
+```
+
+Examples: `ws_aif_83fj29fk29`, `ws_mindroots_k29f92jf9`
+
+The auth middleware parses `workspaceId` from the token prefix, validates the workspace directory exists, and sets `req.workspace`. No per-tenant env vars needed.
 
 ### .index.json Format
 
@@ -145,7 +160,7 @@ Creates a new graphic (provide `project`) or a new version (provide `id`).
   "id": "abc123...",
   "project": "ramadan-2026",
   "version": 2,
-  "previewUrl": "https://theoption.life/projects/ramadan-2026/abc123.../v002/index.html",
+  "previewUrl": "https://theoption.life/workspaces/aif/projects/ramadan-2026/abc123.../v002/index.html",
   "message": "Version 2 created successfully"
 }
 ```
@@ -181,7 +196,7 @@ Concurrency protection: version directories created with `fs.mkdir(path, { recur
   "project": "ramadan-2026",
   "version": 2,
   "format": "ig_square",
-  "imageUrl": "https://theoption.life/projects/ramadan-2026/abc123.../v002/graphic_abc123..._v2_ig_square.png",
+  "imageUrl": "https://theoption.life/workspaces/aif/projects/ramadan-2026/abc123.../v002/graphic_abc123..._v2_ig_square.png",
   "message": "Image rendered successfully"
 }
 ```
@@ -234,13 +249,13 @@ Project paths are sanitized to prevent directory traversal attacks.
 
 Add to `.env`:
 ```bash
-# Public URL bases (defaults to localhost)
-PROJECTS_PUBLIC_URL=https://theoption.life/projects
-ASSETS_PUBLIC_URL=https://theoption.life/assets
-
-# Scoped API key for Custom GPT
-FLYER_API_KEY=your-secure-key
+# Multi-tenant workspace public URL (used for generating asset/preview URLs)
+WORKSPACES_PUBLIC_URL=https://theoption.life/workspaces
 ```
+
+No per-tenant env vars needed — workspace identity is encoded in the token itself.
+
+Workspace API tokens follow the format `ws_<workspaceId>_<secret>` and are passed as Bearer tokens in the Authorization header.
 
 ---
 
@@ -286,8 +301,9 @@ curl -X POST http://localhost:5001/api/workspace/render \
 
 ---
 
-## Migration from Flyer Module
+## Migration History
 
+### Flyer → Workspace (Feb 2026)
 - `flyers/` → `projects/` (top-level directory)
 - `flyers/assets/` → `assets/` (top-level directory)
 - Legacy flyer `311afed1674226c7` moved to `projects/legacy/`
@@ -295,8 +311,25 @@ curl -X POST http://localhost:5001/api/workspace/render \
 - Response field `flyerId` → `id`
 - Static serving: `/flyers` → `/projects` and new `/assets`
 
+### Single-tenant → Multi-tenant (Mar 2026)
+- `projects/` → `workspaces/aif/projects/`
+- `assets/` → `workspaces/aif/assets/`
+- New `workspaces/mindroots/` tenant created
+- Static serving: `/projects` + `/assets` → single `/workspaces` mount
+- Auth: workspace tokens (`ws_<id>_<secret>`) replace `FLYER_API_KEY`
+- URLs: `/projects/...` → `/workspaces/{tenant}/projects/...`
+- URLs: `/assets/...` → `/workspaces/{tenant}/assets/...`
+
+### nginx (production)
+Replace `/projects/` and `/assets/` location blocks with:
+```nginx
+location /workspaces/ {
+    alias /home/omaribrahim/mindroots/workspaces/;
+}
+```
+
 ---
 
-**Last Updated**: February 22, 2026
+**Last Updated**: March 3, 2026
 **Module Location**: `routes/modules/workspace.js`
 **OpenAPI Spec**: `docs/features/workspace-openapi-spec.yaml`

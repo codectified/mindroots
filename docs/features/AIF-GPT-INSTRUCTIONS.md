@@ -75,7 +75,7 @@ If the user wants artistic enhancement, use the rendered PNG as reference and ge
 1. In the Custom GPT editor, go to **Configure > Actions**
 2. Click **Create new action**
 3. Paste the contents of `docs/features/workspace-openapi-spec.yaml` into the schema
-4. Set **Authentication** to **API Key**, type **Bearer**, and enter the `FLYER_API_KEY` value
+4. Set **Authentication** to **API Key**, type **Bearer**, and enter the workspace token (format: `ws_aif_<secret>`)
 5. Update the server URL in the spec to your production domain
 
 ### Conversation Starters
