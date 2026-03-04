@@ -20,9 +20,8 @@ const port = 5001;
 app.use(cors());
 app.use(express.json());
 
-// Static file serving for projects and assets
-app.use('/projects', express.static(path.join(__dirname, 'projects')));
-app.use('/assets', express.static(path.join(__dirname, 'assets')));
+// Static file serving for multi-tenant workspaces
+app.use('/workspaces', express.static(path.join(__dirname, 'workspaces')));
 
 // Neo4j driver setup using environment variables
 const driver = neo4j.driver(
