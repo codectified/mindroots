@@ -281,6 +281,42 @@ router.get('/workspace', async (req, res) => {
         return res.status(404).json({ error: 'No versions found', message: `Graphic ${id} has no versions` });
       }
 
+      // --- Source retrieval: id + version returns html, css, meta ---
+      const requestedVersion = req.query.version ? parseInt(req.query.version, 10) : null;
+      if (requestedVersion) {
+        const vDir = formatVersion(requestedVersion);
+        const versionDir = path.join(graphicDir, vDir);
+        try {
+          await fs.access(versionDir);
+        } catch (e) {
+          return res.status(404).json({ error: 'Version not found', message: `Version ${requestedVersion} does not exist for graphic ${id}` });
+        }
+
+        const [htmlContent, cssContent, metaContent] = await Promise.all([
+          fs.readFile(path.join(versionDir, 'index.html'), 'utf8'),
+          fs.readFile(path.join(versionDir, 'styles.css'), 'utf8').catch(() => ''),
+          fs.readFile(path.join(versionDir, 'meta.json'), 'utf8').then(JSON.parse).catch(() => ({}))
+        ]);
+
+        // --- Inline preview: return self-contained HTML with embedded CSS ---
+        if (req.query.inline === 'true') {
+          const inlineHTML = htmlContent.replace(
+            /<link[^>]*href=["']\.\/styles\.css["'][^>]*>/i,
+            `<style>\n${cssContent}\n</style>`
+          );
+          return res.json({ id, project: projectName, version: requestedVersion, inlineHTML });
+        }
+
+        return res.json({
+          id,
+          project: projectName,
+          version: requestedVersion,
+          html: htmlContent,
+          css: cssContent,
+          meta: metaContent
+        });
+      }
+
       const graphic = { id, project: projectName, latestVersion: latestVer };
 
       // Always include versions for single-graphic lookup
@@ -424,7 +460,7 @@ router.post('/workspace/create', async (req, res) => {
   const paths = requireWorkspace(req, res);
   if (!paths) return;
 
-  const { id, project, html, css, metadata, notes } = req.body;
+  const { id, project, html, css, metadata, notes, baseVersion } = req.body;
 
   // Validate HTML
   if (!html) {
@@ -473,7 +509,8 @@ router.post('/workspace/create', async (req, res) => {
         html,
         css,
         notes: notes || metadata?.notes || null,
-        author: req.authLevel || 'unknown'
+        author: req.authLevel || 'unknown',
+        baseVersion: baseVersion ? parseInt(baseVersion, 10) : null
       });
 
       const previewUrl = `${paths.projectsUrlBase}/${projectName}/${graphicId}/${formatVersion(version)}/index.html`;
@@ -521,7 +558,8 @@ router.post('/workspace/create', async (req, res) => {
         html,
         css,
         notes: metadata?.notes || notes || null,
-        author: req.authLevel || 'unknown'
+        author: req.authLevel || 'unknown',
+        baseVersion: baseVersion ? parseInt(baseVersion, 10) : null
       });
 
       // Update index
@@ -611,11 +649,12 @@ ${html}
 /**
  * Write index.html, styles.css, and meta.json for a version
  */
-async function writeVersionFiles(versionDir, { id, project, version, html, css, notes, author }) {
+async function writeVersionFiles(versionDir, { id, project, version, html, css, notes, author, baseVersion }) {
   const meta = {
     id,
     project,
     version,
+    baseVersion: baseVersion || null,
     timestamp: new Date().toISOString(),
     author: author || 'unknown',
     source: 'custom_gpt',
