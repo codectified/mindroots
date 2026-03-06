@@ -14,7 +14,7 @@ components:
     ApiKeyAuth:
       type: http
       scheme: bearer
-      description: API key for workspace operations. Use the FLYER_API_KEY value.
+      description: Workspace API token in the format ws_<workspaceId>_<secret>. The token encodes workspace identity.
 
   schemas:
     CreateGraphicRequest:
@@ -43,6 +43,9 @@ components:
         notes:
           type: string
           description: Notes (alternative to metadata.notes)
+        baseVersion:
+          type: integer
+          description: Version number this revision is based on (for version ancestry tracking)
 
     CreateGraphicResponse:
       type: object
@@ -163,6 +166,17 @@ paths:
           schema:
             type: integer
           description: Limit version entries returned per graphic
+        - name: version
+          in: query
+          schema:
+            type: integer
+          description: When used with id, returns the source html, css, and meta for that specific version
+        - name: inline
+          in: query
+          schema:
+            type: string
+            enum: ["true"]
+          description: When used with id and version, returns self-contained HTML with CSS embedded in a style tag
       responses:
         '200':
           description: Workspace data

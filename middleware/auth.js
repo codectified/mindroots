@@ -25,6 +25,25 @@ const authenticateAPI = (req, res, next) => {
     ? authHeader.slice(7)
     : authHeader;
 
+  // Workspace token: ws_<workspaceId>_<secret>
+  if (token.startsWith('ws_')) {
+    const parts = token.split('_');
+    if (parts.length >= 3) {
+      const workspaceId = parts[1];
+      const fs = require('fs');
+      const path = require('path');
+      const workspaceDir = path.join(__dirname, '..', 'workspaces', workspaceId);
+      if (fs.existsSync(workspaceDir)) {
+        req.authLevel = 'workspace';
+        req.workspace = workspaceId;
+        console.log(`Workspace access granted (${workspaceId}) for IP: ${req.ip} at ${new Date().toISOString()}`);
+        return next();
+      }
+    }
+    console.log(`Authentication failed for IP: ${req.ip}, Key: ${token.substring(0, 8)}...`);
+    return res.status(403).json({ error: "Invalid workspace token" });
+  }
+
   // Check if token matches any valid key
   const isMainKey = mainKey && token === mainKey;
   const isPublicKey = publicKey && token === publicKey;

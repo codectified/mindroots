@@ -1,5 +1,5 @@
 /**
- * Workspace Module - Creative workspace for Custom GPT graphical media
+ * Workspace Module - Multi-tenant creative workspace for Custom GPT graphical media
  *
  * Provides 4 endpoints:
  * - GET  /workspace          - Browse assets and projects
@@ -7,10 +7,10 @@
  * - POST /workspace/render   - Render graphic to PNG
  * - POST /workspace/organize - Create project folders
  *
- * Storage structure:
- *   /assets/{category}/                    - shared raw materials
- *   /projects/{project}/{id}/v{NNN}/       - versioned graphics
- *   /projects/.index.json                  - ID→project lookup
+ * Multi-tenant storage structure:
+ *   /workspaces/{tenant}/assets/{category}/              - shared raw materials
+ *   /workspaces/{tenant}/projects/{project}/{id}/v{NNN}/ - versioned graphics
+ *   /workspaces/{tenant}/projects/.index.json            - ID->project lookup
  */
 
 const express = require('express');
@@ -23,11 +23,18 @@ const crypto = require('crypto');
 // CONFIGURATION
 // ====================================================================
 
-const PROJECTS_DIR = path.join(__dirname, '../../projects');
-const ASSETS_DIR = path.join(__dirname, '../../assets');
-const PROJECTS_URL_BASE = process.env.PROJECTS_PUBLIC_URL || 'http://localhost:5001/projects';
-const ASSETS_URL_BASE = process.env.ASSETS_PUBLIC_URL || 'http://localhost:5001/assets';
-const INDEX_PATH = path.join(PROJECTS_DIR, '.index.json');
+const WORKSPACES_DIR = path.join(__dirname, '../../workspaces');
+
+function getWorkspacePaths(workspaceId) {
+  const base = path.join(WORKSPACES_DIR, workspaceId);
+  return {
+    projectsDir: path.join(base, 'projects'),
+    assetsDir: path.join(base, 'assets'),
+    indexPath: path.join(base, 'projects', '.index.json'),
+    projectsUrlBase: `${process.env.WORKSPACES_PUBLIC_URL || 'http://localhost:5001/workspaces'}/${workspaceId}/projects`,
+    assetsUrlBase: `${process.env.WORKSPACES_PUBLIC_URL || 'http://localhost:5001/workspaces'}/${workspaceId}/assets`,
+  };
+}
 
 const IMAGE_FORMATS = {
   letter: { width: 816, height: 1056 },
@@ -107,18 +114,18 @@ async function ensureDirectoryExists(dir) {
   }
 }
 
-async function readIndex() {
+async function readIndex(indexPath) {
   try {
-    const data = await fs.readFile(INDEX_PATH, 'utf8');
+    const data = await fs.readFile(indexPath, 'utf8');
     return JSON.parse(data);
   } catch (error) {
     return {};
   }
 }
 
-async function writeIndex(index) {
-  await ensureDirectoryExists(PROJECTS_DIR);
-  await fs.writeFile(INDEX_PATH, JSON.stringify(index, null, 2), 'utf8');
+async function writeIndex(indexPath, projectsDir, index) {
+  await ensureDirectoryExists(projectsDir);
+  await fs.writeFile(indexPath, JSON.stringify(index, null, 2), 'utf8');
 }
 
 /**
@@ -180,11 +187,45 @@ async function getLatestVersion(graphicDir) {
   }
 }
 
+async function countGraphics(dir) {
+  let count = 0;
+  try {
+    const entries = await fs.readdir(dir);
+    for (const entry of entries) {
+      if (entry.startsWith('.')) continue;
+      const entryPath = path.join(dir, entry);
+      const stat = await fs.stat(entryPath);
+      if (!stat.isDirectory()) continue;
+
+      const subEntries = await fs.readdir(entryPath);
+      if (subEntries.some(e => e.startsWith('v'))) {
+        count++;
+      }
+    }
+  } catch (e) {}
+  return count;
+}
+
+/**
+ * Middleware: extract workspace from req, return 403 if missing.
+ */
+function requireWorkspace(req, res) {
+  const workspaceId = req.workspace;
+  if (!workspaceId) {
+    res.status(403).json({ error: 'Workspace key required' });
+    return null;
+  }
+  return getWorkspacePaths(workspaceId);
+}
+
 // ====================================================================
 // GET /workspace - Browse assets and projects
 // ====================================================================
 
 router.get('/workspace', async (req, res) => {
+  const paths = requireWorkspace(req, res);
+  if (!paths) return;
+
   const { assets: assetsParam, project, id, includeVersions, maxVersions } = req.query;
 
   try {
@@ -196,14 +237,14 @@ router.get('/workspace', async (req, res) => {
       const assetData = {};
       const categories = ['logos', 'backgrounds', 'templates'];
       for (const category of categories) {
-        const categoryDir = path.join(ASSETS_DIR, category);
+        const categoryDir = path.join(paths.assetsDir, category);
         try {
           const files = await fs.readdir(categoryDir);
           assetData[category] = files
             .filter(f => !f.startsWith('.'))
             .map(filename => ({
               filename,
-              url: `${ASSETS_URL_BASE}/${category}/${filename}`
+              url: `${paths.assetsUrlBase}/${category}/${filename}`
             }));
         } catch (e) {
           assetData[category] = [];
@@ -215,7 +256,7 @@ router.get('/workspace', async (req, res) => {
       const assetCounts = {};
       const categories = ['logos', 'backgrounds', 'templates'];
       for (const category of categories) {
-        const categoryDir = path.join(ASSETS_DIR, category);
+        const categoryDir = path.join(paths.assetsDir, category);
         try {
           const files = await fs.readdir(categoryDir);
           assetCounts[category] = files.filter(f => !f.startsWith('.')).length;
@@ -228,16 +269,52 @@ router.get('/workspace', async (req, res) => {
 
     // --- Single graphic by ID ---
     if (id) {
-      const index = await readIndex();
+      const index = await readIndex(paths.indexPath);
       const projectName = index[id];
       if (!projectName) {
         return res.status(404).json({ error: 'Graphic not found', message: `No graphic with ID: ${id}` });
       }
 
-      const graphicDir = path.join(PROJECTS_DIR, projectName, id);
+      const graphicDir = path.join(paths.projectsDir, projectName, id);
       const latestVer = await getLatestVersion(graphicDir);
       if (!latestVer) {
         return res.status(404).json({ error: 'No versions found', message: `Graphic ${id} has no versions` });
+      }
+
+      // --- Source retrieval: id + version returns html, css, meta ---
+      const requestedVersion = req.query.version ? parseInt(req.query.version, 10) : null;
+      if (requestedVersion) {
+        const vDir = formatVersion(requestedVersion);
+        const versionDir = path.join(graphicDir, vDir);
+        try {
+          await fs.access(versionDir);
+        } catch (e) {
+          return res.status(404).json({ error: 'Version not found', message: `Version ${requestedVersion} does not exist for graphic ${id}` });
+        }
+
+        const [htmlContent, cssContent, metaContent] = await Promise.all([
+          fs.readFile(path.join(versionDir, 'index.html'), 'utf8'),
+          fs.readFile(path.join(versionDir, 'styles.css'), 'utf8').catch(() => ''),
+          fs.readFile(path.join(versionDir, 'meta.json'), 'utf8').then(JSON.parse).catch(() => ({}))
+        ]);
+
+        // --- Inline preview: return self-contained HTML with embedded CSS ---
+        if (req.query.inline === 'true') {
+          const inlineHTML = htmlContent.replace(
+            /<link[^>]*href=["']\.\/styles\.css["'][^>]*>/i,
+            `<style>\n${cssContent}\n</style>`
+          );
+          return res.json({ id, project: projectName, version: requestedVersion, inlineHTML });
+        }
+
+        return res.json({
+          id,
+          project: projectName,
+          version: requestedVersion,
+          html: htmlContent,
+          css: cssContent,
+          meta: metaContent
+        });
       }
 
       const graphic = { id, project: projectName, latestVersion: latestVer };
@@ -255,12 +332,12 @@ router.get('/workspace', async (req, res) => {
             timestamp: meta.timestamp,
             notes: meta.notes || null,
             renderStatus: meta.renderStatus || 'pending',
-            previewUrl: `${PROJECTS_URL_BASE}/${projectName}/${id}/${vDir}/index.html`
+            previewUrl: `${paths.projectsUrlBase}/${projectName}/${id}/${vDir}/index.html`
           };
           if (meta.renders) {
             versionInfo.renders = {};
             for (const [fmt, renderInfo] of Object.entries(meta.renders)) {
-              versionInfo.renders[fmt] = `${PROJECTS_URL_BASE}/${projectName}/${id}/${vDir}/${renderInfo.filename}`;
+              versionInfo.renders[fmt] = `${paths.projectsUrlBase}/${projectName}/${id}/${vDir}/${renderInfo.filename}`;
             }
           }
           graphic.versions.push(versionInfo);
@@ -268,7 +345,7 @@ router.get('/workspace', async (req, res) => {
           const vNum = parseInt(vDir.substring(1), 10);
           graphic.versions.push({
             version: vNum,
-            previewUrl: `${PROJECTS_URL_BASE}/${projectName}/${id}/${vDir}/index.html`
+            previewUrl: `${paths.projectsUrlBase}/${projectName}/${id}/${vDir}/index.html`
           });
         }
       }
@@ -284,14 +361,14 @@ router.get('/workspace', async (req, res) => {
       if (!pathResult.isValid) {
         return res.status(400).json({ error: 'Invalid project path', message: pathResult.error });
       }
-      const projectDir = path.join(PROJECTS_DIR, pathResult.sanitized);
+      const projectDir = path.join(paths.projectsDir, pathResult.sanitized);
       try {
         await fs.access(projectDir);
       } catch (e) {
         return res.status(404).json({ error: 'Project not found', message: `No project: ${pathResult.sanitized}` });
       }
 
-      const index = await readIndex();
+      const index = await readIndex(paths.indexPath);
       const graphics = [];
       const entries = await fs.readdir(projectDir);
 
@@ -324,12 +401,12 @@ router.get('/workspace', async (req, res) => {
                 timestamp: meta.timestamp,
                 notes: meta.notes || null,
                 renderStatus: meta.renderStatus || 'pending',
-                previewUrl: `${PROJECTS_URL_BASE}/${pathResult.sanitized}/${graphicId}/${vDir}/index.html`
+                previewUrl: `${paths.projectsUrlBase}/${pathResult.sanitized}/${graphicId}/${vDir}/index.html`
               };
               if (meta.renders) {
                 versionInfo.renders = {};
                 for (const [fmt, renderInfo] of Object.entries(meta.renders)) {
-                  versionInfo.renders[fmt] = `${PROJECTS_URL_BASE}/${pathResult.sanitized}/${graphicId}/${vDir}/${renderInfo.filename}`;
+                  versionInfo.renders[fmt] = `${paths.projectsUrlBase}/${pathResult.sanitized}/${graphicId}/${vDir}/${renderInfo.filename}`;
                 }
               }
               graphicInfo.versions.push(versionInfo);
@@ -337,7 +414,7 @@ router.get('/workspace', async (req, res) => {
               const vNum = parseInt(vDir.substring(1), 10);
               graphicInfo.versions.push({
                 version: vNum,
-                previewUrl: `${PROJECTS_URL_BASE}/${pathResult.sanitized}/${graphicId}/${vDir}/index.html`
+                previewUrl: `${paths.projectsUrlBase}/${pathResult.sanitized}/${graphicId}/${vDir}/index.html`
               });
             }
           }
@@ -350,16 +427,15 @@ router.get('/workspace', async (req, res) => {
     } else {
       // Lightweight: project names with graphic counts
       const projectData = {};
-      await ensureDirectoryExists(PROJECTS_DIR);
-      const topEntries = await fs.readdir(PROJECTS_DIR);
+      await ensureDirectoryExists(paths.projectsDir);
+      const topEntries = await fs.readdir(paths.projectsDir);
 
       for (const entry of topEntries) {
         if (entry.startsWith('.')) continue;
-        const entryPath = path.join(PROJECTS_DIR, entry);
+        const entryPath = path.join(paths.projectsDir, entry);
         const stat = await fs.stat(entryPath);
         if (!stat.isDirectory()) continue;
 
-        // Count graphics in this project (recursively find dirs with version subdirs)
         const count = await countGraphics(entryPath);
         if (count > 0) {
           projectData[entry] = { count };
@@ -376,34 +452,15 @@ router.get('/workspace', async (req, res) => {
   }
 });
 
-/**
- * Count graphics (directories containing version subdirs) within a project directory
- */
-async function countGraphics(dir) {
-  let count = 0;
-  try {
-    const entries = await fs.readdir(dir);
-    for (const entry of entries) {
-      if (entry.startsWith('.')) continue;
-      const entryPath = path.join(dir, entry);
-      const stat = await fs.stat(entryPath);
-      if (!stat.isDirectory()) continue;
-
-      const subEntries = await fs.readdir(entryPath);
-      if (subEntries.some(e => e.startsWith('v'))) {
-        count++;
-      }
-    }
-  } catch (e) {}
-  return count;
-}
-
 // ====================================================================
 // POST /workspace/create - Create new graphic or new version
 // ====================================================================
 
 router.post('/workspace/create', async (req, res) => {
-  const { id, project, html, css, metadata, notes } = req.body;
+  const paths = requireWorkspace(req, res);
+  if (!paths) return;
+
+  const { id, project, html, css, metadata, notes, baseVersion } = req.body;
 
   // Validate HTML
   if (!html) {
@@ -424,7 +481,7 @@ router.post('/workspace/create', async (req, res) => {
   }
 
   try {
-    const index = await readIndex();
+    const index = await readIndex(paths.indexPath);
     let graphicId, projectName, version;
 
     if (id) {
@@ -438,7 +495,7 @@ router.post('/workspace/create', async (req, res) => {
         });
       }
 
-      const graphicDir = path.join(PROJECTS_DIR, projectName, graphicId);
+      const graphicDir = path.join(paths.projectsDir, projectName, graphicId);
       version = await getNextVersion(graphicDir);
 
       // Concurrency-safe version directory creation
@@ -452,10 +509,11 @@ router.post('/workspace/create', async (req, res) => {
         html,
         css,
         notes: notes || metadata?.notes || null,
-        author: req.authLevel || 'unknown'
+        author: req.authLevel || 'unknown',
+        baseVersion: baseVersion ? parseInt(baseVersion, 10) : null
       });
 
-      const previewUrl = `${PROJECTS_URL_BASE}/${projectName}/${graphicId}/${formatVersion(version)}/index.html`;
+      const previewUrl = `${paths.projectsUrlBase}/${projectName}/${graphicId}/${formatVersion(version)}/index.html`;
       console.log(`Graphic updated: ${graphicId} v${version} in ${projectName}`);
 
       return res.status(201).json({
@@ -489,7 +547,7 @@ router.post('/workspace/create', async (req, res) => {
       }
 
       version = 1;
-      const graphicDir = path.join(PROJECTS_DIR, projectName, graphicId);
+      const graphicDir = path.join(paths.projectsDir, projectName, graphicId);
       const versionDir = path.join(graphicDir, formatVersion(version));
       await ensureDirectoryExists(versionDir);
 
@@ -500,14 +558,15 @@ router.post('/workspace/create', async (req, res) => {
         html,
         css,
         notes: metadata?.notes || notes || null,
-        author: req.authLevel || 'unknown'
+        author: req.authLevel || 'unknown',
+        baseVersion: baseVersion ? parseInt(baseVersion, 10) : null
       });
 
       // Update index
       index[graphicId] = projectName;
-      await writeIndex(index);
+      await writeIndex(paths.indexPath, paths.projectsDir, index);
 
-      const previewUrl = `${PROJECTS_URL_BASE}/${projectName}/${graphicId}/${formatVersion(version)}/index.html`;
+      const previewUrl = `${paths.projectsUrlBase}/${projectName}/${graphicId}/${formatVersion(version)}/index.html`;
       console.log(`Graphic created: ${graphicId} v${version} in ${projectName}`);
 
       return res.status(201).json({
@@ -590,11 +649,12 @@ ${html}
 /**
  * Write index.html, styles.css, and meta.json for a version
  */
-async function writeVersionFiles(versionDir, { id, project, version, html, css, notes, author }) {
+async function writeVersionFiles(versionDir, { id, project, version, html, css, notes, author, baseVersion }) {
   const meta = {
     id,
     project,
     version,
+    baseVersion: baseVersion || null,
     timestamp: new Date().toISOString(),
     author: author || 'unknown',
     source: 'custom_gpt',
@@ -617,6 +677,9 @@ async function writeVersionFiles(versionDir, { id, project, version, html, css, 
 // ====================================================================
 
 router.post('/workspace/render', async (req, res) => {
+  const paths = requireWorkspace(req, res);
+  if (!paths) return;
+
   let { id, format, version } = req.body;
 
   if (!id) {
@@ -632,13 +695,13 @@ router.post('/workspace/render', async (req, res) => {
     });
   }
 
-  const index = await readIndex();
+  const index = await readIndex(paths.indexPath);
   const projectName = index[id];
   if (!projectName) {
     return res.status(404).json({ error: 'Graphic not found', message: `No graphic with ID: ${id}` });
   }
 
-  const graphicDir = path.join(PROJECTS_DIR, projectName, id);
+  const graphicDir = path.join(paths.projectsDir, projectName, id);
 
   if (!version) {
     version = await getLatestVersion(graphicDir);
@@ -726,7 +789,7 @@ ${htmlContent}
       console.warn('Could not update meta.json:', e.message);
     }
 
-    const imageUrl = `${PROJECTS_URL_BASE}/${projectName}/${id}/${formatVersion(version)}/${imageFilename}`;
+    const imageUrl = `${paths.projectsUrlBase}/${projectName}/${id}/${formatVersion(version)}/${imageFilename}`;
 
     console.log(`Image rendered: ${id} v${version} format=${format}`);
 
@@ -750,6 +813,9 @@ ${htmlContent}
 // ====================================================================
 
 router.post('/workspace/organize', async (req, res) => {
+  const paths = requireWorkspace(req, res);
+  if (!paths) return;
+
   const { project } = req.body;
 
   if (!project) {
@@ -765,7 +831,7 @@ router.post('/workspace/organize', async (req, res) => {
   }
 
   try {
-    const projectDir = path.join(PROJECTS_DIR, pathResult.sanitized);
+    const projectDir = path.join(paths.projectsDir, pathResult.sanitized);
     await ensureDirectoryExists(projectDir);
 
     console.log(`Project folder created: ${pathResult.sanitized}`);
