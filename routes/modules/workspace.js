@@ -460,6 +460,7 @@ router.post('/workspace/create', async (req, res) => {
   const paths = requireWorkspace(req, res);
   if (!paths) return;
 
+
   const { id, project, html, css, metadata, notes, baseVersion } = req.body;
 
   // Validate HTML
