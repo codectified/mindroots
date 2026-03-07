@@ -1,6 +1,6 @@
 # MindRoots Documentation Index
 
-**Last Updated**: February 22, 2026
+**Last Updated**: March 6, 2026
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
@@ -19,7 +19,7 @@
 - **[Analysis Nodes](features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system with v2 schema
 - **[Corpus Navigation System](features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position for reliable sequential corpus browsing
 - **[Workspace Module](features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Creative workspace for Custom GPT graphical media with versioned storage, project organization, and PNG rendering
-- **[AIF GPT Instructions](features/AIF-GPT-INSTRUCTIONS.md)** - Custom GPT setup and system prompt for AIF creative workspace
+- **[Custom GPT Base Instructions](features/AIF-GPT-INSTRUCTIONS.md)** - Base template for tenant Custom GPT setup, system prompt, and Actions configuration
 - **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
 - **[Radical Search Integration](features/RADICAL-SEARCH-INTEGRATION.md)** - RadicalPosition-based search system architecture
 - **[Validation System](features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - Inline editing and approval workflow for linguistic data

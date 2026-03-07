@@ -32,12 +32,17 @@ const authenticateAPI = (req, res, next) => {
       const workspaceId = parts[1];
       const fs = require('fs');
       const path = require('path');
-      const workspaceDir = path.join(__dirname, '..', 'workspaces', workspaceId);
-      if (fs.existsSync(workspaceDir)) {
-        req.authLevel = 'workspace';
-        req.workspace = workspaceId;
-        console.log(`Workspace access granted (${workspaceId}) for IP: ${req.ip} at ${new Date().toISOString()}`);
-        return next();
+      const tokenFile = path.join(__dirname, '..', 'workspaces', workspaceId, '.token');
+      try {
+        const storedToken = fs.readFileSync(tokenFile, 'utf8').trim();
+        if (token === storedToken) {
+          req.authLevel = 'workspace';
+          req.workspace = workspaceId;
+          console.log(`Workspace access granted (${workspaceId}) for IP: ${req.ip} at ${new Date().toISOString()}`);
+          return next();
+        }
+      } catch (e) {
+        // .token file doesn't exist or unreadable — fall through to rejection
       }
     }
     console.log(`Authentication failed for IP: ${req.ip}, Key: ${token.substring(0, 8)}...`);

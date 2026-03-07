@@ -11,9 +11,11 @@
 The Workspace Module enables a Custom GPT to:
 1. Submit HTML/CSS graphic designs organized by project
 2. Receive versioned storage with preview URLs
-3. Request PNG rendering in multiple formats per version
-4. Browse available assets (logos, backgrounds, templates)
-5. Organize work into named project folders
+3. Retrieve source HTML/CSS/metadata for any version
+4. Get inline (self-contained) HTML previews with embedded CSS
+5. Request PNG rendering in multiple formats per version
+6. Browse available assets (logos, backgrounds, templates)
+7. Organize work into named project folders
 
 This module operates independently of the MindRoots graph database and linguistic features.
 
@@ -79,10 +81,11 @@ Supports multiple render formats per version via `renders` map:
   "project": "ramadan-2026",
   "version": 1,
   "timestamp": "2026-02-13T07:14:58.340Z",
-  "author": "flyer",
+  "baseVersion": null,
+  "author": "workspace",
   "source": "custom_gpt",
   "notes": "Initial design",
-  "renderStatus": "completed",
+  "renderStatus": "pending",
   "renders": {
     "ig_square": {
       "timestamp": "2026-02-13T07:16:53.160Z",
@@ -114,6 +117,8 @@ One endpoint for all reads. Lightweight by default, query params to expand.
 | `id=abc123...` | Returns full detail for one graphic |
 | `includeVersions=true` | Includes version arrays when listing projects |
 | `maxVersions=3` | Limits version entries returned per graphic |
+| `id=abc123...&version=2` | Returns source `html`, `css`, and `meta` for that specific version |
+| `id=abc123...&version=2&inline=true` | Returns self-contained HTML with CSS embedded in a `<style>` tag |
 
 **Default response:**
 ```json
@@ -123,6 +128,28 @@ One endpoint for all reads. Lightweight by default, query params to expand.
     "ramadan-2026": { "count": 2 },
     "family-social": { "count": 1 }
   }
+}
+```
+
+**Source retrieval response** (`?id=abc123...&version=1`):
+```json
+{
+  "id": "abc123...",
+  "project": "ramadan-2026",
+  "version": 1,
+  "html": "<!DOCTYPE html>...",
+  "css": "body { ... }",
+  "meta": { "id": "abc123...", "version": 1, "baseVersion": null, "notes": "Initial design", ... }
+}
+```
+
+**Inline preview response** (`?id=abc123...&version=1&inline=true`):
+```json
+{
+  "id": "abc123...",
+  "project": "ramadan-2026",
+  "version": 1,
+  "inlineHTML": "<!DOCTYPE html><html><head><style>body { ... }</style></head><body>...</body></html>"
 }
 ```
 
@@ -144,13 +171,14 @@ Creates a new graphic (provide `project`) or a new version (provide `id`).
 }
 ```
 
-**New version:**
+**New version (with ancestry tracking):**
 ```json
 {
   "id": "abc123...",
   "html": "<div>...</div>",
   "css": "body { ... }",
-  "notes": "Updated colors"
+  "notes": "Updated colors",
+  "baseVersion": 1
 }
 ```
 
@@ -288,10 +316,18 @@ curl -X POST http://localhost:5001/api/workspace/create \
   -H "Authorization: Bearer KEY" -H "Content-Type: application/json" \
   -d '{"project": "test", "html": "<h1>Test</h1>", "metadata": {"notes": "Testing"}}'
 
-# New version
+# New version with baseVersion
 curl -X POST http://localhost:5001/api/workspace/create \
   -H "Authorization: Bearer KEY" -H "Content-Type: application/json" \
-  -d '{"id": "GRAPHIC_ID", "html": "<h1>Updated</h1>", "notes": "v2"}'
+  -d '{"id": "GRAPHIC_ID", "html": "<h1>Updated</h1>", "notes": "v2", "baseVersion": 1}'
+
+# Retrieve source for a specific version
+curl "http://localhost:5001/api/workspace?id=GRAPHIC_ID&version=1" \
+  -H "Authorization: Bearer KEY"
+
+# Get inline preview (self-contained HTML)
+curl "http://localhost:5001/api/workspace?id=GRAPHIC_ID&version=1&inline=true" \
+  -H "Authorization: Bearer KEY"
 
 # Render
 curl -X POST http://localhost:5001/api/workspace/render \
@@ -330,6 +366,6 @@ location /workspaces/ {
 
 ---
 
-**Last Updated**: March 3, 2026
+**Last Updated**: March 6, 2026
 **Module Location**: `routes/modules/workspace.js`
 **OpenAPI Spec**: `docs/features/workspace-openapi-spec.yaml`

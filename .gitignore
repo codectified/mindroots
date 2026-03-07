@@ -32,9 +32,10 @@ server.log
 /assets/*
 !/assets/.gitkeep
 
-# Workspace tenant data (runtime, not in git)
+# Workspace tenant data and secrets (runtime, not in git)
 /workspaces/*/assets/*
 /workspaces/*/projects/*
+/workspaces/*/.token
 
 # Shared workspace assets ARE tracked
 !/workspaces/_shared/**
