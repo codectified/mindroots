@@ -58,7 +58,7 @@ ws_<workspaceId>_<randomSecret>
 
 Examples: `ws_aif_83fj29fk29`, `ws_mindroots_k29f92jf9`
 
-The auth middleware parses `workspaceId` from the token prefix, validates the workspace directory exists, and sets `req.workspace`. No per-tenant env vars needed.
+The auth middleware parses `workspaceId` from the token prefix, reads the `.token` file from that workspace directory, and validates the full token matches. On success it sets `req.workspace`. No per-tenant env vars needed.
 
 ### .index.json Format
 
@@ -231,6 +231,8 @@ Concurrency protection: version directories created with `fs.mkdir(path, { recur
 
 Multiple formats can be rendered per version — each is stored in the `renders` map in meta.json.
 
+**Font handling**: Both preview HTML and render HTML automatically inject `@font-face` declarations for all shared fonts (`_shared/fonts/`). The GPT just uses `font-family: "Amiri"` — no manual `@font-face` needed. The render endpoint also calls `document.fonts.ready` before taking the screenshot to ensure fonts are fully loaded.
+
 ---
 
 ### Organize Projects
@@ -307,7 +309,7 @@ echo -n "$TOKEN" > /var/www/mindroots/workspaces/$TENANT/.token
 echo "Token for $TENANT: $TOKEN"
 ```
 
-Then set up the Custom GPT with this token (see [GPT Base Instructions](AIF-GPT-INSTRUCTIONS.md)).
+Then set up the Custom GPT with this token (see [GPT Base Instructions](CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)).
 
 Do the same locally for development:
 ```bash
@@ -349,7 +351,10 @@ The GPT sees these assets when it calls `getWorkspace` with `assets=true`.
 
 ### Shared Assets
 
-Assets in `workspaces/_shared/` are available to all tenants (e.g. icon library at `_shared/icons/`). These **are** tracked in git.
+Assets in `workspaces/_shared/` are available to all tenants. These **are** tracked in git.
+
+- `_shared/icons/` — 19 SVG icons (calendar, location, mosque, etc.)
+- `_shared/fonts/` — Arabic web fonts in woff2 format (Amiri, Noto Naskh Arabic, IBM Plex Sans Arabic, Scheherazade New — regular + bold)
 
 ### Current Tenant Assets
 

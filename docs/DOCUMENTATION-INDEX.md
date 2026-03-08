@@ -19,7 +19,7 @@
 - **[Analysis Nodes](features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system with v2 schema
 - **[Corpus Navigation System](features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position for reliable sequential corpus browsing
 - **[Workspace Module](features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Creative workspace for Custom GPT graphical media with versioned storage, project organization, and PNG rendering
-- **[Custom GPT Base Instructions](features/AIF-GPT-INSTRUCTIONS.md)** - Base template for tenant Custom GPT setup, system prompt, and Actions configuration
+- **[Custom GPT Base Instructions](features/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Base template for tenant Custom GPT setup, system prompt, and Actions configuration
 - **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
 - **[Radical Search Integration](features/RADICAL-SEARCH-INTEGRATION.md)** - RadicalPosition-based search system architecture
 - **[Validation System](features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - Inline editing and approval workflow for linguistic data
@@ -53,7 +53,7 @@ docs/
 ├── features/                       # Current feature documentation
 │   ├── ANALYSIS-NODES-DOCUMENTATION.md
 │   ├── WORKSPACE-MODULE-DOCUMENTATION.md
-│   ├── AIF-GPT-INSTRUCTIONS.md
+│   ├── CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md
 │   ├── workspace-openapi-spec.yaml
 │   ├── RADICAL-SEARCH-INTEGRATION.md
 │   ├── VALIDATION-SYSTEM-DOCUMENTATION.md

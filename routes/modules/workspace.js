@@ -36,6 +36,21 @@ function getWorkspacePaths(workspaceId) {
   };
 }
 
+// Shared font declarations — auto-injected into previews and renders
+function getSharedFontCSS() {
+  const fontsUrl = `${process.env.WORKSPACES_PUBLIC_URL || 'http://localhost:5001/workspaces'}/_shared/fonts`;
+  return `
+@font-face { font-family: "Amiri"; src: url("${fontsUrl}/Amiri-Regular.woff2") format("woff2"); font-weight: normal; }
+@font-face { font-family: "Amiri"; src: url("${fontsUrl}/Amiri-Bold.woff2") format("woff2"); font-weight: bold; }
+@font-face { font-family: "Noto Naskh Arabic"; src: url("${fontsUrl}/NotoNaskhArabic-Regular.woff2") format("woff2"); font-weight: normal; }
+@font-face { font-family: "Noto Naskh Arabic"; src: url("${fontsUrl}/NotoNaskhArabic-Bold.woff2") format("woff2"); font-weight: bold; }
+@font-face { font-family: "IBM Plex Sans Arabic"; src: url("${fontsUrl}/IBMPlexSansArabic-Regular.woff2") format("woff2"); font-weight: normal; }
+@font-face { font-family: "IBM Plex Sans Arabic"; src: url("${fontsUrl}/IBMPlexSansArabic-Bold.woff2") format("woff2"); font-weight: bold; }
+@font-face { font-family: "Scheherazade New"; src: url("${fontsUrl}/ScheherazadeNew-Regular.woff2") format("woff2"); font-weight: normal; }
+@font-face { font-family: "Scheherazade New"; src: url("${fontsUrl}/ScheherazadeNew-Bold.woff2") format("woff2"); font-weight: bold; }
+  `.trim();
+}
+
 const IMAGE_FORMATS = {
   letter: { width: 816, height: 1056 },
   a4: { width: 794, height: 1123 },
@@ -633,12 +648,13 @@ function buildPreviewHTML(html, css) {
     return html;
   }
 
-  // Fragment — wrap in full document
+  // Fragment — wrap in full document with shared fonts
   return `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style>${getSharedFontCSS()}</style>
   <link rel="stylesheet" href="./styles.css">
 </head>
 <body>
@@ -741,7 +757,7 @@ router.post('/workspace/render', async (req, res) => {
 <html>
 <head>
   <meta charset="UTF-8">
-  <style>${cssContent}</style>
+  <style>${getSharedFontCSS()}\n${cssContent}</style>
 </head>
 <body>
 ${htmlContent}
