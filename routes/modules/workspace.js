@@ -37,18 +37,33 @@ function getWorkspacePaths(workspaceId) {
 }
 
 // Shared font declarations — auto-injected into previews and renders
+const SHARED_FONTS_DIR = path.join(WORKSPACES_DIR, '_shared', 'fonts');
+
+const SHARED_FONTS = [
+  { family: 'Amiri', file: 'Amiri-Regular.woff2', weight: 'normal' },
+  { family: 'Amiri', file: 'Amiri-Bold.woff2', weight: 'bold' },
+  { family: 'Noto Naskh Arabic', file: 'NotoNaskhArabic-Regular.woff2', weight: 'normal' },
+  { family: 'Noto Naskh Arabic', file: 'NotoNaskhArabic-Bold.woff2', weight: 'bold' },
+  { family: 'IBM Plex Sans Arabic', file: 'IBMPlexSansArabic-Regular.woff2', weight: 'normal' },
+  { family: 'IBM Plex Sans Arabic', file: 'IBMPlexSansArabic-Bold.woff2', weight: 'bold' },
+  { family: 'Scheherazade New', file: 'ScheherazadeNew-Regular.woff2', weight: 'normal' },
+  { family: 'Scheherazade New', file: 'ScheherazadeNew-Bold.woff2', weight: 'bold' },
+];
+
+// HTTP URLs for browser previews
 function getSharedFontCSS() {
   const fontsUrl = `${process.env.WORKSPACES_PUBLIC_URL || 'http://localhost:5001/workspaces'}/_shared/fonts`;
-  return `
-@font-face { font-family: "Amiri"; src: url("${fontsUrl}/Amiri-Regular.woff2") format("woff2"); font-weight: normal; }
-@font-face { font-family: "Amiri"; src: url("${fontsUrl}/Amiri-Bold.woff2") format("woff2"); font-weight: bold; }
-@font-face { font-family: "Noto Naskh Arabic"; src: url("${fontsUrl}/NotoNaskhArabic-Regular.woff2") format("woff2"); font-weight: normal; }
-@font-face { font-family: "Noto Naskh Arabic"; src: url("${fontsUrl}/NotoNaskhArabic-Bold.woff2") format("woff2"); font-weight: bold; }
-@font-face { font-family: "IBM Plex Sans Arabic"; src: url("${fontsUrl}/IBMPlexSansArabic-Regular.woff2") format("woff2"); font-weight: normal; }
-@font-face { font-family: "IBM Plex Sans Arabic"; src: url("${fontsUrl}/IBMPlexSansArabic-Bold.woff2") format("woff2"); font-weight: bold; }
-@font-face { font-family: "Scheherazade New"; src: url("${fontsUrl}/ScheherazadeNew-Regular.woff2") format("woff2"); font-weight: normal; }
-@font-face { font-family: "Scheherazade New"; src: url("${fontsUrl}/ScheherazadeNew-Bold.woff2") format("woff2"); font-weight: bold; }
-  `.trim();
+  return SHARED_FONTS.map(f =>
+    `@font-face { font-family: "${f.family}"; src: url("${fontsUrl}/${f.file}") format("woff2"); font-weight: ${f.weight}; }`
+  ).join('\n');
+}
+
+// file:// URLs for Puppeteer rendering (no network dependency)
+function getRenderFontCSS() {
+  const absDir = path.resolve(SHARED_FONTS_DIR);
+  return SHARED_FONTS.map(f =>
+    `@font-face { font-family: "${f.family}"; src: url("file://${path.join(absDir, f.file)}") format("woff2"); font-weight: ${f.weight}; }`
+  ).join('\n');
 }
 
 const IMAGE_FORMATS = {
@@ -757,7 +772,7 @@ router.post('/workspace/render', async (req, res) => {
 <html>
 <head>
   <meta charset="UTF-8">
-  <style>${getSharedFontCSS()}\n${cssContent}</style>
+  <style>${getRenderFontCSS()}\n${cssContent}</style>
 </head>
 <body>
 ${htmlContent}
@@ -766,7 +781,7 @@ ${htmlContent}
 
     const browser = await puppeteer.launch({
       headless: 'new',
-      args: ['--no-sandbox', '--disable-setuid-sandbox']
+      args: ['--no-sandbox', '--disable-setuid-sandbox', '--allow-file-access-from-files']
     });
 
     const page = await browser.newPage();
