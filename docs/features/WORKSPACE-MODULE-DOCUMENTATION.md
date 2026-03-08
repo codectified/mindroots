@@ -287,6 +287,88 @@ Workspace API tokens follow the format `ws_<workspaceId>_<secret>` and are passe
 
 ---
 
+## Managing Tenants
+
+### Adding a New Tenant
+
+On the **production server** (`ssh bitnami@theoption.life`):
+
+```bash
+TENANT=newtenant
+
+# 1. Create directory structure
+mkdir -p /var/www/mindroots/workspaces/$TENANT/assets/{logos,backgrounds,templates}
+mkdir -p /var/www/mindroots/workspaces/$TENANT/projects
+echo '{}' > /var/www/mindroots/workspaces/$TENANT/projects/.index.json
+
+# 2. Generate and store API token
+TOKEN="ws_${TENANT}_$(openssl rand -hex 16)"
+echo -n "$TOKEN" > /var/www/mindroots/workspaces/$TENANT/.token
+echo "Token for $TENANT: $TOKEN"
+```
+
+Then set up the Custom GPT with this token (see [GPT Base Instructions](AIF-GPT-INSTRUCTIONS.md)).
+
+Do the same locally for development:
+```bash
+mkdir -p workspaces/$TENANT/assets/{logos,backgrounds,templates}
+mkdir -p workspaces/$TENANT/projects
+echo '{}' > workspaces/$TENANT/projects/.index.json
+echo -n "$TOKEN" > workspaces/$TENANT/.token
+```
+
+### Uploading Tenant Assets
+
+Assets are static files (logos, backgrounds, templates) served by nginx. Upload via `scp`:
+
+```bash
+# Upload a logo
+scp -i ~/path/to/key.pem logo.png bitnami@theoption.life:/var/www/mindroots/workspaces/$TENANT/assets/logos/
+
+# Upload a background
+scp -i ~/path/to/key.pem bg.jpg bitnami@theoption.life:/var/www/mindroots/workspaces/$TENANT/assets/backgrounds/
+```
+
+Assets are immediately available at:
+```
+https://theoption.life/workspaces/<tenant>/assets/logos/logo.png
+https://theoption.life/workspaces/<tenant>/assets/backgrounds/bg.jpg
+```
+
+No server restart needed — nginx serves them as static files.
+
+The GPT sees these assets when it calls `getWorkspace` with `assets=true`.
+
+### Asset Categories
+
+| Directory | Purpose | Examples |
+|-----------|---------|----------|
+| `logos/` | Organization logos and branding | host-logo.png, org-icon.svg |
+| `backgrounds/` | Background images for graphics | pattern.png, gradient.jpg |
+| `templates/` | Reusable HTML/CSS templates | (future use) |
+
+### Shared Assets
+
+Assets in `workspaces/_shared/` are available to all tenants (e.g. icon library at `_shared/icons/`). These **are** tracked in git.
+
+### Current Tenant Assets
+
+**AIF** (`workspaces/aif/assets/`):
+- `logos/host-logo.jpg` — AIF organization logo
+- `logos/Deif.jpeg` — Imam photo
+
+**MindRoots** (`workspaces/mindroots/assets/`):
+- `logos/root-tree.jpeg` — MindRoots tree logo
+
+### Security Notes
+
+- `.token` files are gitignored — secrets never enter the repository
+- Tenant assets and projects are gitignored — only `_shared/` is tracked
+- Token validation reads `.token` on each request (no caching, so token rotation is instant)
+- To rotate a token: overwrite the `.token` file and update the Custom GPT's API key
+
+---
+
 ## Dependencies
 
 ### Required
@@ -360,7 +442,7 @@ curl -X POST http://localhost:5001/api/workspace/render \
 Replace `/projects/` and `/assets/` location blocks with:
 ```nginx
 location /workspaces/ {
-    alias /home/omaribrahim/mindroots/workspaces/;
+    alias /var/www/mindroots/workspaces/;
 }
 ```
 

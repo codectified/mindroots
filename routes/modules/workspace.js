@@ -763,6 +763,7 @@ ${htmlContent}
     });
 
     await page.setContent(fullHTML, { waitUntil: 'networkidle0' });
+    await page.evaluateHandle('document.fonts.ready');
 
     const imageFilename = `graphic_${id}_v${version}_${format}.png`;
     const imagePath = path.join(versionDir, imageFilename);

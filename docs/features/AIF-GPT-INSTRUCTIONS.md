@@ -49,8 +49,63 @@ Write clean, semantic HTML and CSS. Key guidelines:
   - `ig_square`: 1080 x 1080 px
   - `ig_story`: 1080 x 1920 px
 - Use `min-height: 100vh` on the body/container to fill the viewport
+- Preview URLs are viewed in browsers and on mobile — use relative units (`%`, `vw`, `vh`, `em`) and `max-width` with `margin: 0 auto` so layouts scale gracefully on any screen
+- Use `box-sizing: border-box` on all elements to prevent overflow
 - Keep text precise — this is where code-rendered graphics shine over AI image generation
 - No `<script>` tags, event handlers, iframes, or forms (they are blocked for security)
+- **For Arabic text**, always use `@font-face` with the shared server fonts so Puppeteer renders them correctly. Do NOT rely on system fonts — they are not available in the render environment. Available fonts:
+
+```css
+/* Classical Arabic — best for Quranic text and formal content */
+@font-face {
+  font-family: "Amiri";
+  src: url("https://theoption.life/workspaces/_shared/fonts/Amiri-Regular.woff2") format("woff2");
+  font-weight: normal;
+}
+@font-face {
+  font-family: "Amiri";
+  src: url("https://theoption.life/workspaces/_shared/fonts/Amiri-Bold.woff2") format("woff2");
+  font-weight: bold;
+}
+
+/* Clean modern Arabic */
+@font-face {
+  font-family: "Noto Naskh Arabic";
+  src: url("https://theoption.life/workspaces/_shared/fonts/NotoNaskhArabic-Regular.woff2") format("woff2");
+  font-weight: normal;
+}
+@font-face {
+  font-family: "Noto Naskh Arabic";
+  src: url("https://theoption.life/workspaces/_shared/fonts/NotoNaskhArabic-Bold.woff2") format("woff2");
+  font-weight: bold;
+}
+
+/* Modern sans-serif Arabic */
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("https://theoption.life/workspaces/_shared/fonts/IBMPlexSansArabic-Regular.woff2") format("woff2");
+  font-weight: normal;
+}
+@font-face {
+  font-family: "IBM Plex Sans Arabic";
+  src: url("https://theoption.life/workspaces/_shared/fonts/IBMPlexSansArabic-Bold.woff2") format("woff2");
+  font-weight: bold;
+}
+
+/* Elegant display Arabic */
+@font-face {
+  font-family: "Scheherazade New";
+  src: url("https://theoption.life/workspaces/_shared/fonts/ScheherazadeNew-Regular.woff2") format("woff2");
+  font-weight: normal;
+}
+@font-face {
+  font-family: "Scheherazade New";
+  src: url("https://theoption.life/workspaces/_shared/fonts/ScheherazadeNew-Bold.woff2") format("woff2");
+  font-weight: bold;
+}
+```
+
+Choose the font that fits the content: **Amiri** for classical/religious, **Noto Naskh Arabic** for clean body text, **IBM Plex Sans Arabic** for modern UI, **Scheherazade New** for decorative display.
 
 ### Step 4: Submit and preview
 Call `createGraphic` with `project`, `html`, `css`, and optional `notes`. Share the preview URL with the user.
