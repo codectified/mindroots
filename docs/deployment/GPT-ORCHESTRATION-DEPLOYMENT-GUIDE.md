@@ -62,7 +62,7 @@ ADMIN_API_KEY=z9y8x7w6v5u4321098765432109876543210fedcba0987654321fedcba098765
 
 ### **SSH to Production Server**
 ```bash
-ssh -i /Users/omaribrahim/Downloads/wp.pem bitnami@34.228.180.221
+# See DEPLOYMENT-PRIVATE.md (not tracked in git) for SSH connection details
 cd /var/www/mindroots
 ```
 
@@ -242,9 +242,8 @@ If something goes wrong:
 
 ### **Quick Rollback:**
 ```bash
-# SSH to production
-ssh -i /Users/omaribrahim/Downloads/wp.pem bitnami@34.228.180.221
-cd /var/www/mindroots
+# SSH to production (see DEPLOYMENT-PRIVATE.md for connection details)
+cd <app-root>
 
 # Remove new API keys from .env
 nano .env

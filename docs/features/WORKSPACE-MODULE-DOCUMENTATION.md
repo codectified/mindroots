@@ -231,7 +231,15 @@ Concurrency protection: version directories created with `fs.mkdir(path, { recur
 
 Multiple formats can be rendered per version — each is stored in the `renders` map in meta.json.
 
-**Font handling**: Both preview HTML and render HTML automatically inject `@font-face` declarations for all shared fonts (`_shared/fonts/`). The GPT just uses `font-family: "Amiri"` — no manual `@font-face` needed. The render endpoint also calls `document.fonts.ready` before taking the screenshot to ensure fonts are fully loaded.
+**Font handling**: The backend auto-injects `@font-face` declarations for all shared Arabic fonts. The GPT just writes `font-family: "Amiri"` — no manual `@font-face` needed.
+
+- **Browser previews**: `@font-face` with HTTP URLs pointing to `_shared/fonts/` (loaded over the network)
+- **Puppeteer renders**: `@font-face` with base64 data URIs (fonts read from disk and embedded inline). This is required because `page.setContent()` creates an `about:blank` origin — Chromium blocks both `file://` and self-referencing HTTP URLs from this origin.
+- **System fonts**: Fonts are also installed to `/usr/share/fonts/truetype/arabic-workspace/` with `fc-cache -fv` as a fallback for any CSS that references fonts without `@font-face`.
+- **Font cache**: Base64 font data is cached in memory after first read (no repeated disk I/O).
+- The render endpoint calls `document.fonts.ready` before taking the screenshot to ensure fonts are fully loaded.
+
+**Available fonts**: Amiri, Noto Naskh Arabic, IBM Plex Sans Arabic, Scheherazade New (regular + bold each).
 
 ---
 
@@ -293,19 +301,19 @@ Workspace API tokens follow the format `ws_<workspaceId>_<secret>` and are passe
 
 ### Adding a New Tenant
 
-On the **production server** (`ssh bitnami@theoption.life`):
+On the **production server** (see `DEPLOYMENT-PRIVATE.md` for SSH details):
 
 ```bash
 TENANT=newtenant
 
 # 1. Create directory structure
-mkdir -p /var/www/mindroots/workspaces/$TENANT/assets/{logos,backgrounds,templates}
-mkdir -p /var/www/mindroots/workspaces/$TENANT/projects
-echo '{}' > /var/www/mindroots/workspaces/$TENANT/projects/.index.json
+mkdir -p <app-root>/workspaces/$TENANT/assets/{logos,backgrounds,templates}
+mkdir -p <app-root>/workspaces/$TENANT/projects
+echo '{}' > <app-root>/workspaces/$TENANT/projects/.index.json
 
 # 2. Generate and store API token
 TOKEN="ws_${TENANT}_$(openssl rand -hex 16)"
-echo -n "$TOKEN" > /var/www/mindroots/workspaces/$TENANT/.token
+echo -n "$TOKEN" > <app-root>/workspaces/$TENANT/.token
 echo "Token for $TENANT: $TOKEN"
 ```
 
@@ -324,17 +332,17 @@ echo -n "$TOKEN" > workspaces/$TENANT/.token
 Assets are static files (logos, backgrounds, templates) served by nginx. Upload via `scp`:
 
 ```bash
-# Upload a logo
-scp -i ~/path/to/key.pem logo.png bitnami@theoption.life:/var/www/mindroots/workspaces/$TENANT/assets/logos/
+# Upload a logo (see DEPLOYMENT-PRIVATE.md for SSH/SCP details)
+scp -i <key-path> logo.png <user>@<host>:<app-root>/workspaces/$TENANT/assets/logos/
 
 # Upload a background
-scp -i ~/path/to/key.pem bg.jpg bitnami@theoption.life:/var/www/mindroots/workspaces/$TENANT/assets/backgrounds/
+scp -i <key-path> bg.jpg <user>@<host>:<app-root>/workspaces/$TENANT/assets/backgrounds/
 ```
 
 Assets are immediately available at:
 ```
-https://theoption.life/workspaces/<tenant>/assets/logos/logo.png
-https://theoption.life/workspaces/<tenant>/assets/backgrounds/bg.jpg
+https://<domain>/workspaces/<tenant>/assets/logos/logo.png
+https://<domain>/workspaces/<tenant>/assets/backgrounds/bg.jpg
 ```
 
 No server restart needed — nginx serves them as static files.
@@ -447,7 +455,7 @@ curl -X POST http://localhost:5001/api/workspace/render \
 Replace `/projects/` and `/assets/` location blocks with:
 ```nginx
 location /workspaces/ {
-    alias /var/www/mindroots/workspaces/;
+    alias <app-root>/workspaces/;
 }
 ```
 

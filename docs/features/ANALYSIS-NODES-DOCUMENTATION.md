@@ -370,8 +370,8 @@ curl "https://theoption.life/api/analysis/root/123" \
 
 ### Production Verification
 ```bash
-# SSH to production server
-ssh -i "/path/to/wp.pem" bitnami@34.228.180.221
+# SSH to production server (see DEPLOYMENT-PRIVATE.md for connection details)
+ssh -i "<key-path>" <user>@<host>
 
 # Pull latest code
 cd /var/www/mindroots && git pull origin master

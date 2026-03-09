@@ -58,12 +58,23 @@ function getSharedFontCSS() {
   ).join('\n');
 }
 
-// file:// URLs for Puppeteer rendering (no network dependency)
+// Base64 data URIs for Puppeteer rendering (no network or filesystem access needed)
+let _renderFontCSSCache = null;
 function getRenderFontCSS() {
+  if (_renderFontCSSCache) return _renderFontCSSCache;
+  const fsSync = require('fs');
   const absDir = path.resolve(SHARED_FONTS_DIR);
-  return SHARED_FONTS.map(f =>
-    `@font-face { font-family: "${f.family}"; src: url("file://${path.join(absDir, f.file)}") format("woff2"); font-weight: ${f.weight}; }`
-  ).join('\n');
+  _renderFontCSSCache = SHARED_FONTS.map(f => {
+    try {
+      const data = fsSync.readFileSync(path.join(absDir, f.file));
+      const b64 = data.toString('base64');
+      return `@font-face { font-family: "${f.family}"; src: url("data:font/woff2;base64,${b64}") format("woff2"); font-weight: ${f.weight}; }`;
+    } catch (e) {
+      console.error(`Failed to read font ${f.file}:`, e.message);
+      return '';
+    }
+  }).filter(Boolean).join('\n');
+  return _renderFontCSSCache;
 }
 
 const IMAGE_FORMATS = {
