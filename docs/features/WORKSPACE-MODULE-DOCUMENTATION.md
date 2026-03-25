@@ -456,11 +456,18 @@ Replace `/projects/` and `/assets/` location blocks with:
 ```nginx
 location /workspaces/ {
     alias <app-root>/workspaces/;
+    expires 1h;
+    add_header Cache-Control "public";
+    add_header Access-Control-Allow-Origin *;
 }
 ```
 
+The `Access-Control-Allow-Origin *` header is required for cross-origin font loading — specifically for Claude Artifacts (and any other iframe/browser context on a different origin). Without it, browsers silently refuse to load the fonts and fall back to a generic serif.
+
+Note: this does **not** affect Puppeteer rendering (which uses base64 data URIs due to `about:blank` origin restrictions) or the Custom GPT backend (same-origin). It only unlocks third-party browser contexts like Claude Artifacts.
+
 ---
 
-**Last Updated**: March 6, 2026
+**Last Updated**: March 25, 2026
 **Module Location**: `routes/modules/workspace.js`
 **OpenAPI Spec**: `docs/features/workspace-openapi-spec.yaml`
