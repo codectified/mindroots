@@ -3,7 +3,7 @@ import React, { createContext, useContext, useState } from 'react';
 const DisplayModeContext = createContext();
 
 export const DisplayModeProvider = ({ children }) => {
-  const [displayMode, setDisplayMode] = useState('graph'); // 'graph' or 'table'
+  const [displayMode, setDisplayMode] = useState('table'); // 'graph' or 'table'
 
   return (
     <DisplayModeContext.Provider value={{ displayMode, setDisplayMode }}>

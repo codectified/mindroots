@@ -466,14 +466,15 @@ router.get('/search-extended', async (req, res) => {
 // ====================================================================
 // FULL-TEXT SEARCH
 // Route: GET /search-fulltext
-// Purpose: Semantic search over Word.definitions (Lane) and Word.hanswehr_entry (Hans Wehr)
-// Features: Lucene query syntax (fuzzy ~, phrase "", boolean AND/OR/NOT),
-//           source detection (lane/hanswehr), source filter param,
-//           merged Root-centered results with word enrichment
+// Purpose: Semantic search over Word dictionary fields and/or word labels
+// Indexes:  wordLexicalText (definitions, hanswehr_entry)
+//           wordLabelText   (english, arabic)
+// Features: Lucene syntax, multi-source filter (comma-separated),
+//           source detection per word, merged word-centered results
 // ====================================================================
 router.get('/search-fulltext', async (req, res) => {
   try {
-    const { query, source, limit = 25 } = req.query;
+    const { query, sources, limit = 25 } = req.query;
 
     if (!query || !query.trim()) {
       return res.status(400).json({ error: 'query parameter is required' });
@@ -483,65 +484,90 @@ router.get('/search-fulltext', async (req, res) => {
     const lowerQuery = cleanQuery.toLowerCase();
     const parsedLimit = Math.min(parseInt(limit) || 25, 100);
 
+    // Parse requested sources — default to all three if none specified
+    const requestedSources = sources
+      ? sources.split(',').map(s => s.trim()).filter(Boolean)
+      : ['lane', 'hanswehr', 'labels'];
+
+    const searchLexical = requestedSources.includes('lane') || requestedSources.includes('hanswehr');
+    const searchLabels  = requestedSources.includes('labels');
+
     const session = req.driver.session();
     try {
-      const rootMap = new Map();
+      // Keyed by word_id to deduplicate across indexes
+      const wordMap = new Map();
 
-      const wordResult = await session.run(
-        `CALL db.index.fulltext.queryNodes('wordLexicalText', $query)
-         YIELD node AS word, score
-         MATCH (root:Root)-[:HAS_WORD]->(word)
-         RETURN word, root, score
-         ORDER BY score DESC
-         LIMIT ${parsedLimit}`,
-        { query: cleanQuery }
-      );
-
-      for (const record of wordResult.records) {
-        const word = convertIntegers(record.get('word').properties);
-        const root = convertIntegers(record.get('root').properties);
-        const score = record.get('score');
-        const rootId = root.root_id;
-
-        // Determine which field the match came from
-        let matchSource = null;
-        if (word.definitions?.toLowerCase().includes(lowerQuery)) {
-          matchSource = 'lane';
-        } else if (word.hanswehr_entry?.toLowerCase().includes(lowerQuery)) {
-          matchSource = 'hanswehr';
+      const addWord = (word, root, score, matchSource) => {
+        const wordId = word.word_id;
+        if (!wordMap.has(wordId) || score > wordMap.get(wordId).score) {
+          wordMap.set(wordId, { score, matchSource, word, root });
         }
+      };
 
-        if (!rootMap.has(rootId)) {
-          rootMap.set(rootId, { score, source: matchSource, root, matchedWords: [] });
-        } else if (score > rootMap.get(rootId).score) {
-          rootMap.get(rootId).score = score;
-          if (matchSource) rootMap.get(rootId).source = matchSource;
+      // --- wordLexicalText: definitions + hanswehr_entry ---
+      if (searchLexical) {
+        const lexResult = await session.run(
+          `CALL db.index.fulltext.queryNodes('wordLexicalText', $query)
+           YIELD node AS word, score
+           MATCH (root:Root)-[:HAS_WORD]->(word)
+           RETURN word, root, score
+           ORDER BY score DESC
+           LIMIT ${parsedLimit}`,
+          { query: cleanQuery }
+        );
+
+        for (const record of lexResult.records) {
+          const word = convertIntegers(record.get('word').properties);
+          const root = convertIntegers(record.get('root').properties);
+          const score = record.get('score');
+
+          let matchSource = null;
+          if (requestedSources.includes('lane') && word.definitions?.toLowerCase().includes(lowerQuery)) {
+            matchSource = 'lane';
+          } else if (requestedSources.includes('hanswehr') && word.hanswehr_entry?.toLowerCase().includes(lowerQuery)) {
+            matchSource = 'hanswehr';
+          } else if (!requestedSources.includes('lane') && !requestedSources.includes('hanswehr')) {
+            matchSource = null; // both filtered out but shouldn't reach here
+          }
+
+          // Skip if the detected source isn't in the requested set
+          if (matchSource === null && !(requestedSources.includes('lane') && requestedSources.includes('hanswehr'))) {
+            continue;
+          }
+
+          addWord(word, root, score, matchSource);
         }
-        rootMap.get(rootId).matchedWords.push({ ...word, matchSource });
       }
 
-      // --- Apply source filter if requested ---
-      let entries = [...rootMap.values()];
-      if (source === 'lane' || source === 'hanswehr') {
-        entries = entries.filter(r =>
-          r.matchedWords.some(w => w.matchSource === source)
+      // --- wordLabelText: english + arabic ---
+      if (searchLabels) {
+        const labelResult = await session.run(
+          `CALL db.index.fulltext.queryNodes('wordLabelText', $query)
+           YIELD node AS word, score
+           MATCH (root:Root)-[:HAS_WORD]->(word)
+           RETURN word, root, score
+           ORDER BY score DESC
+           LIMIT ${parsedLimit}`,
+          { query: cleanQuery }
         );
-        // Trim matchedWords to only those matching the requested source
-        entries = entries.map(r => ({
-          ...r,
-          matchedWords: r.matchedWords.filter(w => w.matchSource === source)
-        }));
+
+        for (const record of labelResult.records) {
+          const word = convertIntegers(record.get('word').properties);
+          const root = convertIntegers(record.get('root').properties);
+          const score = record.get('score');
+          addWord(word, root, score, 'labels');
+        }
       }
 
       // --- Build response, sorted by score desc ---
-      const results = entries
+      const results = [...wordMap.values()]
         .sort((a, b) => b.score - a.score)
         .slice(0, parsedLimit)
-        .map(({ score, source: matchSource, root, matchedWords }) => ({
+        .map(({ score, matchSource, word, root }) => ({
           score,
           source: matchSource,
-          root,
-          matchedWords
+          word,
+          root
         }));
 
       res.json({

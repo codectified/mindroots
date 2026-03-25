@@ -470,11 +470,11 @@ export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2, limit = 25) => {
   }
 };
 
-// source: 'lane' | 'hanswehr' | null (both)
-export const searchFullText = async (query, source = null, limit = 25) => {
+// sources: array of 'lane' | 'hanswehr' | 'labels' — omit for all three
+export const searchFullText = async (query, sources = null, limit = 25) => {
   try {
     const params = { query, limit };
-    if (source) params.source = source;
+    if (sources && sources.length > 0) params.sources = sources.join(',');
     const response = await api.get('/search-fulltext', { params });
     return response.data;
   } catch (error) {

@@ -26,7 +26,7 @@ const Search = () => {
   const [resultLimit, setResultLimit] = useState(25);
   const [lastSearchType, setLastSearchType] = useState(null);
   const [lexicalQuery, setLexicalQuery] = useState('');
-  const [lexicalSource, setLexicalSource] = useState('lane');
+  const [lexicalSources, setLexicalSources] = useState(['lane']);
   const [lexicalTotal, setLexicalTotal] = useState(0);
 
   const closeInfoBubble = () => setInfoBubble(null);
@@ -109,13 +109,10 @@ const Search = () => {
 
 
   const handleLexicalSearch = async () => {
-    if (!lexicalQuery.trim()) return;
+    if (!lexicalQuery.trim() || lexicalSources.length === 0) return;
     try {
-      const source = lexicalSource === 'both' ? null : lexicalSource;
-      const { results } = await searchFullText(lexicalQuery.trim(), source, resultLimit);
-      // Flatten all matched word nodes across results
-      const words = results.flatMap(r => r.matchedWords);
-      const nodes = words.map(w => ({
+      const { results } = await searchFullText(lexicalQuery.trim(), lexicalSources, resultLimit);
+      const nodes = results.map(({ word: w }) => ({
         id: `word_${w.word_id}`,
         label: L2 === 'off' ? (w[L1] || w.english) : `${w[L1] || w.english} / ${w[L2] || ''}`,
         word_id: w.word_id,
@@ -132,6 +129,12 @@ const Search = () => {
       setGraphData({ nodes: [], links: [] });
       setLexicalTotal(0);
     }
+  };
+
+  const toggleLexicalSource = (src) => {
+    setLexicalSources(prev =>
+      prev.includes(src) ? prev.filter(s => s !== src) : [...prev, src]
+    );
   };
 
   const formatNeo4jData = (neo4jData) => {
@@ -154,9 +157,8 @@ const Search = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
+      <div style={{ marginBottom: '20px' }}>
         <h2>Advanced Search</h2>
-        <DisplayModeSelector size="large" />
       </div>
 
       {/* Full Text Search */}
@@ -176,18 +178,20 @@ const Search = () => {
           </button>
         </div>
         <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#444' }}>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-            <input type="radio" name="lexicalSource" value="lane" checked={lexicalSource === 'lane'} onChange={() => setLexicalSource('lane')} />
-            Lane's Lexicon
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-            <input type="radio" name="lexicalSource" value="hanswehr" checked={lexicalSource === 'hanswehr'} onChange={() => setLexicalSource('hanswehr')} />
-            Hans Wehr
-          </label>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-            <input type="radio" name="lexicalSource" value="both" checked={lexicalSource === 'both'} onChange={() => setLexicalSource('both')} />
-            Both
-          </label>
+          {[
+            { value: 'lane',     label: "Lane's Lexicon" },
+            { value: 'hanswehr', label: 'Hans Wehr' },
+            { value: 'labels',   label: 'Word Labels' },
+          ].map(({ value, label }) => (
+            <label key={value} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={lexicalSources.includes(value)}
+                onChange={() => toggleLexicalSource(value)}
+              />
+              {label}
+            </label>
+          ))}
         </div>
         {lexicalTotal > 0 && lastSearchType === 'lexical' && (
           <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666' }}>
@@ -298,12 +302,10 @@ const Search = () => {
             step="5"
             value={resultLimit}
             onChange={(e) => setResultLimit(Number(e.target.value))}
-            style={{
-              flex: 1,
-              maxWidth: '200px'
-            }}
+            style={{ flex: 1, maxWidth: '200px' }}
           />
           <span style={{ fontSize: '14px', minWidth: '40px' }}>{resultLimit}</span>
+          <DisplayModeSelector size="large" />
         </div>
         {totalRoots > 0 && lastSearchType !== 'lexical' && (
           <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>
