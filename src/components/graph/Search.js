@@ -113,10 +113,19 @@ const Search = () => {
     try {
       const source = lexicalSource === 'both' ? null : lexicalSource;
       const { results } = await searchFullText(lexicalQuery.trim(), source, resultLimit);
-      const roots = results.map(r => r.root);
-      setGraphData(formatNeo4jData(roots));
-      setLexicalTotal(results.length);
-      setTotalRoots(results.length);
+      // Flatten all matched word nodes across results
+      const words = results.flatMap(r => r.matchedWords);
+      const nodes = words.map(w => ({
+        id: `word_${w.word_id}`,
+        label: L2 === 'off' ? (w[L1] || w.english) : `${w[L1] || w.english} / ${w[L2] || ''}`,
+        word_id: w.word_id,
+        root_id: w.root_id,
+        type: 'word',
+        ...w
+      }));
+      setGraphData({ nodes, links: [] });
+      setLexicalTotal(nodes.length);
+      setTotalRoots(nodes.length);
       setLastSearchType('lexical');
     } catch (error) {
       console.error('Error in lexical search:', error);
@@ -146,13 +155,13 @@ const Search = () => {
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-        <h2>Positional Root Search</h2>
+        <h2>Advanced Search</h2>
         <DisplayModeSelector />
       </div>
 
-      {/* Lexical Search */}
+      {/* Full Text Search */}
       <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #e0e0e0' }}>
-        <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Lexical Search</h3>
+        <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Full Text Search</h3>
         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
           <input
             type="text"
@@ -186,6 +195,9 @@ const Search = () => {
           </p>
         )}
       </div>
+
+      {/* Root Search */}
+      <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Root Search</h3>
 
       {/* Dropdown menus */}
 <div className="button-row" style={{ marginBottom: '10px' }}>
