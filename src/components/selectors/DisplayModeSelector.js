@@ -3,24 +3,27 @@ import { useDisplayMode } from '../../contexts/DisplayModeContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faTable, faProjectDiagram } from '@fortawesome/free-solid-svg-icons';
 
-const DisplayModeSelector = () => {
+const DisplayModeSelector = ({ size = 'small' }) => {
   const { displayMode, setDisplayMode } = useDisplayMode();
 
   const handleToggle = () => {
     setDisplayMode((prevMode) => (prevMode === 'graph' ? 'table' : 'graph'));
   };
 
+  const dim = size === 'large' ? '42px' : '30px';
+  const fs  = size === 'large' ? '18px' : '12px';
+
   return (
     <button
-      className="mini-menu-button" // Smaller size for vertical stack
+      className="mini-menu-button"
       onClick={handleToggle}
       style={{
-        width: '30px',
-        height: '30px',
-        minWidth: '30px',
-        minHeight: '30px',
-        maxWidth: '30px',
-        maxHeight: '30px',
+        width: dim,
+        height: dim,
+        minWidth: dim,
+        minHeight: dim,
+        maxWidth: dim,
+        maxHeight: dim,
         display: 'flex',
         alignItems: 'center',
         justifyContent: 'center',
@@ -28,7 +31,7 @@ const DisplayModeSelector = () => {
         backgroundColor: '#333',
         color: '#fff',
         cursor: 'pointer',
-        fontSize: '12px',
+        fontSize: fs,
         border: 'none',
         transition: 'background-color 0.2s',
         padding: '0',

@@ -154,9 +154,9 @@ const Search = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '20px' }}>
         <h2>Advanced Search</h2>
-        <DisplayModeSelector />
+        <DisplayModeSelector size="large" />
       </div>
 
       {/* Full Text Search */}
@@ -191,7 +191,7 @@ const Search = () => {
         </div>
         {lexicalTotal > 0 && lastSearchType === 'lexical' && (
           <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666' }}>
-            Found {lexicalTotal} roots
+            Found {lexicalTotal} words
           </p>
         )}
       </div>
@@ -305,7 +305,7 @@ const Search = () => {
           />
           <span style={{ fontSize: '14px', minWidth: '40px' }}>{resultLimit}</span>
         </div>
-        {totalRoots > 0 && (
+        {totalRoots > 0 && lastSearchType !== 'lexical' && (
           <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>
             Total Roots Found: {totalRoots} (Showing {Math.min(totalRoots, resultLimit)} of {totalRoots})
           </p>
