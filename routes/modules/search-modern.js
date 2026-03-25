@@ -493,8 +493,8 @@ router.get('/search-fulltext', async (req, res) => {
          MATCH (root:Root)-[:HAS_WORD]->(word)
          RETURN word, root, score
          ORDER BY score DESC
-         LIMIT $limit`,
-        { query: cleanQuery, limit: parsedLimit }
+         LIMIT ${parsedLimit}`,
+        { query: cleanQuery }
       );
 
       for (const record of wordResult.records) {
