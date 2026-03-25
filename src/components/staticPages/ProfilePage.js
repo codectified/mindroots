@@ -34,7 +34,7 @@ const ProfilePage = () => {
       <section className="hero-section">
         <div className="hero-content">
           <h1 className="mission-statement">
-            In a world with more options than people, you need someone on your side who knows <em>both</em> systems and people.
+            In a world with more systems than people, you need someone who knows <em>both</em>.
           </h1>
           <nav className="hero-navigation" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
             <a href="#resume" className="nav-link">Resume</a>
@@ -78,8 +78,7 @@ const ProfilePage = () => {
               textAlign: 'center',
               fontStyle: 'italic'
             }}>
-              I build intelligent systems that translate complexity into clarity enabling effective knowledge transfer and management
-              by bridging language, cognition, and technology.
+              I build intelligent systems that translate complexity into clarity, enabling effective knowledge transfer and knowledge management.
             </p>
             <div style={{ textAlign: 'center' }}>
               <button 
@@ -168,11 +167,11 @@ const ProfilePage = () => {
           <div id="knowledge-architecture" className="bio-subsection">
             <h3>Informative Science & Knowledge Architecture</h3>
             <p className="bio-subtitle">(Meaning, structure, intelligence)</p>
-            <p>My specialty is cognitive science and optimizing systems and process control to deliver optimized solutions with:</p>
+            <p>I specialize systems optimizaiton, process control and automation.  Leveraging my background in Linguistics and Cognitive Science, I can deliver:</p>
             <ul>
               <li>Ontology design and graph-based knowledge systems</li>
-              <li>GraphRAG development and semantic retrieval pipelines</li>
-              <li>Advanced search and contextual AI integration</li>
+              <li>GraphRAG development and semantic information retrieval pipelines</li>
+              <li>Advanced automation and AI integration</li>
             </ul>
             <div className="bio-links">
               <h4>Related Links:</h4>
@@ -202,7 +201,6 @@ const ProfilePage = () => {
         <div className="section-container">
           <h2>Résumé</h2>
           <div className="resume-card">
-            <h3>Résumé</h3>
             <p>View my professional experience and qualifications.</p>
             <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
               <a 
