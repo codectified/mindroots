@@ -470,6 +470,19 @@ export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2, limit = 25) => {
   }
 };
 
+// source: 'lane' | 'hanswehr' | null (both)
+export const searchFullText = async (query, source = null, limit = 25) => {
+  try {
+    const params = { query, limit };
+    if (source) params.source = source;
+    const response = await api.get('/search-fulltext', { params });
+    return response.data;
+  } catch (error) {
+    console.error('Error in full-text search:', error);
+    throw error;
+  }
+};
+
 // Legacy functions now using the new radical search system
 export const fetchGeminateRoots = async (r1, r2, L1, L2) => {
   try {

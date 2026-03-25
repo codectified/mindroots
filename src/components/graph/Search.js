@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useDisplayMode } from '../../contexts/DisplayModeContext';
 import NodesTable from './NodesTable';
 import GraphVisualization from './GraphVisualization';
-import { fetchRoots, fetchCombinateRoots, fetchExtendedRootsNew } from '../../services/apiService'; // New distinct search functions
+import { fetchRoots, fetchCombinateRoots, fetchExtendedRootsNew, searchFullText } from '../../services/apiService'; // New distinct search functions
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
@@ -25,6 +25,9 @@ const Search = () => {
   const [totalRoots, setTotalRoots] = useState(0);
   const [resultLimit, setResultLimit] = useState(25);
   const [lastSearchType, setLastSearchType] = useState(null);
+  const [lexicalQuery, setLexicalQuery] = useState('');
+  const [lexicalSource, setLexicalSource] = useState('lane');
+  const [lexicalTotal, setLexicalTotal] = useState(0);
 
   const closeInfoBubble = () => setInfoBubble(null);
 
@@ -42,6 +45,9 @@ const Search = () => {
             break;
           case 'extended':
             handleFetchExtended();
+            break;
+          case 'lexical':
+            handleLexicalSearch();
             break;
           default:
             break;
@@ -102,6 +108,23 @@ const Search = () => {
   };
 
 
+  const handleLexicalSearch = async () => {
+    if (!lexicalQuery.trim()) return;
+    try {
+      const source = lexicalSource === 'both' ? null : lexicalSource;
+      const { results } = await searchFullText(lexicalQuery.trim(), source, resultLimit);
+      const roots = results.map(r => r.root);
+      setGraphData(formatNeo4jData(roots));
+      setLexicalTotal(results.length);
+      setTotalRoots(results.length);
+      setLastSearchType('lexical');
+    } catch (error) {
+      console.error('Error in lexical search:', error);
+      setGraphData({ nodes: [], links: [] });
+      setLexicalTotal(0);
+    }
+  };
+
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
     const links = [];
@@ -125,6 +148,43 @@ const Search = () => {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
         <h2>Positional Root Search</h2>
         <DisplayModeSelector />
+      </div>
+
+      {/* Lexical Search */}
+      <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #e0e0e0' }}>
+        <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Lexical Search</h3>
+        <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+          <input
+            type="text"
+            value={lexicalQuery}
+            onChange={(e) => setLexicalQuery(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && handleLexicalSearch()}
+            placeholder="e.g. love, mercy, fear god"
+            style={{ flex: 1, padding: '6px 10px', fontSize: '14px', border: '1px solid #ccc', borderRadius: '4px' }}
+          />
+          <button onClick={handleLexicalSearch} disabled={!lexicalQuery.trim()}>
+            Search
+          </button>
+        </div>
+        <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#444' }}>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <input type="radio" name="lexicalSource" value="lane" checked={lexicalSource === 'lane'} onChange={() => setLexicalSource('lane')} />
+            Lane's Lexicon
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <input type="radio" name="lexicalSource" value="hanswehr" checked={lexicalSource === 'hanswehr'} onChange={() => setLexicalSource('hanswehr')} />
+            Hans Wehr
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <input type="radio" name="lexicalSource" value="both" checked={lexicalSource === 'both'} onChange={() => setLexicalSource('both')} />
+            Both
+          </label>
+        </div>
+        {lexicalTotal > 0 && lastSearchType === 'lexical' && (
+          <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666' }}>
+            Found {lexicalTotal} roots
+          </p>
+        )}
       </div>
 
       {/* Dropdown menus */}

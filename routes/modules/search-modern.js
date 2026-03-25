@@ -463,4 +463,105 @@ router.get('/search-extended', async (req, res) => {
   }
 });
 
+// ====================================================================
+// FULL-TEXT SEARCH
+// Route: GET /search-fulltext
+// Purpose: Semantic search over Word.definitions (Lane) and Word.hanswehr_entry (Hans Wehr)
+// Features: Lucene query syntax (fuzzy ~, phrase "", boolean AND/OR/NOT),
+//           source detection (lane/hanswehr), source filter param,
+//           merged Root-centered results with word enrichment
+// ====================================================================
+router.get('/search-fulltext', async (req, res) => {
+  try {
+    const { query, source, limit = 25 } = req.query;
+
+    if (!query || !query.trim()) {
+      return res.status(400).json({ error: 'query parameter is required' });
+    }
+
+    const cleanQuery = query.trim();
+    const lowerQuery = cleanQuery.toLowerCase();
+    const parsedLimit = Math.min(parseInt(limit) || 25, 100);
+
+    const session = req.driver.session();
+    try {
+      const rootMap = new Map();
+
+      const wordResult = await session.run(
+        `CALL db.index.fulltext.queryNodes('wordLexicalText', $query)
+         YIELD node AS word, score
+         MATCH (root:Root)-[:HAS_WORD]->(word)
+         RETURN word, root, score
+         ORDER BY score DESC
+         LIMIT $limit`,
+        { query: cleanQuery, limit: parsedLimit }
+      );
+
+      for (const record of wordResult.records) {
+        const word = convertIntegers(record.get('word').properties);
+        const root = convertIntegers(record.get('root').properties);
+        const score = record.get('score');
+        const rootId = root.root_id;
+
+        // Determine which field the match came from
+        let matchSource = null;
+        if (word.definitions?.toLowerCase().includes(lowerQuery)) {
+          matchSource = 'lane';
+        } else if (word.hanswehr_entry?.toLowerCase().includes(lowerQuery)) {
+          matchSource = 'hanswehr';
+        }
+
+        if (!rootMap.has(rootId)) {
+          rootMap.set(rootId, { score, source: matchSource, root, matchedWords: [] });
+        } else if (score > rootMap.get(rootId).score) {
+          rootMap.get(rootId).score = score;
+          if (matchSource) rootMap.get(rootId).source = matchSource;
+        }
+        rootMap.get(rootId).matchedWords.push({ ...word, matchSource });
+      }
+
+      // --- Apply source filter if requested ---
+      let entries = [...rootMap.values()];
+      if (source === 'lane' || source === 'hanswehr') {
+        entries = entries.filter(r =>
+          r.matchedWords.some(w => w.matchSource === source)
+        );
+        // Trim matchedWords to only those matching the requested source
+        entries = entries.map(r => ({
+          ...r,
+          matchedWords: r.matchedWords.filter(w => w.matchSource === source)
+        }));
+      }
+
+      // --- Build response, sorted by score desc ---
+      const results = entries
+        .sort((a, b) => b.score - a.score)
+        .slice(0, parsedLimit)
+        .map(({ score, source: matchSource, root, matchedWords }) => ({
+          score,
+          source: matchSource,
+          root,
+          matchedWords
+        }));
+
+      res.json({
+        results,
+        total: results.length,
+        query: cleanQuery,
+        message: `Found ${results.length} results for "${cleanQuery}"`
+      });
+
+    } finally {
+      await session.close();
+    }
+
+  } catch (error) {
+    console.error('Error in search-fulltext endpoint:', error);
+    res.status(500).json({
+      error: 'Internal server error',
+      message: error.message
+    });
+  }
+});
+
 module.exports = router;
