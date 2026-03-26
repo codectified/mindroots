@@ -24,7 +24,7 @@ import MarkdownRenderer from './components/utils/MarkdownRenderer';
 import Layout from './components/layout/Layout';
 
 import { LanguageProvider } from './contexts/LanguageContext';
-import { ContextFilterProvider } from './contexts/ContextFilterContext';
+import { CorpusFilterProvider } from './contexts/CorpusFilterContext';
 import { CorpusProvider } from './contexts/CorpusContext';
 import { FilterProvider } from './contexts/FilterContext';
 import { GraphDataProvider } from './contexts/GraphDataContext';
@@ -73,7 +73,7 @@ const App = () => {
     <FilterProvider>
       <NodeLimitProvider>
         <CorpusProvider>
-          <ContextFilterProvider>
+          <CorpusFilterProvider>
             <ShowLinksProvider>
               <FormFilterProvider>
                 <SemiticLanguageFilterProvider>
@@ -109,7 +109,7 @@ const App = () => {
                 </SemiticLanguageFilterProvider>
               </FormFilterProvider>
             </ShowLinksProvider>
-          </ContextFilterProvider>
+          </CorpusFilterProvider>
         </CorpusProvider>
       </NodeLimitProvider>
       </FilterProvider>

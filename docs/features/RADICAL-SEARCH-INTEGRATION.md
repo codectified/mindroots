@@ -56,16 +56,17 @@ The Radical Search Integration replaces the legacy hardcoded search system with 
 GET /search-roots?r1=ا&r2=*&r3=None&L1=arabic&L2=english
 // → Biradical roots with ا in position 1
 
-GET /search-roots?r1=ا&r2=د&r3=م&L1=arabic&L2=english  
+GET /search-roots?r1=ا&r2=د&r3=م&L1=arabic&L2=english
 // → Exact triradical match ا-د-م
 
-GET /search-roots?r1=*&r2=د&r3=*&L1=arabic&L2=english
-// → All roots with د in position 2
+GET /search-roots?r1=*&r2=د&r3=*&L1=arabic&L2=english&corpus_id=2
+// → All roots with د in position 2 that appear in the Quran
 ```
 
 **Parameters**:
 - `r1`, `r2`, `r3`: Radical positions (`*` for wildcard, `None` for biradical-only)
 - `L1`, `L2`: Display languages (arabic, english, etc.)
+- `corpus_id` *(optional)*: Restrict results to roots with words in that corpus (1=Poetry, 2=Quran, 3=Prose)
 
 **Neo4j Implementation**:
 ```cypher
@@ -92,11 +93,12 @@ LIMIT 25
 // Examples:
 GET /search-combinate?r1=ا&r2=د&L1=arabic&L2=english
 // → All roots containing both ا and د in any positions
-// Returns: ا-د-م, د-ا-ر, ا-د-ب, etc.
 
-GET /search-combinate?r1=ك&r2=ت&r3=ب&L1=arabic&L2=english
-// → All roots containing ك, ت, and ب in any order
+GET /search-combinate?r1=ك&r2=ت&r3=ب&L1=arabic&L2=english&corpus_id=2
+// → All roots with ك, ت, ب in any order that appear in the Quran
 ```
+
+**Parameters**: `r1`, `r2`, `r3`, `L1`, `L2`, `limit`, `corpus_id` *(optional)*
 
 **Logic**: Uses RadicalPosition nodes to find all permutations regardless of position
 
@@ -106,7 +108,12 @@ GET /search-combinate?r1=ك&r2=ت&r3=ب&L1=arabic&L2=english
 ```javascript
 GET /search-extended?L1=arabic&L2=english
 // → Only returns 4+ radical roots
+
+GET /search-extended?L1=arabic&corpus_id=1
+// → 4+ radical roots appearing in the Poetry corpus
 ```
+
+**Parameters**: `r1`, `r2`, `r3` *(optional radical filters)*, `L1`, `L2`, `limit`, `corpus_id` *(optional)*
 
 **Implementation**: Counts RadicalPosition relationships and filters `>= 4`
 
@@ -195,6 +202,35 @@ export const searchCombinate = async (r1, r2, r3, L1, L2) => {
   }
 };
 ```
+
+## Corpus Filter
+
+All three root search endpoints (`/search-roots`, `/search-combinate`, `/search-extended`) accept an optional `corpus_id` parameter that restricts results to roots with at least one word appearing in the specified corpus.
+
+### Implementation
+An EXISTS subquery is injected before the RETURN clause when `corpus_id` is present:
+
+```cypher
+WITH root WHERE EXISTS {
+  MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(:CorpusItem {corpus_id: toInteger($corpusId)})
+}
+RETURN root
+```
+
+### Corpus IDs
+| ID | Corpus | CorpusItem count |
+|---|---|---|
+| `1` | Poetry | ~98 |
+| `2` | Quran | ~77,429 |
+| `3` | Prose | ~684 |
+
+### Schema note
+All CorpusItems store corpus membership as a `corpus_id` integer property. The `BELONGS_TO` relationship to a Corpus node exists only for Poetry and Prose, so the property-based approach is used uniformly across all corpora.
+
+### Frontend integration
+`Search.js` reads `corpusFilter` from `CorpusFilterContext` and passes it as `corpus_id` to all three root search API calls when the value is not `'lexicon'`. `ContextShiftSelector` (in the mini-menu, bottom nav, and inline on Search/Explore pages) controls this value. The same `corpusFilter` is also used by full text search and all node expansion — one unified scope across the app. See [Corpus Filter](CORPUS-FILTER-DOCUMENTATION.md) for full details.
+
+---
 
 ## Search Logic & Edge Cases
 
@@ -344,7 +380,7 @@ CREATE INDEX IF NOT EXISTS FOR (r:Root) ON r.arabic;
 
 ---
 
-**Last Updated**: September 12, 2025  
-**Implementation Status**: Complete and production-ready  
-**Performance**: Optimized with proper indexing  
-**See Also**: [Search Testing](../testing/RADICAL-SEARCH-TESTS.md), [Architecture Overview](../CLAUDE.md#root-search-system)
+**Last Updated**: March 26, 2026
+**Implementation Status**: Complete and production-ready
+**Performance**: Optimized with proper indexing
+**See Also**: [Full-Text Search](FULLTEXT-SEARCH-DOCUMENTATION.md), [Search Testing](../testing/RADICAL-SEARCH-TESTS.md), [Architecture Overview](../CLAUDE.md#root-search-system)

@@ -70,7 +70,7 @@
 
 #### **Specialized Contexts**
 - `SemiticLanguageFilterContext.js` - Semitic language filtering
-- `ContextFilterContext.js` - Context-specific filtering
+- `CorpusFilterContext.js` - Unified corpus scope filter (search + expansion)
 - `NodeLimitContext.js` - Result limit controls
 - `SettingsContext.js` - Global app settings
 

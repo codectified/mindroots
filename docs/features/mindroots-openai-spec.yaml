@@ -1,0 +1,162 @@
+openapi: 3.1.0
+info:
+  title: TheOption Life API
+  description: Read and write access to the MindRoots linguistic graph database.
+  version: 2.0.0
+servers:
+  - url: https://theoption.life
+    description: Production server
+
+paths:
+  /api/execute-query:
+    post:
+      operationId: executeCypherQuery
+      summary: Execute a Cypher query
+      description: Sends a Cypher query to the Neo4j-based linguistic graph and returns query results.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                  description: A Cypher query string to run on the database.
+              required:
+                - query
+      responses:
+        '200':
+          description: Successful query result
+          content:
+            application/json:
+              schema:
+                type: array
+                description: List of result records
+                items:
+                  type: object
+                  properties:
+                    r:
+                      type: object
+                      properties:
+                        identity:
+                          type: integer
+                        labels:
+                          type: array
+                          items:
+                            type: string
+                        properties:
+                          type: object
+                          properties:
+                            r1:
+                              type: string
+                            r2:
+                              type: string
+                            r3:
+                              type: string
+                            root_id:
+                              type: integer
+                            arabic:
+                              type: string
+                            english:
+                              type: string
+                            root_type:
+                              type: string
+                            node_type:
+                              type: string
+                            Triliteral_ID:
+                              type: integer
+                          additionalProperties: true
+                        elementId:
+                          type: string
+        '400':
+          description: Invalid query or malformed request
+        '500':
+          description: Server error while processing the query
+
+  /api/write-root-analysis:
+    post:
+      operationId: writeRootAnalysis
+      summary: Write a structured Analysis node
+      description: Creates a new Analysis node linked to a given root, with support for both v2 and legacy v1 schemas.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                rootId:
+                  type: string
+                  description: The root_id of the target root
+                analysis:
+                  type: object
+                  description: Analysis fields (v2 schema preferred, v1 still supported)
+                  properties:
+                    # v2 Core Fields
+                    concrete_origin:
+                      type: string
+                      description: Physical/concrete root meaning
+                    path_to_abstraction:
+                      type: string
+                      description: Semantic evolution pathway
+                    fundamental_frame:
+                      type: string
+                      description: Conceptual framework
+                    basic_stats:
+                      type: string
+                      description: Usage statistics
+                    
+                    # v2 Reference Fields
+                    quranic_refs:
+                      type: string
+                      description: Quranic usage examples
+                    hadith_refs:
+                      type: string
+                      description: Hadith examples
+                    poetic_refs:
+                      type: string
+                      description: Classical poetry references
+                    proverbial_refs:
+                      type: string
+                      description: Proverbs and idioms
+                    
+                    # Legacy v1 Fields (for backward compatibility)
+                    lexical_summary:
+                      type: string
+                      description: Comprehensive lexical overview
+                    semantic_path:
+                      type: string
+                      description: Semantic development
+                    words_expressions:
+                      type: string
+                      description: Derived words and expressions
+                    poetic_references:
+                      type: string
+                      description: Legacy poetry references field
+              required:
+                - rootId
+      responses:
+        '200':
+          description: Successful write of Analysis node
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+                  analysisId:
+                    type: string
+                    description: Identifier for the new Analysis
+                  version:
+                    type: integer
+                    description: Auto-incremented version number
+                  timestamp:
+                    type: string
+                    format: date-time
+                    description: Creation timestamp
+        '400':
+          description: Invalid request (missing or malformed fields)
+        '500':
+          description: Server error while processing the request

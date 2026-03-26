@@ -4,7 +4,7 @@ import NodeInspector from './NodeInspector';
 import { expandGraph, navigateToAdjacentNode, navigateByGlobalPosition } from '../../services/apiService';
 import MainMenu from '../navigation/MainMenu';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useContextFilter } from '../../contexts/ContextFilterContext';
+import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -14,7 +14,7 @@ import InfoBubble from '../layout/InfoBubble';
 
 const CorpusGraphScreen = () => {
   const { L1, L2 } = useLanguage();
-  const { contextFilterRoot, contextFilterForm } = useContextFilter();
+  const { corpusFilter } = useCorpusFilter();
   const { selectedCorpus, selectedCorpusItem, handleSelectCorpusItem, loading } = useCorpus();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble, nodeInspectorData, setNodeInspectorData, handleNodeNavigation } = useGraphData();
   const [navigationLoading, setNavigationLoading] = useState(false);
@@ -203,7 +203,7 @@ const CorpusGraphScreen = () => {
           <FontAwesomeIcon icon={faArrowRight} />
         </button>
       </div>
-      <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)} />
+      <GraphVisualization data={graphData} onNodeClick={(node, event) => handleNodeClick(node, L1, L2, event)} />
 
 
       {/* Render info bubble if infoBubble state is set */}

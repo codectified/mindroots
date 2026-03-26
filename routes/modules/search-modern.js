@@ -183,8 +183,8 @@ router.get('/radical-search', async (req, res) => {
 // ====================================================================
 router.get('/search-roots', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2, limit = 25 } = req.query;
-    
+    const { r1, r2, r3, L1, L2, limit = 25, corpus_id } = req.query;
+
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
     }
@@ -193,43 +193,43 @@ router.get('/search-roots', async (req, res) => {
     let cypherQuery = '';
     let queryParams = {};
 
+    // Corpus filter clause — appended before RETURN when corpus_id is provided
+    const corpusClause = corpus_id
+      ? `WITH root WHERE EXISTS {
+           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(:CorpusItem {corpus_id: toInteger($corpusId)})
+         }`
+      : '';
+    if (corpus_id) queryParams.corpusId = corpus_id;
+
     // Create mutable copy of r3 for potential modification
     let actualR3 = r3;
-    
+
     // Handle "None" case for R3 (biradical/geminate search)
     if (r3 === 'None') {
-      // If r2 is specified, treat as geminate search (r3 = r2)
-      // This saves the user from manually setting r3 to the same value as r2
       if (r2 && r2 !== '*') {
-        // Convert None + specified r2 to geminate search
-        actualR3 = r2; // Set r3 to same value as r2
-        // Fall through to standard search logic below
+        actualR3 = r2;
       } else {
-        // Return all biradical roots (wildcard search when r2 is also wildcard)
         cypherQuery = `
           MATCH (root:Root)
           WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) = 2
         `;
-        
-        // Add r1 filter if specified
         if (r1 && r1 !== '*') {
           cypherQuery += `
             AND EXISTS { MATCH (root)-[:HAS_RADICAL]->(rp1:RadicalPosition) WHERE rp1.radical = $r1 AND rp1.position = 1 }
           `;
           queryParams.r1 = r1;
         }
-        
         cypherQuery += `
+          ${corpusClause}
           RETURN root
           ORDER BY root.${L1}
           LIMIT ${parseInt(limit)}
         `;
       }
     }
-    
-    // Standard position-specific search (handles both regular and converted geminate searches)
+
+    // Standard position-specific search
     if (actualR3 !== 'None') {
-      // Standard position-specific search (2-3 radicals)
       const conditions = [];
       if (r1 && r1 !== '*') {
         conditions.push('(rp.radical = $r1 AND rp.position = 1)');
@@ -243,12 +243,12 @@ router.get('/search-roots', async (req, res) => {
         conditions.push('(rp.radical = $r3 AND rp.position = 3)');
         queryParams.r3 = actualR3;
       }
-      
-      // If no radicals specified (all wildcards), return all roots
+
       if (conditions.length === 0) {
         cypherQuery = `
           MATCH (root:Root)
           WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
+          ${corpusClause}
           RETURN root
           ORDER BY root.${L1}
           LIMIT ${parseInt(limit)}
@@ -260,6 +260,7 @@ router.get('/search-roots', async (req, res) => {
           WITH root, collect(rp) as matched_radicals
           WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
             AND size(matched_radicals) = ${conditions.length}
+          ${corpusClause}
           RETURN root
           ORDER BY root.${L1}
           LIMIT ${parseInt(limit)}
@@ -305,15 +306,14 @@ router.get('/search-roots', async (req, res) => {
 // ====================================================================
 router.get('/search-combinate', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2, limit = 25 } = req.query;
-    
+    const { r1, r2, r3, L1, L2, limit = 25, corpus_id } = req.query;
+
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
     }
 
-    // Collect non-wildcard radicals
     const inputRadicals = [r1, r2, r3].filter(r => r && r !== '*');
-    
+
     if (inputRadicals.length === 0) {
       return res.status(400).json({ error: 'At least one radical is required for combinate search' });
     }
@@ -322,7 +322,13 @@ router.get('/search-combinate', async (req, res) => {
     let cypherQuery = '';
     let queryParams = { radicals: inputRadicals };
 
-    // Handle "None" case - only biradical permutations
+    const corpusClause = corpus_id
+      ? `WITH root WHERE EXISTS {
+           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(:CorpusItem {corpus_id: toInteger($corpusId)})
+         }`
+      : '';
+    if (corpus_id) queryParams.corpusId = corpus_id;
+
     if (r3 === 'None') {
       cypherQuery = `
         MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
@@ -331,12 +337,12 @@ router.get('/search-combinate', async (req, res) => {
         WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) = 2
           AND all(radical in $radicals WHERE radical in root_radicals)
           AND size(root_radicals) = 2
+        ${corpusClause}
         RETURN root
         ORDER BY root.${L1}
         LIMIT ${parseInt(limit)}
       `;
     } else {
-      // Standard combinate - any permutations (2-3 radicals)
       cypherQuery = `
         MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
         WHERE rp.radical IN $radicals
@@ -344,6 +350,7 @@ router.get('/search-combinate', async (req, res) => {
         WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
           AND all(radical in $radicals WHERE radical in root_radicals)
           AND size([r in root_radicals WHERE r IN $radicals]) = size($radicals)
+        ${corpusClause}
         RETURN root
         ORDER BY root.${L1}
         LIMIT ${parseInt(limit)}
@@ -388,8 +395,8 @@ router.get('/search-combinate', async (req, res) => {
 // ====================================================================
 router.get('/search-extended', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2, limit = 25 } = req.query;
-    
+    const { r1, r2, r3, L1, L2, limit = 25, corpus_id } = req.query;
+
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
     }
@@ -399,11 +406,10 @@ router.get('/search-extended', async (req, res) => {
       MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
       WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) >= 4
     `;
-    
+
     let queryParams = {};
     const conditions = [];
-    
-    // Optional filtering by provided radicals
+
     if (r1 && r1 !== '*') {
       conditions.push('(rp.radical = $r1)');
       queryParams.r1 = r1;
@@ -413,10 +419,10 @@ router.get('/search-extended', async (req, res) => {
       queryParams.r2 = r2;
     }
     if (r3 && r3 !== '*') {
-      conditions.push('(rp.radical = $r3)');  
+      conditions.push('(rp.radical = $r3)');
       queryParams.r3 = r3;
     }
-    
+
     if (conditions.length > 0) {
       cypherQuery += ' AND (' + conditions.join(' OR ') + ')';
       cypherQuery += `
@@ -427,7 +433,15 @@ router.get('/search-extended', async (req, res) => {
       cypherQuery += ' WITH root';
     }
 
+    const corpusClause = corpus_id
+      ? `WITH root WHERE EXISTS {
+           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(:CorpusItem {corpus_id: toInteger($corpusId)})
+         }`
+      : '';
+    if (corpus_id) queryParams.corpusId = corpus_id;
+
     cypherQuery += `
+      ${corpusClause}
       RETURN DISTINCT root
       ORDER BY root.${L1}
       LIMIT ${parseInt(limit)}
@@ -474,7 +488,7 @@ router.get('/search-extended', async (req, res) => {
 // ====================================================================
 router.get('/search-fulltext', async (req, res) => {
   try {
-    const { query, sources, limit = 25 } = req.query;
+    const { query, sources, limit = 25, corpus_id } = req.query;
 
     if (!query || !query.trim()) {
       return res.status(400).json({ error: 'query parameter is required' });
@@ -484,7 +498,6 @@ router.get('/search-fulltext', async (req, res) => {
     const lowerQuery = cleanQuery.toLowerCase();
     const parsedLimit = Math.min(parseInt(limit) || 25, 100);
 
-    // Parse requested sources — default to all three if none specified
     const requestedSources = sources
       ? sources.split(',').map(s => s.trim()).filter(Boolean)
       : ['lane', 'hanswehr', 'labels'];
@@ -492,9 +505,14 @@ router.get('/search-fulltext', async (req, res) => {
     const searchLexical = requestedSources.includes('lane') || requestedSources.includes('hanswehr');
     const searchLabels  = requestedSources.includes('labels');
 
+    // Corpus filter: when corpus_id is present, restrict words to those appearing in that corpus
+    const corpusMatch = corpus_id
+      ? `MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(word)`
+      : '';
+    const corpusParams = corpus_id ? { corpusId: corpus_id } : {};
+
     const session = req.driver.session();
     try {
-      // Keyed by word_id to deduplicate across indexes
       const wordMap = new Map();
 
       const addWord = (word, root, score, matchSource) => {
@@ -509,11 +527,12 @@ router.get('/search-fulltext', async (req, res) => {
         const lexResult = await session.run(
           `CALL db.index.fulltext.queryNodes('wordLexicalText', $query)
            YIELD node AS word, score
+           ${corpusMatch}
            MATCH (root:Root)-[:HAS_WORD]->(word)
            RETURN word, root, score
            ORDER BY score DESC
            LIMIT ${parsedLimit}`,
-          { query: cleanQuery }
+          { query: cleanQuery, ...corpusParams }
         );
 
         for (const record of lexResult.records) {
@@ -526,11 +545,8 @@ router.get('/search-fulltext', async (req, res) => {
             matchSource = 'lane';
           } else if (requestedSources.includes('hanswehr') && word.hanswehr_entry?.toLowerCase().includes(lowerQuery)) {
             matchSource = 'hanswehr';
-          } else if (!requestedSources.includes('lane') && !requestedSources.includes('hanswehr')) {
-            matchSource = null; // both filtered out but shouldn't reach here
           }
 
-          // Skip if the detected source isn't in the requested set
           if (matchSource === null && !(requestedSources.includes('lane') && requestedSources.includes('hanswehr'))) {
             continue;
           }
@@ -544,11 +560,12 @@ router.get('/search-fulltext', async (req, res) => {
         const labelResult = await session.run(
           `CALL db.index.fulltext.queryNodes('wordLabelText', $query)
            YIELD node AS word, score
+           ${corpusMatch}
            MATCH (root:Root)-[:HAS_WORD]->(word)
            RETURN word, root, score
            ORDER BY score DESC
            LIMIT ${parsedLimit}`,
-          { query: cleanQuery }
+          { query: cleanQuery, ...corpusParams }
         );
 
         for (const record of labelResult.records) {

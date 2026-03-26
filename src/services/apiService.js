@@ -407,18 +407,17 @@ export const fetchRootByLetters = async (r1, r2, r3, L1, L2, searchType = 'Trili
 // ===== NEW DISTINCT SEARCH FUNCTIONS MATCHING BACKEND ENDPOINTS =====
 
 // 1. Fetch Root(s) - Position-specific search with wildcards and "None" support
-export const fetchRoots = async (r1, r2, r3, L1, L2, limit = 25) => {
+export const fetchRoots = async (r1, r2, r3, L1, L2, limit = 25, corpus_id = null) => {
   try {
-    // Convert empty strings to wildcards for API
     const params = {
       r1: r1 || '*',
-      r2: r2 || '*', 
+      r2: r2 || '*',
       r3: r3 === 'NoR3' ? 'None' : (r3 || '*'),
       L1,
       L2,
       limit
     };
-    
+    if (corpus_id) params.corpus_id = corpus_id;
     const response = await api.get('/search-roots', { params });
     return convertIntegers(response.data);
   } catch (error) {
@@ -428,23 +427,17 @@ export const fetchRoots = async (r1, r2, r3, L1, L2, limit = 25) => {
 };
 
 // 2. Combinate - Return all valid permutations of specified radicals
-export const fetchCombinateRoots = async (r1, r2, r3, L1, L2, limit = 25) => {
+export const fetchCombinateRoots = async (r1, r2, r3, L1, L2, limit = 25, corpus_id = null) => {
   try {
-    // Only send non-empty radicals
-    const params = {
-      L1,
-      L2,
-      limit
-    };
-    
+    const params = { L1, L2, limit };
     if (r1) params.r1 = r1;
-    if (r2) params.r2 = r2; 
+    if (r2) params.r2 = r2;
     if (r3 === 'NoR3') {
       params.r3 = 'None';
     } else if (r3) {
       params.r3 = r3;
     }
-    
+    if (corpus_id) params.corpus_id = corpus_id;
     const response = await api.get('/search-combinate', { params });
     return convertIntegers(response.data);
   } catch (error) {
@@ -454,14 +447,13 @@ export const fetchCombinateRoots = async (r1, r2, r3, L1, L2, limit = 25) => {
 };
 
 // 3. Fetch Extended - Only roots with 4+ radicals
-export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2, limit = 25) => {
+export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2, limit = 25, corpus_id = null) => {
   try {
-    // Send all radicals as optional filters
     const params = { L1, L2, limit };
     if (r1) params.r1 = r1;
     if (r2) params.r2 = r2;
     if (r3 && r3 !== 'NoR3') params.r3 = r3;
-    
+    if (corpus_id) params.corpus_id = corpus_id;
     const response = await api.get('/search-extended', { params });
     return convertIntegers(response.data);
   } catch (error) {
@@ -471,10 +463,11 @@ export const fetchExtendedRootsNew = async (r1, r2, r3, L1, L2, limit = 25) => {
 };
 
 // sources: array of 'lane' | 'hanswehr' | 'labels' — omit for all three
-export const searchFullText = async (query, sources = null, limit = 25) => {
+export const searchFullText = async (query, sources = null, limit = 25, corpus_id = null) => {
   try {
     const params = { query, limit };
     if (sources && sources.length > 0) params.sources = sources.join(',');
+    if (corpus_id) params.corpus_id = corpus_id;
     const response = await api.get('/search-fulltext', { params });
     return response.data;
   } catch (error) {

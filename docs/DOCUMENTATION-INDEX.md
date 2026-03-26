@@ -1,6 +1,6 @@
 # MindRoots Documentation Index
 
-**Last Updated**: March 25, 2026
+**Last Updated**: March 26, 2026 (Corpus Filter refactor)
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
@@ -21,6 +21,7 @@
 - **[Workspace Module](features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Creative workspace for Custom GPT graphical media with versioned storage, project organization, and PNG rendering
 - **[Custom GPT Base Instructions](features/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Base template for tenant Custom GPT setup, system prompt, and Actions configuration
 - **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
+- **[Corpus Filter](features/CORPUS-FILTER-DOCUMENTATION.md)** - ✅ Unified corpus scoping via `CorpusFilterContext` — controls all search retrieval and node expansion
 - **[Full-Text Search](features/FULLTEXT-SEARCH-DOCUMENTATION.md)** - ✅ Lucene full-text search over Lane's Lexicon definitions, English gloss, and Arabic text
 - **[Radical Search Integration](features/RADICAL-SEARCH-INTEGRATION.md)** - RadicalPosition-based search system architecture
 - **[Validation System](features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - Inline editing and approval workflow for linguistic data
@@ -56,6 +57,7 @@ docs/
 │   ├── WORKSPACE-MODULE-DOCUMENTATION.md
 │   ├── CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md
 │   ├── workspace-openapi-spec.yaml
+│   ├── CORPUS-FILTER-DOCUMENTATION.md
 │   ├── RADICAL-SEARCH-INTEGRATION.md
 │   ├── VALIDATION-SYSTEM-DOCUMENTATION.md
 │   └── NODE-INSPECTOR-DOCUMENTATION.md

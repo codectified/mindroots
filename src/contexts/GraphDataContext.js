@@ -15,7 +15,7 @@ import { useNodeLimit } from './NodeLimitContext';
 import { useFilter } from './FilterContext'; // Import the filter context
 import { useLanguage } from './LanguageContext'; // Import the language context for language settings
 import { useFormFilter } from './FormFilterContext'; // Import the form filter context
-import { useContextFilter } from './ContextFilterContext'; // Import the context filter context
+import { useCorpusFilter } from './CorpusFilterContext'; // Import the corpus filter context
 import { useSemiticLanguageFilter } from './SemiticLanguageFilterContext'; // Import the Semitic language filter context
 import { useAdvancedMode } from './AdvancedModeContext'; // Import the advanced mode context
 
@@ -60,7 +60,7 @@ export const GraphDataProvider = ({ children }) => {
   const { L1, L2 } = useLanguage(); // Get current language settings
   const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
   const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
-  const { contextFilterRoot, contextFilterForm } = useContextFilter(); // Access context filter
+  const { corpusFilter } = useCorpusFilter(); // Access corpus filter
   const { selectedSemiticLanguages } = useSemiticLanguageFilter(); // Access Semitic language filter
   const { isAdvancedMode } = useAdvancedMode(); // Access advanced mode state
 
@@ -427,7 +427,7 @@ const handleWordNodeClick = async (
   node,
   L1,
   L2,
-  contextFilterForm, // Use form context filter for word expansions
+  corpusFilter,
   corpusId,
   event,
   position
@@ -517,7 +517,7 @@ const handleWordNodeClick = async (
       });
       
       if (!hasCorpusItems) {
-        await handleWordToCorpusItemExpansion(node, L1, L2, contextFilterForm, position);
+        await handleWordToCorpusItemExpansion(node, L1, L2, corpusFilter, position);
       } else {
         console.log('Corpus items already expanded for this word');
         setInfoBubble({
@@ -549,9 +549,6 @@ const handleNodeClick = async (
   node,
   L1,
   L2,
-  contextFilterRoot,
-  contextFilterForm,
-  corpusId,
   event
 ) => {
   // In advanced mode, don't execute guided mode expansion logic
@@ -573,8 +570,8 @@ const handleNodeClick = async (
       node,
       L1,
       L2,
-      contextFilterForm,
-      corpusId,
+      corpusFilter,
+      null,
       position
     );
   } else if (node.type === 'root') {
@@ -582,18 +579,17 @@ const handleNodeClick = async (
       node,
       L1,
       L2,
-      contextFilterRoot,
-      corpusId,
+      corpusFilter,
+      null,
       position
     );
   } else if (node.type === 'word') {
-    // Pass the event through so handleWordNodeClick can read pageX/pageY
     await handleWordNodeClick(
       node,
       L1,
       L2,
-      contextFilterForm, // Use form context filter for word expansions
-      corpusId,
+      corpusFilter,
+      null,
       event,
       position
     );
@@ -668,16 +664,16 @@ const handleContextMenuAction = async (action, node, position = null) => {
       case 'expand':
         // Reuse existing expand logic based on node type using current context filter settings
         if (node.type === 'root') {
-          await handleRootNodeClick(node, L1, L2, contextFilterRoot, null, { x: 0, y: 0 });
+          await handleRootNodeClick(node, L1, L2, corpusFilter, null, { x: 0, y: 0 });
         } else if (node.type === 'form') {
-          await handleFormNodeClick(node, L1, L2, contextFilterForm, null, { x: 0, y: 0 });
+          await handleFormNodeClick(node, L1, L2, corpusFilter, null, { x: 0, y: 0 });
         }
         break;
       
       case 'expand-to-corpusitems':
         // Expand word to corpus items
         if (node.type === 'word') {
-          await handleWordToCorpusItemExpansion(node, L1, L2, contextFilterForm, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+          await handleWordToCorpusItemExpansion(node, L1, L2, corpusFilter, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
         }
         break;
       
@@ -688,8 +684,8 @@ const handleContextMenuAction = async (action, node, position = null) => {
           const options = { L1, L2, limit };
           
           // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
-          if (contextFilterForm && contextFilterForm !== 'lexicon') {
-            options.corpus_id = contextFilterForm;
+          if (corpusFilter && corpusFilter !== 'lexicon') {
+            options.corpus_id = corpusFilter;
           }
 
           try {
@@ -729,8 +725,8 @@ const handleContextMenuAction = async (action, node, position = null) => {
           const options = { L1, L2, limit };
           
           // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
-          if (contextFilterForm && contextFilterForm !== 'lexicon') {
-            options.corpus_id = contextFilterForm;
+          if (corpusFilter && corpusFilter !== 'lexicon') {
+            options.corpus_id = corpusFilter;
           }
 
           try {

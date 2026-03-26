@@ -8,18 +8,17 @@ import rootsContent from '../../content/roots.md';
 import formsContent from '../../content/forms.md';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
-import { useContextFilter } from '../../contexts/ContextFilterContext';
-import { useCorpus } from '../../contexts/CorpusContext';
+import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
 import { useFormFilter } from '../../contexts/FormFilterContext';
 import { useFilter } from '../../contexts/FilterContext';
 import { useSemiticLanguageFilter } from '../../contexts/SemiticLanguageFilterContext';
 import InfoBubble from '../layout/InfoBubble';
+import ContextShiftSelector from '../selectors/ContextShiftSelector';
 
 const Explore = () => {
   const location = useLocation();
   const { L1, L2 } = useLanguage();
-  const { contextFilterRoot, contextFilterForm } = useContextFilter();
-  const { selectedCorpus } = useCorpus();
+  const { corpusFilter } = useCorpusFilter();
   const { selectedFormClassifications } = useFormFilter();
   const { filterWordTypes } = useFilter();
   const { selectedSemiticLanguages } = useSemiticLanguageFilter();
@@ -155,6 +154,11 @@ const Explore = () => {
       }
       // For root, no filters currently - could add RootTypeFilterContext in future if needed
 
+      // Apply corpus filter
+      if (corpusFilter && corpusFilter !== 'lexicon') {
+        filters.corpus_id = corpusFilter;
+      }
+
       // Fetch random node from backend
       const result = await fetchRandomNodes(category, 1, filters);
 
@@ -173,7 +177,10 @@ const Explore = () => {
   return (
     <div className="start">
 
-      <h2>Knowledge Graph Exploration</h2>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+        <h2 style={{ margin: 0 }}>Knowledge Graph Exploration</h2>
+        <ContextShiftSelector />
+      </div>
 
       <div className="button-row">
         {/* Word Button */}
@@ -195,7 +202,7 @@ const Explore = () => {
       <GraphVisualization
         data={graphData}
         onNodeClick={(node, event) =>
-          handleNodeClick(node, L1, L2, contextFilterRoot, contextFilterForm, selectedCorpus?.id, event)
+          handleNodeClick(node, L1, L2, event)
         }
       />
 

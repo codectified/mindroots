@@ -44,8 +44,9 @@ Defined in: `routes/modules/search-modern.js`
 | Param | Type | Default | Description |
 |---|---|---|---|
 | `query` | string | required | Search string (English or Arabic). Supports Lucene syntax. |
-| `source` | string | none (both) | `lane` or `hanswehr` to filter by dictionary source |
+| `sources` | string | all three | Comma-separated: `lane`, `hanswehr`, `labels` |
 | `limit` | number | `25` | Max results (capped at 100) |
+| `corpus_id` | number | none | When set, restricts results to words appearing in that corpus |
 
 ### Lucene Query Syntax (pass-through)
 
@@ -103,28 +104,64 @@ When `source=lane` or `source=hanswehr` is passed, results are filtered and `mat
 ### API Service (`src/services/apiService.js`)
 
 ```javascript
-searchFullText(query, source = null, limit = 25)
-// source: 'lane' | 'hanswehr' | null (both)
+searchFullText(query, sources = null, limit = 25, corpus_id = null)
+// sources: array e.g. ['lane'], ['hanswehr', 'labels'], null = all three
+// corpus_id: number or null — passed from CorpusFilterContext
 ```
 
 ### UI (`src/components/graph/Search.js`)
 
-A **Lexical Search** section above the radical search controls:
+A **Full Text Search** section above Root Search:
 - Text input (Enter key submits)
-- Radio buttons: Lane's Lexicon (default) / Hans Wehr / Both
-- Results displayed in same graph/table as radical search
-- Result count shown below radio buttons
+- Checkboxes (multi-select): Lane's Lexicon (default) / Hans Wehr / Word Labels
+- Results are Word nodes displayed in same graph/table as radical search
+- Result count shown below checkboxes
+- Corpus filter applied from `corpusFilter` via `CorpusFilterContext` (same filter used by root search and all node expansion — one unified scope)
+
+---
+
+## Corpus Filter
+
+When `corpus_id` is provided, results are restricted to words that appear in CorpusItems belonging to that corpus. Integrates with `CorpusFilterContext` in the frontend.
+
+### Corpus IDs
+| ID | Corpus |
+|---|---|
+| `1` | Poetry |
+| `2` | Quran |
+| `3` | Prose |
+
+### How it works
+A MATCH clause is injected before the Root join, requiring the word to exist in a CorpusItem with the matching `corpus_id` property:
+
+```cypher
+CALL db.index.fulltext.queryNodes('wordLexicalText', $query)
+YIELD node AS word, score
+MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(word)  -- corpus gate
+MATCH (root:Root)-[:HAS_WORD]->(word)
+RETURN word, root, score
+ORDER BY score DESC LIMIT N
+```
+
+**Important**: Corpus 2 (Quran, 77k CorpusItems) stores corpus membership as a `corpus_id` property on the node — not via a `BELONGS_TO` relationship. The property-based approach works uniformly across all three corpora.
+
+### Frontend integration
+Both full text search and root search in `Search.js` read `corpusFilter` from `CorpusFilterContext`. A single corpus scope controls all search and expansion behavior across the app.
+
+`ContextShiftSelector` (in the mini-menu, bottom nav, and inline on Search/Explore pages) is the UI for setting `corpusFilter`.
 
 ---
 
 ## Architecture
 
 ```
-User Query + source filter
+User Query + source filter + corpus_id (from CorpusFilterContext)
    ↓
 GET /api/search-fulltext
    ↓
-Neo4j wordLexicalText index (definitions + hanswehr_entry)
+Neo4j wordLexicalText / wordLabelText index
+   ↓
+[corpus gate: CorpusItem {corpus_id} -[:HAS_WORD]-> word]  ← only when corpus_id set
    ↓
 Word hits → walk back to Root via HAS_WORD
    ↓
@@ -132,9 +169,7 @@ Source detection (substring check per word)
    ↓
 Source filter (if requested)
    ↓
-Merge by root_id, sort by score DESC
-   ↓
-Root-centered results → frontend graph/table
+Word-centered results sorted by score DESC → frontend graph/table
 ```
 
 ---
@@ -150,20 +185,22 @@ Root-centered results → frontend graph/table
 
 ## What's Implemented
 
-- ✅ `wordLexicalText` index (definitions + hanswehr_entry only — no noise)
-- ✅ `/search-fulltext` endpoint with source detection and filter
+- ✅ `wordLexicalText` index (`definitions` + `hanswehr_entry`)
+- ✅ `wordLabelText` index (`english` + `arabic`)
+- ✅ `wordText` / `rootText` indexes (retained, not used by endpoint)
+- ✅ `/search-fulltext` endpoint — multi-source, source detection, corpus filter
 - ✅ Lucene syntax pass-through (fuzzy, phrase, boolean)
-- ✅ `searchFullText(query, source, limit)` in apiService.js
-- ✅ Lexical Search UI in Search.js (text input + Lane/Hans Wehr/Both radio buttons)
+- ✅ `searchFullText(query, sources, limit, corpus_id)` in apiService.js
+- ✅ Full Text Search UI — text input + Lane/Hans Wehr/Word Labels checkboxes
+- ✅ Corpus filter integration via `CorpusFilterContext` (`corpusFilter`)
 
 ## Out of Scope
 
-- CorpusItem search
 - Form search
 - Boosting/ranking tuning
 - Arabic analyzer customization
 
 ---
 
-**Last Updated**: March 25, 2026
+**Last Updated**: March 26, 2026
 **Module Location**: `routes/modules/search-modern.js`
