@@ -15,7 +15,6 @@ import { useNodeLimit } from './NodeLimitContext';
 import { useFilter } from './FilterContext'; // Import the filter context
 import { useLanguage } from './LanguageContext'; // Import the language context for language settings
 import { useFormFilter } from './FormFilterContext'; // Import the form filter context
-import { useCorpusFilter } from './CorpusFilterContext'; // Import the corpus filter context
 import { useSemiticLanguageFilter } from './SemiticLanguageFilterContext'; // Import the Semitic language filter context
 import { useAdvancedMode } from './AdvancedModeContext'; // Import the advanced mode context
 
@@ -60,7 +59,6 @@ export const GraphDataProvider = ({ children }) => {
   const { L1, L2 } = useLanguage(); // Get current language settings
   const { filterWordTypes, hideFormNodes } = useFilter(); // Access filterWordType
   const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
-  const { corpusFilter } = useCorpusFilter(); // Access corpus filter
   const { selectedSemiticLanguages } = useSemiticLanguageFilter(); // Access Semitic language filter
   const { isAdvancedMode } = useAdvancedMode(); // Access advanced mode state
 
@@ -140,8 +138,8 @@ export const GraphDataProvider = ({ children }) => {
   };
 
 // Updated functions to use consolidated expand route and handle links
-const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
-  console.log('handleRootNodeClick called with:', { node, L1, L2, contextFilter, corpusId });
+const handleRootNodeClick = async (node, L1, L2, position) => {
+  console.log('handleRootNodeClick called with:', { node, L1, L2 });
   
   try {
     const rootId = node.root_id?.low !== undefined ? node.root_id.low : node.root_id;
@@ -186,14 +184,6 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     // EXPAND: Either no words or 2 or fewer words displayed, expand to show more
     console.log('Expanding root - fetching more words');
     const options = { L1, L2, limit: 100 };
-    
-    // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
-    if (contextFilter && contextFilter !== 'lexicon') {
-      options.corpus_id = contextFilter;
-      console.log('Adding corpus filter:', contextFilter);
-    } else {
-      console.log('No corpus filter - using lexicon scope');
-    }
 
     console.log('Calling expandGraph with:', 'root', rootId, 'word', options);
     const result = await expandGraph('root', rootId, 'word', options);
@@ -208,7 +198,7 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     // Handle empty results with user feedback
     if (rawNodes.length === 0) {
       if (info && info.corpusFiltered) {
-        console.log(`No words found for root ${rootId} in corpus ${contextFilter}`);
+        console.log(`No words found for root ${rootId} in corpus context`);
         setInfoBubble({ 
           definition: `No words found for this root in the selected corpus. The root exists but has no words in the current corpus context.`, 
           position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
@@ -248,8 +238,8 @@ const handleRootNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
   }
 };
 
-const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, position) => {
-  console.log('handleFormNodeClick called with:', { node, L1, L2, contextFilter, corpusId });
+const handleFormNodeClick = async (node, L1, L2, position) => {
+  console.log('handleFormNodeClick called with:', { node, L1, L2 });
   
   try {
     const formId = node.form_id?.low !== undefined ? node.form_id.low : node.form_id;
@@ -294,14 +284,6 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     // EXPAND: Either no words or 2 or fewer words displayed, expand to show more
     console.log('Expanding form - fetching more words');
     const options = { L1, L2, limit };
-    
-    // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
-    if (contextFilter && contextFilter !== 'lexicon') {
-      options.corpus_id = contextFilter;
-      console.log('Adding corpus filter:', contextFilter);
-    } else {
-      console.log('No corpus filter - using lexicon scope');
-    }
 
     console.log('Calling expandGraph with:', 'form', formId, 'word', options);
     const result = await expandGraph('form', formId, 'word', options);
@@ -316,7 +298,7 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
     // Handle empty results with user feedback
     if (rawNodes.length === 0) {
       if (info && info.corpusFiltered) {
-        console.log(`No words found for form ${formId} in corpus ${contextFilter}`);
+        console.log(`No words found for form ${formId}`);
         setInfoBubble({ 
           definition: `No words found for this form in the selected corpus. The form exists but has no words in the current corpus context.`, 
           position: { x: window.innerWidth / 2, y: window.innerHeight / 2 } 
@@ -357,20 +339,12 @@ const handleFormNodeClick = async (node, L1, L2, contextFilter, corpusId, positi
 };
 
 // Handle word node expansion to corpus items
-const handleWordToCorpusItemExpansion = async (node, L1, L2, contextFilter, position) => {
-  console.log('handleWordToCorpusItemExpansion called with:', { node, L1, L2, contextFilter });
+const handleWordToCorpusItemExpansion = async (node, L1, L2, position) => {
+  console.log('handleWordToCorpusItemExpansion called with:', { node, L1, L2 });
   
   try {
     const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
     const options = { L1, L2, limit };
-    
-    // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
-    if (contextFilter && contextFilter !== 'lexicon') {
-      options.corpus_id = contextFilter;
-      console.log('Adding corpus filter for corpusitem expansion:', contextFilter);
-    } else {
-      console.log('No corpus filter for corpusitem expansion - using lexicon scope');
-    }
 
     console.log('Calling expandGraph with:', 'word', wordId, 'corpusitem', options);
     const result = await expandGraph('word', wordId, 'corpusitem', options);
@@ -427,8 +401,6 @@ const handleWordNodeClick = async (
   node,
   L1,
   L2,
-  corpusFilter,
-  corpusId,
   event,
   position
 ) => {
@@ -517,7 +489,7 @@ const handleWordNodeClick = async (
       });
       
       if (!hasCorpusItems) {
-        await handleWordToCorpusItemExpansion(node, L1, L2, corpusFilter, position);
+        await handleWordToCorpusItemExpansion(node, L1, L2, position);
       } else {
         console.log('Corpus items already expanded for this word');
         setInfoBubble({
@@ -566,33 +538,11 @@ const handleNodeClick = async (
   };
 
   if (node.type === 'form') {
-    await handleFormNodeClick(
-      node,
-      L1,
-      L2,
-      corpusFilter,
-      null,
-      position
-    );
+    await handleFormNodeClick(node, L1, L2, position);
   } else if (node.type === 'root') {
-    await handleRootNodeClick(
-      node,
-      L1,
-      L2,
-      corpusFilter,
-      null,
-      position
-    );
+    await handleRootNodeClick(node, L1, L2, position);
   } else if (node.type === 'word') {
-    await handleWordNodeClick(
-      node,
-      L1,
-      L2,
-      corpusFilter,
-      null,
-      event,
-      position
-    );
+    await handleWordNodeClick(node, L1, L2, event, position);
   }
 };
 
@@ -664,16 +614,16 @@ const handleContextMenuAction = async (action, node, position = null) => {
       case 'expand':
         // Reuse existing expand logic based on node type using current context filter settings
         if (node.type === 'root') {
-          await handleRootNodeClick(node, L1, L2, corpusFilter, null, { x: 0, y: 0 });
+          await handleRootNodeClick(node, L1, L2, { x: 0, y: 0 });
         } else if (node.type === 'form') {
-          await handleFormNodeClick(node, L1, L2, corpusFilter, null, { x: 0, y: 0 });
+          await handleFormNodeClick(node, L1, L2, { x: 0, y: 0 });
         }
         break;
       
       case 'expand-to-corpusitems':
         // Expand word to corpus items
         if (node.type === 'word') {
-          await handleWordToCorpusItemExpansion(node, L1, L2, corpusFilter, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
+          await handleWordToCorpusItemExpansion(node, L1, L2, { x: window.innerWidth / 2, y: window.innerHeight / 2 });
         }
         break;
       
@@ -682,11 +632,6 @@ const handleContextMenuAction = async (action, node, position = null) => {
         if (node.type === 'word') {
           const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
           const options = { L1, L2, limit };
-          
-          // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
-          if (corpusFilter && corpusFilter !== 'lexicon') {
-            options.corpus_id = corpusFilter;
-          }
 
           try {
             const result = await expandGraph('word', wordId, 'root', options);
@@ -723,11 +668,6 @@ const handleContextMenuAction = async (action, node, position = null) => {
         if (node.type === 'word') {
           const wordId = node.word_id?.low !== undefined ? node.word_id.low : node.word_id;
           const options = { L1, L2, limit };
-          
-          // Add corpus filter if contextFilter is set to a corpus ID (not 'lexicon')
-          if (corpusFilter && corpusFilter !== 'lexicon') {
-            options.corpus_id = corpusFilter;
-          }
 
           try {
             const result = await expandGraph('word', wordId, 'form', options);

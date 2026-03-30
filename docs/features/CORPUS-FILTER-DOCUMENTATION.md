@@ -73,19 +73,21 @@ Both root search and full text search pass `corpusFilter` as `corpus_id` to thei
 
 ### Node expansion (GraphDataContext.js)
 
-All click-based expansion uses `corpusFilter` from context. `handleNodeClick(node, L1, L2, event)` reads the filter internally — callers do not pass it.
+**No corpus filter is applied to any expansion.** Expansion is always lexicon-scoped so users can freely explore the full graph from corpus-filtered starting points.
+
+Rationale: a corpus-filtered search returns words that appear in that corpus. From those words, the user may want to explore connected roots, forms, or corpus items that are *not* in that corpus — restricting expansion would break this traversal.
 
 | Expansion type | corpus_id applied |
 |---|---|
-| Root → Word | ✅ |
-| Form → Word | ✅ |
-| Word → CorpusItem | ✅ |
-| Word → Root (2nd click) | ✅ |
-| Context menu expand | ✅ |
+| Root → Word | ❌ always lexical |
+| Form → Word | ❌ always lexical |
+| Word → CorpusItem | ❌ always lexical |
+| Word → Root (2nd click) | ❌ always lexical |
+| Context menu expand | ❌ always lexical |
 
 ### Explore random node fetch (Explore.js)
 
-When `corpusFilter` is set, `corpus_id` is added to the `filters` object passed to `fetchRandomNodes`. Backend support required for full effect (see Known Constraints).
+When `corpusFilter` is set, `corpus_id` is added to the `filters` object passed to `fetchRandomNodes`. Backend support required for full effect (see Known Constraints). Once a random node lands, expansion from it is always lexical.
 
 ### CorpusGraphScreen
 
@@ -133,11 +135,13 @@ CorpusFilterContext
        ↓
 ContextShiftSelector (UI — in MiniMenu, BottomNav, Search, Explore)
        ↓
-  ┌─────────────────────────────┐
-  │ Search.js                   │  passes corpus_id to all 4 endpoints
-  │ GraphDataContext.js          │  all expansion handlers read from context
-  │ Explore.js                  │  random fetch + node click
-  └─────────────────────────────┘
+  ┌────────────────────────────────────────────────────────┐
+  │ Search.js         corpus_id → all 4 search endpoints  │
+  │ Explore.js        corpus_id → fetchRandomNodes          │
+  └────────────────────────────────────────────────────────┘
+
+  GraphDataContext.js — expansion is ALWAYS lexical (no corpus_id)
+    ↳ users start from corpus-filtered results and explore freely
 ```
 
 ---
