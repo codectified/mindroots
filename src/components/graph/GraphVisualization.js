@@ -23,8 +23,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     if (isAdvancedMode) {
       // In advanced mode, show context menu
       const position = {
-        x: event.pageX,
-        y: event.pageY
+        x: event.clientX,
+        y: event.clientY
       };
       setContextMenu({ node: d, position });
     } else {

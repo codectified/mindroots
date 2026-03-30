@@ -1,6 +1,6 @@
 /* node-context-menu.css - Styled consistently with InfoBubble */
 .node-context-menu {
-  position: absolute;
+  position: fixed;
   background-color: white;
   border: 1px solid #ccc;
   border-radius: 5px;

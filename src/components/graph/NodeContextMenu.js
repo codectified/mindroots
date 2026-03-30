@@ -20,50 +20,29 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     };
   }, [onClose]);
 
-  // Calculate positioning - desktop follows cursor, mobile centers in viewport
+  // Calculate positioning - viewport-relative (position: fixed), centered on click point
   const getCenteredStyle = () => {
     if (!position) return {};
 
-    // Get viewport dimensions
     const viewportWidth = document.documentElement.clientWidth;
     const viewportHeight = window.innerHeight;
     const isMobile = viewportWidth <= 768;
-    
-    // Use responsive dimensions
     const menuWidth = isMobile ? 240 : 200;
     const menuHeight = isMobile ? 200 : 150;
     const margin = 10;
 
-    if (isMobile) {
-      // Mobile: Center horizontally in viewport, vertically centered on click Y
-      const centeredLeft = (viewportWidth - menuWidth) / 2;
-      const centeredTop = position.y - menuHeight / 2;
-      
-      const finalLeft = Math.max(margin, Math.min(centeredLeft, viewportWidth - menuWidth - margin));
-      const finalTop = Math.max(margin, Math.min(centeredTop, viewportHeight - menuHeight - margin));
+    // Center menu on click point, clamped to viewport bounds
+    // position.x/y are clientX/clientY (viewport-relative), matching position: fixed
+    const centeredLeft = isMobile ? (viewportWidth - menuWidth) / 2 : position.x - menuWidth / 2;
+    const centeredTop = position.y - menuHeight / 2;
 
-      return {
-        left: `${finalLeft}px`,
-        top: `${finalTop}px`
-      };
-    } else {
-      // Desktop: Center on cursor position
-      // Coordinates are already absolute (pageX/pageY) from NodesTable, no scroll adjustment needed
-      const cursorCenteredLeft = position.x - menuWidth / 2;
-      const cursorCenteredTop = position.y - menuHeight / 2;
-      
-      // Get scroll position for viewport bounds checking
-      const scrollY = window.pageYOffset || document.documentElement.scrollTop;
-      
-      // Keep within current viewport bounds (absolute positioning)
-      const finalLeft = Math.max(margin, Math.min(cursorCenteredLeft, viewportWidth - menuWidth - margin));
-      const finalTop = Math.max(scrollY + margin, Math.min(cursorCenteredTop, scrollY + viewportHeight - menuHeight - margin));
+    const finalLeft = Math.max(margin, Math.min(centeredLeft, viewportWidth - menuWidth - margin));
+    const finalTop = Math.max(margin, Math.min(centeredTop, viewportHeight - menuHeight - margin));
 
-      return {
-        left: `${finalLeft}px`,
-        top: `${finalTop}px`
-      };
-    }
+    return {
+      left: `${finalLeft}px`,
+      top: `${finalTop}px`
+    };
   };
 
 
