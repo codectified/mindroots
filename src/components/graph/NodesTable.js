@@ -17,31 +17,26 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
 
   // Create hierarchical sorting for table mode - group words under their parent roots
   const createHierarchicalSort = (nodes, links) => {
-    // Build parent-child relationships from links
-    const childrenMap = new Map(); // parentId -> [children]
-    const parentMap = new Map();   // childId -> parentId
-    
+    const childrenMap = new Map(); // parentId -> [childId]
+    const childNodeIds = new Set(); // node IDs that are direct children via HAS_WORD
+
     links.forEach(link => {
       const sourceId = typeof link.source === 'object' ? link.source.id : link.source;
       const targetId = typeof link.target === 'object' ? link.target.id : link.target;
-      
-      // For root->word relationships, root is parent, word is child
+
       if (link.type === 'HAS_WORD') {
         if (!childrenMap.has(sourceId)) childrenMap.set(sourceId, []);
         childrenMap.get(sourceId).push(targetId);
-        parentMap.set(targetId, sourceId);
+        childNodeIds.add(targetId);
       }
     });
-    
-    // Create node lookup
+
     const nodeMap = new Map();
     nodes.forEach(node => nodeMap.set(node.id, node));
-    
-    // Separate root/corpusitem nodes from others
+
     const rootNodes = nodes.filter(n => n.type === 'root' || n.type === 'corpusitem');
     const otherNodes = nodes.filter(n => n.type !== 'root' && n.type !== 'corpusitem');
-    
-    // Sort root nodes
+
     const sortedRoots = rootNodes.sort((a, b) => {
       const typeOrder = { corpusitem: 0, root: 1 };
       const aOrder = typeOrder[a.type] ?? 2;
@@ -49,32 +44,28 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
       if (aOrder !== bOrder) return aOrder - bOrder;
       return (b.dataSize || 0) - (a.dataSize || 0) || (a.id?.localeCompare(b.id) || 0);
     });
-    
-    // Build final hierarchical list
+
     const result = [];
-    
+
     sortedRoots.forEach(rootNode => {
       result.push(rootNode);
-      
-      // Add children (words) directly under this root
       const childIds = childrenMap.get(rootNode.id) || [];
       const childNodes = childIds
         .map(id => nodeMap.get(id))
         .filter(Boolean)
         .sort((a, b) => (a.id?.localeCompare(b.id) || 0));
-      
       result.push(...childNodes);
     });
-    
-    // Add any orphaned nodes (no parent relationship) at the end
+
+    // Orphans: nodes with no parent relationship — rendered flat, no indent
     const processedIds = new Set(result.map(n => n.id));
     const orphans = otherNodes.filter(n => !processedIds.has(n.id));
     result.push(...orphans);
-    
-    return result;
+
+    return { nodes: result, childNodeIds };
   };
 
-  const sortedNodes = createHierarchicalSort(displayableNodes, graphData.links);
+  const { nodes: sortedNodes, childNodeIds } = createHierarchicalSort(displayableNodes, graphData.links);
 
   // Enhanced click handler that checks for advanced mode (matches GraphVisualization)
   const handleNodeRowClick = useCallback((node, event) => {
@@ -116,14 +107,11 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
           </tr>
         </thead>
         <tbody>
-          {sortedNodes.map((node, index) => {
+          {sortedNodes.map((node) => {
             const color = getNodeColor(node, wordShadeMode);
             
-            // Determine if this is a child node (word under a root)
-            const prevNode = index > 0 ? sortedNodes[index - 1] : null;
-            const isChildNode = node.type === 'word' && prevNode && (prevNode.type === 'root' || prevNode.type === 'corpusitem');
-            const isChildAfterChild = node.type === 'word' && prevNode && prevNode.type === 'word';
-            const actualChild = isChildNode || isChildAfterChild;
+            // A node is indented only if it has an actual HAS_WORD link to a parent
+            const actualChild = childNodeIds.has(node.id);
             
             const nodeTypeStyle = {
               corpusitem: { background: '#f0f8ff' },
