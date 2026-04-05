@@ -87,7 +87,13 @@ Rationale: a corpus-filtered search returns words that appear in that corpus. Fr
 
 ### Explore random node fetch (Explore.js)
 
-When `corpusFilter` is set, `corpus_id` is added to the `filters` object passed to `fetchRandomNodes`. Backend support required for full effect (see Known Constraints). Once a random node lands, expansion from it is always lexical.
+When `corpusFilter` is set, `corpus_id` is passed to `fetchRandomNodes`. The backend (`/random-nodes/:nodeType`) scopes the query to nodes that appear in CorpusItems with that `corpus_id`:
+
+- **Word**: `MATCH (ci:CorpusItem {corpus_id})-[:HAS_WORD]->(n:Word)`
+- **Root**: `MATCH (ci:CorpusItem {corpus_id})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)`
+- **Form**: `MATCH (ci:CorpusItem {corpus_id})-[:HAS_WORD]->(w:Word)-[:HAS_FORM]->(f:Form)`
+
+Once a random node lands on the graph, expansion from it is always lexical.
 
 ### CorpusGraphScreen
 
@@ -121,7 +127,6 @@ The `/expand` endpoint accepts optional `corpus_id` param and injects a corpus g
 
 ## Known Constraints
 
-- **Explore random fetch**: Frontend passes `corpus_id` but backend `fetchRandomNodes` may not yet filter by corpus. Nodes returned may not be restricted to the selected corpus until backend is updated.
 - **Auto-expand / share links**: The `autoExpandRootId` and `?root=` share link flows in Explore.js call `expandGraph` without corpus filter. This is intentional — share links should always load regardless of the viewer's current corpus filter.
 
 ---
@@ -146,6 +151,20 @@ ContextShiftSelector (UI — in MiniMenu, BottomNav, Search, Explore)
 
 ---
 
-**Last Updated**: March 26, 2026
-**Files**: `src/contexts/CorpusFilterContext.js`, `src/components/selectors/ContextShiftSelector.js`
+---
+
+## Explore Page Filter Behavior
+
+The Explore page explicit fetch buttons (Word / Root / Form) respect the corpus filter and global word filters:
+
+- **Word**: filters by `wordTypes`, `semLangs`, and `corpus_id` at the backend
+- **Root**: filters by `rootTypes` and `corpus_id` at the backend
+- **Form**: filters by `classification IN ['Grammatical', 'Morphological']` and `corpus_id` at the backend. The "Form" button is **hidden** in basic/guided mode or when `hideFormNodes` is enabled — so it only appears when the user has explicitly opted into seeing form nodes in advanced mode.
+
+Nodes returned by Explore are normalized through `normalizeNodes` before entering `graphData`, ensuring `node_type` is set correctly so the client-side `applyFilter` in `GraphDataContext` functions as a consistent safety net across both random fetches and expansion results.
+
+---
+
+**Last Updated**: April 5, 2026
+**Files**: `src/contexts/CorpusFilterContext.js`, `src/components/selectors/ContextShiftSelector.js`, `routes/modules/graph.js`, `src/components/graph/Explore.js`
 **See Also**: [Full-Text Search](FULLTEXT-SEARCH-DOCUMENTATION.md), [Radical Search Integration](RADICAL-SEARCH-INTEGRATION.md)

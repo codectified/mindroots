@@ -11,7 +11,7 @@ const FilterController = () => {
 
   // Hardcoded available classifications - always show these three options and always clickable
   // All normalized to proper case for display
-  const availableClassifications = ['Ontological', 'Grammatical', 'Morphological'];
+  const availableClassifications = ['Grammatical', 'Morphological'];
 
   const handleClassificationToggle = (classification) => {
     if (selectedFormClassifications.includes(classification)) {

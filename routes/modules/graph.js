@@ -754,7 +754,7 @@ router.get('/filter-options/:nodeType', async (req, res) => {
 // Replaces client-side Cypher generation in Explore.js
 router.get('/random-nodes/:nodeType', async (req, res) => {
   const { nodeType } = req.params;
-  const { count = 1, L1 = 'arabic', L2 = 'english', formClassifications, wordTypes, semLangs, rootTypes } = req.query;
+  const { count = 1, L1 = 'arabic', L2 = 'english', formClassifications, wordTypes, semLangs, rootTypes, corpus_id } = req.query;
 
   const session = req.driver.session();
 
@@ -782,13 +782,24 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
 
       const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
 
-      query = `
-        MATCH (n:Word)
-        ${whereClause}
-        RETURN n
-        ORDER BY rand()
-        LIMIT ${limit}
-      `;
+      if (corpus_id) {
+        params.corpusId = parseInt(corpus_id, 10);
+        query = `
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(n:Word)
+          ${whereClause}
+          RETURN DISTINCT n
+          ORDER BY rand()
+          LIMIT ${limit}
+        `;
+      } else {
+        query = `
+          MATCH (n:Word)
+          ${whereClause}
+          RETURN n
+          ORDER BY rand()
+          LIMIT ${limit}
+        `;
+      }
 
     } else if (nodeType === 'root') {
       // Root filters: root_type (Geminate/Triliteral/Other)
@@ -812,44 +823,52 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
         }
       }
 
-      query = `
-        MATCH (r:Root)
-        ${whereClause}
-        RETURN r
-        ORDER BY rand()
-        LIMIT ${limit}
-      `;
+      if (corpus_id) {
+        params.corpusId = parseInt(corpus_id, 10);
+        query = `
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
+          ${whereClause}
+          RETURN DISTINCT r
+          ORDER BY rand()
+          LIMIT ${limit}
+        `;
+      } else {
+        query = `
+          MATCH (r:Root)
+          ${whereClause}
+          RETURN r
+          ORDER BY rand()
+          LIMIT ${limit}
+        `;
+      }
 
     } else if (nodeType === 'form') {
       // Form filters: classification (Grammatical/Morphological)
-      // Grammatical: form_id 1-9
-      // Morphological: form_id 12-19
-      // Note: Ontological (10-11) removed per user request
+      // Uses the classification string property on Form nodes directly
       let whereClause = '';
       if (formClassifications) {
-        const classifications = formClassifications.split(',');
-        const conditions = [];
-
-        classifications.forEach(cls => {
-          if (cls === 'Grammatical') {
-            conditions.push('f.form_id IN [1,2,3,4,5,6,7,8,9]');
-          } else if (cls === 'Morphological') {
-            conditions.push('f.form_id IN [12,13,14,15,16,17,18,19]');
-          }
-        });
-
-        if (conditions.length > 0) {
-          whereClause = `WHERE ${conditions.join(' OR ')}`;
-        }
+        params.classifications = formClassifications.split(',');
+        whereClause = 'WHERE f.classification IN $classifications';
       }
 
-      query = `
-        MATCH (f:Form)
-        ${whereClause}
-        RETURN f
-        ORDER BY rand()
-        LIMIT ${limit}
-      `;
+      if (corpus_id) {
+        params.corpusId = parseInt(corpus_id, 10);
+        query = `
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)-[:HAS_FORM]->(f:Form)
+          ${whereClause}
+          RETURN DISTINCT f
+          ORDER BY rand()
+          LIMIT ${limit}
+        `;
+      } else {
+        query = `
+          MATCH (f:Form)
+          ${whereClause}
+          RETURN f
+          ORDER BY rand()
+          LIMIT ${limit}
+        `;
+      }
 
     } else {
       return res.status(400).json({
@@ -860,7 +879,7 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
     console.log('=== RANDOM NODES REQUEST ===');
     console.log('Node Type:', nodeType);
     console.log('Count:', limit);
-    console.log('Filters:', { formClassifications, wordTypes, semLangs, rootTypes });
+    console.log('Filters:', { formClassifications, wordTypes, semLangs, rootTypes, corpus_id });
     console.log('Query params:', params);
     console.log('Generated Query:', query);
     console.log('=== END ===');

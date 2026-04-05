@@ -41,7 +41,7 @@ const normalizeNode = (node) => {
 };
 
 // Normalize an array of nodes
-const normalizeNodes = (nodes) => {
+export const normalizeNodes = (nodes) => {
   if (!Array.isArray(nodes)) return [];
   return nodes.map(normalizeNode).filter(Boolean);
 };

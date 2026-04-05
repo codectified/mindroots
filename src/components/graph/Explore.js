@@ -7,11 +7,12 @@ import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
 import formsContent from '../../content/forms.md';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { useGraphData } from '../../contexts/GraphDataContext';
+import { useGraphData, normalizeNodes } from '../../contexts/GraphDataContext';
 import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
 import { useFormFilter } from '../../contexts/FormFilterContext';
 import { useFilter } from '../../contexts/FilterContext';
 import { useSemiticLanguageFilter } from '../../contexts/SemiticLanguageFilterContext';
+import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import InfoBubble from '../layout/InfoBubble';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 
@@ -20,8 +21,9 @@ const Explore = () => {
   const { L1, L2 } = useLanguage();
   const { corpusFilter } = useCorpusFilter();
   const { selectedFormClassifications } = useFormFilter();
-  const { filterWordTypes } = useFilter();
+  const { filterWordTypes, hideFormNodes } = useFilter();
   const { selectedSemiticLanguages } = useSemiticLanguageFilter();
+  const { isAdvancedMode } = useAdvancedMode();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [markdownContent, setMarkdownContent] = useState('');
 
@@ -163,9 +165,9 @@ const Explore = () => {
       const result = await fetchRandomNodes(category, 1, filters);
 
       if (result && result.nodes) {
-        // Append to existing graph data instead of replacing
+        const newNodes = normalizeNodes(result.nodes);
         setGraphData(prevData => ({
-          nodes: [...prevData.nodes, ...result.nodes],
+          nodes: [...prevData.nodes, ...newNodes],
           links: [...prevData.links, ...(result.links || [])]
         }));
       }
@@ -193,10 +195,12 @@ const Explore = () => {
           <button onClick={() => loadMarkdownAndFetchData('root')}>Root</button>
         </div>
 
-        {/* Form Button */}
-        <div className="button-container">
-          <button onClick={() => loadMarkdownAndFetchData('form')}>Form</button>
-        </div>
+        {/* Form Button — hidden in basic mode or when form nodes are toggled off */}
+        {isAdvancedMode && !hideFormNodes && (
+          <div className="button-container">
+            <button onClick={() => loadMarkdownAndFetchData('form')}>Form</button>
+          </div>
+        )}
       </div>
 
       <GraphVisualization

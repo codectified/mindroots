@@ -725,6 +725,8 @@ export const fetchRandomNodes = async (nodeType, count = 1, filters = {}) => {
       params.rootTypes = filters.rootTypes.join(',');
     }
 
+    if (filters.corpus_id) params.corpus_id = filters.corpus_id;
+
     const response = await api.get(`/random-nodes/${nodeType}`, { params });
     return convertIntegers(response.data);
   } catch (error) {
