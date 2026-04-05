@@ -7,14 +7,13 @@ I build intelligent systems with user-centric design to help people organize, na
 Mindroots | Remote 										June 2024 – Present
 **Founder & Solution Architect**
 
-* Designed and built a full-stack knowledge management platform (React, Express.js, Neo4j, D3.js) that transforms complex, multi-source domain data into an interactive graph — enabling users to search, explore, and discover relationships across thousands of interconnected entities without writing queries.
-* Architected a Graph RAG pipeline and LLM agent interface that mirrors the full capability of the visual application — giving AI agents secure, structured access to the same knowledge graph, search layer, and analysis pipeline. Backend endpoints are designed to return contextual decision points rather than raw data, guiding agents toward schema-aware queries and reducing instruction overhead — a reusable pattern for any organization exposing structured data to AI.
-* Engineered a multi-modal search layer combining structural graph traversal (positional, wildcard, and permutation-based queries) with full-text semantic search across lexicographic definitions — leveraging Neo4j's native Lucene indexes to enable simultaneous discovery by linguistic structure and meaning, without external search infrastructure.
-* Built a multi-tenant Custom GPT orchestration system with isolated workspaces, token-based authentication, and a versioned content pipeline — enabling multiple AI agents to autonomously generate, iterate, and render production-ready assets through API-driven workflows.
-* Implemented tiered API security with role-based access control and query sanitization, enabling safe LLM access to the graph database while protecting data integrity — a pattern applicable to any organization exposing structured data to AI agents.
-* Built a community-driven data validation pipeline with rate limiting, approval tracking, and immutable audit trails — enabling crowd-sourced quality improvement with full traceability across the dataset.
-* Authored and maintained comprehensive technical documentation covering system architecture, API specifications (OpenAPI), deployment procedures, and operational runbooks — ensuring the platform is reproducible and transferable.
-* Conducted technical demonstrations, user interviews, and co-hosted a podcast series to communicate platform capabilities and gather real-world feedback from domain experts.
+* Designed and built a full-stack knowledge graph platform (React, Express.js, Neo4j, D3.js) for exploring multi-source domain data, enabling intuitive relationship discovery across thousands of interconnected entities without query language knowledge.
+* Architected a Graph RAG pipeline and LLM agent interface providing structured, secure access to graph data through schema-aware decision endpoints — reducing prompt complexity and improving agent reliability.
+* Engineered a hybrid search architecture combining graph traversal with full-text semantic search (Neo4j Lucene), enabling unified discovery across structure and meaning without external search infrastructure.
+Built a multi-tenant LLM orchestration system with isolated workspaces, token-based authentication, and versioned artifact pipelines for autonomous content generation and rendering via APIs.
+* Developed a crowd-sourced data validation framework with auditability, rate limiting, and approval workflows to maintain data quality at scale.
+* Produced comprehensive system documentation, API specifications, and technical communications to support reproducibility, cross-team development, and client-facing clarity.
+
 
 MC+A | Chicago, IL 									August 2023 – April 2024
 **Technical Consultant**

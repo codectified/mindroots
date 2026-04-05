@@ -25,14 +25,12 @@ Cross-role roots (same `tag` appearing under multiple roles) naturally create a 
 
 | # | Root Tag | Bullet | Alternatives |
 |---|----------|--------|-------------|
-| 1 | Knowledge Graph Platform | Designed and built a full-stack knowledge management platform (React, Express.js, Neo4j, D3.js) that transforms complex, multi-source domain data into an interactive graph — enabling users to search, explore, and discover relationships across thousands of interconnected entities without writing queries. | Full-Stack Platform, Interactive Graph Explorer |
-| 2 | Graph RAG Pipeline | Architected a Graph RAG pipeline integrating LLM-generated analysis with a Neo4j knowledge graph, synthesizing five independent data sources into a unified, versioned semantic layer that enriches search results with AI-driven contextual insights. | AI-Enriched Search, Semantic Data Layer |
-| 3 | Multi-Tenant GPT System | Built a multi-tenant Custom GPT orchestration system with isolated workspaces, token-based authentication, and a versioned content pipeline — enabling multiple AI agents to autonomously generate, iterate, and render production-ready assets through API-driven workflows. | AI Agent Orchestration, Workspace Isolation |
-| 4 | API Security Design | Implemented tiered API security with role-based access control and query sanitization, enabling safe LLM access to the graph database while protecting data integrity — a pattern applicable to any organization exposing structured data to AI agents. | LLM Access Control, Query Sanitization |
-| 5 | Graph-Native Search | Designed a graph-native search engine with flexible schema and multi-mode query support (exact match, wildcard, permutation), replacing rigid legacy queries with a scalable approach that adapts as the underlying data model evolves. | Flexible Query Engine, Schema-Adaptive Search |
-| 6 | Data Validation Pipeline | Built a community-driven data validation pipeline with rate limiting, approval tracking, and immutable audit trails — enabling crowd-sourced quality improvement with full traceability across the dataset. | Crowd-Sourced QA, Audit Trail System |
-| 7 | Technical Documentation | Authored and maintained comprehensive technical documentation covering system architecture, API specifications (OpenAPI), deployment procedures, and operational runbooks — ensuring the platform is reproducible and transferable. | Technical Writing, System Runbooks |
-| 8 | Stakeholder Engagement | Conducted technical demonstrations, user interviews, and co-hosted a podcast series to communicate platform capabilities and gather real-world feedback from domain experts. | User Research, Technical Demos |
+| 1 | Knowledge Graph Platform | Designed and built a full-stack knowledge graph platform (React, Express.js, Neo4j, D3.js) for exploring multi-source domain data, enabling intuitive relationship discovery across thousands of interconnected entities without query language knowledge. | Full-Stack Platform, Interactive Graph Explorer |
+| 2 | Graph RAG Pipeline | Architected a Graph RAG pipeline and LLM agent interface providing structured, secure access to graph data through schema-aware decision endpoints — reducing prompt complexity and improving agent reliability. | AI-Enriched Search, LLM Agent Interface |
+| 3 | Hybrid Search Architecture | Engineered a hybrid search architecture combining graph traversal with full-text semantic search (Neo4j Lucene), enabling unified discovery across structure and meaning without external search infrastructure. | Graph + Semantic Search, Unified Discovery |
+| 4 | Multi-Tenant LLM Orchestration | Built a multi-tenant LLM orchestration system with isolated workspaces, token-based authentication, and versioned artifact pipelines for autonomous content generation and rendering via APIs. | AI Agent Orchestration, Workspace Isolation |
+| 5 | Data Validation Framework | Developed a crowd-sourced data validation framework with auditability, rate limiting, and approval workflows to maintain data quality at scale. | Crowd-Sourced QA, Audit Trail System |
+| 6 | Technical Documentation | Produced comprehensive system documentation, API specifications, and technical communications to support reproducibility, cross-team development, and client-facing clarity. | Technical Writing, System Runbooks |
 
 ---
 
@@ -100,10 +98,11 @@ These roots appear under multiple roles, forming the career threads that connect
 | Root Tag | Roles |
 |----------|-------|
 | **Cross-Functional Delivery** | MC+A, MindBreeze |
-| **Stakeholder Engagement** | MindRoots, CS Energy |
+| **Stakeholder Engagement** | CS Energy *(also implicit in MindRoots "technical communications" and MC+A "stakeholder alignment")* |
 | **Client Enablement** | MindBreeze, Foresters/Rutgers |
 | **Technical Documentation** | MindRoots *(also implicit in MC+A "best practices" and Foresters "training materials")* |
 | **Legacy System Migration** / **Enterprise Migration** | MC+A, CS Energy |
+| **Hybrid Search** | MindRoots (Hybrid Search Architecture), MC+A (Hybrid Search Prototyping) |
 
 ---
 
@@ -114,54 +113,53 @@ These roots appear under multiple roles, forming the career threads that connect
 | Skill | Connected Roots |
 |-------|----------------|
 | Agile methodologies | Agile Discovery, Cross-Functional Delivery |
-| AI/LLM orchestration | Graph RAG Pipeline, Multi-Tenant GPT System, Hybrid Search Prototyping |
-| API security design | API Security Design |
+| AI/LLM orchestration | Graph RAG Pipeline, Multi-Tenant LLM Orchestration, Hybrid Search Prototyping |
 | Cloud computing | Enterprise ETL Pipeline, IT Operations Scaling |
-| Custom GPT integration | Multi-Tenant GPT System |
-| Data modeling & pipeline design | Knowledge Graph Platform, Graph RAG Pipeline, Enterprise ETL Pipeline, Data Validation Pipeline |
+| Custom GPT integration | Multi-Tenant LLM Orchestration |
+| Data modeling & pipeline design | Knowledge Graph Platform, Graph RAG Pipeline, Enterprise ETL Pipeline, Data Validation Framework |
 | DevOps | IT Operations Scaling, Enterprise Migration |
 | ETL processes | Enterprise ETL Pipeline, Legacy System Migration |
-| Graph databases & Graph RAG | Knowledge Graph Platform, Graph RAG Pipeline, Graph-Native Search |
-| Hybrid search solutions | Hybrid Search Prototyping, Search Optimization, Custom Search Applications |
-| Information retrieval | Graph-Native Search, Custom Search Applications, Hybrid Search Prototyping |
+| Graph databases & Graph RAG | Knowledge Graph Platform, Graph RAG Pipeline, Hybrid Search Architecture |
+| Hybrid search solutions | Hybrid Search Architecture, Hybrid Search Prototyping, Search Optimization, Custom Search Applications |
+| Information retrieval | Hybrid Search Architecture, Custom Search Applications, Hybrid Search Prototyping |
 | Knowledge graph architecture | Knowledge Graph Platform, Graph RAG Pipeline |
-| Multi-tenant systems | Multi-Tenant GPT System |
+| Multi-tenant systems | Multi-Tenant LLM Orchestration |
 | Natural Language Processing (NLP) | Graph RAG Pipeline, Hybrid Search Prototyping |
-| Ontology design | Knowledge Graph Platform, Graph-Native Search |
-| Product management | Agile Discovery, Cross-Functional Delivery, Stakeholder Engagement |
-| Query optimization | Graph-Native Search, Search Optimization |
+| Ontology design | Knowledge Graph Platform, Hybrid Search Architecture |
+| Product management | Agile Discovery, Cross-Functional Delivery |
+| Query optimization | Hybrid Search Architecture, Search Optimization |
 | Retrieval-Augmented Generation (RAG) | Graph RAG Pipeline, Hybrid Search Prototyping |
-| Semantic search | Graph RAG Pipeline, Hybrid Search Prototyping, Graph-Native Search |
-| Solutions architecture | Knowledge Graph Platform, Enterprise ETL Pipeline, Multi-Tenant GPT System |
+| Semantic search | Graph RAG Pipeline, Hybrid Search Architecture, Hybrid Search Prototyping |
+| Solutions architecture | Knowledge Graph Platform, Enterprise ETL Pipeline, Multi-Tenant LLM Orchestration |
 | Technical writing | Technical Documentation, Self-Service Tooling, Client Enablement |
 | UI/UX design | Knowledge Graph Platform, Custom Search Applications, Executive Dashboards |
-| Workflow automation | Data Validation Pipeline, IT Operations Scaling, Multi-Tenant GPT System |
+| Workflow automation | Data Validation Framework, IT Operations Scaling, Multi-Tenant LLM Orchestration |
 
 ### Specific (Software / Frameworks / Languages)
 
 | Skill | Connected Roots |
 |-------|----------------|
-| AWS | Enterprise ETL Pipeline, Multi-Tenant GPT System |
-| Azure | Cloud computing *(general)*, IT Operations Scaling |
-| Cypher | Knowledge Graph Platform, Graph-Native Search, API Security Design |
+| AWS | Enterprise ETL Pipeline, Multi-Tenant LLM Orchestration |
+| Azure | IT Operations Scaling |
+| Cypher | Knowledge Graph Platform, Hybrid Search Architecture, Graph RAG Pipeline |
 | D3.js | Knowledge Graph Platform |
-| Docker | Enterprise ETL Pipeline, Multi-Tenant GPT System |
+| Docker | Enterprise ETL Pipeline, Multi-Tenant LLM Orchestration |
 | Elasticsearch | Legacy System Migration, Search Optimization, Custom Search Applications |
-| Express.js | Knowledge Graph Platform, Multi-Tenant GPT System, API Security Design |
+| Express.js | Knowledge Graph Platform, Multi-Tenant LLM Orchestration |
 | Git | Technical Documentation *(all roles)* |
 | Linux/Unix | Enterprise ETL Pipeline, IT Operations Scaling |
-| Neo4j | Knowledge Graph Platform, Graph RAG Pipeline, Graph-Native Search, API Security Design |
+| Neo4j | Knowledge Graph Platform, Graph RAG Pipeline, Hybrid Search Architecture |
 | NLTK | Graph RAG Pipeline |
-| Node.js | Knowledge Graph Platform, Multi-Tenant GPT System |
-| OpenAI API | Graph RAG Pipeline, Multi-Tenant GPT System, Hybrid Search Prototyping |
-| PM2 | Multi-Tenant GPT System |
-| Power Automate | IT Operations Scaling, Workflow automation |
+| Node.js | Knowledge Graph Platform, Multi-Tenant LLM Orchestration |
+| OpenAI API | Graph RAG Pipeline, Multi-Tenant LLM Orchestration, Hybrid Search Prototyping |
+| PM2 | Multi-Tenant LLM Orchestration |
+| Power Automate | IT Operations Scaling |
 | Power BI | Executive Dashboards |
 | PowerShell | IT Operations Scaling |
-| Puppeteer | Multi-Tenant GPT System |
+| Puppeteer | Multi-Tenant LLM Orchestration |
 | Python | Hybrid Search Prototyping, Graph RAG Pipeline |
 | React.js | Knowledge Graph Platform |
-| REST APIs | API Security Design, Multi-Tenant GPT System, Custom Search Applications |
+| REST APIs | Graph RAG Pipeline, Multi-Tenant LLM Orchestration, Custom Search Applications |
 | SharePoint | IT Operations Scaling, Self-Service Tooling |
 | SQL | Legacy System Migration, Enterprise ETL Pipeline |
 | Talend | Enterprise ETL Pipeline |
