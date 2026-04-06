@@ -800,22 +800,26 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
     let existsExpr = null;
 
     if (nodeType === 'word') {
-      nodeVar = 'n';
-      matchClause = 'MATCH (n:Word)';
-      if (wordTypes) {
-        params.wordTypes = wordTypes.split(',');
-        mainConditions.push('n.word_type IN $wordTypes');
-      }
-      if (semLangs) {
-        params.semLangs = semLangs.split(',');
-        mainConditions.push('n.sem_lang IN $semLangs');
-      }
       if (corpusId) {
-        existsExpr = `EXISTS {
-          MATCH (ci:CorpusItem)-[:HAS_WORD]->(n)
-          WHERE ci.corpus_id = $corpusId
-            AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
-        }`;
+        // Corpus selected: fetch a random CorpusItem directly instead of a Word
+        nodeVar = 'n';
+        matchClause = 'MATCH (n:CorpusItem)';
+        mainConditions.push('n.corpus_id = $corpusId');
+        if (surahNumbers && surahNumbers.length > 0) {
+          mainConditions.push('n.surah_number IN $surahNumbers');
+        }
+      } else {
+        // Lexicon: fetch a random Word
+        nodeVar = 'n';
+        matchClause = 'MATCH (n:Word)';
+        if (wordTypes) {
+          params.wordTypes = wordTypes.split(',');
+          mainConditions.push('n.word_type IN $wordTypes');
+        }
+        if (semLangs) {
+          params.semLangs = semLangs.split(',');
+          mainConditions.push('n.sem_lang IN $semLangs');
+        }
       }
 
     } else if (nodeType === 'root') {
@@ -914,12 +918,14 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
         const node = record.get(nodeVar);
         if (node && node.properties) {
           const props = convertIntegers(node.properties);
-          const idProp = nodeType === 'word' ? 'word_id' : nodeType === 'root' ? 'root_id' : 'form_id';
+          const isCorpusItem = nodeType === 'word' && corpusId;
+          const resolvedType = isCorpusItem ? 'corpusitem' : nodeType;
+          const idProp = isCorpusItem ? 'item_id' : (nodeType === 'root' ? 'root_id' : nodeType === 'form' ? 'form_id' : 'word_id');
           nodes.push({
-            id: `${nodeType}_${props[idProp]}`,
+            id: `${resolvedType}_${props[idProp]}`,
             label: L2 === 'off' ? props[L1] : `${props[L1]} / ${props[L2]}`,
             ...props,
-            type: nodeType
+            type: resolvedType
           });
         }
       });
