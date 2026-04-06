@@ -4,15 +4,9 @@ import { useTextLayout } from '../../contexts/TextLayoutContext';
 import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
+import { SURAHS } from '../../constants/surahs';
 
-// Basic Surah names mapping (first 20 for demonstration)
-const SURAH_NAMES = {
-  1: "Al-Fatiha", 2: "Al-Baqara", 3: "Al-Imran", 4: "An-Nisa", 5: "Al-Maida",
-  6: "Al-An'am", 7: "Al-A'raf", 8: "Al-Anfal", 9: "At-Tawba", 10: "Yunus",
-  11: "Hud", 12: "Yusuf", 13: "Ar-Ra'd", 14: "Ibrahim", 15: "Al-Hijr",
-  16: "An-Nahl", 17: "Al-Isra", 18: "Al-Kahf", 19: "Maryam", 20: "Ta-Ha"
-  // TODO: Add remaining 94 surah names
-};
+const SURAH_MAP = Object.fromEntries(SURAHS.map(s => [s.number, s]));
 
 const CorpusRenderer = ({
   corpusId,
@@ -218,7 +212,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
               color: '#2d5a2d',
               fontWeight: '600'
             }}>
-              {surah}. {SURAH_NAMES[surah] || `Surah ${surah}`}
+              {surah}. {SURAH_MAP[surah] ? (L1 === 'sem' ? SURAH_MAP[surah].arabic : SURAH_MAP[surah].english) : `Surah ${surah}`}
             </h2>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -333,9 +327,9 @@ const handleFreeformLineHighlight = (lineNumber) => {
                   color: '#2d5a2d'
                 }}
               >
-                {Array.from({ length: 114 }, (_, i) => i + 1).map((sura) => (
-                  <option key={sura} value={sura}>
-                    {sura}. {SURAH_NAMES[sura] || `Surah ${sura}`}
+                {SURAHS.map((s) => (
+                  <option key={s.number} value={s.number}>
+                    {s.number}. {L1 === 'sem' ? s.arabic : s.english}
                   </option>
                 ))}
               </select>
