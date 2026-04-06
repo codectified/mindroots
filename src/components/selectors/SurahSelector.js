@@ -1,7 +1,7 @@
 import React from 'react';
 import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
 import { useLanguage } from '../../contexts/LanguageContext';
-import { SURAHS } from '../../constants/surahs';
+import { SURAHS, toArabicNumerals } from '../../constants/surahs';
 
 const SurahSelector = () => {
   const { corpusFilter, surahFilter, setSurahFilter } = useCorpusFilter();
@@ -72,7 +72,7 @@ const SurahSelector = () => {
                 style={{ width: '12px', height: '12px', cursor: 'pointer' }}
               />
               <span style={{ color: '#333', direction: showArabic ? 'rtl' : 'ltr' }}>
-                {surah.number}. {showArabic ? surah.arabic : surah.english}
+                {showArabic ? toArabicNumerals(surah.number) : surah.number}. {showArabic ? surah.arabic : surah.english}
               </span>
             </label>
           );

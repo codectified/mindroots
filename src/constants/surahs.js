@@ -1,3 +1,6 @@
+export const toArabicNumerals = (n) =>
+  String(n).replace(/[0-9]/g, d => '٠١٢٣٤٥٦٧٨٩'[d]);
+
 export const SURAHS = [
   { number: 1, arabic: 'الفاتحة', english: 'Al-Fatiha' },
   { number: 2, arabic: 'البقرة', english: 'Al-Baqarah' },

@@ -4,7 +4,7 @@ import { useTextLayout } from '../../contexts/TextLayoutContext';
 import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
-import { SURAHS } from '../../constants/surahs';
+import { SURAHS, toArabicNumerals } from '../../constants/surahs';
 
 const SURAH_MAP = Object.fromEntries(SURAHS.map(s => [s.number, s]));
 
@@ -212,7 +212,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
               color: '#2d5a2d',
               fontWeight: '600'
             }}>
-              {surah}. {SURAH_MAP[surah] ? (L1 === 'sem' ? SURAH_MAP[surah].arabic : SURAH_MAP[surah].english) : `Surah ${surah}`}
+              {L1 === 'sem' ? toArabicNumerals(surah) : surah}. {SURAH_MAP[surah] ? (L1 === 'sem' ? SURAH_MAP[surah].arabic : SURAH_MAP[surah].english) : `Surah ${surah}`}
             </h2>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -329,7 +329,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
               >
                 {SURAHS.map((s) => (
                   <option key={s.number} value={s.number}>
-                    {s.number}. {L1 === 'sem' ? s.arabic : s.english}
+                    {L1 === 'sem' ? toArabicNumerals(s.number) : s.number}. {L1 === 'sem' ? s.arabic : s.english}
                   </option>
                 ))}
               </select>
