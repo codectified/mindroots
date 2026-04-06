@@ -15,11 +15,12 @@ import { useSemiticLanguageFilter } from '../../contexts/SemiticLanguageFilterCo
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import InfoBubble from '../layout/InfoBubble';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
+import SurahSelector from '../selectors/SurahSelector';
 
 const Explore = () => {
   const location = useLocation();
   const { L1, L2 } = useLanguage();
-  const { corpusFilter } = useCorpusFilter();
+  const { corpusFilter, surahFilter } = useCorpusFilter();
   const { selectedFormClassifications } = useFormFilter();
   const { filterWordTypes, hideFormNodes } = useFilter();
   const { selectedSemiticLanguages } = useSemiticLanguageFilter();
@@ -160,6 +161,9 @@ const Explore = () => {
       if (corpusFilter && corpusFilter !== 'lexicon') {
         filters.corpus_id = corpusFilter;
       }
+      if (surahFilter && surahFilter.length > 0) {
+        filters.surah_numbers = surahFilter;
+      }
 
       // Fetch random node from backend
       const result = await fetchRandomNodes(category, 1, filters);
@@ -179,9 +183,12 @@ const Explore = () => {
   return (
     <div className="start">
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-        <h2 style={{ margin: 0 }}>Knowledge Graph Exploration</h2>
-        <ContextShiftSelector />
+      <div style={{ marginBottom: '12px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ margin: 0 }}>Knowledge Graph Exploration</h2>
+          <ContextShiftSelector />
+        </div>
+        <SurahSelector />
       </div>
 
       <div className="button-row">

@@ -9,6 +9,7 @@ import InfoBubble from '../layout/InfoBubble';
 import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
+import SurahSelector from '../selectors/SurahSelector';
 
 const arabicLetters = [
   'ا', 'ب', 'ت', 'ث', 'ج', 'ح', 'خ', 'د', 'ذ', 'ر', 'ز', 'س', 'ش', 'ص', 'ض',
@@ -16,7 +17,7 @@ const arabicLetters = [
 ];
 
 const Search = () => {
-  const { corpusFilter } = useCorpusFilter();
+  const { corpusFilter, surahFilter } = useCorpusFilter();
   const { L1, L2 } = useLanguage();
   const { displayMode } = useDisplayMode();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
@@ -61,11 +62,12 @@ const Search = () => {
   }, [resultLimit]); // Only depend on resultLimit to avoid infinite loops
 
   const corpusId = (id) => (id && id !== 'lexicon' ? id : null);
+  const surahNumbers = surahFilter && surahFilter.length > 0 ? surahFilter : null;
 
   // 1. Fetch Root(s) - Position-specific search with wildcards and "None" support
   const handleFetchRoots = async () => {
     try {
-      const { roots, total } = await fetchRoots(r1, r2, r3, L1, L2, resultLimit, corpusId(corpusFilter));
+      const { roots, total } = await fetchRoots(r1, r2, r3, L1, L2, resultLimit, corpusId(corpusFilter), surahNumbers);
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
@@ -81,7 +83,7 @@ const Search = () => {
   // 3. Fetch Extended - Only roots with 4+ radicals
   const handleFetchExtended = async () => {
     try {
-      const { roots, total } = await fetchExtendedRootsNew(r1, r2, r3, L1, L2, resultLimit, corpusId(corpusFilter));
+      const { roots, total } = await fetchExtendedRootsNew(r1, r2, r3, L1, L2, resultLimit, corpusId(corpusFilter), surahNumbers);
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
@@ -97,7 +99,7 @@ const Search = () => {
   // 2. Combinate - Return all valid permutations of specified radicals
   const handleCombinate = async () => {
     try {
-      const { roots, total } = await fetchCombinateRoots(r1, r2, r3, L1, L2, resultLimit, corpusId(corpusFilter));
+      const { roots, total } = await fetchCombinateRoots(r1, r2, r3, L1, L2, resultLimit, corpusId(corpusFilter), surahNumbers);
       const formattedData = formatNeo4jData(roots);
       setGraphData(formattedData);
       setTotalRoots(total || roots.length);
@@ -114,7 +116,7 @@ const Search = () => {
   const handleLexicalSearch = async () => {
     if (!lexicalQuery.trim() || lexicalSources.length === 0) return;
     try {
-      const { results } = await searchFullText(lexicalQuery.trim(), lexicalSources, resultLimit, corpusId(corpusFilter));
+      const { results } = await searchFullText(lexicalQuery.trim(), lexicalSources, resultLimit, corpusId(corpusFilter), surahNumbers);
       const nodes = results.map(({ word: w }) => ({
         id: `word_${w.word_id}`,
         label: L2 === 'off' ? (w[L1] || w.english) : `${w[L1] || w.english} / ${w[L2] || ''}`,
@@ -160,9 +162,12 @@ const Search = () => {
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
-        <h2 style={{ margin: 0 }}>Advanced Search</h2>
-        <ContextShiftSelector />
+      <div style={{ marginBottom: '20px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <h2 style={{ margin: 0 }}>Advanced Search</h2>
+          <ContextShiftSelector />
+        </div>
+        <SurahSelector />
       </div>
 
       {/* Full Text Search */}

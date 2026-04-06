@@ -1,6 +1,6 @@
 # MindRoots Documentation Index
 
-**Last Updated**: March 26, 2026 (Corpus Filter refactor)
+**Last Updated**: April 5, 2026 (Surah filter + random node optimization)
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
@@ -22,6 +22,7 @@
 - **[Custom GPT Base Instructions](features/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Base template for tenant Custom GPT setup, system prompt, and Actions configuration
 - **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
 - **[Corpus Filter](features/CORPUS-FILTER-DOCUMENTATION.md)** - ✅ Unified corpus scoping via `CorpusFilterContext` — controls all search retrieval and node expansion
+- **[Surah Filter & Random Node Optimization](features/SURAH-FILTER-DOCUMENTATION.md)** - ✅ Quran surah sub-filter (multi-select) + count+skip random node selection replacing ORDER BY rand()
 - **[Full-Text Search](features/FULLTEXT-SEARCH-DOCUMENTATION.md)** - ✅ Lucene full-text search over Lane's Lexicon definitions, English gloss, and Arabic text
 - **[Radical Search Integration](features/RADICAL-SEARCH-INTEGRATION.md)** - RadicalPosition-based search system architecture
 - **[Validation System](features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - Inline editing and approval workflow for linguistic data

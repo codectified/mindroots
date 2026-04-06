@@ -183,7 +183,7 @@ router.get('/radical-search', async (req, res) => {
 // ====================================================================
 router.get('/search-roots', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2, limit = 25, corpus_id } = req.query;
+    const { r1, r2, r3, L1, L2, limit = 25, corpus_id, surah_numbers } = req.query;
 
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
@@ -193,13 +193,21 @@ router.get('/search-roots', async (req, res) => {
     let cypherQuery = '';
     let queryParams = {};
 
-    // Corpus filter clause — appended before RETURN when corpus_id is provided
+    const surahNumbersParsed = surah_numbers
+      ? surah_numbers.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+      : null;
+
     const corpusClause = corpus_id
       ? `WITH root WHERE EXISTS {
-           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(:CorpusItem {corpus_id: toInteger($corpusId)})
+           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(ci:CorpusItem)
+           WHERE ci.corpus_id = toInteger($corpusId)
+             AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
          }`
       : '';
-    if (corpus_id) queryParams.corpusId = corpus_id;
+    if (corpus_id) {
+      queryParams.corpusId = corpus_id;
+      queryParams.surahNumbers = surahNumbersParsed && surahNumbersParsed.length > 0 ? surahNumbersParsed : null;
+    }
 
     // Create mutable copy of r3 for potential modification
     let actualR3 = r3;
@@ -306,7 +314,7 @@ router.get('/search-roots', async (req, res) => {
 // ====================================================================
 router.get('/search-combinate', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2, limit = 25, corpus_id } = req.query;
+    const { r1, r2, r3, L1, L2, limit = 25, corpus_id, surah_numbers } = req.query;
 
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
@@ -322,12 +330,21 @@ router.get('/search-combinate', async (req, res) => {
     let cypherQuery = '';
     let queryParams = { radicals: inputRadicals };
 
+    const surahNumbersParsed = surah_numbers
+      ? surah_numbers.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+      : null;
+
     const corpusClause = corpus_id
       ? `WITH root WHERE EXISTS {
-           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(:CorpusItem {corpus_id: toInteger($corpusId)})
+           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(ci:CorpusItem)
+           WHERE ci.corpus_id = toInteger($corpusId)
+             AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
          }`
       : '';
-    if (corpus_id) queryParams.corpusId = corpus_id;
+    if (corpus_id) {
+      queryParams.corpusId = corpus_id;
+      queryParams.surahNumbers = surahNumbersParsed && surahNumbersParsed.length > 0 ? surahNumbersParsed : null;
+    }
 
     if (r3 === 'None') {
       cypherQuery = `
@@ -395,7 +412,7 @@ router.get('/search-combinate', async (req, res) => {
 // ====================================================================
 router.get('/search-extended', async (req, res) => {
   try {
-    const { r1, r2, r3, L1, L2, limit = 25, corpus_id } = req.query;
+    const { r1, r2, r3, L1, L2, limit = 25, corpus_id, surah_numbers } = req.query;
 
     if (!L1) {
       return res.status(400).json({ error: 'L1 language parameter is required' });
@@ -433,12 +450,21 @@ router.get('/search-extended', async (req, res) => {
       cypherQuery += ' WITH root';
     }
 
+    const surahNumbersParsed = surah_numbers
+      ? surah_numbers.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+      : null;
+
     const corpusClause = corpus_id
       ? `WITH root WHERE EXISTS {
-           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(:CorpusItem {corpus_id: toInteger($corpusId)})
+           MATCH (root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(ci:CorpusItem)
+           WHERE ci.corpus_id = toInteger($corpusId)
+             AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
          }`
       : '';
-    if (corpus_id) queryParams.corpusId = corpus_id;
+    if (corpus_id) {
+      queryParams.corpusId = corpus_id;
+      queryParams.surahNumbers = surahNumbersParsed && surahNumbersParsed.length > 0 ? surahNumbersParsed : null;
+    }
 
     cypherQuery += `
       ${corpusClause}
@@ -488,7 +514,7 @@ router.get('/search-extended', async (req, res) => {
 // ====================================================================
 router.get('/search-fulltext', async (req, res) => {
   try {
-    const { query, sources, limit = 25, corpus_id } = req.query;
+    const { query, sources, limit = 25, corpus_id, surah_numbers } = req.query;
 
     if (!query || !query.trim()) {
       return res.status(400).json({ error: 'query parameter is required' });
@@ -505,11 +531,21 @@ router.get('/search-fulltext', async (req, res) => {
     const searchLexical = requestedSources.includes('lane') || requestedSources.includes('hanswehr');
     const searchLabels  = requestedSources.includes('labels');
 
-    // Corpus filter: when corpus_id is present, restrict words to those appearing in that corpus
+    const surahNumbersParsed = surah_numbers
+      ? surah_numbers.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+      : null;
+
     const corpusMatch = corpus_id
-      ? `MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(word)`
+      ? `MATCH (ci:CorpusItem)-[:HAS_WORD]->(word)
+         WHERE ci.corpus_id = toInteger($corpusId)
+           AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)`
       : '';
-    const corpusParams = corpus_id ? { corpusId: corpus_id } : {};
+    const corpusParams = corpus_id
+      ? {
+          corpusId: corpus_id,
+          surahNumbers: surahNumbersParsed && surahNumbersParsed.length > 0 ? surahNumbersParsed : null
+        }
+      : {};
 
     const session = req.driver.session();
     try {

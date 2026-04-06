@@ -3,6 +3,29 @@ const { convertIntegers } = require('./utils');
 const { authenticateAPI } = require('../../middleware/auth');
 const router = express.Router();
 
+// ====================================================================
+// Random node count cache — avoids full-scan sorting on every request
+// Keyed by filter combination; invalidated only on server restart
+// ====================================================================
+const randomNodeCountCache = new Map();
+
+const makeCacheKey = (obj) => {
+  const normalized = {};
+  for (const [k, v] of Object.entries(obj)) {
+    normalized[k] = Array.isArray(v) ? [...v].sort() : (v ?? null);
+  }
+  return JSON.stringify(normalized);
+};
+
+const getCachedCount = async (cacheKey, session, countQuery, params) => {
+  if (randomNodeCountCache.has(cacheKey)) return randomNodeCountCache.get(cacheKey);
+  const result = await session.run(countQuery, params);
+  const raw = result.records[0]?.get('total');
+  const count = raw == null ? 0 : (typeof raw === 'object' ? (raw.low ?? 0) : Number(raw));
+  randomNodeCountCache.set(cacheKey, count);
+  return count;
+};
+
 // Main graph expansion endpoint - handles various source/target type combinations
 router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
   const { sourceType, targetType } = req.params;
@@ -750,124 +773,84 @@ router.get('/filter-options/:nodeType', async (req, res) => {
   }
 });
 
-// Get random nodes with filter support
-// Replaces client-side Cypher generation in Explore.js
 router.get('/random-nodes/:nodeType', async (req, res) => {
   const { nodeType } = req.params;
-  const { count = 1, L1 = 'arabic', L2 = 'english', formClassifications, wordTypes, semLangs, rootTypes, corpus_id } = req.query;
+  const { count = 1, L1 = 'arabic', L2 = 'english', formClassifications, wordTypes, semLangs, rootTypes, corpus_id, surah_numbers } = req.query;
 
   const session = req.driver.session();
 
   try {
-    let query = '';
     const limit = parseInt(count, 10) || 1;
 
-    // Build filter-aware queries based on node type
-    // Use parameterized queries to avoid SQL injection and handle special characters
+    // Parse corpus and surah filters
+    const corpusId = corpus_id ? parseInt(corpus_id, 10) : null;
+    const surahNumbers = surah_numbers
+      ? surah_numbers.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n))
+      : null;
+
     const params = {};
+    if (corpusId) {
+      params.corpusId = corpusId;
+      params.surahNumbers = surahNumbers && surahNumbers.length > 0 ? surahNumbers : null;
+    }
+
+    let mainConditions = [];
+    let nodeVar = '';
+    let matchClause = '';
+    let existsExpr = null;
 
     if (nodeType === 'word') {
-      // Word filters: word_type and sem_lang
-      const conditions = [];
-
+      nodeVar = 'n';
+      matchClause = 'MATCH (n:Word)';
       if (wordTypes) {
         params.wordTypes = wordTypes.split(',');
-        conditions.push(`n.word_type IN $wordTypes`);
+        mainConditions.push('n.word_type IN $wordTypes');
       }
-
       if (semLangs) {
         params.semLangs = semLangs.split(',');
-        conditions.push(`n.sem_lang IN $semLangs`);
+        mainConditions.push('n.sem_lang IN $semLangs');
       }
-
-      const whereClause = conditions.length > 0 ? `WHERE ${conditions.join(' AND ')}` : '';
-
-      if (corpus_id) {
-        params.corpusId = parseInt(corpus_id, 10);
-        query = `
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(n:Word)
-          ${whereClause}
-          RETURN DISTINCT n
-          ORDER BY rand()
-          LIMIT ${limit}
-        `;
-      } else {
-        query = `
-          MATCH (n:Word)
-          ${whereClause}
-          RETURN n
-          ORDER BY rand()
-          LIMIT ${limit}
-        `;
+      if (corpusId) {
+        existsExpr = `EXISTS {
+          MATCH (ci:CorpusItem)-[:HAS_WORD]->(n)
+          WHERE ci.corpus_id = $corpusId
+            AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
+        }`;
       }
 
     } else if (nodeType === 'root') {
-      // Root filters: root_type (Geminate/Triliteral/Other)
-      let whereClause = '';
+      nodeVar = 'r';
+      matchClause = 'MATCH (r:Root)';
       if (rootTypes) {
-        const types = rootTypes.split(',');
-        const conditions = [];
-
-        types.forEach(type => {
-          if (type === 'Geminate') {
-            conditions.push("r.root_type = 'Geminate'");
-          } else if (type === 'Triliteral') {
-            conditions.push("r.root_type = 'Triliteral'");
-          } else if (type === 'Other') {
-            conditions.push("(r.root_type IS NULL OR NOT r.root_type IN ['Geminate', 'Triliteral'])");
-          }
+        const typeConds = [];
+        rootTypes.split(',').forEach(type => {
+          if (type === 'Geminate') typeConds.push("r.root_type = 'Geminate'");
+          else if (type === 'Triliteral') typeConds.push("r.root_type = 'Triliteral'");
+          else if (type === 'Other') typeConds.push("(r.root_type IS NULL OR NOT r.root_type IN ['Geminate', 'Triliteral'])");
         });
-
-        if (conditions.length > 0) {
-          whereClause = `WHERE ${conditions.join(' OR ')}`;
-        }
+        if (typeConds.length > 0) mainConditions.push(`(${typeConds.join(' OR ')})`);
       }
-
-      if (corpus_id) {
-        params.corpusId = parseInt(corpus_id, 10);
-        query = `
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
-          ${whereClause}
-          RETURN DISTINCT r
-          ORDER BY rand()
-          LIMIT ${limit}
-        `;
-      } else {
-        query = `
-          MATCH (r:Root)
-          ${whereClause}
-          RETURN r
-          ORDER BY rand()
-          LIMIT ${limit}
-        `;
+      if (corpusId) {
+        existsExpr = `EXISTS {
+          MATCH (ci:CorpusItem)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(r)
+          WHERE ci.corpus_id = $corpusId
+            AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
+        }`;
       }
 
     } else if (nodeType === 'form') {
-      // Form filters: classification (Grammatical/Morphological)
-      // Uses the classification string property on Form nodes directly
-      let whereClause = '';
+      nodeVar = 'f';
+      matchClause = 'MATCH (f:Form)';
       if (formClassifications) {
         params.classifications = formClassifications.split(',');
-        whereClause = 'WHERE f.classification IN $classifications';
+        mainConditions.push('f.classification IN $classifications');
       }
-
-      if (corpus_id) {
-        params.corpusId = parseInt(corpus_id, 10);
-        query = `
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)-[:HAS_FORM]->(f:Form)
-          ${whereClause}
-          RETURN DISTINCT f
-          ORDER BY rand()
-          LIMIT ${limit}
-        `;
-      } else {
-        query = `
-          MATCH (f:Form)
-          ${whereClause}
-          RETURN f
-          ORDER BY rand()
-          LIMIT ${limit}
-        `;
+      if (corpusId) {
+        existsExpr = `EXISTS {
+          MATCH (ci:CorpusItem)-[:HAS_WORD]->(:Word)-[:HAS_FORM]->(f)
+          WHERE ci.corpus_id = $corpusId
+            AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
+        }`;
       }
 
     } else {
@@ -876,35 +859,74 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
       });
     }
 
-    console.log('=== RANDOM NODES REQUEST ===');
-    console.log('Node Type:', nodeType);
-    console.log('Count:', limit);
-    console.log('Filters:', { formClassifications, wordTypes, semLangs, rootTypes, corpus_id });
-    console.log('Query params:', params);
-    console.log('Generated Query:', query);
-    console.log('=== END ===');
+    const allConditions = [...mainConditions];
+    if (existsExpr) allConditions.push(existsExpr);
+    const whereClause = allConditions.length > 0
+      ? `WHERE ${allConditions.join('\n  AND ')}`
+      : '';
 
-    const result = await session.run(query, params);
-    const nodes = [];
+    const countQuery = `
+      ${matchClause}
+      ${whereClause}
+      RETURN count(${nodeVar}) AS total
+    `;
 
-    // Format nodes for graph visualization
-    result.records.forEach(record => {
-      const node = record.get(nodeType === 'root' ? 'r' : nodeType === 'form' ? 'f' : 'n');
-      if (node && node.properties) {
-        const props = convertIntegers(node.properties);
-        const idProp = nodeType === 'word' ? 'word_id' : nodeType === 'root' ? 'root_id' : 'form_id';
-
-        nodes.push({
-          id: `${nodeType}_${props[idProp]}`,
-          label: L2 === 'off' ? props[L1] : `${props[L1]} / ${props[L2]}`,
-          ...props,
-          type: nodeType
-        });
-      }
+    const cacheKey = makeCacheKey({
+      nodeType,
+      corpusId: corpusId ?? null,
+      surahNumbers: surahNumbers && surahNumbers.length > 0 ? surahNumbers : null,
+      wordTypes: wordTypes ?? null,
+      semLangs: semLangs ?? null,
+      formClassifications: formClassifications ?? null,
+      rootTypes: rootTypes ?? null,
     });
 
-    console.log(`Returning ${nodes.length} random ${nodeType} nodes`);
-    res.json({ nodes, links: [] }); // No links for random nodes
+    const total = await getCachedCount(cacheKey, session, countQuery, params);
+
+    if (total === 0) {
+      console.log(`No ${nodeType} nodes found for given filters`);
+      return res.json({ nodes: [], links: [] });
+    }
+
+    // Fetch using skip-based random selection — no full-scan sort
+    const nodes = [];
+    const usedPositions = new Set();
+
+    for (let i = 0; i < limit; i++) {
+      let skip = Math.floor(Math.random() * total);
+      let attempts = 0;
+      while (usedPositions.has(skip) && attempts < 10) {
+        skip = Math.floor(Math.random() * total);
+        attempts++;
+      }
+      usedPositions.add(skip);
+
+      const fetchQuery = `
+        ${matchClause}
+        ${whereClause}
+        RETURN ${nodeVar}
+        SKIP ${skip}
+        LIMIT 1
+      `;
+
+      const result = await session.run(fetchQuery, params);
+      result.records.forEach(record => {
+        const node = record.get(nodeVar);
+        if (node && node.properties) {
+          const props = convertIntegers(node.properties);
+          const idProp = nodeType === 'word' ? 'word_id' : nodeType === 'root' ? 'root_id' : 'form_id';
+          nodes.push({
+            id: `${nodeType}_${props[idProp]}`,
+            label: L2 === 'off' ? props[L1] : `${props[L1]} / ${props[L2]}`,
+            ...props,
+            type: nodeType
+          });
+        }
+      });
+    }
+
+    console.log(`Returning ${nodes.length} random ${nodeType} nodes (pool size: ${total})`);
+    res.json({ nodes, links: [] });
 
   } catch (error) {
     console.error('Error generating random nodes:', error);
