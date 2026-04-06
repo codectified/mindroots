@@ -69,6 +69,13 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     const zoomLayer = svg.append('g');
 
     const { width, height } = containerRef.current.getBoundingClientRect();
+    if (!width || !height) return;
+
+    // Initialize new nodes at center so they don't flash off-screen
+    data.nodes.forEach(node => {
+      if (node.x === undefined) node.x = width / 2 + (Math.random() - 0.5) * 40;
+      if (node.y === undefined) node.y = height / 2 + (Math.random() - 0.5) * 40;
+    });
 
     // Set up zoom and pan behavior once
     const zoom = d3.zoom()
@@ -316,7 +323,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode]);
 
   return (
-    <div ref={containerRef} style={{ width: '90%', height: '90vh', maxHeight: '100%', maxWidth: '100%', position: 'relative' }}>
+    <div ref={containerRef} style={{ width: '90%', height: 'min(70vh, calc(100vh - 320px))', minHeight: '300px', maxWidth: '100%', position: 'relative' }}>
       <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
       
       

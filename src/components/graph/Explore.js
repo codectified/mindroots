@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
+import NodesTable from './NodesTable';
 import { fetchRandomNodes, expandGraph, inspectNode, fetchAnalysisData, fetchArticleHeaders, fetchArticleById, fetchRootEntry } from '../../services/apiService';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
@@ -13,8 +14,10 @@ import { useFormFilter } from '../../contexts/FormFilterContext';
 import { useFilter } from '../../contexts/FilterContext';
 import { useSemiticLanguageFilter } from '../../contexts/SemiticLanguageFilterContext';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useDisplayMode } from '../../contexts/DisplayModeContext';
 import InfoBubble from '../layout/InfoBubble';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
+import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import SurahSelector from '../selectors/SurahSelector';
 
 const Explore = () => {
@@ -25,8 +28,14 @@ const Explore = () => {
   const { filterWordTypes, hideFormNodes } = useFilter();
   const { selectedSemiticLanguages } = useSemiticLanguageFilter();
   const { isAdvancedMode } = useAdvancedMode();
+  const { displayMode } = useDisplayMode();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [markdownContent, setMarkdownContent] = useState('');
+
+  const handleReset = () => {
+    setGraphData({ nodes: [], links: [] });
+    setInfoBubble(null);
+  };
 
   // Auto-expand root when navigating from analysis
   useEffect(() => {
@@ -186,7 +195,10 @@ const Explore = () => {
       <div style={{ marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <h2 style={{ margin: 0 }}>Knowledge Graph Exploration</h2>
-          <ContextShiftSelector />
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <ContextShiftSelector />
+            <DisplayModeSelector size="large" />
+          </div>
         </div>
         <SurahSelector />
       </div>
@@ -208,16 +220,40 @@ const Explore = () => {
             <button onClick={() => loadMarkdownAndFetchData('form')}>Form</button>
           </div>
         )}
+
+        {/* Reset Button */}
+        {graphData.nodes.length > 0 && (
+          <div className="button-container">
+            <button
+              onClick={handleReset}
+              style={{ backgroundColor: '#888' }}
+            >
+              Reset
+            </button>
+          </div>
+        )}
       </div>
 
-      <GraphVisualization
-        data={graphData}
-        onNodeClick={(node, event) =>
-          handleNodeClick(node, L1, L2, event)
-        }
-      />
+      {displayMode === 'graph' ? (
+        <GraphVisualization
+          data={graphData}
+          onNodeClick={(node, event) =>
+            handleNodeClick(node, L1, L2, event)
+          }
+        />
+      ) : (
+        <NodesTable
+          graphData={graphData}
+          wordShadeMode="grammatical"
+          onNodeClick={(node, event) =>
+            handleNodeClick(node, L1, L2, event)
+          }
+          infoBubble={infoBubble}
+          closeInfoBubble={() => setInfoBubble(null)}
+        />
+      )}
 
-      {infoBubble && (
+      {displayMode === 'graph' && infoBubble && (
         <InfoBubble
           className="info-bubble"
           nodeData={infoBubble.nodeData || { definitions: infoBubble.definition }}
