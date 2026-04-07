@@ -285,6 +285,9 @@ export const expandGraph = async (sourceType, sourceId, targetType, options = {}
     if (options.L2) params.append('L2', options.L2);
     if (options.corpus_id) params.append('corpus_id', options.corpus_id);
     if (options.limit) params.append('limit', options.limit);
+    if (options.count_corpus_id) params.append('count_corpus_id', options.count_corpus_id);
+    if (options.count_surah_numbers && options.count_surah_numbers.length > 0)
+      params.append('count_surah_numbers', options.count_surah_numbers.join(','));
     
     // Add cache buster to prevent stale data when corpus context changes
     params.append('_t', Date.now().toString());

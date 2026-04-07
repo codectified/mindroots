@@ -30,10 +30,17 @@ const getCachedCount = async (cacheKey, session, countQuery, params) => {
 router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
   const { sourceType, targetType } = req.params;
   const { L1, L2 } = req.query;
-  
+
   // Handle different ID formats: hierarchical strings (Corpus 2) vs integers (Corpus 1,3)
   let sourceId = req.params.sourceId;
   const corpus_id = req.query.corpus_id ? parseInt(req.query.corpus_id, 10) : null;
+
+  // Count-only corpus params: annotate returned nodes with corpus occurrence counts
+  // without filtering which nodes are returned (expansion is always lexical)
+  const countCorpusId = req.query.count_corpus_id ? parseInt(req.query.count_corpus_id, 10) : null;
+  const countSurahNumbers = req.query.count_surah_numbers
+    ? req.query.count_surah_numbers.split(',').map(Number).filter(n => !isNaN(n))
+    : null;
   
   // Only convert to integer for non-corpus items or non-hierarchical corpus items
   if (sourceType !== 'corpusitem' || (sourceType === 'corpusitem' && !sourceId.includes(':'))) {
@@ -62,6 +69,19 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
           MATCH (corpus:Corpus {corpus_id: toInteger($corpus_id)})<-[:BELONGS_TO]-(item:CorpusItem)-[:HAS_WORD]->(word)
           OPTIONAL MATCH (word)-[:ETYM]->(etym:Word)
           RETURN DISTINCT root, word, etym
+          LIMIT toInteger($limit)
+        `;
+      } else if (countCorpusId) {
+        params.countCorpusId = countCorpusId;
+        params.countSurahNumbers = countSurahNumbers && countSurahNumbers.length > 0 ? countSurahNumbers : null;
+        query = `
+          MATCH (root:Root {root_id: toInteger($sourceId)})-[:HAS_WORD]->(word:Word)
+          OPTIONAL MATCH (word)-[:ETYM]->(etym:Word)
+          WITH DISTINCT root, word, etym
+          OPTIONAL MATCH (ci:CorpusItem)-[:HAS_WORD]->(word)
+            WHERE ci.corpus_id = toInteger($countCorpusId)
+              AND ($countSurahNumbers IS NULL OR ci.surah_number IN $countSurahNumbers)
+          RETURN root, word, etym, count(ci) AS corpus_count
           LIMIT toInteger($limit)
         `;
       } else {
@@ -438,9 +458,14 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
             ...convertIntegers(targetNode),
             type: targetType
           };
+          // Attach per-word corpus count when count params were provided
+          if (countCorpusId && sourceType === 'root' && targetType === 'word') {
+            const countVal = record.get('corpus_count');
+            node.corpus_count = countVal?.toNumber?.() ?? countVal ?? 0;
+          }
           nodes.push(node);
           nodeMap.set(node.id, node);
-          
+
           // Create appropriate link based on relationship type
           if (sourceType === 'root' && targetType === 'word') {
             const linkId = `root_${sourceNode.root_id}-word_${targetNode.word_id}`;
@@ -905,13 +930,24 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
       }
       usedPositions.add(skip);
 
-      const fetchQuery = `
-        ${matchClause}
-        ${whereClause}
-        RETURN ${nodeVar}
-        SKIP ${skip}
-        LIMIT 1
-      `;
+      const needsCorpusCount = nodeType === 'root' && corpusId;
+      const fetchQuery = needsCorpusCount
+        ? `
+          ${matchClause}
+          ${whereClause}
+          WITH ${nodeVar} SKIP ${skip} LIMIT 1
+          OPTIONAL MATCH (ci:CorpusItem)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(${nodeVar})
+          WHERE ci.corpus_id = $corpusId
+            AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
+          RETURN ${nodeVar}, count(ci) AS corpus_count
+        `
+        : `
+          ${matchClause}
+          ${whereClause}
+          RETURN ${nodeVar}
+          SKIP ${skip}
+          LIMIT 1
+        `;
 
       const result = await session.run(fetchQuery, params);
       result.records.forEach(record => {
@@ -921,12 +957,17 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
           const isCorpusItem = nodeType === 'word' && corpusId;
           const resolvedType = isCorpusItem ? 'corpusitem' : nodeType;
           const idProp = isCorpusItem ? 'item_id' : (nodeType === 'root' ? 'root_id' : nodeType === 'form' ? 'form_id' : 'word_id');
-          nodes.push({
+          const nodeData = {
             id: `${resolvedType}_${props[idProp]}`,
             label: L2 === 'off' ? props[L1] : `${props[L1]} / ${props[L2]}`,
             ...props,
             type: resolvedType
-          });
+          };
+          if (nodeType === 'root' && corpusId) {
+            const countVal = record.get('corpus_count');
+            nodeData.corpus_count = countVal?.toNumber?.() ?? countVal ?? 0;
+          }
+          nodes.push(nodeData);
         }
       });
     }

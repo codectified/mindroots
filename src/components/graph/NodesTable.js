@@ -68,14 +68,21 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
   const { nodes: sortedNodes, childNodeIds } = createHierarchicalSort(displayableNodes, graphData.links);
 
   const hasCorpusItems = sortedNodes.some(n => n.type === 'corpusitem');
+  const hasCorpusCounts = sortedNodes.some(n => n.corpus_count != null);
+  const showLocationColumn = hasCorpusItems || hasCorpusCounts;
 
   const formatLocation = (node) => {
-    if (node.type !== 'corpusitem') return null;
-    if (node.surah_number != null && node.ayah_number != null) {
-      const word = node.word_position != null ? `:${node.word_position}` : '';
-      return `${node.surah_number}:${node.ayah_number}${word}`;
+    if (node.type === 'corpusitem') {
+      if (node.surah_number != null && node.ayah_number != null) {
+        const word = node.word_position != null ? `:${node.word_position}` : '';
+        return `${node.surah_number}:${node.ayah_number}${word}`;
+      }
+      return node.item_id ?? null;
     }
-    return node.item_id ?? null;
+    if (node.corpus_count != null) {
+      return `${node.corpus_count} ${node.corpus_count === 1 ? 'item' : 'items'}`;
+    }
+    return null;
   };
 
   // Enhanced click handler that checks for advanced mode (matches GraphVisualization)
@@ -115,7 +122,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
           <tr style={{ borderBottom: '1px solid #ccc' }}>
             <th style={{ padding: '8px', textAlign: 'left' }}>Semantic</th>
             <th style={{ padding: '8px', textAlign: 'left' }}>English</th>
-            {hasCorpusItems && (
+            {showLocationColumn && (
               <th style={{ padding: '8px', textAlign: 'left', whiteSpace: 'nowrap', fontSize: '13px', color: '#555' }}>Location</th>
             )}
           </tr>
@@ -147,7 +154,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
               >
                 <td style={{ padding: '8px', paddingLeft }}>{node.sem ?? node.arabic ?? '(no semantic)'}</td>
                 <td style={{ padding: '8px' }}>{node.english ?? '(no english)'}</td>
-                {hasCorpusItems && (
+                {showLocationColumn && (
                   <td style={{ padding: '8px', fontSize: '12px', color: '#666', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
                     {location ?? ''}
                   </td>

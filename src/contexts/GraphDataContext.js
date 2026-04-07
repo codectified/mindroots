@@ -17,6 +17,7 @@ import { useLanguage } from './LanguageContext'; // Import the language context 
 import { useFormFilter } from './FormFilterContext'; // Import the form filter context
 import { useSemiticLanguageFilter } from './SemiticLanguageFilterContext'; // Import the Semitic language filter context
 import { useAdvancedMode } from './AdvancedModeContext'; // Import the advanced mode context
+import { useCorpusFilter } from './CorpusFilterContext';
 
 
 
@@ -61,6 +62,7 @@ export const GraphDataProvider = ({ children }) => {
   const { selectedFormClassifications } = useFormFilter(); // Access form classification filter
   const { selectedSemiticLanguages } = useSemiticLanguageFilter(); // Access Semitic language filter
   const { isAdvancedMode } = useAdvancedMode(); // Access advanced mode state
+  const { corpusFilter, surahFilter } = useCorpusFilter();
 
   // Function to filter Word nodes, Form nodes, and remove associated links
   const applyFilter = (nodes, links) => {
@@ -183,7 +185,12 @@ const handleRootNodeClick = async (node, L1, L2, position) => {
     
     // EXPAND: Either no words or 2 or fewer words displayed, expand to show more
     console.log('Expanding root - fetching more words');
-    const options = { L1, L2, limit: 100 };
+    const countCorpusId = corpusFilter && corpusFilter !== 'lexicon' ? corpusFilter : null;
+    const options = {
+      L1, L2, limit: 100,
+      ...(countCorpusId ? { count_corpus_id: countCorpusId } : {}),
+      ...(countCorpusId && surahFilter && surahFilter.length > 0 ? { count_surah_numbers: surahFilter } : {}),
+    };
 
     console.log('Calling expandGraph with:', 'root', rootId, 'word', options);
     const result = await expandGraph('root', rootId, 'word', options);
