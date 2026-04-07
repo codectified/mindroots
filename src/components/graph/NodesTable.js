@@ -67,6 +67,17 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
 
   const { nodes: sortedNodes, childNodeIds } = createHierarchicalSort(displayableNodes, graphData.links);
 
+  const hasCorpusItems = sortedNodes.some(n => n.type === 'corpusitem');
+
+  const formatLocation = (node) => {
+    if (node.type !== 'corpusitem') return null;
+    if (node.surah_number != null && node.ayah_number != null) {
+      const word = node.word_position != null ? `:${node.word_position}` : '';
+      return `${node.surah_number}:${node.ayah_number}${word}`;
+    }
+    return node.item_id ?? null;
+  };
+
   // Enhanced click handler that checks for advanced mode (matches GraphVisualization)
   const handleNodeRowClick = useCallback((node, event) => {
     if (isAdvancedMode) {
@@ -104,36 +115,43 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
           <tr style={{ borderBottom: '1px solid #ccc' }}>
             <th style={{ padding: '8px', textAlign: 'left' }}>Semantic</th>
             <th style={{ padding: '8px', textAlign: 'left' }}>English</th>
+            {hasCorpusItems && (
+              <th style={{ padding: '8px', textAlign: 'left', whiteSpace: 'nowrap', fontSize: '13px', color: '#555' }}>Location</th>
+            )}
           </tr>
         </thead>
         <tbody>
           {sortedNodes.map((node) => {
             const color = getNodeColor(node, wordShadeMode);
-            
-            // A node is indented only if it has an actual HAS_WORD link to a parent
             const actualChild = childNodeIds.has(node.id);
-            
+
             const nodeTypeStyle = {
               corpusitem: { background: '#f0f8ff' },
               root: { background: '#fff' },
               word: { background: actualChild ? '#f5f5f5' : '#f9f9f9' },
             };
 
-            const paddingLeft = actualChild ? '24px' : '8px'; // Indent child nodes
+            const paddingLeft = actualChild ? '24px' : '8px';
+            const location = formatLocation(node);
 
             return (
               <tr
                 key={node.id}
                 onClick={(e) => handleNodeRowClick(node, e)}
-                style={{ 
-                  cursor: 'pointer', 
-                  borderBottom: '1px solid #eee', 
+                style={{
+                  cursor: 'pointer',
+                  borderBottom: '1px solid #eee',
                   color,
                   ...(nodeTypeStyle[node.type] || {})
                 }}
               >
                 <td style={{ padding: '8px', paddingLeft }}>{node.sem ?? node.arabic ?? '(no semantic)'}</td>
                 <td style={{ padding: '8px' }}>{node.english ?? '(no english)'}</td>
+                {hasCorpusItems && (
+                  <td style={{ padding: '8px', fontSize: '12px', color: '#666', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
+                    {location ?? ''}
+                  </td>
+                )}
               </tr>
             );
           })}
