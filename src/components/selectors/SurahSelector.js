@@ -27,13 +27,13 @@ const SurahSelector = () => {
           onClick={clearAll}
           style={{ fontSize: '11px', padding: '2px 6px', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '3px', background: '#f8f8f8', color: '#333' }}
         >
-          All
+          None
         </button>
         <button
           onClick={selectAll}
           style={{ fontSize: '11px', padding: '2px 6px', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '3px', background: '#f8f8f8', color: '#333' }}
         >
-          Select All
+          All
         </button>
         {surahFilter.length > 0 && (
           <span style={{ fontSize: '11px', color: '#666' }}>{surahFilter.length} selected</span>

@@ -323,14 +323,12 @@ const Search = () => {
           />
           <span style={{ fontSize: '14px', minWidth: '40px' }}>{resultLimit}</span>
           <DisplayModeSelector size="large" />
-          {graphData.nodes.length > 0 && (
-            <button
-              onClick={handleReset}
-              style={{ backgroundColor: '#888', padding: '6px 12px', fontSize: '13px' }}
-            >
-              Reset
-            </button>
-          )}
+          <button
+            onClick={handleReset}
+            style={{ backgroundColor: '#888', padding: '6px 12px', fontSize: '13px' }}
+          >
+            Reset
+          </button>
         </div>
         {totalRoots > 0 && lastSearchType !== 'lexical' && (
           <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>

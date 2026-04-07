@@ -222,16 +222,11 @@ const Explore = () => {
         )}
 
         {/* Reset Button */}
-        {graphData.nodes.length > 0 && (
-          <div className="button-container">
-            <button
-              onClick={handleReset}
-              style={{ backgroundColor: '#888' }}
-            >
-              Reset
-            </button>
-          </div>
-        )}
+        <div className="button-container">
+          <button onClick={handleReset} style={{ backgroundColor: '#888' }}>
+            Reset
+          </button>
+        </div>
       </div>
 
       {displayMode === 'graph' ? (

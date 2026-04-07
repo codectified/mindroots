@@ -50,7 +50,9 @@ const GraphVisualization = ({ data, onNodeClick }) => {
 
   useEffect(() => {
     if (!data || data.nodes.length === 0) {
-      console.log('No data to render');
+      const svg = d3.select(svgRef.current);
+      svg.selectAll('*').remove();
+      if (simulation) simulation.stop();
       return;
     }
 
