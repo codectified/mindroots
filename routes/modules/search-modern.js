@@ -2,6 +2,35 @@ const express = require('express');
 const { convertIntegers } = require('./utils');
 const router = express.Router();
 
+/**
+ * Batch-fetch corpus occurrence counts for a list of root IDs.
+ * Returns a Map<root_id (number), count>.
+ * Used to annotate root search results with how many CorpusItems they appear in
+ * within the current corpus/surah filter — without affecting which roots are returned.
+ */
+const getCorpusCounts = async (session, rootIds, corpusId, surahNumbers) => {
+  if (!corpusId || rootIds.length === 0) return new Map();
+  const result = await session.run(
+    `MATCH (root:Root)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(ci:CorpusItem)
+     WHERE root.root_id IN $rootIds
+       AND ci.corpus_id = toInteger($corpusId)
+       AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
+     RETURN root.root_id AS root_id, count(ci) AS corpus_count`,
+    {
+      rootIds,
+      corpusId: parseInt(corpusId, 10),
+      surahNumbers: surahNumbers && surahNumbers.length > 0 ? surahNumbers : null
+    }
+  );
+  const counts = new Map();
+  for (const record of result.records) {
+    const rid = record.get('root_id')?.toNumber?.() ?? record.get('root_id');
+    const cnt = record.get('corpus_count')?.toNumber?.() ?? record.get('corpus_count') ?? 0;
+    counts.set(rid, cnt);
+  }
+  return counts;
+};
+
 // ====================================================================
 // MODERN RADICALPOSITION-BASED SEARCH SYSTEM
 // ====================================================================
@@ -277,7 +306,7 @@ router.get('/search-roots', async (req, res) => {
     }
 
     const result = await session.run(cypherQuery, queryParams);
-    
+
     const roots = result.records.map(record => {
       const root = record.get('root').properties;
       const convertedRoot = convertIntegers(root);
@@ -289,12 +318,19 @@ router.get('/search-roots', async (req, res) => {
       };
     });
 
+    const surahNumbersParsedForCount = surahNumbersParsed;
+    const corpusCounts = await getCorpusCounts(session, roots.map(r => r.root_id), corpus_id, surahNumbersParsedForCount);
+    const rootsWithCounts = roots.map(r => ({
+      ...r,
+      ...(corpusCounts.has(r.root_id) ? { corpus_count: corpusCounts.get(r.root_id) } : {})
+    }));
+
     await session.close();
     res.json({
-      roots,
-      total: roots.length,
+      roots: rootsWithCounts,
+      total: rootsWithCounts.length,
       searchType: 'position-specific',
-      message: `Found ${roots.length} roots with position-specific search`
+      message: `Found ${rootsWithCounts.length} roots with position-specific search`
     });
 
   } catch (error) {
@@ -375,7 +411,7 @@ router.get('/search-combinate', async (req, res) => {
     }
 
     const result = await session.run(cypherQuery, queryParams);
-    
+
     const roots = result.records.map(record => {
       const root = record.get('root').properties;
       const convertedRoot = convertIntegers(root);
@@ -387,12 +423,18 @@ router.get('/search-combinate', async (req, res) => {
       };
     });
 
+    const corpusCounts = await getCorpusCounts(session, roots.map(r => r.root_id), corpus_id, surahNumbersParsed);
+    const rootsWithCounts = roots.map(r => ({
+      ...r,
+      ...(corpusCounts.has(r.root_id) ? { corpus_count: corpusCounts.get(r.root_id) } : {})
+    }));
+
     await session.close();
     res.json({
-      roots,
-      total: roots.length,
+      roots: rootsWithCounts,
+      total: rootsWithCounts.length,
       searchType: 'combinate',
-      message: `Found ${roots.length} roots with combinate search`
+      message: `Found ${rootsWithCounts.length} roots with combinate search`
     });
 
   } catch (error) {
@@ -474,7 +516,7 @@ router.get('/search-extended', async (req, res) => {
     `;
 
     const result = await session.run(cypherQuery, queryParams);
-    
+
     const roots = result.records.map(record => {
       const root = record.get('root').properties;
       const convertedRoot = convertIntegers(root);
@@ -486,12 +528,18 @@ router.get('/search-extended', async (req, res) => {
       };
     });
 
+    const corpusCounts = await getCorpusCounts(session, roots.map(r => r.root_id), corpus_id, surahNumbersParsed);
+    const rootsWithCounts = roots.map(r => ({
+      ...r,
+      ...(corpusCounts.has(r.root_id) ? { corpus_count: corpusCounts.get(r.root_id) } : {})
+    }));
+
     await session.close();
     res.json({
-      roots,
-      total: roots.length,
+      roots: rootsWithCounts,
+      total: rootsWithCounts.length,
       searchType: 'extended',
-      message: `Found ${roots.length} extended roots (4+ radicals)`
+      message: `Found ${rootsWithCounts.length} extended roots (4+ radicals)`
     });
 
   } catch (error) {
