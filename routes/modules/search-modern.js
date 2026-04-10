@@ -284,7 +284,6 @@ router.get('/search-roots', async (req, res) => {
       if (conditions.length === 0) {
         cypherQuery = `
           MATCH (root:Root)
-          WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
           ${corpusClause}
           RETURN root
           ORDER BY root.${L1}
@@ -295,8 +294,7 @@ router.get('/search-roots', async (req, res) => {
           MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
           WHERE (${conditions.join(' OR ')})
           WITH root, collect(rp) as matched_radicals
-          WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
-            AND size(matched_radicals) = ${conditions.length}
+          WHERE size(matched_radicals) = ${conditions.length}
           ${corpusClause}
           RETURN root
           ORDER BY root.${L1}

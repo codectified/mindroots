@@ -291,7 +291,7 @@ const Search = () => {
 
       {/* User feedback for search logic */}
       <div style={{ marginBottom: '10px', fontSize: '12px', color: '#666' }}>
-        <div>🔍 <strong>{t.fetchRoots}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : t.twoThreeRadicals}</div>
+        <div>🔍 <strong>{t.fetchRoots}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : ''}</div>
         <div>🔀 <strong>{t.combinate}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : ''}</div>
         {r1 && (
           <div style={{ marginTop: '5px', fontStyle: 'italic' }}>
