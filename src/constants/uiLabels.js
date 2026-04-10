@@ -3,7 +3,7 @@
 
 const en = {
   // ── Navigation ────────────────────────────────────────────────
-  corpusLibrary:        'Corpus Library',
+  corpusLibrary:        'Library',
   graphExploration:     'Graph Exploration',
   positionalRootSearch: 'Positional Root Search',
   lisanLab:             'Lisān Lab & Reports',
@@ -31,7 +31,7 @@ const en = {
   poetry:               'Poetry',
 
   // ── Explore ───────────────────────────────────────────────────
-  exploreTitle:         'Knowledge Graph Exploration',
+  exploreTitle:         'Knowledge Graph Explorer',
   word:                 'Word',
   root:                 'Root',
   form:                 'Form',
@@ -39,7 +39,7 @@ const en = {
 
   // ── Search ────────────────────────────────────────────────────
   searchTitle:          'Advanced Search',
-  fullTextSearch:       'Full Text Search',
+  fullTextSearch:       'Keyword Search',
   fullTextPlaceholder:  'e.g. love, mercy, fear god',
   search:               'Search',
   lanesLexicon:         "Lane's Lexicon",
@@ -51,8 +51,8 @@ const en = {
   r3:                   'R3:',
   wildcard:             '*',
   noR3:                 'None',
-  fetchRoots:           'Fetch Root(s)',
-  combinate:            'Combinate',
+  fetchRoots:           'Find Roots',
+  combinate:            'Permutations',
   fetchExtended:        'Fetch Extended',
   nodeLimit:            'Node Limit:',
   foundWords:           (n) => `Found ${n} words`,
@@ -63,7 +63,7 @@ const en = {
   noneLabel:            'None',
 
   // ── Nodes table ───────────────────────────────────────────────
-  colSemantic:          'Semantic',
+  colSemantic:          'Semitic',
   colEnglish:           'English',
   colLocation:          'Location',
   itemSingular:         'item',
@@ -193,7 +193,7 @@ const en = {
 
 const sem = {
   // ── Navigation ────────────────────────────────────────────────
-  corpusLibrary:        'مكتبة النصوص',
+  corpusLibrary:        'المكتبة',
   graphExploration:     'الاستكشاف البياني',
   positionalRootSearch: 'بحث الجذور',
   lisanLab:             'مختبر اللسان',
@@ -221,30 +221,30 @@ const sem = {
   poetry:               'شعر',
 
   // ── Explore ───────────────────────────────────────────────────
-  exploreTitle:         'استكشاف البياني المعرفي',
+  exploreTitle:         'استكشاف الشبكة المعرفية',
   word:                 'كلمة',
   root:                 'جذر',
-  form:                 'صيغة',
-  reset:                'إعادة',
+  form:                 'وزن',
+  reset:                'إعادة ضبط',
 
   // ── Search ────────────────────────────────────────────────────
-  searchTitle:          'بحث متقدم',
-  fullTextSearch:       'بحث نصي كامل',
+  searchTitle:          'البحث المتقدم',
+  fullTextSearch:       'بحث بالكلمات المفتاحية',
   fullTextPlaceholder:  'مثال: حب، رحمة، خشية',
   search:               'بحث',
   lanesLexicon:         'معجم لين',
   hansWehr:             'معجم هانز فير',
-  wordLabels:           'تسميات الكلمات',
+  wordLabels:           'تصنيفات الكلمات',
   rootSearch:           'بحث الجذور',
-  r1:                   'ج١:',
-  r2:                   'ج٢:',
-  r3:                   'ج٣:',
+  r1:                   'ف:',
+  r2:                   'ع:',
+  r3:                   'ل:',
   wildcard:             '*',
   noR3:                 'لا شيء',
-  fetchRoots:           'جلب الجذور',
-  combinate:            'تشكيلات',
+  fetchRoots:           'إظهار الجذور',
+  combinate:            'مقلوبات',
   fetchExtended:        'بحث موسّع',
-  nodeLimit:            'حد العقد:',
+  nodeLimit:            'الحد الأقصى للعقد',
   foundWords:           (n) => `وُجد ${n} كلمة`,
   totalRoots:           (shown, total) => `إجمالي الجذور: ${total} (عرض ${shown} من ${total})`,
   biradicalOnly:        '(ثنائي الجذر)',
@@ -253,7 +253,7 @@ const sem = {
   noneLabel:            'لا شيء',
 
   // ── Nodes table ───────────────────────────────────────────────
-  colSemantic:          'الدلالة',
+  colSemantic:          'سامي',
   colEnglish:           'الإنجليزية',
   colLocation:          'الموقع',
   itemSingular:         'وحدة',
@@ -295,8 +295,8 @@ const sem = {
   connectedNodesLabel:  'العقد المرتبطة:',
 
   // ── Selectors ─────────────────────────────────────────────────
-  l1Label:              'ل١:',
-  l2Label:              'ل٢:',
+  l1Label:              'L1:',
+  l2Label:              'L2:',
   semitic:              'السامية',
   english:              'الإنجليزية',
   off:                  'إيقاف',

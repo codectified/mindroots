@@ -281,17 +281,11 @@ const Search = () => {
         >
           {t.fetchRoots}
         </button>
-        <button 
+        <button
           onClick={handleCombinate}
           disabled={!r1 && !r2 && !r3}
         >
           {t.combinate}
-        </button>
-        <button 
-          onClick={handleFetchExtended}
-          disabled={false}
-        >
-          {t.fetchExtended}
         </button>
       </div>
 
@@ -299,7 +293,6 @@ const Search = () => {
       <div style={{ marginBottom: '10px', fontSize: '12px', color: '#666' }}>
         <div>🔍 <strong>{t.fetchRoots}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : t.twoThreeRadicals}</div>
         <div>🔀 <strong>{t.combinate}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : ''}</div>
-        <div>📈 <strong>{t.fetchExtended}</strong></div>
         {r1 && (
           <div style={{ marginTop: '5px', fontStyle: 'italic' }}>
             {t.patternLabel} {r1 || '*'} - {r2 || '*'} - {r3 === 'NoR3' ? t.noneLabel : (r3 || '*')}
