@@ -3,12 +3,14 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { fetchCorpora } from '../../services/apiService';
 import { useCorpus } from '../../contexts/CorpusContext';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const ArticlesAndReferences = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { handleSelectCorpus } = useCorpus(); // Use context to store the selected corpus
   const { L1, L2 } = useLanguage(); // Get L1 and L2 from context
+  const t = useLabels();
   const [corpora, setCorpora] = useState([]);
 
   useEffect(() => {
@@ -100,7 +102,7 @@ const ArticlesAndReferences = () => {
     <div className="corpus-library-container">
 
       <div className="corpus-library-header">
-        <h1 className="library-title">Corpus Library</h1>
+        <h1 className="library-title">{t.corpusLibrary}</h1>
       </div>
 
       {/* Top Row: Quran (left) and 99 Names (right) */}
@@ -131,7 +133,7 @@ const ArticlesAndReferences = () => {
       {/* Poetry Section */}
       {poetryCorpora.length > 0 && (
         <div className="poetry-section">
-          <h2 className="section-title">Poetry</h2>
+          <h2 className="section-title">{t.poetry}</h2>
           <div className="poetry-corpora">
             {poetryCorpora.map((corpus) => (
               <div key={corpus.id} className="corpus-card poetry-card" onClick={() => handleSelect(corpus)}>

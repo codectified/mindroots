@@ -1,5 +1,6 @@
 import React from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const HighlightController = () => {
   const {
@@ -14,31 +15,32 @@ const HighlightController = () => {
     highlightColor,
     setHighlightColor, // Add highlight color state
   } = useHighlight();
+  const t = useLabels();
 
   const highlightOptions = [
     {
-      label: 'Nouns (f.)',
+      label: t.nounsF,
       value: 'feminine',
       active: highlightGender === 'feminine',
       setState: () => setHighlightGender(highlightGender === 'feminine' ? null : 'feminine'),
       color: '#FFD700',
     },
     {
-      label: 'Verbs',
+      label: t.verbs,
       value: 'verb',
       active: highlightVerb,
       setState: () => setHighlightVerb(!highlightVerb),
       color: '#32CD32',
     },
     {
-      label: 'Particles',
+      label: t.particles,
       value: 'particle',
       active: highlightParticle,
       setState: () => setHighlightParticle(!highlightParticle),
       color: '#007bff',
     },
     {
-      label: 'Freeform Mode',
+      label: t.freeformMode,
       value: 'freeform',
       active: freeformMode,
       setState: () => setFreeformMode(!freeformMode),
@@ -48,7 +50,7 @@ const HighlightController = () => {
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
-      <label>Highlight:</label>
+      <label>{t.highlight}</label>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
         {highlightOptions.map((option) => (
           <label key={option.value} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
@@ -73,7 +75,7 @@ const HighlightController = () => {
       </div>
       {freeformMode && (
         <div>
-          <label htmlFor="highlight-color">Highlight Color: </label>
+          <label htmlFor="highlight-color">{t.highlightColor}</label>
           <select
             id="highlight-color"
             value={highlightColor}

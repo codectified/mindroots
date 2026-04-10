@@ -5,9 +5,11 @@ import NodeContextMenu from './NodeContextMenu';
 import NodeInspector from './NodeInspector';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeInfoBubble }) => {
   const { isAdvancedMode } = useAdvancedMode();
+  const t = useLabels();
   const { contextMenu, setContextMenu, handleContextMenuAction, nodeInspectorData, setNodeInspectorData, handleNodeNavigation } = useGraphData();
 
   // Collect all nodes that have semantic or text properties to display
@@ -80,7 +82,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
       return node.item_id ?? null;
     }
     if (node.corpus_count != null && node.corpus_count > 0) {
-      return `${node.corpus_count} ${node.corpus_count === 1 ? 'item' : 'items'}`;
+      return `${node.corpus_count} ${node.corpus_count === 1 ? t.itemSingular : t.itemPlural}`;
     }
     return null;
   };
@@ -120,10 +122,10 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
       <table style={{ width: '100%', borderCollapse: 'collapse' }}>
         <thead>
           <tr style={{ borderBottom: '1px solid #ccc' }}>
-            <th style={{ padding: '8px', textAlign: 'left' }}>Semantic</th>
-            <th style={{ padding: '8px', textAlign: 'left' }}>English</th>
+            <th style={{ padding: '8px', textAlign: 'left' }}>{t.colSemantic}</th>
+            <th style={{ padding: '8px', textAlign: 'left' }}>{t.colEnglish}</th>
             {showLocationColumn && (
-              <th style={{ padding: '8px', textAlign: 'left', whiteSpace: 'nowrap', fontSize: '13px', color: '#555' }}>Location</th>
+              <th style={{ padding: '8px', textAlign: 'left', whiteSpace: 'nowrap', fontSize: '13px', color: '#555' }}>{t.colLocation}</th>
             )}
           </tr>
         </thead>
@@ -152,8 +154,8 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
                   ...(nodeTypeStyle[node.type] || {})
                 }}
               >
-                <td style={{ padding: '8px', paddingLeft }}>{node.sem ?? node.arabic ?? '(no semantic)'}</td>
-                <td style={{ padding: '8px' }}>{node.english ?? '(no english)'}</td>
+                <td style={{ padding: '8px', paddingLeft }}>{node.sem ?? node.arabic ?? t.noSemantic}</td>
+                <td style={{ padding: '8px' }}>{node.english ?? t.noEnglish}</td>
                 {showLocationColumn && (
                   <td style={{ padding: '8px', fontSize: '12px', color: '#666', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
                     {location ?? ''}

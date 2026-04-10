@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLabels } from '../../hooks/useLabels';
 
 const FontScaleSelector = () => {
+  const t = useLabels();
   const [fontScale, setFontScale] = useState(() => {
     // Get saved preference from localStorage
     const saved = localStorage.getItem('fontScale');
@@ -9,11 +11,11 @@ const FontScaleSelector = () => {
 
   // Font scale options
   const scaleOptions = [
-    { label: 'Small', value: 0.85, description: 'Compact view' },
-    { label: 'Normal', value: 1, description: 'Default size' },
-    { label: 'Large', value: 1.15, description: '15% larger' },
-    { label: 'Extra Large', value: 1.3, description: '30% larger' },
-    { label: 'XX-Large', value: 1.5, description: '50% larger' },
+    { label: t.small, value: 0.85, description: t.compactView },
+    { label: t.normal, value: 1, description: t.defaultSize },
+    { label: t.large, value: 1.15, description: t.fifteenPercent },
+    { label: t.extraLarge, value: 1.3, description: t.thirtyPercent },
+    { label: t.xxLarge, value: 1.5, description: t.fiftyPercent },
   ];
 
   // Update font scale
@@ -25,7 +27,7 @@ const FontScaleSelector = () => {
   return (
     <div>
       <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '10px' }}>
-        Font size: {(fontScale * 100).toFixed(0)}%
+        {t.fontSizePercent((fontScale * 100).toFixed(0))}
       </p>
 
       {/* Scale buttons - compact for mini-menu */}
@@ -81,7 +83,7 @@ const FontScaleSelector = () => {
         onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
         onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
       >
-        Reset
+        {t.reset}
       </button>
     </div>
   );

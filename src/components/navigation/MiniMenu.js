@@ -14,11 +14,13 @@ import ShowLinksToggle from '../selectors/ShowLinksToggle';
 import FontScaleSelector from '../selectors/FontScaleSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const MiniMenu = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdvancedMode } = useAdvancedMode();
+  const t = useLabels();
   const [selectedOption, setSelectedOption] = useState(null);
   const [setIsGraphMode] = useState(false); // Toggle for Graph/Table mode
   const [showFilterSettings, setShowFilterSettings] = useState(false);
@@ -79,7 +81,7 @@ const MiniMenu = () => {
                 onClick={() => setShowOtherSettings((prev) => !prev)}
                 style={{ cursor: 'pointer', marginBottom: '10px' }}
               >
-                General
+                {t.general}
                 <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
               </div>
               {showOtherSettings && (
@@ -114,7 +116,7 @@ const MiniMenu = () => {
                     }}
                   >
                     <FontAwesomeIcon icon={faSliders} />
-                    Advanced Typography Settings
+                    {t.advancedTypography}
                   </button>
                   <ShowLinksToggle />
                   <NodeLimitSlider />
@@ -128,7 +130,7 @@ const MiniMenu = () => {
                 onClick={() => setShowContextSettings((prev) => !prev)}
                 style={{ cursor: 'pointer', marginBottom: '10px' }}
               >
-                Contexts
+                {t.contexts}
                 <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
               </div>
               {showContextSettings && (
@@ -143,7 +145,7 @@ const MiniMenu = () => {
                 onClick={() => setShowFilterSettings((prev) => !prev)}
                 style={{ cursor: 'pointer', marginBottom: '10px' }}
               >
-                Filters
+                {t.filters}
                 <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
               </div>
               {showFilterSettings && (

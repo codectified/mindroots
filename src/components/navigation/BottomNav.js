@@ -13,11 +13,13 @@ import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
 import FontScaleSelector from '../selectors/FontScaleSelector';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdvancedMode } = useAdvancedMode();
+  const t = useLabels();
   const [showSettings, setShowSettings] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // Default collapsed
   const [showFilterSettings, setShowFilterSettings] = useState(false);
@@ -93,7 +95,7 @@ const BottomNav = () => {
                   onClick={() => setShowOtherSettings((prev) => !prev)}
                   style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
                 >
-                  <strong>General</strong>
+                  <strong>{t.general}</strong>
                   <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
                 </div>
                 {showOtherSettings && (
@@ -129,7 +131,7 @@ const BottomNav = () => {
                       }}
                     >
                       <FontAwesomeIcon icon={faSliders} />
-                      Advanced Typography Settings
+                      {t.advancedTypography}
                     </button>
                     <ShowLinksToggle />
                     <NodeLimitSlider />
@@ -143,7 +145,7 @@ const BottomNav = () => {
                   onClick={() => setShowContextSettings((prev) => !prev)}
                   style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
                 >
-                  <strong>Contexts</strong>
+                  <strong>{t.contexts}</strong>
                   <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
                 </div>
                 {showContextSettings && (
@@ -158,7 +160,7 @@ const BottomNav = () => {
                   onClick={() => setShowFilterSettings((prev) => !prev)}
                   style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
                 >
-                  <strong>Filters</strong>
+                  <strong>{t.filters}</strong>
                   <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
                 </div>
                 {showFilterSettings && (
@@ -181,14 +183,14 @@ const BottomNav = () => {
             <button 
               className={`nav-button ${showSettings ? 'active' : ''}`} 
               onClick={handleSettingsToggle}
-              title="Settings"
+              title={t.general}
             >
               <FontAwesomeIcon icon={faGlobe} />
             </button>
             <button 
               className="nav-button" 
               onClick={() => handleNavigation('/corpus-menu')}
-              title="Corpus Library"
+              title={t.corpusLibrary}
             >
               <RiBookShelfLine />
             </button>
@@ -213,14 +215,14 @@ const BottomNav = () => {
             <button 
               className="nav-button" 
               onClick={() => handleNavigation('/start')}
-              title="Graph Exploration"
+              title={t.graphExploration}
             >
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
             <button 
               className="nav-button" 
               onClick={() => handleNavigation('/sandbox')}
-              title="Positional Root Search"
+              title={t.positionalRootSearch}
             >
               <FontAwesomeIcon icon={faSearch} />
             </button>

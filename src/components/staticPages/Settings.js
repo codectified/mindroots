@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import DualFontScaleSelector from '../selectors/DualFontScaleSelector';
 import { useNavigate } from 'react-router-dom';
+import { useLabels } from '../../hooks/useLabels';
 
 const Settings = () => {
   const navigate = useNavigate();
+  const t = useLabels();
   const [arabicFont, setArabicFont] = useState(() => {
     const saved = localStorage.getItem('arabicFont');
     return saved || 'amiri';
@@ -46,14 +48,14 @@ const Settings = () => {
 
   return (
     <div>
-      <h2>Typography Settings</h2>
+      <h2>{t.typographySettings}</h2>
       <p style={{ color: '#666', marginBottom: '24px' }}>
         Adjust font sizes and styles across the application. Changes are applied instantly.
       </p>
 
       {/* Font Size Control - Separate scales for Latin and Semitic */}
       <div className="settings-section">
-        <h3>Font Size Control</h3>
+        <h3>{t.fontSizeControl}</h3>
         <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '15px' }}>
           Control font sizes independently for English and Arabic text. Arabic text often appears smaller at the same size, so you can adjust it separately.
         </p>
@@ -62,7 +64,7 @@ const Settings = () => {
 
       {/* Font Family Control */}
       <div className="settings-section">
-        <h3>Arabic Font Style</h3>
+        <h3>{t.arabicFontStyle}</h3>
         <p style={{ color: '#666', fontSize: '0.95rem', marginBottom: '15px' }}>
           Choose your preferred Arabic typography style. Each font has a distinct visual character:
         </p>
@@ -113,7 +115,7 @@ const Settings = () => {
           ))}
         </div>
         <p style={{ marginTop: '16px', fontSize: '0.85rem', color: '#999' }}>
-          Your preferences are saved automatically.
+          {t.savedAutomatically}
         </p>
       </div>
 
@@ -138,7 +140,7 @@ const Settings = () => {
           onMouseEnter={(e) => e.target.style.backgroundColor = '#2463a3'}
           onMouseLeave={(e) => e.target.style.backgroundColor = '#2c7fb8'}
         >
-          Go to Explore
+          {t.goToExplore}
         </button>
       </div>
     </div>

@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState } from 'react';
+import { useLabels } from '../../hooks/useLabels';
 
 // Create context for show links state
 const ShowLinksContext = createContext();
@@ -24,6 +25,7 @@ export const useShowLinks = () => {
 
 const ShowLinksToggle = () => {
   const { showLinks, setShowLinks, showLinkLabels, setShowLinkLabels } = useShowLinks();
+  const t = useLabels();
 
   return (
     <div style={{ marginBottom: '10px' }}>
@@ -42,7 +44,7 @@ const ShowLinksToggle = () => {
             fontFamily: 'Noto Serif, serif'
           }}
         >
-          Show Links
+          {t.showLinks}
         </button>
       </div>
       <div style={{ display: 'flex', gap: '5px' }}>
@@ -62,7 +64,7 @@ const ShowLinksToggle = () => {
             fontFamily: 'Noto Serif, serif'
           }}
         >
-          Show Link Labels
+          {t.showLinkLabels}
         </button>
       </div>
     </div>

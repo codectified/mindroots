@@ -8,6 +8,7 @@ import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
 import formsContent from '../../content/forms.md';
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useLabels } from '../../hooks/useLabels';
 import { useGraphData, normalizeNodes } from '../../contexts/GraphDataContext';
 import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
 import { useFormFilter } from '../../contexts/FormFilterContext';
@@ -23,6 +24,7 @@ import SurahSelector from '../selectors/SurahSelector';
 const Explore = () => {
   const location = useLocation();
   const { L1, L2 } = useLanguage();
+  const t = useLabels();
   const { corpusFilter, surahFilter } = useCorpusFilter();
   const { selectedFormClassifications } = useFormFilter();
   const { filterWordTypes, hideFormNodes } = useFilter();
@@ -194,7 +196,7 @@ const Explore = () => {
 
       <div style={{ marginBottom: '12px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ margin: 0 }}>Knowledge Graph Exploration</h2>
+          <h2 style={{ margin: 0 }}>{t.exploreTitle}</h2>
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <ContextShiftSelector />
             <DisplayModeSelector size="large" />
@@ -206,25 +208,25 @@ const Explore = () => {
       <div className="button-row">
         {/* Word Button */}
         <div className="button-container">
-          <button onClick={() => loadMarkdownAndFetchData('word')}>Word</button>
+          <button onClick={() => loadMarkdownAndFetchData('word')}>{t.word}</button>
         </div>
 
         {/* Root Button */}
         <div className="button-container">
-          <button onClick={() => loadMarkdownAndFetchData('root')}>Root</button>
+          <button onClick={() => loadMarkdownAndFetchData('root')}>{t.root}</button>
         </div>
 
         {/* Form Button — hidden in basic mode or when form nodes are toggled off */}
         {isAdvancedMode && !hideFormNodes && (
           <div className="button-container">
-            <button onClick={() => loadMarkdownAndFetchData('form')}>Form</button>
+            <button onClick={() => loadMarkdownAndFetchData('form')}>{t.form}</button>
           </div>
         )}
 
         {/* Reset Button */}
         <div className="button-container">
           <button onClick={handleReset} style={{ backgroundColor: '#888' }}>
-            Reset
+            {t.reset}
           </button>
         </div>
       </div>

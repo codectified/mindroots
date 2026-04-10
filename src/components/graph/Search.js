@@ -4,6 +4,7 @@ import NodesTable from './NodesTable';
 import GraphVisualization from './GraphVisualization';
 import { fetchRoots, fetchCombinateRoots, fetchExtendedRootsNew, searchFullText } from '../../services/apiService'; // New distinct search functions
 import { useLanguage } from '../../contexts/LanguageContext';
+import { useLabels } from '../../hooks/useLabels';
 import { useGraphData } from '../../contexts/GraphDataContext';
 import InfoBubble from '../layout/InfoBubble';
 import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
@@ -19,6 +20,7 @@ const arabicLetters = [
 const Search = () => {
   const { corpusFilter, surahFilter } = useCorpusFilter();
   const { L1, L2 } = useLanguage();
+  const t = useLabels();
   const { displayMode } = useDisplayMode();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [r1, setR1] = useState('');
@@ -172,7 +174,7 @@ const Search = () => {
     <div>
       <div style={{ marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ margin: 0 }}>Advanced Search</h2>
+          <h2 style={{ margin: 0 }}>{t.searchTitle}</h2>
           <ContextShiftSelector />
         </div>
         <SurahSelector />
@@ -180,25 +182,25 @@ const Search = () => {
 
       {/* Full Text Search */}
       <div style={{ marginBottom: '20px', paddingBottom: '16px', borderBottom: '1px solid #e0e0e0' }}>
-        <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Full Text Search</h3>
+        <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>{t.fullTextSearch}</h3>
         <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
           <input
             type="text"
             value={lexicalQuery}
             onChange={(e) => setLexicalQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleLexicalSearch()}
-            placeholder="e.g. love, mercy, fear god"
+            placeholder={t.fullTextPlaceholder}
             style={{ flex: 1, padding: '6px 10px', fontSize: '14px', border: '1px solid #ccc', borderRadius: '4px' }}
           />
           <button onClick={handleLexicalSearch} disabled={!lexicalQuery.trim()}>
-            Search
+            {t.search}
           </button>
         </div>
         <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#444' }}>
           {[
-            { value: 'lane',     label: "Lane's Lexicon" },
-            { value: 'hanswehr', label: 'Hans Wehr' },
-            { value: 'labels',   label: 'Word Labels' },
+            { value: 'lane',     label: t.lanesLexicon },
+            { value: 'hanswehr', label: t.hansWehr },
+            { value: 'labels',   label: t.wordLabels },
           ].map(({ value, label }) => (
             <label key={value} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
               <input
@@ -212,18 +214,18 @@ const Search = () => {
         </div>
         {lexicalTotal > 0 && lastSearchType === 'lexical' && (
           <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666' }}>
-            Found {lexicalTotal} words
+            {t.foundWords(lexicalTotal)}
           </p>
         )}
       </div>
 
       {/* Root Search */}
-      <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>Root Search</h3>
+      <h3 style={{ marginBottom: '8px', fontSize: '14px', fontWeight: 'bold' }}>{t.rootSearch}</h3>
 
       {/* Dropdown menus */}
 <div className="button-row" style={{ marginBottom: '10px' }}>
   <div>
-    <label>R1:</label>
+    <label>{t.r1}</label>
     <select
       className="uniform-select"
       value={r1}
@@ -239,7 +241,7 @@ const Search = () => {
   </div>
 
   <div>
-    <label>R2:</label>
+    <label>{t.r2}</label>
     <select
       className="uniform-select"
       value={r2}
@@ -255,14 +257,14 @@ const Search = () => {
   </div>
 
   <div>
-    <label>R3:</label>
+    <label>{t.r3}</label>
     <select
       className="uniform-select"
       value={r3}
       onChange={(e) => setR3(e.target.value)}
     >
       <option value="">*</option>
-      <option value="NoR3">None</option>
+      <option value="NoR3">{t.noR3}</option>
       {arabicLetters.map((letter) => (
         <option key={letter} value={letter}>
           {letter}
@@ -277,30 +279,30 @@ const Search = () => {
         <button 
           onClick={handleFetchRoots}
         >
-          Fetch Root(s)
+          {t.fetchRoots}
         </button>
         <button 
           onClick={handleCombinate}
           disabled={!r1 && !r2 && !r3}
         >
-          Combinate
+          {t.combinate}
         </button>
         <button 
           onClick={handleFetchExtended}
           disabled={false}
         >
-          Fetch Extended
+          {t.fetchExtended}
         </button>
       </div>
 
       {/* User feedback for search logic */}
       <div style={{ marginBottom: '10px', fontSize: '12px', color: '#666' }}>
-        <div>🔍 <strong>Fetch Root(s):</strong> Position-specific search {r3 === 'NoR3' ? '(biradical only)' : '(2-3 radicals)'}</div>
-        <div>🔀 <strong>Combinate:</strong> All permutations of selected radicals {r3 === 'NoR3' ? '(biradical only)' : ''}</div>
-        <div>📈 <strong>Extended:</strong> Only roots with 4+ radicals</div>
+        <div>🔍 <strong>{t.fetchRoots}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : t.twoThreeRadicals}</div>
+        <div>🔀 <strong>{t.combinate}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : ''}</div>
+        <div>📈 <strong>{t.fetchExtended}</strong></div>
         {r1 && (
           <div style={{ marginTop: '5px', fontStyle: 'italic' }}>
-            Pattern: {r1 || '*'} - {r2 || '*'} - {r3 === 'NoR3' ? 'None' : (r3 || '*')}
+            {t.patternLabel} {r1 || '*'} - {r2 || '*'} - {r3 === 'NoR3' ? t.noneLabel : (r3 || '*')}
           </div>
         )}
       </div>
@@ -309,7 +311,7 @@ const Search = () => {
       <div style={{ marginBottom: '15px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '5px' }}>
           <label htmlFor="result-limit" style={{ fontSize: '14px', fontWeight: 'bold' }}>
-            Node Limit:
+            {t.nodeLimit}
           </label>
           <input
             id="result-limit"
@@ -327,12 +329,12 @@ const Search = () => {
             onClick={handleReset}
             style={{ backgroundColor: '#888', padding: '6px 12px', fontSize: '13px' }}
           >
-            Reset
+            {t.reset}
           </button>
         </div>
         {totalRoots > 0 && lastSearchType !== 'lexical' && (
           <p style={{ margin: '0', fontSize: '12px', color: '#666' }}>
-            Total Roots Found: {totalRoots} (Showing {Math.min(totalRoots, resultLimit)} of {totalRoots})
+            {t.totalRoots(Math.min(totalRoots, resultLimit), totalRoots)}
           </p>
         )}
       </div>

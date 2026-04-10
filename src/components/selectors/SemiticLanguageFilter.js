@@ -1,14 +1,16 @@
 import React, { useState } from 'react';
 import { useSemiticLanguageFilter } from '../../contexts/SemiticLanguageFilterContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const SemiticLanguageFilter = () => {
-  const { 
-    selectedSemiticLanguages, 
-    setSelectedSemiticLanguages, 
+  const {
+    selectedSemiticLanguages,
+    setSelectedSemiticLanguages,
     semiticLanguageGroups,
-    getAllLanguages 
+    getAllLanguages
   } = useSemiticLanguageFilter();
-  
+  const t = useLabels();
+
   const [expandedGroups, setExpandedGroups] = useState({});
 
   const handleLanguageToggle = (language) => {
@@ -58,21 +60,21 @@ const SemiticLanguageFilter = () => {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-        <label>Semitic Languages:</label>
+        <label>{t.semiticLanguages}</label>
         <div style={{ display: 'flex', gap: '10px' }}>
-          <button 
+          <button
             onClick={handleSelectAll}
             style={{ fontSize: '12px', padding: '2px 6px' }}
             className="button"
           >
-            All
+            {t.surahAll}
           </button>
-          <button 
+          <button
             onClick={handleSelectNone}
             style={{ fontSize: '12px', padding: '2px 6px' }}
             className="button"
           >
-            None
+            {t.surahNone}
           </button>
         </div>
       </div>

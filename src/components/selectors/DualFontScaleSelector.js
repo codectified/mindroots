@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { useLabels } from '../../hooks/useLabels';
 
 const DualFontScaleSelector = () => {
+  const t = useLabels();
   const [latinScale, setLatinScale] = useState(() => {
     const saved = localStorage.getItem('fontScaleLatín');
     return saved ? parseFloat(saved) : 1;
@@ -13,11 +15,11 @@ const DualFontScaleSelector = () => {
 
   // Font scale presets
   const scaleOptions = [
-    { label: 'Small', value: 0.85, description: 'Compact view' },
-    { label: 'Normal', value: 1, description: 'Default size' },
-    { label: 'Large', value: 1.15, description: '15% larger' },
-    { label: 'Extra Large', value: 1.3, description: '30% larger' },
-    { label: 'XX-Large', value: 1.5, description: '50% larger' },
+    { label: t.small, value: 0.85, description: t.compactView },
+    { label: t.normal, value: 1, description: t.defaultSize },
+    { label: t.large, value: 1.15, description: t.fifteenPercent },
+    { label: t.extraLarge, value: 1.3, description: t.thirtyPercent },
+    { label: t.xxLarge, value: 1.5, description: t.fiftyPercent },
   ];
 
   // Update font scales in CSS and localStorage
@@ -36,10 +38,10 @@ const DualFontScaleSelector = () => {
       {/* Latin/English Font Scale */}
       <div style={{ marginBottom: '28px' }}>
         <h4 style={{ marginTop: '0', marginBottom: '12px', fontSize: 'var(--text-base)', fontWeight: '600', color: '#2c3e50' }}>
-          English & Latin Text
+          {t.latinText}
         </h4>
         <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '10px' }}>
-          Font size: {(latinScale * 100).toFixed(0)}%
+          {t.fontSizePercent((latinScale * 100).toFixed(0))}
         </p>
 
         {/* Latin scale buttons */}
@@ -83,10 +85,10 @@ const DualFontScaleSelector = () => {
       {/* Semitic/Arabic Font Scale */}
       <div style={{ marginBottom: '12px' }}>
         <h4 style={{ marginTop: '0', marginBottom: '12px', fontSize: 'var(--text-base)', fontWeight: '600', color: '#2c3e50' }}>
-          Arabic & Semitic Text
+          {t.arabicText}
         </h4>
         <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '10px' }}>
-          Font size: {(semiticScale * 100).toFixed(0)}%
+          {t.fontSizePercent((semiticScale * 100).toFixed(0))}
         </p>
 
         {/* Semitic scale buttons */}
@@ -145,9 +147,9 @@ const DualFontScaleSelector = () => {
           }}
           onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
           onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
-          title="Reset English & Latin text to normal size"
+          title={t.resetEnglishTitle}
         >
-          Reset English
+          {t.resetEnglish}
         </button>
         <button
           onClick={() => setSemiticScale(1)}
@@ -165,9 +167,9 @@ const DualFontScaleSelector = () => {
           }}
           onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
           onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
-          title="Reset Arabic & Semitic text to normal size"
+          title={t.resetArabicTitle}
         >
-          Reset Arabic
+          {t.resetArabic}
         </button>
       </div>
     </div>

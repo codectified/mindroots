@@ -3,15 +3,19 @@ import React from 'react';
 import { useFilter } from '../../contexts/FilterContext';
 import { useWordShade } from '../../contexts/WordShadeContext';
 import { useFormFilter } from '../../contexts/FormFilterContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const FilterController = () => {
   const { filterWordTypes, toggleWordType, hideFormNodes, toggleHideFormNodes } = useFilter();
   const { wordShadeMode } = useWordShade();
   const { selectedFormClassifications, setSelectedFormClassifications } = useFormFilter();
+  const t = useLabels();
 
   // Hardcoded available classifications - always show these three options and always clickable
   // All normalized to proper case for display
   const availableClassifications = ['Grammatical', 'Morphological'];
+  const classificationLabels = { Grammatical: t.grammatical, Morphological: t.morphological };
+  const typeLabels = { phrase: t.phrase, verb: t.verb, noun: t.noun };
 
   const handleClassificationToggle = (classification) => {
     if (selectedFormClassifications.includes(classification)) {
@@ -72,7 +76,7 @@ const FilterController = () => {
                     : ontologicalColorStyles[type],
               }}
             >
-              {type.charAt(0).toUpperCase() + type.slice(1)}
+              {typeLabels[type]}
             </span>
           </label>
         ))}
@@ -94,7 +98,7 @@ const FilterController = () => {
               }}
             />
             <span style={{ color: grammaticalColorStyles.form }}>
-              Form Nodes{!hideFormNodes && availableClassifications.length > 0 ? ':' : ''}
+              {t.formNodes}{!hideFormNodes && availableClassifications.length > 0 ? ':' : ''}
             </span>
           </label>
           
@@ -121,11 +125,11 @@ const FilterController = () => {
                         cursor: 'pointer',
                       }}
                     />
-                    <span style={{ 
-                      color: grammaticalColorStyles.form, 
-                      fontSize: '14px' 
+                    <span style={{
+                      color: grammaticalColorStyles.form,
+                      fontSize: '14px'
                     }}>
-                      {classification}
+                      {classificationLabels[classification]}
                     </span>
                   </label>
                 );

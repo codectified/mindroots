@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { updateValidationFields, addCustomTag } from '../../services/apiService';
+import { useLabels } from '../../hooks/useLabels';
 import '../../styles/info-bubble.css';
 
 const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
+  const t = useLabels();
   // Navigation state
   const [navigationStatus, setNavigationStatus] = useState({ loading: false, message: '' });
   
@@ -168,15 +170,15 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
 
     // Regular property display
     if (prop.isEmpty) {
-      return <span className="empty-value">Empty</span>;
+      return <span className="empty-value">{t.empty}</span>;
     }
-    
+
     if (prop.type === 'string' && prop.value.length > 100) {
       return (
         <div className="long-text">
           <div className="text-preview">{prop.value.substring(0, 100)}...</div>
           <details>
-            <summary>Show full text</summary>
+            <summary>{t.showFullText}</summary>
             <div className="full-text">{prop.value}</div>
           </details>
         </div>
@@ -372,8 +374,8 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
       <div className="node-inspector">
         <div className="node-inspector-header">
           <div className="header-left">
-            <h2>{nodeType} Inspector</h2>
-            <div className="node-id">ID: {nodeId}</div>
+            <h2>{nodeType} {t.inspectorSuffix}</h2>
+            <div className="node-id">{t.nodeId} {nodeId}</div>
             
             {/* Navigation controls for Word and CorpusItem nodes */}
             {(nodeType === 'Word' || nodeType === 'word' || nodeType === 'corpusitem' || nodeType === 'CorpusItem') && onNavigate && (
@@ -405,10 +407,10 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
             <button
               onClick={() => { setShowTagPanel(p => !p); setTagStatus({ saving: false, message: '' }); }}
               className="nav-button"
-              title="Add custom tag to this node"
+              title={t.addTag}
               style={{ fontSize: '13px', padding: '2px 8px' }}
             >
-              + Tag
+              {t.addTag}
             </button>
             <button className="close-button" onClick={onClose}>×</button>
           </div>
@@ -419,14 +421,14 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           <div style={{ padding: '10px 16px', borderBottom: '1px solid #ddd', background: '#f8f8f8', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
             <input
               type="text"
-              placeholder="tag_key"
+              placeholder={t.tagKeyPlaceholder}
               value={tagKey}
               onChange={e => setTagKey(e.target.value)}
               style={{ padding: '4px 8px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'monospace', fontSize: '13px', width: '140px' }}
             />
             <input
               type="text"
-              placeholder="value"
+              placeholder={t.tagValuePlaceholder}
               value={tagValue}
               onChange={e => setTagValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAddTag()}
@@ -437,13 +439,13 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
               disabled={tagStatus.saving}
               style={{ padding: '4px 12px', background: '#4a7c59', color: '#fff', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '13px' }}
             >
-              {tagStatus.saving ? 'Saving…' : 'Add'}
+              {tagStatus.saving ? t.saving : t.add}
             </button>
             <button
               onClick={() => setShowTagPanel(false)}
               style={{ padding: '4px 8px', background: 'none', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer', fontSize: '13px' }}
             >
-              Cancel
+              {t.cancel}
             </button>
             {tagStatus.message && (
               <span style={{ fontSize: '12px', color: tagStatus.message.startsWith('✓') ? '#4a7c59' : '#c00' }}>
@@ -456,7 +458,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
         <div className="node-inspector-content">
           {/* Properties Section */}
           <section className="inspector-section">
-            <h3>Properties ({Object.keys(properties).length})</h3>
+            <h3>{t.properties(Object.keys(properties).length)}</h3>
             <div className="properties-table">
               {getOrganizedProperties(properties).map(([key, prop]) => {
                 const isValidatable = isValidationField(key);
@@ -492,7 +494,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
 
           {/* Relationships Section */}
           <section className="inspector-section">
-            <h3>Relationships ({relationships.length} types)</h3>
+            <h3>{t.relationships(relationships.length)}</h3>
             <div className="relationships-table">
               {relationships.map((rel, index) => (
                 <div key={index} className="relationship-row">
@@ -511,7 +513,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
 
           {/* Connected Node Types Section */}
           <section className="inspector-section">
-            <h3>Connected Node Types</h3>
+            <h3>{t.connectedNodeTypes}</h3>
             <div className="connected-nodes-grid">
               {Object.entries(connectedNodeCounts)
                 .filter(([_, count]) => count > 0)
@@ -523,24 +525,24 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
                 ))}
             </div>
             {Object.values(connectedNodeCounts).every(count => count === 0) && (
-              <div className="no-connections">No connected nodes found</div>
+              <div className="no-connections">{t.noConnectedNodes}</div>
             )}
           </section>
 
           {/* Summary Section - Moved to bottom */}
           <section className="inspector-section">
-            <h3>Summary</h3>
+            <h3>{t.summary}</h3>
             <div className="summary-grid">
               <div className="summary-item">
-                <span className="label">Properties:</span>
+                <span className="label">{t.propertiesLabel}</span>
                 <span className="value">{summary.totalProperties}</span>
               </div>
               <div className="summary-item">
-                <span className="label">Relationships:</span>
+                <span className="label">{t.relationshipsLabel}</span>
                 <span className="value">{summary.totalRelationships}</span>
               </div>
               <div className="summary-item">
-                <span className="label">Connected Nodes:</span>
+                <span className="label">{t.connectedNodesLabel}</span>
                 <span className="value">{summary.totalConnectedNodes}</span>
               </div>
             </div>
@@ -550,7 +552,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           <section className="inspector-section">
             <details>
               <summary>
-                <h3 style={{ display: 'inline' }}>Raw Data (Advanced)</h3>
+                <h3 style={{ display: 'inline' }}>{t.rawData}</h3>
               </summary>
               <div className="raw-data">
                 <pre>{JSON.stringify(nodeData, null, 2)}</pre>
@@ -570,12 +572,12 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
               onClick={handleSaveChanges}
               disabled={saveStatus.saving}
             >
-              {saveStatus.saving ? 'Saving...' : 'Save Changes'}
+              {saveStatus.saving ? t.saving : t.saveChanges}
             </button>
           )}
           
           <button className="close-button-footer" onClick={onClose}>
-            Close Inspector
+            {t.closeInspector}
           </button>
         </div>
       </div>

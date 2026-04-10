@@ -9,6 +9,7 @@ import HighlightController from '../selectors/HighlightController';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const PrimaryList = () => {
   const navigate = useNavigate();
@@ -24,6 +25,7 @@ const PrimaryList = () => {
   const { L1, L2 } = useLanguage();
   const { handleSelectCorpusItem } = useCorpus();
   const { showStatistics, handleToggleStatistics } = useCorpusStatistics();
+  const t = useLabels();
 
   const queryParams = new URLSearchParams(location.search);
   const corpusId = queryParams.get('corpus_id');
@@ -252,7 +254,7 @@ const PrimaryList = () => {
             {/* Row 2: Font Size */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: '1 / 2' }}>
               <label style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500', whiteSpace: 'nowrap' }}>
-                Font Size:
+                {t.fontSizeLabel}
               </label>
               <input
                 type="range"
@@ -279,7 +281,7 @@ const PrimaryList = () => {
                 style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#4a7c4a', flexShrink: 0 }}
               />
               <span style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
-                Show Statistics <span style={{ fontSize: '13px', color: '#666' }}>(data validation in progress)</span>
+                {t.showStatistics}
               </span>
             </label>
 
@@ -304,7 +306,7 @@ const PrimaryList = () => {
               onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6a3a'}
               onMouseLeave={(e) => e.target.style.backgroundColor = '#4a7c4a'}
             >
-              Return to Library
+              {t.returnToLibrary}
             </button>
           </div>
         )}
@@ -319,7 +321,7 @@ const PrimaryList = () => {
           fontSize: '16px',
           color: '#666'
         }}>
-          Loading... Please wait.
+          {t.loading}
         </div>
       )}
 

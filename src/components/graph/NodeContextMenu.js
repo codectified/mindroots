@@ -1,10 +1,12 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
 import '../../styles/node-context-menu.css';
+import { useLabels } from '../../hooks/useLabels';
 
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
+  const t = useLabels();
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -56,51 +58,51 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     switch (nodeType) {
       case 'root':
         options.push(
-          { label: 'More info', action: 'more-info' },
-          { label: 'Expand', action: 'expand' },
-          { label: 'Collapse', action: 'collapse' },
-          { label: 'Inspect Node', action: 'inspect' },
-          { label: 'Report Issue', action: 'report' }
+          { label: t.moreInfo, action: 'more-info' },
+          { label: t.expand, action: 'expand' },
+          { label: t.collapse, action: 'collapse' },
+          { label: t.inspectNode, action: 'inspect' },
+          { label: t.reportIssue, action: 'report' }
         );
         break;
       case 'word':
         options.push(
-          { label: 'More info', action: 'more-info' },
-          { 
-            label: 'Expand', 
+          { label: t.moreInfo, action: 'more-info' },
+          {
+            label: t.expand,
             action: 'expand',
             submenu: [
-              { label: 'Root', action: 'expand-to-root' },
-              { label: 'Form', action: 'expand-to-form' },
-              { label: 'Corpus Usage', action: 'expand-to-corpusitems' }
+              { label: t.root, action: 'expand-to-root' },
+              { label: t.form, action: 'expand-to-form' },
+              { label: t.corpusUsage, action: 'expand-to-corpusitems' }
             ]
           },
-          { label: 'Inspect Node', action: 'inspect' },
-          { label: 'Report Issue', action: 'report' }
+          { label: t.inspectNode, action: 'inspect' },
+          { label: t.reportIssue, action: 'report' }
         );
         break;
       case 'form':
         options.push(
-          { label: 'More info', action: 'more-info' },
-          { label: 'Expand', action: 'expand' },
-          { label: 'Collapse', action: 'collapse' },
-          { label: 'Inspect Node', action: 'inspect' },
-          { label: 'Report Issue', action: 'report' }
+          { label: t.moreInfo, action: 'more-info' },
+          { label: t.expand, action: 'expand' },
+          { label: t.collapse, action: 'collapse' },
+          { label: t.inspectNode, action: 'inspect' },
+          { label: t.reportIssue, action: 'report' }
         );
         break;
-      case 'corpusitem': // corpus item nodes
+      case 'corpusitem':
         options.push(
-          { label: 'More info', action: 'more-info' },
-          { label: 'View in Context', action: 'view-in-context' },
-          { label: 'Inspect Node', action: 'inspect' },
-          { label: 'Report Issue', action: 'report' }
+          { label: t.moreInfo, action: 'more-info' },
+          { label: t.viewInContext, action: 'view-in-context' },
+          { label: t.inspectNode, action: 'inspect' },
+          { label: t.reportIssue, action: 'report' }
         );
         break;
       default:
         options.push(
-          { label: 'More info', action: 'more-info' },
-          { label: 'Inspect Node', action: 'inspect' },
-          { label: 'Report Issue', action: 'report' }
+          { label: t.moreInfo, action: 'more-info' },
+          { label: t.inspectNode, action: 'inspect' },
+          { label: t.reportIssue, action: 'report' }
         );
     }
 
@@ -184,7 +186,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
             className="context-menu-option"
             onClick={onClose}
           >
-            Close
+            {t.close}
           </button>
         </div>
       </div>

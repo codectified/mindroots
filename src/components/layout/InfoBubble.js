@@ -7,6 +7,7 @@ import Markdown from 'markdown-to-jsx';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShare, faNetworkWired } from '@fortawesome/free-solid-svg-icons';
 import { fetchAnalysisByRoot, fetchArticleById } from '../../services/apiService';
+import { useLabels } from '../../hooks/useLabels';
 import '../../styles/info-bubble.css'; // ensure your CSS is here
 
 // Helper function to convert Neo4j date format
@@ -32,6 +33,7 @@ const convertNeo4jDate = (dateValue) => {
 // Lazy-loaded analysis component
 const LazyAnalysisItem = ({ header, isLast }) => {
   const navigate = useNavigate();
+  const t = useLabels();
   const [isExpanded, setIsExpanded] = useState(false);
   const [analysisData, setAnalysisData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,85 +59,80 @@ const LazyAnalysisItem = ({ header, isLast }) => {
 
   const renderAnalysis = (analysis) => (
     <div className="analysis-entry">
-      {/* Core Fields (v2 schema) */}
       {analysis.concrete_origin && (
         <div className="analysis-section">
-          <h4>Concrete Origin</h4>
+          <h4>{t.concreteOrigin}</h4>
           <p>{analysis.concrete_origin}</p>
         </div>
       )}
       {analysis.path_to_abstraction && (
         <div className="analysis-section">
-          <h4>Path to Abstraction</h4>
+          <h4>{t.pathToAbstraction}</h4>
           <p>{analysis.path_to_abstraction}</p>
         </div>
       )}
       {analysis.fundamental_frame && (
         <div className="analysis-section">
-          <h4>Fundamental Frame</h4>
+          <h4>{t.fundamentalFrame}</h4>
           <p>{analysis.fundamental_frame}</p>
         </div>
       )}
       {analysis.basic_stats && (
         <div className="analysis-section">
-          <h4>Basic Stats</h4>
+          <h4>{t.basicStats}</h4>
           <p>{analysis.basic_stats}</p>
         </div>
       )}
       {analysis.quranic_refs && (
         <div className="analysis-section">
-          <h4>Qur'anic References</h4>
+          <h4>{t.quranicRefs}</h4>
           <p>{analysis.quranic_refs}</p>
         </div>
       )}
       {analysis.hadith_refs && (
         <div className="analysis-section">
-          <h4>Hadith References</h4>
+          <h4>{t.hadithRefs}</h4>
           <p>{analysis.hadith_refs}</p>
         </div>
       )}
       {analysis.poetic_refs && (
         <div className="analysis-section">
-          <h4>Poetic References</h4>
+          <h4>{t.poeticRefs}</h4>
           <p>{analysis.poetic_refs}</p>
         </div>
       )}
       {analysis.proverbial_refs && (
         <div className="analysis-section">
-          <h4>Proverbial References</h4>
+          <h4>{t.proverbialRefs}</h4>
           <p>{analysis.proverbial_refs}</p>
         </div>
       )}
-      
-      {/* Legacy fields (v1 schema) */}
       {analysis.lexical_summary && (
         <div className="analysis-section">
-          <h4>Lexical Summary</h4>
+          <h4>{t.lexicalSummary}</h4>
           <p>{analysis.lexical_summary}</p>
         </div>
       )}
       {analysis.semantic_path && (
         <div className="analysis-section">
-          <h4>Semantic Path</h4>
+          <h4>{t.semanticPath}</h4>
           <p>{analysis.semantic_path}</p>
         </div>
       )}
       {analysis.words_expressions && (
         <div className="analysis-section">
-          <h4>Words & Expressions</h4>
+          <h4>{t.wordsExpressions}</h4>
           <p>{analysis.words_expressions}</p>
         </div>
       )}
       {analysis.poetic_references && (
         <div className="analysis-section">
-          <h4>Poetic References</h4>
+          <h4>{t.poeticRefs}</h4>
           <p>{analysis.poetic_references}</p>
         </div>
       )}
-      
-      {/* Version and timestamp info */}
       <div className="analysis-meta">
-        {analysis.version && <span className="version-badge">Version {analysis.version}</span>}
+        {analysis.version && <span className="version-badge">{t.version(analysis.version)}</span>}
         {analysis.timestamp && (
           <span className="timestamp">
             {new Date(analysis.timestamp).toLocaleDateString()}
@@ -164,7 +161,7 @@ const LazyAnalysisItem = ({ header, isLast }) => {
 
       {isExpanded && (
         <div className="analysis-content">
-          {isLoading && <div className="loading-indicator">Loading analysis...</div>}
+          {isLoading && <div className="loading-indicator">{t.loadingAnalysis}</div>}
           {error && <div className="error-indicator">{error}</div>}
           {analysisData && (
             <>
@@ -187,7 +184,7 @@ const LazyAnalysisItem = ({ header, isLast }) => {
                   onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
                   onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
                 >
-                  View Graph →
+                  {t.viewGraph}
                 </button>
               </div>
               {renderAnalysis(analysisData)}
@@ -202,6 +199,7 @@ const LazyAnalysisItem = ({ header, isLast }) => {
 // Lazy-loaded article component
 const LazyArticleItem = ({ header, isLast }) => {
   const navigate = useNavigate();
+  const t = useLabels();
   const [isExpanded, setIsExpanded] = useState(false);
   const [articleData, setArticleData] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -274,7 +272,7 @@ const LazyArticleItem = ({ header, isLast }) => {
       
       {isExpanded && (
         <div className="analysis-content">
-          {isLoading && <div className="loading-indicator">Loading article...</div>}
+          {isLoading && <div className="loading-indicator">{t.loadingAnalysis}</div>}
           {error && <div className="error-indicator">{error}</div>}
           {articleData && (
             <>
@@ -300,7 +298,7 @@ const LazyArticleItem = ({ header, isLast }) => {
                     onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
                   >
                     <FontAwesomeIcon icon={faNetworkWired} />
-                    View Graph
+                    {t.viewGraphShort}
                   </button>
                   <span style={{ fontSize: '16px', fontWeight: 600, color: '#333', textAlign: 'center' }}>
                     {articleData.root.arabic} {articleData.root.english && `(${articleData.root.english})`}
@@ -319,6 +317,7 @@ const LazyArticleItem = ({ header, isLast }) => {
 
 export default function InfoBubble({ nodeData, filePath, title, onClose, style }) {
   const navigate = useNavigate();
+  const t = useLabels();
   const infoBubbleRef = useRef(null);
   const [centeredStyle, setCenteredStyle] = useState(style);
   const [markdownContent, setMarkdownContent] = useState('');
@@ -593,87 +592,81 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                       
                       const renderAnalysis = (analysis, isOlder = false) => (
                         <div className="analysis-entry">
-                          {/* Core Fields (v2 schema) */}
                           {analysis.concrete_origin && (
                             <div className="analysis-section">
-                              <h4>Concrete Origin</h4>
+                              <h4>{t.concreteOrigin}</h4>
                               <p>{analysis.concrete_origin}</p>
                             </div>
                           )}
                           {analysis.path_to_abstraction && (
                             <div className="analysis-section">
-                              <h4>Path to Abstraction</h4>
+                              <h4>{t.pathToAbstraction}</h4>
                               <p>{analysis.path_to_abstraction}</p>
                             </div>
                           )}
                           {analysis.fundamental_frame && (
                             <div className="analysis-section">
-                              <h4>Fundamental Frame</h4>
+                              <h4>{t.fundamentalFrame}</h4>
                               <p>{analysis.fundamental_frame}</p>
                             </div>
                           )}
                           {analysis.basic_stats && (
                             <div className="analysis-section">
-                              <h4>Basic Stats</h4>
+                              <h4>{t.basicStats}</h4>
                               <p>{analysis.basic_stats}</p>
                             </div>
                           )}
-                          
-                          {/* Reference Fields (v2 schema) */}
                           {analysis.quranic_refs && (
                             <div className="analysis-section">
-                              <h4>Qur'anic References</h4>
+                              <h4>{t.quranicRefs}</h4>
                               <p>{analysis.quranic_refs}</p>
                             </div>
                           )}
                           {analysis.hadith_refs && (
                             <div className="analysis-section">
-                              <h4>Hadith References</h4>
+                              <h4>{t.hadithRefs}</h4>
                               <p>{analysis.hadith_refs}</p>
                             </div>
                           )}
                           {analysis.poetic_refs && (
                             <div className="analysis-section">
-                              <h4>Poetic References</h4>
+                              <h4>{t.poeticRefs}</h4>
                               <p>{analysis.poetic_refs}</p>
                             </div>
                           )}
                           {analysis.proverbial_refs && (
                             <div className="analysis-section">
-                              <h4>Proverbial References</h4>
+                              <h4>{t.proverbialRefs}</h4>
                               <p>{analysis.proverbial_refs}</p>
                             </div>
                           )}
-                          
-                          {/* Legacy v1 fields (backward compatibility) */}
                           {analysis.lexical_summary && (
                             <div className="analysis-section">
-                              <h4>Lexical Summary</h4>
+                              <h4>{t.lexicalSummary}</h4>
                               <p>{analysis.lexical_summary}</p>
                             </div>
                           )}
                           {analysis.semantic_path && (
                             <div className="analysis-section">
-                              <h4>Semantic Path</h4>
+                              <h4>{t.semanticPath}</h4>
                               <p>{analysis.semantic_path}</p>
                             </div>
                           )}
                           {analysis.words_expressions && (
                             <div className="analysis-section">
-                              <h4>Words & Expressions</h4>
+                              <h4>{t.wordsExpressions}</h4>
                               <p>{analysis.words_expressions}</p>
                             </div>
                           )}
                           {analysis.poetic_references && (
                             <div className="analysis-section">
-                              <h4>Poetic References (Legacy)</h4>
+                              <h4>{t.poeticRefs}</h4>
                               <p>{analysis.poetic_references}</p>
                             </div>
                           )}
-                          
                           {analysis.version && (
                             <div className="analysis-meta">
-                              <small>{isOlder ? `Previous Version: ${analysis.version}` : `Version: ${analysis.version}`}</small>
+                              <small>{isOlder ? t.previousVersion(analysis.version) : t.versionLabel(analysis.version)}</small>
                             </div>
                           )}
                         </div>
@@ -687,7 +680,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                           {/* Older analyses in collapsible section */}
                           {olderAnalyses.length > 0 && (
                             <details className="older-versions-section">
-                              <summary>Previous Versions ({olderAnalyses.length})</summary>
+                              <summary>{t.previousVersions(olderAnalyses.length)}</summary>
                               <div className="older-versions-content">
                                 {olderAnalyses.map((analysis, index) => (
                                   <div key={`older-${index}`}>

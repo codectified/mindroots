@@ -1,8 +1,10 @@
 import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import { useLabels } from '../../hooks/useLabels';
 
 const AdditionalSettingsToggle = ({ isExpanded, onToggle }) => {
+  const t = useLabels();
   return (
     <div
       className="additional-settings-toggle"
@@ -13,7 +15,7 @@ const AdditionalSettingsToggle = ({ isExpanded, onToggle }) => {
         cursor: 'pointer'
       }}
     >
-      Additional Settings
+      {t.additionalSettings}
       <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
     </div>
   );

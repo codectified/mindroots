@@ -2,11 +2,13 @@ import React from 'react';
 import { useCorpusFilter } from '../../contexts/CorpusFilterContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { SURAHS, toArabicNumerals } from '../../constants/surahs';
+import { useLabels } from '../../hooks/useLabels';
 
 const SurahSelector = () => {
   const { corpusFilter, surahFilter, setSurahFilter } = useCorpusFilter();
   const { L1 } = useLanguage();
   const showArabic = L1 === 'sem';
+  const t = useLabels();
 
   if (corpusFilter !== 2 && corpusFilter !== '2') return null;
 
@@ -22,21 +24,21 @@ const SurahSelector = () => {
   return (
     <div style={{ marginTop: '8px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '4px' }}>
-        <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#444' }}>Surah:</span>
+        <span style={{ fontSize: '13px', fontWeight: 'bold', color: '#444' }}>{t.surahLabel}</span>
         <button
           onClick={clearAll}
           style={{ fontSize: '11px', padding: '2px 6px', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '3px', background: '#f8f8f8', color: '#333' }}
         >
-          None
+          {t.surahNone}
         </button>
         <button
           onClick={selectAll}
           style={{ fontSize: '11px', padding: '2px 6px', cursor: 'pointer', border: '1px solid #ccc', borderRadius: '3px', background: '#f8f8f8', color: '#333' }}
         >
-          All
+          {t.surahAll}
         </button>
         {surahFilter.length > 0 && (
-          <span style={{ fontSize: '11px', color: '#666' }}>{surahFilter.length} selected</span>
+          <span style={{ fontSize: '11px', color: '#666' }}>{t.surahSelected(surahFilter.length)}</span>
         )}
       </div>
       <div style={{

@@ -1,8 +1,10 @@
 import React from 'react';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useLabels } from '../../hooks/useLabels';
 
 const ModeSelector = () => {
   const { isAdvancedMode, toggleAdvancedMode } = useAdvancedMode();
+  const t = useLabels();
 
   return (
     <div className="selector-pair" style={{ marginBottom: '10px' }}>
@@ -21,7 +23,7 @@ const ModeSelector = () => {
             fontFamily: 'Noto Serif, serif'
           }}
         >
-          Guided
+          {t.guided}
         </button>
         <button
           className={`mode-toggle-button ${isAdvancedMode ? 'active' : ''}`}
@@ -37,7 +39,7 @@ const ModeSelector = () => {
             fontFamily: 'Noto Serif, serif'
           }}
         >
-          Advanced
+          {t.advanced}
         </button>
       </div>
     </div>

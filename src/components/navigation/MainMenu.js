@@ -17,9 +17,11 @@ import {
 } from '@fortawesome/free-brands-svg-icons';
 import { fetchLatestAnalysis, fetchAnalysisHeaders, fetchLatestArticle, fetchArticleHeaders } from '../../services/apiService';
 import InfoBubble from '../layout/InfoBubble';
+import { useLabels } from '../../hooks/useLabels';
 
 const MainMenu = () => {
   const navigate = useNavigate();
+  const t = useLabels();
   const [latestAnalysis, setLatestAnalysis] = useState(null);
   const [latestArticle, setLatestArticle] = useState(null);
   const [allAnalyses, setAllAnalyses] = useState([]);
@@ -172,38 +174,34 @@ const MainMenu = () => {
       <div className="icon-grid">
         <div className="icon-item" onClick={() => handleNavigation('/corpus-menu')}>
           <RiBookShelfLine className="icon" style={{ fontSize: '3em' }} />
-          <span>Corpus Library</span>
+          <span>{t.corpusLibrary}</span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/start')}>
           <FontAwesomeIcon icon={faMapMarked} className="icon" />
-          <span>
-            Graph Exploration
-          </span>
+          <span>{t.graphExploration}</span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/sandbox')}>
           <FontAwesomeIcon icon={faSearch} className="icon" />
-          <span>
-            Positional Root Search
-          </span>
+          <span>{t.positionalRootSearch}</span>
         </div>
         <div className="icon-item" onClick={() => handleNavigation('/lisan-lab')}>
           <FontAwesomeIcon icon={faPodcast} className="icon" />
-          <span>Lisān Lab & Reports</span>
+          <span>{t.lisanLab}</span>
         </div>
       </div>
 
       {/* News Section */}
       <div className="news-section">
-        <h3>Latest Updates</h3>
-        
+        <h3>{t.latestUpdates}</h3>
+
         {/* Dynamic Latest Report */}
         {latestAnalysis && (
           <div className="latest-analysis">
             <p>
-              <strong>Latest Report:</strong> Root{' '}
+              <strong>{t.latestReport}</strong>{' '}
               <span
                 onClick={(e) => handleShowAnalysis(e)}
-                title="Click to view full report"
+                title={t.latestReport}
                 style={{
                   cursor: 'pointer'
                 }}
@@ -221,7 +219,7 @@ const MainMenu = () => {
                   textDecoration: 'underline'
                 }}
               >
-                Previous Reports
+                {t.previousReports}
               </span>
             </div>
           </div>
@@ -231,10 +229,10 @@ const MainMenu = () => {
         {latestArticle && latestArticle.article && (
           <div className="latest-analysis">
             <p>
-              <strong>Latest Article:</strong>{' '}
+              <strong>{t.latestArticle}</strong>{' '}
               <span
                 onClick={(e) => handleShowArticle(e)}
-                title="Click to view full article"
+                title={t.latestArticle}
                 style={{
                   cursor: 'pointer'
                 }}
@@ -254,7 +252,7 @@ const MainMenu = () => {
                   textDecoration: 'underline'
                 }}
               >
-                Previous Articles
+                {t.previousArticles}
               </span>
             </div>
           </div>
@@ -263,7 +261,7 @@ const MainMenu = () => {
         {/* Static News Link */}
         <div className="static-news">
           <Link to="/news" className="news-link">
-            Recent Developments →
+            {t.recentDevelopments}
           </Link>
         </div>
       </div>
@@ -272,16 +270,16 @@ const MainMenu = () => {
       <div className="statistics-section">
         <ul className="articles-list">
           <li>
-            <Link to="/acknowledgements">Acknowledgements</Link>
+            <Link to="/acknowledgements">{t.acknowledgements}</Link>
           </li>
           <li>
-            <Link to="/project-overview">Project Overview</Link>
+            <Link to="/project-overview">{t.projectOverview}</Link>
           </li>
           <li>
-            <Link to="/getting-started">Getting Started</Link>
+            <Link to="/getting-started">{t.gettingStarted}</Link>
           </li>
           <li>
-            <Link to="/about">About</Link>
+            <Link to="/about">{t.about}</Link>
           </li>
         </ul>
       </div>
