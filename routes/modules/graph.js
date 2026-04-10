@@ -81,7 +81,7 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
           OPTIONAL MATCH (ci:CorpusItem)-[:HAS_WORD]->(word)
             WHERE ci.corpus_id = toInteger($countCorpusId)
               AND ($countSurahNumbers IS NULL OR ci.surah_number IN $countSurahNumbers)
-          RETURN root, word, etym, count(ci) AS corpus_count
+          RETURN root, word, etym, count(DISTINCT ci) AS corpus_count
           LIMIT toInteger($limit)
         `;
       } else {
@@ -939,7 +939,7 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
           OPTIONAL MATCH (ci:CorpusItem)-[:HAS_WORD]->(:Word)<-[:HAS_WORD]-(${nodeVar})
           WHERE ci.corpus_id = $corpusId
             AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
-          RETURN ${nodeVar}, count(ci) AS corpus_count
+          RETURN ${nodeVar}, count(DISTINCT ci) AS corpus_count
         `
         : `
           ${matchClause}

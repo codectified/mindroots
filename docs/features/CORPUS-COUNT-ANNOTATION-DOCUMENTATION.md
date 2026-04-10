@@ -1,6 +1,7 @@
 # Corpus Count Annotation — Feature Documentation
 
 **Date Added**: April 7, 2026
+**Last Updated**: April 10, 2026
 **Status**: Production-Ready ✅
 **Impact**: Root and word nodes are annotated with occurrence counts in the active corpus/surah filter, surfaced in the NodesTable Location column
 
@@ -118,6 +119,30 @@ if (options.count_surah_numbers?.length > 0)
 - CorpusItem: `"69:51:3"` (surah:ayah:word_position, or fallback to `item_id`)
 - Root/Word with count: `"10 items"` / `"1 item"`
 - Other: `null` (cell is blank)
+
+---
+
+## Count Accuracy & Display Rules
+
+### `count(DISTINCT ci)` everywhere
+
+All three count queries use `count(DISTINCT ci)` rather than `count(ci)`:
+
+- **Random-nodes root fetch** (`graph.js`): `RETURN r, count(DISTINCT ci) AS corpus_count`
+- **Word count in expand** (`graph.js`): `RETURN root, word, etym, count(DISTINCT ci) AS corpus_count`
+- **Batch root count in search** (`search-modern.js`): `RETURN root.root_id, count(DISTINCT ci) AS corpus_count`
+
+**Why**: `count(ci)` counts path instances — if a CorpusItem has `HAS_WORD` links to two different Words under the same Root (ambiguous morphological analysis), it would be counted twice in the root count but once per word in the word-level counts. `DISTINCT` makes all three counts semantically consistent: "how many distinct corpus items contain this node."
+
+**Relationship to root vs. word counts**: With `DISTINCT`, the root's `corpus_count` equals the number of distinct corpus items containing any word of that root. The sum of non-zero word counts equals the root count only if each corpus item links to exactly one word per root (true for well-formed data). Any discrepancy indicates a CorpusItem with multiple word links for the same root.
+
+### Zero-count suppression in NodesTable
+
+Word nodes with `corpus_count === 0` show a blank Location cell (not "0 items"). This prevents the confusing display where a root shows "847 items" while most of its expanded words show "0 items" — those words exist in the lexicon but don't appear in the selected corpus. Only words that actually appear in the corpus surface a count.
+
+### ETYM relationships and count queries
+
+`OPTIONAL MATCH (word)-[:ETYM]->(etym:Word)` in the expand query groups rows by `(root, word, etym)`. In theory a word with multiple ETYM links would produce multiple rows, each consuming a LIMIT slot. In practice only ~10 roots have any ETYM relationships, so this has no meaningful impact on count accuracy or LIMIT behavior. ETYM expansion is intentionally kept in the query to support future growth of etymological data — see GraphVisualization for gold-highlighted ETYM link rendering.
 
 ---
 

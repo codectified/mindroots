@@ -15,7 +15,7 @@ const getCorpusCounts = async (session, rootIds, corpusId, surahNumbers) => {
      WHERE root.root_id IN $rootIds
        AND ci.corpus_id = toInteger($corpusId)
        AND ($surahNumbers IS NULL OR ci.surah_number IN $surahNumbers)
-     RETURN root.root_id AS root_id, count(ci) AS corpus_count`,
+     RETURN root.root_id AS root_id, count(DISTINCT ci) AS corpus_count`,
     {
       rootIds,
       corpusId: parseInt(corpusId, 10),

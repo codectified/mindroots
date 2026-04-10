@@ -79,7 +79,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
       }
       return node.item_id ?? null;
     }
-    if (node.corpus_count != null) {
+    if (node.corpus_count != null && node.corpus_count > 0) {
       return `${node.corpus_count} ${node.corpus_count === 1 ? 'item' : 'items'}`;
     }
     return null;
