@@ -625,6 +625,17 @@ export const updateValidationFields = async (nodeType, nodeId, updates) => {
   }
 };
 
+// Add a custom tag (property) to a node
+export const addCustomTag = async (nodeType, nodeId, key, value) => {
+  try {
+    const response = await api.post(`/add-tag/${nodeType}/${nodeId}`, { key, value });
+    return response.data;
+  } catch (error) {
+    console.error('Error adding custom tag:', error);
+    throw error;
+  }
+};
+
 // Fetch latest root analysis for News section
 export const fetchLatestAnalysis = async () => {
   try {

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
-import { updateValidationFields } from '../../services/apiService';
+import { updateValidationFields, addCustomTag } from '../../services/apiService';
 import '../../styles/info-bubble.css';
 
 const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
@@ -46,6 +46,12 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const [pendingUpdates, setPendingUpdates] = useState({});
   const [saveStatus, setSaveStatus] = useState({ saving: false, message: '' });
 
+  // Custom tag panel state
+  const [showTagPanel, setShowTagPanel] = useState(false);
+  const [tagKey, setTagKey] = useState('');
+  const [tagValue, setTagValue] = useState('');
+  const [tagStatus, setTagStatus] = useState({ saving: false, message: '' });
+
   // Reset field states when nodeData changes (navigation)
   useEffect(() => {
     if (!nodeData || !nodeData.properties) return;
@@ -74,6 +80,10 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     setPendingUpdates({});
     setHasChanges(false);
     setSaveStatus({ saving: false, message: '' });
+    setShowTagPanel(false);
+    setTagKey('');
+    setTagValue('');
+    setTagStatus({ saving: false, message: '' });
   }, [nodeData]);
 
   if (!nodeData) return null;
@@ -327,6 +337,36 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
     }
   };
 
+  // Handle custom tag submission
+  const handleAddTag = async () => {
+    const key = tagKey.trim().toLowerCase();
+    const value = tagValue.trim();
+
+    if (!key) {
+      setTagStatus({ saving: false, message: 'Key is required.' });
+      return;
+    }
+    if (!/^[a-z][a-z0-9_]*$/.test(key)) {
+      setTagStatus({ saving: false, message: 'Key must start with a letter and contain only lowercase letters, numbers, and underscores.' });
+      return;
+    }
+
+    setTagStatus({ saving: true, message: 'Saving...' });
+    try {
+      await addCustomTag(nodeType.toLowerCase(), nodeId, key, value);
+      setTagKey('');
+      setTagValue('');
+      setTagStatus({ saving: false, message: `✓ Tag '${key}' added` });
+      setTimeout(() => {
+        setTagStatus({ saving: false, message: '' });
+        setShowTagPanel(false);
+      }, 2000);
+    } catch (error) {
+      const msg = error.response?.data?.error || 'Error adding tag. Please try again.';
+      setTagStatus({ saving: false, message: msg });
+    }
+  };
+
   const inspector = (
     <div className="node-inspector-overlay">
       <div className="node-inspector">
@@ -361,8 +401,57 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
             )}
           </div>
           
-          <button className="close-button" onClick={onClose}>×</button>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            <button
+              onClick={() => { setShowTagPanel(p => !p); setTagStatus({ saving: false, message: '' }); }}
+              className="nav-button"
+              title="Add custom tag to this node"
+              style={{ fontSize: '13px', padding: '2px 8px' }}
+            >
+              + Tag
+            </button>
+            <button className="close-button" onClick={onClose}>×</button>
+          </div>
         </div>
+
+        {/* Inline tag panel */}
+        {showTagPanel && (
+          <div style={{ padding: '10px 16px', borderBottom: '1px solid #ddd', background: '#f8f8f8', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+            <input
+              type="text"
+              placeholder="tag_key"
+              value={tagKey}
+              onChange={e => setTagKey(e.target.value)}
+              style={{ padding: '4px 8px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'monospace', fontSize: '13px', width: '140px' }}
+            />
+            <input
+              type="text"
+              placeholder="value"
+              value={tagValue}
+              onChange={e => setTagValue(e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && handleAddTag()}
+              style={{ padding: '4px 8px', border: '1px solid #ccc', borderRadius: '3px', fontSize: '13px', flex: '1', minWidth: '120px' }}
+            />
+            <button
+              onClick={handleAddTag}
+              disabled={tagStatus.saving}
+              style={{ padding: '4px 12px', background: '#4a7c59', color: '#fff', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '13px' }}
+            >
+              {tagStatus.saving ? 'Saving…' : 'Add'}
+            </button>
+            <button
+              onClick={() => setShowTagPanel(false)}
+              style={{ padding: '4px 8px', background: 'none', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer', fontSize: '13px' }}
+            >
+              Cancel
+            </button>
+            {tagStatus.message && (
+              <span style={{ fontSize: '12px', color: tagStatus.message.startsWith('✓') ? '#4a7c59' : '#c00' }}>
+                {tagStatus.message}
+              </span>
+            )}
+          </div>
+        )}
 
         <div className="node-inspector-content">
           {/* Properties Section */}

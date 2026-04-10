@@ -790,4 +790,88 @@ router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
   }
 });
 
+// Add a custom tag (property) to a node
+router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
+  const session = req.driver.session();
+  const { nodeType, nodeId } = req.params;
+  const { key, value } = req.body;
+  const clientIP = req.ip || req.connection.remoteAddress || 'unknown';
+
+  try {
+    // Validate node type — CorpusItem not supported (uses composite nodeId)
+    const validNodeTypes = ['word', 'root', 'form'];
+    if (!validNodeTypes.includes(nodeType.toLowerCase())) {
+      return res.status(400).json({ error: `Custom tags are not supported for node type: ${nodeType}` });
+    }
+
+    // Validate key format: lowercase alphanumeric and underscores only, must start with a letter
+    if (!key || !/^[a-z][a-z0-9_]*$/.test(key)) {
+      return res.status(400).json({ error: 'Invalid key format. Use lowercase letters, numbers, and underscores. Must start with a letter.' });
+    }
+
+    // Protect system fields
+    const systemFields = [
+      'word_id', 'root_id', 'form_id', 'item_id', 'corpus_id', 'entry_id',
+      'arabic', 'definitions', 'hanswehr_entry', 'global_position',
+      'surah_number', 'ayah_number', 'word_position'
+    ];
+    if (systemFields.includes(key) || key.endsWith('_validated_count')) {
+      return res.status(400).json({ error: `Cannot overwrite system field: ${key}` });
+    }
+
+    // Validate value: must be a string
+    if (typeof value !== 'string') {
+      return res.status(400).json({ error: 'Value must be a string' });
+    }
+
+    const capitalizedNodeType = nodeType.charAt(0).toUpperCase() + nodeType.slice(1);
+    const idProperty = `${nodeType.toLowerCase()}_id`;
+
+    // Find the node
+    const nodeQuery = `MATCH (n:${capitalizedNodeType}) WHERE n.${idProperty} = $nodeId RETURN n`;
+    const nodeResult = await session.run(nodeQuery, { nodeId: parseInt(nodeId) });
+
+    if (nodeResult.records.length === 0) {
+      return res.status(404).json({ error: 'Node not found' });
+    }
+
+    const node = nodeResult.records[0].get('n');
+    const actualNodeId = node.identity.toNumber();
+
+    // IP rate limit: allow at most 20 tag additions per IP per 24h
+    const recentTagQuery = `
+      MATCH (n)-[:TAGGED_BY]->(tag:TagRecord)
+      WHERE tag.ip = $ip AND tag.timestamp > datetime() - duration('PT24H')
+      RETURN count(tag) AS recent_count
+    `;
+    const rateResult = await session.run(recentTagQuery, { ip: clientIP });
+    const recentCount = rateResult.records[0]?.get('recent_count')?.toNumber?.() ?? 0;
+    if (recentCount >= 20) {
+      return res.status(429).json({ error: 'Rate limit exceeded. Too many tags added in the last 24 hours.' });
+    }
+
+    // Set the property and create a tag record
+    const setQuery = `
+      MATCH (n) WHERE id(n) = $nodeId
+      SET n.${key} = $value
+      CREATE (n)-[:TAGGED_BY]->(tag:TagRecord {
+        key: $key,
+        value: $value,
+        ip: $ip,
+        timestamp: datetime()
+      })
+      RETURN n
+    `;
+    await session.run(setQuery, { nodeId: actualNodeId, key, value, ip: clientIP });
+
+    res.json({ success: true, message: `Tag '${key}' added successfully` });
+
+  } catch (error) {
+    console.error('Error adding custom tag:', error);
+    res.status(500).json({ error: 'Error adding custom tag', message: error.message });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;
