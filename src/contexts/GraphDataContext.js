@@ -100,10 +100,12 @@ export const GraphDataProvider = ({ children }) => {
       }
       
       // Apply Semitic language filter (only for word nodes)
-      if (isWordNode && selectedSemiticLanguages.length > 0) {
+      // When L1 is 'arabic', restrict to Arabic-language nodes only
+      const effectiveSemLangs = L1 === 'arabic' ? ['Arabic'] : selectedSemiticLanguages;
+      if (isWordNode && effectiveSemLangs.length > 0) {
         const nodeSemiticLanguage = node.sem_lang;
-        if (!nodeSemiticLanguage || !selectedSemiticLanguages.includes(nodeSemiticLanguage)) {
-          console.log(`Filtering out word node ${node.id}: sem_lang="${nodeSemiticLanguage}" not in [${selectedSemiticLanguages.join(', ')}]`);
+        if (!nodeSemiticLanguage || !effectiveSemLangs.includes(nodeSemiticLanguage)) {
+          console.log(`Filtering out word node ${node.id}: sem_lang="${nodeSemiticLanguage}" not in [${effectiveSemLangs.join(', ')}]`);
           includeNode = false;
         }
       }

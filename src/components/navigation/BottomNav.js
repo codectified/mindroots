@@ -13,17 +13,19 @@ import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
 import FontScaleSelector from '../selectors/FontScaleSelector';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useLabels } from '../../hooks/useLabels';
 
 const BottomNav = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { isAdvancedMode } = useAdvancedMode();
+  const { L1, L2, setL2 } = useLanguage();
   const t = useLabels();
   const [showSettings, setShowSettings] = useState(false);
   const [isExpanded, setIsExpanded] = useState(false); // Default collapsed
   const [showFilterSettings, setShowFilterSettings] = useState(false);
-  const [showContextSettings, setShowContextSettings] = useState(false);
+  const [showGraphSettings, setShowGraphSettings] = useState(false);
   const [showOtherSettings, setShowOtherSettings] = useState(false);
   const holdTimeout = useRef(null);
   const tapCount = useRef(0);
@@ -78,6 +80,17 @@ const BottomNav = () => {
       {showSettings && (
         <div className="bottom-settings-panel">
           <div className="settings-content">
+            {/* Collapse button */}
+            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
+              <button
+                onClick={() => setShowSettings(false)}
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#888', padding: '0 4px', lineHeight: 1 }}
+                title={t.collapseMenu}
+              >
+                {t.collapseMenu}
+              </button>
+            </div>
+
             {/* Always visible controls */}
             <div style={{ marginBottom: '15px' }}>
               <LanguageSelector />
@@ -133,27 +146,41 @@ const BottomNav = () => {
                       <FontAwesomeIcon icon={faSliders} />
                       {t.advancedTypography}
                     </button>
-                    <ShowLinksToggle />
-                    <NodeLimitSlider />
                     <WordShadeSelector />
                   </div>
                 )}
-                
-                {/* Contexts Section */}
+
+                {/* Graph Section */}
                 <div
                   className="collapsible-section"
-                  onClick={() => setShowContextSettings((prev) => !prev)}
+                  onClick={() => setShowGraphSettings((prev) => !prev)}
                   style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
                 >
-                  <strong>{t.contexts}</strong>
-                  <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+                  <strong>{t.graph}</strong>
+                  <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
                 </div>
-                {showContextSettings && (
+                {showGraphSettings && (
                   <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
                     <ContextShiftSelector />
+                    <div style={{ marginBottom: '10px' }}>
+                      <div className="selector-pair">
+                        <label>{t.secondaryLanguage}</label>
+                        <select
+                          className="uniform-select"
+                          value={L2}
+                          onChange={(e) => setL2(e.target.value)}
+                        >
+                          <option value="off">{t.off}</option>
+                          <option value="sem">{t.semitic}</option>
+                          <option value="english">{t.english}</option>
+                        </select>
+                      </div>
+                    </div>
+                    <ShowLinksToggle />
+                    <NodeLimitSlider />
                   </div>
                 )}
-        
+
                 {/* Filters Section */}
                 <div
                   className="collapsible-section"
@@ -166,7 +193,7 @@ const BottomNav = () => {
                 {showFilterSettings && (
                   <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
                     <FilterController />
-                    <SemiticLanguageFilter />
+                    {L1 !== 'arabic' && <SemiticLanguageFilter />}
                   </div>
                 )}
               </>
@@ -180,15 +207,15 @@ const BottomNav = () => {
         {/* Left buttons - only show when expanded */}
         {isExpanded && (
           <div className="nav-section nav-left">
-            <button 
-              className={`nav-button ${showSettings ? 'active' : ''}`} 
+            <button
+              className={`nav-button ${showSettings ? 'active' : ''}`}
               onClick={handleSettingsToggle}
               title={t.general}
             >
               <FontAwesomeIcon icon={faGlobe} />
             </button>
-            <button 
-              className="nav-button" 
+            <button
+              className="nav-button"
               onClick={() => handleNavigation('/corpus-menu')}
               title={t.corpusLibrary}
             >
@@ -212,15 +239,15 @@ const BottomNav = () => {
         {/* Right buttons - only show when expanded */}
         {isExpanded && (
           <div className="nav-section nav-right">
-            <button 
-              className="nav-button" 
+            <button
+              className="nav-button"
               onClick={() => handleNavigation('/start')}
               title={t.graphExploration}
             >
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
-            <button 
-              className="nav-button" 
+            <button
+              className="nav-button"
               onClick={() => handleNavigation('/sandbox')}
               title={t.positionalRootSearch}
             >

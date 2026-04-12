@@ -14,17 +14,19 @@ import ShowLinksToggle from '../selectors/ShowLinksToggle';
 import FontScaleSelector from '../selectors/FontScaleSelector';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
+import { useLanguage } from '../../contexts/LanguageContext';
 import { useLabels } from '../../hooks/useLabels';
 
 const MiniMenu = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const { isAdvancedMode } = useAdvancedMode();
+  const { L1, L2, setL2 } = useLanguage();
   const t = useLabels();
   const [selectedOption, setSelectedOption] = useState(null);
   const [setIsGraphMode] = useState(false); // Toggle for Graph/Table mode
   const [showFilterSettings, setShowFilterSettings] = useState(false);
-  const [showContextSettings, setShowContextSettings] = useState(false);
+  const [showGraphSettings, setShowGraphSettings] = useState(false);
   const [showOtherSettings, setShowOtherSettings] = useState(false);
   const [isMenuExpanded, setIsMenuExpanded] = useState(true);
   const holdTimeout = useRef(null);
@@ -62,6 +64,17 @@ const MiniMenu = () => {
     if (selectedOption === 'settings') {
       return (
         <div className="content-container">
+          {/* Collapse button */}
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
+            <button
+              onClick={() => toggleOption('settings')}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#888', padding: '0 4px', lineHeight: 1 }}
+              title={t.collapseMenu}
+            >
+              {t.collapseMenu}
+            </button>
+          </div>
+
           {/* 1. Language Control - Always visible */}
           <div style={{ marginBottom: '10px' }}>
             <LanguageSelector />
@@ -118,27 +131,41 @@ const MiniMenu = () => {
                     <FontAwesomeIcon icon={faSliders} />
                     {t.advancedTypography}
                   </button>
-                  <ShowLinksToggle />
-                  <NodeLimitSlider />
                   <WordShadeSelector />
                 </>
               )}
-              
-              {/* 4. Contexts */}
+
+              {/* 4. Graph */}
               <div
                 className="collapsible-section"
-                onClick={() => setShowContextSettings((prev) => !prev)}
+                onClick={() => setShowGraphSettings((prev) => !prev)}
                 style={{ cursor: 'pointer', marginBottom: '10px' }}
               >
-                {t.contexts}
-                <FontAwesomeIcon icon={showContextSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+                {t.graph}
+                <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
               </div>
-              {showContextSettings && (
+              {showGraphSettings && (
                 <>
                   <ContextShiftSelector />
+                  <div style={{ marginBottom: '10px' }}>
+                    <div className="selector-pair">
+                      <label>{t.secondaryLanguage}</label>
+                      <select
+                        className="uniform-select"
+                        value={L2}
+                        onChange={(e) => setL2(e.target.value)}
+                      >
+                        <option value="off">{t.off}</option>
+                        <option value="sem">{t.semitic}</option>
+                        <option value="english">{t.english}</option>
+                      </select>
+                    </div>
+                  </div>
+                  <ShowLinksToggle />
+                  <NodeLimitSlider />
                 </>
               )}
-      
+
               {/* 5. Filters */}
               <div
                 className="collapsible-section"
@@ -151,13 +178,13 @@ const MiniMenu = () => {
               {showFilterSettings && (
                 <>
                   <FilterController />
-                  <SemiticLanguageFilter />
+                  {L1 !== 'arabic' && <SemiticLanguageFilter />}
                 </>
               )}
 
             </>
           )}
-  
+
           {/* Links Section at the Bottom - removed buttons that moved to vertical stack */}
           <div className="settings-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
             {/* Buttons moved to vertical stack under Mindroots button */}
@@ -203,12 +230,12 @@ const MiniMenu = () => {
           <FontAwesomeIcon icon={isMenuExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
         </a>
       </div>
-      
+
       {/* Vertical button stack under Mindroots button */}
       {isMenuExpanded && (
         <div className="vertical-button-stack">
-          <button 
-            className="mini-menu-button" 
+          <button
+            className="mini-menu-button"
             onClick={() => handleNavigation('/mindroots')}
             style={{
               width: '30px',
@@ -235,11 +262,11 @@ const MiniMenu = () => {
           >
             <FontAwesomeIcon icon={faHome} />
           </button>
-          
+
           <DisplayModeSelector />
         </div>
       )}
-      
+
       {/* Settings panel */}
       {selectedOption && (
         <div className="settings-panel">

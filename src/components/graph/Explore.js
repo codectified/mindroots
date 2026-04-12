@@ -155,8 +155,9 @@ const Explore = () => {
         if (filterWordTypes && filterWordTypes.length > 0) {
           filters.wordTypes = filterWordTypes;
         }
-        if (selectedSemiticLanguages && selectedSemiticLanguages.length > 0) {
-          filters.semLangs = selectedSemiticLanguages;
+        const effectiveSemLangs = L1 === 'arabic' ? ['Arabic'] : selectedSemiticLanguages;
+        if (effectiveSemLangs && effectiveSemLangs.length > 0) {
+          filters.semLangs = effectiveSemLangs;
         }
 
         console.log('Final word filters being sent:', filters);

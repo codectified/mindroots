@@ -20,9 +20,11 @@ const en = {
 
   // ── Settings panel tabs ───────────────────────────────────────
   general:              'General',
+  graph:                'Graph',
   contexts:             'Contexts',
   filters:              'Filters',
   advancedTypography:   'Advanced Typography Settings',
+  collapseMenu:         '×',
 
   // ── PrimaryList / Library ─────────────────────────────────────
   returnToLibrary:      'Return to Library',
@@ -105,9 +107,12 @@ const en = {
   connectedNodesLabel:  'Connected Nodes:',
 
   // ── Selectors ─────────────────────────────────────────────────
+  languageLabel:        'Language',
   l1Label:              'L1:',
   l2Label:              'L2:',
+  secondaryLanguage:    'Secondary Language',
   semitic:              'Semitic',
+  arabic:               'Arabic',
   english:              'English',
   off:                  'Off',
   guided:               'Guided',
@@ -210,9 +215,11 @@ const sem = {
 
   // ── Settings panel tabs ───────────────────────────────────────
   general:              'عام',
+  graph:                'الشبكة',
   contexts:             'السياقات',
   filters:              'التصفية',
   advancedTypography:   'إعدادات الخط المتقدمة',
+  collapseMenu:         '×',
 
   // ── PrimaryList / Library ─────────────────────────────────────
   returnToLibrary:      'العودة للمكتبة',
@@ -295,9 +302,12 @@ const sem = {
   connectedNodesLabel:  'العقد المرتبطة:',
 
   // ── Selectors ─────────────────────────────────────────────────
+  languageLabel:        'اللغة',
   l1Label:              'L1:',
   l2Label:              'L2:',
+  secondaryLanguage:    'اللغة الثانوية',
   semitic:              'السامية',
+  arabic:               'العربية',
   english:              'الإنجليزية',
   off:                  'إيقاف',
   guided:               'موجّه',
