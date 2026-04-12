@@ -30,7 +30,7 @@ const Search = () => {
   const [resultLimit, setResultLimit] = useState(25);
   const [lastSearchType, setLastSearchType] = useState(null);
   const [lexicalQuery, setLexicalQuery] = useState('');
-  const [lexicalSources, setLexicalSources] = useState(['lane']);
+  const [lexicalSources, setLexicalSources] = useState(['lane', 'hanswehr']);
   const [lexicalTotal, setLexicalTotal] = useState(0);
 
   const closeInfoBubble = () => setInfoBubble(null);
@@ -152,6 +152,15 @@ const Search = () => {
     );
   };
 
+  const toggleDictionarySources = () => {
+    const hasDictionary = lexicalSources.includes('lane') || lexicalSources.includes('hanswehr');
+    if (hasDictionary) {
+      setLexicalSources(prev => prev.filter(s => s !== 'lane' && s !== 'hanswehr'));
+    } else {
+      setLexicalSources(prev => [...prev, 'lane', 'hanswehr']);
+    }
+  };
+
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
     const links = [];
@@ -197,20 +206,22 @@ const Search = () => {
           </button>
         </div>
         <div style={{ display: 'flex', gap: '16px', fontSize: '13px', color: '#444' }}>
-          {[
-            { value: 'lane',     label: t.lanesLexicon },
-            { value: 'hanswehr', label: t.hansWehr },
-            { value: 'labels',   label: t.wordLabels },
-          ].map(({ value, label }) => (
-            <label key={value} style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={lexicalSources.includes(value)}
-                onChange={() => toggleLexicalSource(value)}
-              />
-              {label}
-            </label>
-          ))}
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={lexicalSources.includes('lane') || lexicalSources.includes('hanswehr')}
+              onChange={toggleDictionarySources}
+            />
+            {t.dictionaryEntries}
+          </label>
+          <label style={{ display: 'flex', alignItems: 'center', gap: '4px', cursor: 'pointer' }}>
+            <input
+              type="checkbox"
+              checked={lexicalSources.includes('labels')}
+              onChange={() => toggleLexicalSource('labels')}
+            />
+            {t.wordLabels}
+          </label>
         </div>
         {lexicalTotal > 0 && lastSearchType === 'lexical' && (
           <p style={{ margin: '6px 0 0', fontSize: '12px', color: '#666' }}>
