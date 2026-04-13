@@ -6,6 +6,11 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Space for fixed bottom nav — kept in sync with BottomNav.js heights */
+body { padding-bottom: 70px; }
+@media (max-width: 768px) { body { padding-bottom: 65px; } }
+@media (max-width: 480px)  { body { padding-bottom: 60px; } }
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

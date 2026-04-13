@@ -15,6 +15,7 @@ import FontScaleSelector from '../selectors/FontScaleSelector';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useLabels } from '../../hooks/useLabels';
+import clsx from 'clsx';
 
 const BottomNav = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const BottomNav = () => {
   const { L1, L2, setL2 } = useLanguage();
   const t = useLabels();
   const [showSettings, setShowSettings] = useState(false);
-  const [isExpanded, setIsExpanded] = useState(false); // Default collapsed
+  const [isExpanded, setIsExpanded] = useState(false);
   const [showFilterSettings, setShowFilterSettings] = useState(false);
   const [showGraphSettings, setShowGraphSettings] = useState(false);
   const [showOtherSettings, setShowOtherSettings] = useState(false);
@@ -31,117 +32,72 @@ const BottomNav = () => {
   const tapCount = useRef(0);
   const tapTimeout = useRef(null);
 
-  // Don't show on homepage or main menu
   if (location.pathname === '/' || location.pathname === '/mindroots') {
     return null;
   }
 
-  const handleNavigation = (path) => {
-    navigate(path);
-  };
+  const handleNavigation = (path) => navigate(path);
+  const handleSettingsToggle = () => setShowSettings(!showSettings);
 
-  const handleSettingsToggle = () => {
-    setShowSettings(!showSettings);
-  };
-
-  // Single-tap expands/collapses, double-tap goes home
   const handleMindRootsClick = (e) => {
     e.preventDefault();
     tapCount.current += 1;
-
     if (tapCount.current === 1) {
       tapTimeout.current = setTimeout(() => {
         tapCount.current = 0;
-        // Single tap - toggle expansion
         setIsExpanded(!isExpanded);
       }, 300);
     } else if (tapCount.current === 2) {
       clearTimeout(tapTimeout.current);
       tapCount.current = 0;
-      // Double tap - navigate to home
       navigate('/mindroots');
     }
   };
 
-  // Hold to navigate (optional secondary interaction)
   const handleMouseDown = () => {
-    holdTimeout.current = setTimeout(() => {
-      navigate('/mindroots');
-    }, 1000);
+    holdTimeout.current = setTimeout(() => navigate('/mindroots'), 1000);
   };
-
-  const handleMouseUp = () => {
-    clearTimeout(holdTimeout.current);
-  };
+  const handleMouseUp = () => clearTimeout(holdTimeout.current);
 
   return (
     <>
       {/* Settings Panel */}
       {showSettings && (
-        <div className="bottom-settings-panel">
-          <div className="settings-content">
+        <div className="fixed left-0 right-0 bottom-[70px] bg-[rgba(255,255,255,0.97)] backdrop-blur-[15px] border-t border-black/10 max-h-[50vh] overflow-y-auto z-[999] shadow-[0_-4px_20px_rgba(0,0,0,0.15)] md:bottom-[65px] xs:bottom-[60px]">
+          <div className="p-5 max-w-[800px] mx-auto">
+
             {/* Collapse button */}
-            <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
+            <div className="flex justify-end mb-1">
               <button
                 onClick={() => setShowSettings(false)}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: '#888', padding: '0 4px', lineHeight: 1 }}
+                className="bg-transparent border-none cursor-pointer text-lg text-[#888] px-1 leading-none"
                 title={t.collapseMenu}
               >
                 {t.collapseMenu}
               </button>
             </div>
 
-            {/* Always visible controls */}
-            <div style={{ marginBottom: '15px' }}>
-              <LanguageSelector />
-            </div>
-            <div style={{ marginBottom: '15px' }}>
-              <ModeSelector />
-            </div>
+            {/* Always-visible controls */}
+            <div className="mb-4"><LanguageSelector /></div>
+            <div className="mb-4"><ModeSelector /></div>
 
-            {/* Advanced mode controls with proper groupings */}
+            {/* Advanced mode controls */}
             {isAdvancedMode && (
               <>
-                {/* General Section */}
+                {/* General section */}
                 <div
-                  className="collapsible-section"
-                  onClick={() => setShowOtherSettings((prev) => !prev)}
-                  style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
+                  className="flex justify-between items-center text-[#333] font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
+                  onClick={() => setShowOtherSettings(prev => !prev)}
                 >
                   <strong>{t.general}</strong>
-                  <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+                  <FontAwesomeIcon icon={showOtherSettings ? faChevronUp : faChevronDown} className="ml-1.5" />
                 </div>
                 {showOtherSettings && (
-                  <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
-                    <div style={{ marginBottom: '15px' }}>
-                      <FontScaleSelector />
-                    </div>
+                  <div className="mb-4 pl-2.5">
+                    <div className="mb-4"><FontScaleSelector /></div>
                     <button
                       onClick={() => navigate('/settings')}
-                      style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '8px',
-                        padding: '8px 12px',
-                        marginBottom: '15px',
-                        backgroundColor: '#f0f7fd',
-                        border: '1px solid #bfe7fd',
-                        borderRadius: '4px',
-                        cursor: 'pointer',
-                        color: '#2c7fb8',
-                        fontWeight: '500',
-                        fontSize: '0.9rem',
-                        transition: 'all 0.2s',
-                        width: '100%'
-                      }}
-                      onMouseEnter={(e) => {
-                        e.target.style.backgroundColor = '#e3f2fd';
-                        e.target.style.borderColor = '#2c7fb8';
-                      }}
-                      onMouseLeave={(e) => {
-                        e.target.style.backgroundColor = '#f0f7fd';
-                        e.target.style.borderColor = '#bfe7fd';
-                      }}
+                      className="flex items-center gap-2 px-3 py-2 mb-4 bg-[#f0f7fd] border border-[#bfe7fd] rounded cursor-pointer text-accent font-medium text-[0.9rem] transition-all duration-200 w-full hover:bg-accent-light hover:border-accent"
                     >
                       <FontAwesomeIcon icon={faSliders} />
                       {t.advancedTypography}
@@ -150,23 +106,22 @@ const BottomNav = () => {
                   </div>
                 )}
 
-                {/* Graph Section */}
+                {/* Graph section */}
                 <div
-                  className="collapsible-section"
-                  onClick={() => setShowGraphSettings((prev) => !prev)}
-                  style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
+                  className="flex justify-between items-center text-[#333] font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
+                  onClick={() => setShowGraphSettings(prev => !prev)}
                 >
                   <strong>{t.graph}</strong>
-                  <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+                  <FontAwesomeIcon icon={showGraphSettings ? faChevronUp : faChevronDown} className="ml-1.5" />
                 </div>
                 {showGraphSettings && (
-                  <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
+                  <div className="mb-4 pl-2.5">
                     <ContextShiftSelector />
-                    <div style={{ marginBottom: '10px' }}>
-                      <div className="selector-pair">
+                    <div className="mb-2.5">
+                      <div className="flex items-center gap-[5px] whitespace-nowrap">
                         <label>{t.secondaryLanguage}</label>
                         <select
-                          className="uniform-select"
+                          className="py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-[#666]"
                           value={L2}
                           onChange={(e) => setL2(e.target.value)}
                         >
@@ -181,17 +136,16 @@ const BottomNav = () => {
                   </div>
                 )}
 
-                {/* Filters Section */}
+                {/* Filters section */}
                 <div
-                  className="collapsible-section"
-                  onClick={() => setShowFilterSettings((prev) => !prev)}
-                  style={{ cursor: 'pointer', marginBottom: '10px', padding: '8px 0', borderBottom: '1px solid rgba(0,0,0,0.1)' }}
+                  className="flex justify-between items-center text-[#333] font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
+                  onClick={() => setShowFilterSettings(prev => !prev)}
                 >
                   <strong>{t.filters}</strong>
-                  <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+                  <FontAwesomeIcon icon={showFilterSettings ? faChevronUp : faChevronDown} className="ml-1.5" />
                 </div>
                 {showFilterSettings && (
-                  <div style={{ marginBottom: '15px', paddingLeft: '10px' }}>
+                  <div className="mb-4 pl-2.5">
                     <FilterController />
                     {L1 !== 'arabic' && <SemiticLanguageFilter />}
                   </div>
@@ -203,19 +157,34 @@ const BottomNav = () => {
       )}
 
       {/* Bottom Navigation Bar */}
-      <div className={`bottom-nav ${isExpanded ? 'expanded' : 'collapsed'}`}>
-        {/* Left buttons - only show when expanded */}
+      <div
+        className={clsx(
+          'fixed bottom-0 left-0 right-0 flex justify-center items-center z-modal',
+          'bg-[rgba(40,40,40,0.95)] backdrop-blur-sm border-t border-white/10',
+          'shadow-[0_-2px_10px_rgba(0,0,0,0.2)] transition-all duration-300',
+          isExpanded
+            ? 'h-[70px] px-5 gap-4 md:h-[65px] xs:h-[60px] md:px-[15px] xs:px-[10px] md:gap-3 xs:gap-2'
+            : 'h-[60px] px-0 gap-0'
+        )}
+      >
+        {/* Left buttons */}
         {isExpanded && (
-          <div className="nav-section nav-left">
+          <div className="flex items-center gap-4 md:gap-3 xs:gap-2">
             <button
-              className={`nav-button ${showSettings ? 'active' : ''}`}
+              className={clsx(
+                'w-[50px] h-[50px] rounded-full border border-white/20 text-white',
+                'flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300',
+                'bg-white/10 hover:bg-white/20 hover:-translate-y-0.5',
+                'md:w-[45px] md:h-[45px] md:text-base xs:w-[40px] xs:h-[40px] xs:text-sm',
+                showSettings && 'bg-[rgba(75,150,225,0.7)] border-[rgba(75,150,225,1)]'
+              )}
               onClick={handleSettingsToggle}
               title={t.general}
             >
               <FontAwesomeIcon icon={faGlobe} />
             </button>
             <button
-              className="nav-button"
+              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5 md:w-[45px] md:h-[45px] md:text-base xs:w-[40px] xs:h-[40px] xs:text-sm"
               onClick={() => handleNavigation('/corpus-menu')}
               title={t.corpusLibrary}
             >
@@ -224,30 +193,34 @@ const BottomNav = () => {
           </div>
         )}
 
-        {/* Center: MindRoots button - always visible */}
+        {/* Center: MindRoots button — always visible */}
         <button
-          className="mindroots-nav-button"
+          className="w-[55px] h-[55px] rounded-full bg-white border-[3px] border-white/30 cursor-pointer flex items-center justify-center overflow-hidden transition-all duration-300 relative p-0.5 hover:-translate-y-[3px] hover:shadow-[0_5px_20px_rgba(0,0,0,0.3)] md:w-[50px] md:h-[50px] xs:w-[44px] xs:h-[44px]"
           onClick={handleMindRootsClick}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
           title="Tap to expand, Double-tap for Home"
         >
-          <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="MindRoots" className="mindroots-icon" />
+          <img
+            src={`${process.env.PUBLIC_URL}/root-tree.jpeg`}
+            alt="MindRoots"
+            className="w-full h-full object-cover object-center rounded-full block"
+          />
         </button>
 
-        {/* Right buttons - only show when expanded */}
+        {/* Right buttons */}
         {isExpanded && (
-          <div className="nav-section nav-right">
+          <div className="flex items-center gap-4 md:gap-3 xs:gap-2">
             <button
-              className="nav-button"
+              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5 md:w-[45px] md:h-[45px] md:text-base xs:w-[40px] xs:h-[40px] xs:text-sm"
               onClick={() => handleNavigation('/start')}
               title={t.graphExploration}
             >
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
             <button
-              className="nav-button"
+              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5 md:w-[45px] md:h-[45px] md:text-base xs:w-[40px] xs:h-[40px] xs:text-sm"
               onClick={() => handleNavigation('/sandbox')}
               title={t.positionalRootSearch}
             >

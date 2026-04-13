@@ -44,11 +44,11 @@ import './styles/typography.css';
 import './styles/base.css';
 import './styles/buttons.css';
 import './styles/lists.css';
-import './styles/main-menu.css';
-import './styles/icon-grid.css';
+// main-menu.css  → converted to Tailwind (MainMenu.js)
+// icon-grid.css  → converted to Tailwind (MainMenu.js)
+// bottom-nav.css → converted to Tailwind (BottomNav.js); body padding moved to index.css
+// language-toggle.css → no active usages, removed
 import './styles/menu.css';
-import './styles/bottom-nav.css';
-import './styles/language-toggle.css';
 import './styles/info-bubble.css';
 import './styles/node-context-menu.css';
 import './styles/markdown.css';
