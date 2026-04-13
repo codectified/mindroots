@@ -1,8 +1,11 @@
 /*
- * Tailwind utilities layer only — Preflight (base reset) is intentionally
- * excluded so it doesn't conflict with base.css and typography.css.
- * Add "@tailwind base" here once the full CSS migration is complete.
+ * Declare our own cascade layer BEFORE the Tailwind directives so it sits
+ * below @layer utilities in priority. Any CSS file that wraps global element
+ * selectors in  @layer globals { }  will be overridable by Tailwind utilities.
+ *
+ * Layer priority (highest → lowest): utilities > components > globals
  */
+@layer globals;
 @tailwind components;
 @tailwind utilities;
 

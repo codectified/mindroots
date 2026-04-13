@@ -3,93 +3,94 @@
    Media Queries for Mobile Responsiveness 
    ============================================ */
 
-@media (max-width: 768px) {
-  .overlay {
-    margin: 10px;
-    padding: 10px;
-    margin-top: 80px;
+@layer globals {
+  @media (max-width: 768px) {
+    .overlay {
+      margin: 10px;
+      padding: 10px;
+      margin-top: 80px;
+    }
+
+    button {
+      padding: 8px 16px;
+      font-size: 14px;
+    }
+
+    select {
+      padding: 4px;
+      font-size: 14px;
+    }
+
+    li {
+      font-size: 20px;
+    }
+
+    .menu-button {
+      padding: 8px;
+      font-size: 16px;
+    }
+
+    .mainmenu-title {
+      font-size: 36px;
+    }
+
+    .mainmenu-item {
+      font-size: 20px;
+    }
+
+    .info-bubble-content {
+      max-height: 70vh;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .close-button {
+      font-size: 20px;
+    }
   }
 
-  button {
-    padding: 8px 16px;
-    font-size: 14px;
-  }
+  @media (max-width: 480px) {
+    .overlay {
+      margin: 5px;
+      padding: 5px;
+      margin-top: 80px;
+    }
 
-  select {
-    padding: 4px;
-    font-size: 14px;
-  }
+    button {
+      padding: 6px 12px;
+      font-size: 12px;
+    }
 
-  li {
-    font-size: 20px;
-  }
+    select {
+      padding: 3px;
+      font-size: 12px;
+    }
 
-  .menu-button {
-    padding: 8px;
-    font-size: 16px;
-  }
+    li {
+      font-size: 18px;
+    }
 
-  .mainmenu-title {
-    font-size: 36px;
-  }
+    .menu-button {
+      padding: 6px;
+      font-size: 14px;
+    }
 
-  .mainmenu-item {
-    font-size: 20px;
-  }
+    .mainmenu-title {
+      font-size: 28px;
+    }
 
+    .mainmenu-item {
+      font-size: 18px;
+    }
 
-  .info-bubble-content {
-    max-height: 70vh; /* Content scrolls within the bubble */
-    overflow-y: scroll; /* Ensure vertical scrolling */
-    -webkit-overflow-scrolling: touch; /* Smooth scrolling for touch devices */
-  }
+    .info-bubble-content {
+      max-height: 50vh;
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+    }
 
-  .close-button {
-    font-size: 20px; /* Larger close button for better tapability */
-  }
-}
-
-@media (max-width: 480px) {
-  .overlay {
-    margin: 5px;
-    padding: 5px;
-    margin-top: 80px;
-  }
-
-  button {
-    padding: 6px 12px;
-    font-size: 12px;
-  }
-
-  select {
-    padding: 3px;
-    font-size: 12px;
-  }
-
-  li {
-    font-size: 18px;
-  }
-
-  .menu-button {
-    padding: 6px;
-    font-size: 14px;
-  }
-
-  .mainmenu-title {
-    font-size: 28px;
-  }
-
-  .mainmenu-item {
-    font-size: 18px;
-  }
-
-  .info-bubble-content {
-    max-height: 50vh; /* Adjust content height to fit mobile screen */
-    overflow-y: scroll;
-    -webkit-overflow-scrolling: touch; /* Enable smooth scrolling */
-  }
-
-  .close-button {
-    font-size: 18px; /* Slightly smaller for mobile */
+    .close-button {
+      font-size: 18px;
+    }
   }
 }

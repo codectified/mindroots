@@ -3,49 +3,46 @@
    General Resets and Global Styles
    ============================================ */
 
-/* General Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box; /* Ensures padding/margin don't affect total width/height */
-}
+/*
+ * Global resets — inside @layer base so Tailwind utilities override them.
+ * Class-based rules (.app, .contact-info) stay outside the layer since
+ * class specificity already beats element selectors.
+ */
+@layer globals {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
 
-/* Body Styles */
-body {
-  background-color: white; /* Set the background color you want */
-  font-family: 'Noto Serif', serif;
-  margin: 0;
-  min-height: 100vh; /* Ensure the body takes at least the full viewport height */
-  overflow-x: hidden; /* Prevent horizontal scrolling */
-}
+  body {
+    background-color: white;
+    font-family: 'Noto Serif', serif;
+    margin: 0;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
 
-/* Container for all content */
-.app {
-  max-width: 1200px; /* Restrict the content width for readability */
-  margin: 0 auto; /* Center the content horizontally */
-}
+  h1 {
+    margin-bottom: 15px;
+    text-align: center;
+  }
 
-/* Headings and Paragraphs */
-h1 {
-  margin-bottom: 15px; /* Add spacing below the heading */
-  text-align: center; /* Center-align only <h1> */
-}
+  h2, h3, p {
+    margin-bottom: 15px;
+    text-align: left;
+  }
 
-h2, h3, p {
-  margin-bottom: 15px; /* Add spacing below the elements */
-  text-align: left; /* Align <h2>, <h3>, and <p> to the left */
-}
+  ul {
+    list-style: none;
+    padding: 0;
+  }
 
-/* Generic List Styling */
-ul {
-  list-style: none;
-  padding: 0;
-}
-
-li {
-  margin: 10px 0;
-  font-size: var(--list-item-size);
-  cursor: pointer;
+  li {
+    margin: 10px 0;
+    font-size: var(--list-item-size);
+    cursor: pointer;
+  }
 }
 
 /* Contact Info at the Bottom */

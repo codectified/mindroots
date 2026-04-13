@@ -19,18 +19,25 @@
   gap: 5px; /* small gap between label/button and caret toggle */
 }
 
-button {
-  background-color: #333;
-  color: #fff;
-  border: none;
-  padding: 10px 20px;
-  cursor: pointer;
-  font-family: 'Noto Serif', serif;
-  border-radius: 4px;
-}
+/*
+ * Global button reset — inside @layer base so Tailwind utility classes
+ * (which live in @layer utilities) correctly override these defaults.
+ * Components that don't add explicit Tailwind classes still get this styling.
+ */
+@layer globals {
+  button {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    font-family: 'Noto Serif', serif;
+    border-radius: 4px;
+  }
 
-button:hover {
-  background-color: #555;
+  button:hover {
+    background-color: #555;
+  }
 }
 
 /* Circular caret toggle button */

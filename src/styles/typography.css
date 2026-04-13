@@ -81,55 +81,47 @@
    Apply typography to elements
    ============================================ */
 
-body {
-  font-size: var(--base-font-size);
-  line-height: var(--base-line-height);
-  font-family: var(--font-serif);
-}
+/*
+ * Element-level typography — inside @layer base so Tailwind utilities
+ * (text-sm, font-bold, leading-tight, etc.) override when used explicitly.
+ * Arabic class-based rules stay outside the layer.
+ */
+@layer globals {
+  body {
+    font-size: var(--base-font-size);
+    line-height: var(--base-line-height);
+    font-family: var(--font-serif);
+  }
 
-h1 {
-  font-size: var(--h1-size);
-  line-height: 1.2;
-  font-weight: 700;
-}
+  h1 { font-size: var(--h1-size); line-height: 1.2; font-weight: 700; }
+  h2 { font-size: var(--h2-size); line-height: 1.3; font-weight: 600; }
+  h3 { font-size: var(--h3-size); line-height: 1.3; font-weight: 600; }
+  h4 { font-size: var(--h4-size); line-height: 1.4; font-weight: 600; }
+  h5 { font-size: var(--h5-size); line-height: 1.4; font-weight: 600; }
+  h6 { font-size: var(--h6-size); line-height: 1.5; font-weight: 600; }
 
-h2 {
-  font-size: var(--h2-size);
-  line-height: 1.3;
-  font-weight: 600;
-}
+  p {
+    font-size: var(--text-base);
+    line-height: var(--base-line-height);
+  }
 
-h3 {
-  font-size: var(--h3-size);
-  line-height: 1.3;
-  font-weight: 600;
-}
+  input, textarea, select {
+    font-size: var(--input-size);
+    line-height: 1.5;
+  }
 
-h4 {
-  font-size: var(--h4-size);
-  line-height: 1.4;
-  font-weight: 600;
-}
+  button, .button { font-size: var(--button-size); }
 
-h5 {
-  font-size: var(--h5-size);
-  line-height: 1.4;
-  font-weight: 600;
-}
-
-h6 {
-  font-size: var(--h6-size);
-  line-height: 1.5;
-  font-weight: 600;
-}
-
-p {
-  font-size: var(--text-base);
-  line-height: var(--base-line-height);
+  li    { font-size: var(--list-item-size); }
+  table { font-size: var(--text-base); }
+  td, th { font-size: var(--data-table-size); }
+  label  { font-size: var(--label-size); }
+  small, .caption, .meta { font-size: var(--caption-size); }
 }
 
 /* ============================================
    Arabic text specific styling
+   (class-based — stays outside @layer base)
    ============================================ */
 
 .arabic-text,
