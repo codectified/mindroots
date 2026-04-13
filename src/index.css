@@ -1,3 +1,11 @@
+/*
+ * Tailwind utilities layer only — Preflight (base reset) is intentionally
+ * excluded so it doesn't conflict with base.css and typography.css.
+ * Add "@tailwind base" here once the full CSS migration is complete.
+ */
+@tailwind components;
+@tailwind utilities;
+
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',

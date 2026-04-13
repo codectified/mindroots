@@ -203,20 +203,20 @@ const GraphVisualization = ({ data, onNodeClick }) => {
             return 'WORD'; // default fallback for HAS_WORD
           }
         }
-        
+
         const labelMap = {
-          'HAS_ROOT': 'ROOT', 
+          'HAS_ROOT': 'ROOT',
           'HAS_FORM': 'FORM',
           'ETYM': 'ETYMON'
         };
         return labelMap[d.type] || d.type || '';
       })
-      .attr('font-size', '10px')
       .attr('fill', '#666')
       .attr('text-anchor', 'middle')
       .attr('dy', '-2px')
       .style('pointer-events', 'none')
-      .style('font-family', 'Noto Sans, sans-serif') : null;
+      .style('font-family', 'var(--font-latin)')
+      .style('font-size', 'var(--text-xs)') : null;
 
     // Append nodes with custom color logic and size based on dataSize only for Word nodes
     const node = zoomLayer.append('g')
@@ -242,6 +242,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     // Add node labels
     node.append('title').text(d => d.label);
 
+    const isArabic = label => /[\u0600-\u06FF]/.test(label);
+
     const text = zoomLayer.append('g')
       .attr('class', 'labels')
       .selectAll('text')
@@ -250,6 +252,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .attr('x', 12)
       .attr('y', '.31em')
       .text(d => d.label)
+      .style('font-family', d => isArabic(d.label) ? 'var(--font-arabic)' : 'var(--font-serif)')
+      .style('font-size',   d => isArabic(d.label) ? 'var(--arabic-sm)'   : 'var(--text-sm)')
       .style('pointer-events', 'auto')  // Make text clickable
       .style('cursor', 'pointer')       // Show pointer cursor
       .style('user-select', 'none')     // Prevent text selection
