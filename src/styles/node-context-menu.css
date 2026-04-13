@@ -1,3 +1,4 @@
+@layer globals {
 /* node-context-menu.css - Styled consistently with InfoBubble */
 .node-context-menu {
   position: fixed;
@@ -178,4 +179,5 @@
     padding: 8px 10px;
     font-size: 14px;
   }
+}
 }

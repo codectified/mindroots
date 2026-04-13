@@ -1,3 +1,4 @@
+@layer globals {
 /* info-bubble.css - Modal components including InfoBubble and NodeInspector */
 .info-bubble {
   position: fixed;
@@ -965,4 +966,5 @@
   border-radius: 4px;
   margin: 8px 0;
   font-size: 0.85rem;
+}
 }

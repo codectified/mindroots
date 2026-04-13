@@ -1,3 +1,4 @@
+@layer globals {
 /* settings.css - Settings page and components styling */
 
 .settings-section {
@@ -229,4 +230,5 @@ button[type="reset"]:active,
   .settings-section .uniform-select {
     width: 100%;
   }
+}
 }

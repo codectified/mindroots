@@ -1,3 +1,4 @@
+@layer globals {
 /* menu.css */
 /* ============================================
    Top-Right Menu and Navigation Buttons 
@@ -171,4 +172,5 @@
     right: auto;
     left: 20px; /* Mobile: align with menu container */
   }
+}
 }
