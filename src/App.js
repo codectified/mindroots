@@ -51,7 +51,7 @@ import './styles/lists.css';
 // language-toggle.css → no active usages, removed
 // menu.css → converted to Tailwind (MiniMenu.js, CorpusGraphScreen.js)
 import './styles/info-bubble.css';
-import './styles/node-context-menu.css';
+// node-context-menu.css → converted to Tailwind (NodeContextMenu.js)
 import './styles/markdown.css';
 import './styles/content.css';
 import './styles/settings.css';
