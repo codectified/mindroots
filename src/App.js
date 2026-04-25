@@ -43,7 +43,7 @@ import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 
 // typography.css → merged into index.css
 // base.css → global resets moved to index.css
-import './styles/buttons.css';
+// buttons.css → global button reset to index.css; active classes to Tailwind inline
 import './styles/lists.css';
 // main-menu.css  → converted to Tailwind (MainMenu.js)
 // icon-grid.css  → converted to Tailwind (MainMenu.js)

@@ -70,9 +70,9 @@ const DynamicMarkdownRenderer = ({ baseFolder }) => {
   return (
     <div>
       <div className="language-toggle">
-        <div className={`toggle-slider ${L1 === 'arabic' ? 'active-ar' : 'active-en'}`} onClick={toggleLanguage}>
-          <span className={L1 === 'arabic' ? 'selected' : 'unselected'}>AR</span>
-          <span className={L1 === 'english' ? 'selected' : 'unselected'}>EN</span>
+        <div className={`flex justify-around w-full ${L1 === 'arabic' ? 'active-ar' : 'active-en'}`} onClick={toggleLanguage}>
+          <span className={L1 === 'arabic' ? 'font-bold text-white' : 'font-normal text-[#999]'}>AR</span>
+          <span className={L1 === 'english' ? 'font-bold text-white' : 'font-normal text-[#999]'}>EN</span>
         </div>
       </div>
   
