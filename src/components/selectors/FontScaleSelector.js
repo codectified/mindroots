@@ -31,7 +31,7 @@ const FontScaleSelector = () => {
       </p>
 
       {/* Scale buttons - compact for mini-menu */}
-      <div className="font-scale-buttons" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+      <div className="flex flex-wrap gap-[6px] mb-3">
         {scaleOptions.map((option) => (
           <button
             key={option.value}

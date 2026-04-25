@@ -94,8 +94,8 @@ const Settings = () => {
       </p>
 
       {/* Font Size Controls */}
-      <div className="settings-section">
-        <h3>{t.fontSizeControl}</h3>
+      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-[#f8f9fa] md:p-6 md:my-6">
+        <h3 className="m-0 mb-4 text-xl text-[#2c3e50] border-b-2 border-[#2c7fb8] pb-3 font-semibold md:text-2xl md:mb-5">{t.fontSizeControl}</h3>
         <p className="text-[#666] text-[0.9rem] mb-[15px]">
           The English size scales all UI text globally (buttons, menus, headings). Arabic size scales Arabic text independently.
         </p>
@@ -103,8 +103,8 @@ const Settings = () => {
       </div>
 
       {/* English Font Family */}
-      <div className="settings-section">
-        <h3>English Font Style</h3>
+      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-[#f8f9fa] md:p-6 md:my-6">
+        <h3 className="m-0 mb-4 text-xl text-[#2c3e50] border-b-2 border-[#2c7fb8] pb-3 font-semibold md:text-2xl md:mb-5">English Font Style</h3>
         <p className="text-[#666] text-[0.95rem] mb-[15px]">
           Choose the font used for all English UI text, labels, and headings:
         </p>
@@ -120,8 +120,8 @@ const Settings = () => {
       </div>
 
       {/* Arabic Font Family */}
-      <div className="settings-section">
-        <h3>{t.arabicFontStyle}</h3>
+      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-[#f8f9fa] md:p-6 md:my-6">
+        <h3 className="m-0 mb-4 text-xl text-[#2c3e50] border-b-2 border-[#2c7fb8] pb-3 font-semibold md:text-2xl md:mb-5">{t.arabicFontStyle}</h3>
         <p className="text-[#666] text-[0.95rem] mb-[15px]">
           Choose your preferred Arabic typography style:
         </p>

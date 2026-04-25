@@ -54,7 +54,7 @@ import './styles/info-bubble.css';
 // node-context-menu.css → converted to Tailwind (NodeContextMenu.js)
 import './styles/markdown.css';
 // content.css → simple classes to Tailwind inline; about-page moved to index.css
-import './styles/settings.css';
+// settings.css → settings-section/font-scale-buttons to Tailwind inline; range input to index.css
 // media-queries.css → rules merged into component CSS files; overlay → Layout.js Tailwind
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
