@@ -119,13 +119,13 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
 
   return (
     <>
-      <table style={{ width: '100%', borderCollapse: 'collapse' }}>
+      <table className="w-full border-collapse">
         <thead>
-          <tr style={{ borderBottom: '1px solid #ccc' }}>
-            <th style={{ padding: '8px', textAlign: 'left' }}>{t.colSemantic}</th>
-            <th style={{ padding: '8px', textAlign: 'left' }}>{t.colEnglish}</th>
+          <tr className="border-b border-[#ccc]">
+            <th className="p-2 text-left">{t.colSemantic}</th>
+            <th className="p-2 text-left">{t.colEnglish}</th>
             {showLocationColumn && (
-              <th style={{ padding: '8px', textAlign: 'left', whiteSpace: 'nowrap', fontSize: '13px', color: '#555' }}>{t.colLocation}</th>
+              <th className="p-2 text-left whitespace-nowrap text-[13px] text-[#555]">{t.colLocation}</th>
             )}
           </tr>
         </thead>
@@ -134,30 +134,26 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
             const color = getNodeColor(node, wordShadeMode);
             const actualChild = childNodeIds.has(node.id);
 
-            const nodeTypeStyle = {
-              corpusitem: { background: '#f0f8ff' },
-              root: { background: '#fff' },
-              word: { background: actualChild ? '#f5f5f5' : '#f9f9f9' },
+            // background is runtime-computed per node type — stays inline
+            const nodeTypeBg = {
+              corpusitem: '#f0f8ff',
+              root: '#fff',
+              word: actualChild ? '#f5f5f5' : '#f9f9f9',
             };
 
-            const paddingLeft = actualChild ? '24px' : '8px';
             const location = formatLocation(node);
 
             return (
               <tr
                 key={node.id}
                 onClick={(e) => handleNodeRowClick(node, e)}
-                style={{
-                  cursor: 'pointer',
-                  borderBottom: '1px solid #eee',
-                  color,
-                  ...(nodeTypeStyle[node.type] || {})
-                }}
+                className="cursor-pointer border-b border-[#eee]"
+                style={{ color, background: nodeTypeBg[node.type] }}
               >
-                <td className={node.sem != null || node.arabic != null ? 'arabic' : undefined} style={{ padding: '8px', paddingLeft }}>{node.sem ?? node.arabic ?? t.noSemantic}</td>
-                <td style={{ padding: '8px' }}>{node.english ?? t.noEnglish}</td>
+                <td className={`p-2 ${actualChild ? 'pl-6' : ''} ${node.sem != null || node.arabic != null ? 'arabic' : ''}`}>{node.sem ?? node.arabic ?? t.noSemantic}</td>
+                <td className="p-2">{node.english ?? t.noEnglish}</td>
                 {showLocationColumn && (
-                  <td style={{ padding: '8px', fontSize: '12px', color: '#666', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>
+                  <td className="p-2 text-[12px] text-muted whitespace-nowrap font-mono">
                     {location ?? ''}
                   </td>
                 )}
