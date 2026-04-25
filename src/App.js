@@ -49,7 +49,7 @@ import './styles/lists.css';
 // icon-grid.css  → converted to Tailwind (MainMenu.js)
 // bottom-nav.css → converted to Tailwind (BottomNav.js); body padding moved to index.css
 // language-toggle.css → no active usages, removed
-import './styles/menu.css';
+// menu.css → converted to Tailwind (MiniMenu.js, CorpusGraphScreen.js)
 import './styles/info-bubble.css';
 import './styles/node-context-menu.css';
 import './styles/markdown.css';

@@ -89,7 +89,7 @@ const MiniMenu = () => {
             <>
               {/* 3. General */}
               <div
-                className="collapsible-section"
+                className="font-semibold font-serif text-[#333] text-[14px]"
                 onClick={() => setShowOtherSettings((prev) => !prev)}
                 style={{ cursor: 'pointer', marginBottom: '10px' }}
               >
@@ -136,7 +136,7 @@ const MiniMenu = () => {
 
               {/* 4. Graph */}
               <div
-                className="collapsible-section"
+                className="font-semibold font-serif text-[#333] text-[14px]"
                 onClick={() => setShowGraphSettings((prev) => !prev)}
                 style={{ cursor: 'pointer', marginBottom: '10px' }}
               >
@@ -167,7 +167,7 @@ const MiniMenu = () => {
 
               {/* 5. Filters */}
               <div
-                className="collapsible-section"
+                className="font-semibold font-serif text-[#333] text-[14px]"
                 onClick={() => setShowFilterSettings((prev) => !prev)}
                 style={{ cursor: 'pointer', marginBottom: '10px' }}
               >
@@ -185,7 +185,7 @@ const MiniMenu = () => {
           )}
 
           {/* Links Section at the Bottom - removed buttons that moved to vertical stack */}
-          <div className="settings-links" style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
+          <div className="flex flex-row gap-[10px] ml-auto items-end mt-5">
             {/* Buttons moved to vertical stack under Mindroots button */}
           </div>
         </div>
@@ -195,19 +195,19 @@ const MiniMenu = () => {
 
   return (
     <div style={{ position: 'relative' }}>
-      <div className="menu-container">
+      <div className="fixed bottom-5 left-5 flex flex-row-reverse items-center gap-2.5 h-[60px] z-[1000] md:absolute md:bottom-auto md:left-auto md:top-5 md:right-5 md:flex-row">
         {isMenuExpanded && (
           <>
-            <button className="menu-button" onClick={() => handleNavigation('/sandbox')}>
+            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/sandbox')}>
               <FontAwesomeIcon icon={faSearch} />
             </button>
-            <button className="menu-button" onClick={() => handleNavigation('/start')}>
+            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/start')}>
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
-            <button className="menu-button" onClick={() => handleNavigation('/corpus-menu')}>
+            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/corpus-menu')}>
               <FontAwesomeIcon icon={faBookOpen} />
             </button>
-            <button className={`menu-button ${selectedOption === 'settings' ? 'active' : ''}`} onClick={() => toggleOption('settings')}>
+            <button className={`w-[50px] h-[50px] flex items-center justify-center rounded-full text-white cursor-pointer border-none text-[14px] p-[6px] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 hover:bg-[#555] ${selectedOption === 'settings' ? 'bg-[#4a4a4a]' : 'bg-[#333]'}`} onClick={() => toggleOption('settings')}>
               <FontAwesomeIcon icon={faGlobe} />
             </button>
           </>
@@ -216,7 +216,7 @@ const MiniMenu = () => {
         {/* Mindroots button with hold-to-navigate and click-to-toggle functionality */}
         <a
           href="/mindroots"
-          className="mindroots-button"
+          className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-transparent cursor-pointer overflow-hidden relative border-none"
           onClick={(e) => {
             e.preventDefault();
             handleMindrootsClick();
@@ -225,14 +225,14 @@ const MiniMenu = () => {
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="Mindroots" className="button-icon" />
+          <img src={`${process.env.PUBLIC_URL}/root-tree.jpeg`} alt="Mindroots" className="w-full h-full object-cover absolute top-0 left-0" />
           <FontAwesomeIcon icon={isMenuExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
         </a>
       </div>
 
       {/* Vertical button stack under Mindroots button */}
       {isMenuExpanded && (
-        <div className="vertical-button-stack">
+        <div className="fixed bottom-[80px] left-[30px] flex flex-col-reverse gap-[10px] z-[1000] items-center md:absolute md:top-[80px] md:right-[30px] md:bottom-auto md:left-auto md:flex-col">
           <button
             className="mini-menu-button"
             onClick={() => handleNavigation('/mindroots')}
@@ -268,7 +268,7 @@ const MiniMenu = () => {
 
       {/* Settings panel */}
       {selectedOption && (
-        <div className="settings-panel">
+        <div className="fixed bottom-[80px] left-5 bg-white/95 border border-[#ccc] rounded-[8px] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-[1002] min-w-[300px] max-w-[400px] max-h-[70vh] overflow-y-auto md:absolute md:top-[80px] md:right-5 md:bottom-auto md:left-auto">
           {renderContent()}
         </div>
       )}
