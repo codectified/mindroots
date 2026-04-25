@@ -13,47 +13,24 @@ const HighlightController = () => {
     freeformMode,
     setFreeformMode,
     highlightColor,
-    setHighlightColor, // Add highlight color state
+    setHighlightColor,
   } = useHighlight();
   const t = useLabels();
 
   const highlightOptions = [
-    {
-      label: t.nounsF,
-      value: 'feminine',
-      active: highlightGender === 'feminine',
-      setState: () => setHighlightGender(highlightGender === 'feminine' ? null : 'feminine'),
-      color: '#FFD700',
-    },
-    {
-      label: t.verbs,
-      value: 'verb',
-      active: highlightVerb,
-      setState: () => setHighlightVerb(!highlightVerb),
-      color: '#32CD32',
-    },
-    {
-      label: t.particles,
-      value: 'particle',
-      active: highlightParticle,
-      setState: () => setHighlightParticle(!highlightParticle),
-      color: '#007bff',
-    },
-    {
-      label: t.freeformMode,
-      value: 'freeform',
-      active: freeformMode,
-      setState: () => setFreeformMode(!freeformMode),
-      color: '#FF4500',
-    },
+    { label: t.nounsF,      value: 'feminine', active: highlightGender === 'feminine', setState: () => setHighlightGender(highlightGender === 'feminine' ? null : 'feminine'), color: '#FFD700' },
+    { label: t.verbs,       value: 'verb',      active: highlightVerb,                 setState: () => setHighlightVerb(!highlightVerb),                                        color: '#32CD32' },
+    { label: t.particles,   value: 'particle',  active: highlightParticle,             setState: () => setHighlightParticle(!highlightParticle),                                color: '#007bff' },
+    { label: t.freeformMode,value: 'freeform',  active: freeformMode,                  setState: () => setFreeformMode(!freeformMode),                                          color: '#FF4500' },
   ];
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+    <div className="flex flex-col gap-[10px] py-[10px]">
       <label>{t.highlight}</label>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+      <div className="flex flex-col gap-[5px]">
         {highlightOptions.map((option) => (
-          <label key={option.value} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <label key={option.value} className="flex items-center gap-[10px]">
+            {/* border/bg are runtime-computed from option.color — must stay inline */}
             <input
               type="checkbox"
               value={option.value}
@@ -76,21 +53,17 @@ const HighlightController = () => {
       {freeformMode && (
         <div>
           <label htmlFor="highlight-color">{t.highlightColor}</label>
-          <select
-            id="highlight-color"
-            value={highlightColor}
-            onChange={(e) => setHighlightColor(e.target.value)}
-          >
+          <select id="highlight-color" value={highlightColor} onChange={(e) => setHighlightColor(e.target.value)}>
             <option value="#FF4500">Orange</option>
             <option value="#FFD700">Gold</option>
             <option value="#32CD32">Green</option>
             <option value="#007bff">Blue</option>
             <option value="#800080">Purple</option>
-            <option value="#FF69B4">Pink</option> {/* New */}
-            <option value="#DC143C">Crimson</option> {/* New */}
-            <option value="#00CED1">Turquoise</option> {/* New */}
-            <option value="#8B4513">SaddleBrown</option> {/* New */}
-            <option value="#000000">Black</option> {/* New */}
+            <option value="#FF69B4">Pink</option>
+            <option value="#DC143C">Crimson</option>
+            <option value="#00CED1">Turquoise</option>
+            <option value="#8B4513">SaddleBrown</option>
+            <option value="#000000">Black</option>
           </select>
         </div>
       )}

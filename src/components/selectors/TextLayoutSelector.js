@@ -8,29 +8,19 @@ const TextLayoutToggle = () => {
   const t = useLabels();
 
   const handleChange = (event) => {
-    setLayout(event.target.value); // Update layout based on selection
+    setLayout(event.target.value);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+    <div className="flex flex-col gap-[10px] py-[10px]">
       <label>{t.layout}</label>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <input
-            type="radio"
-            value="prose"
-            checked={layout === 'prose'}
-            onChange={handleChange}
-          />
+      <div className="flex flex-col gap-[5px]">
+        <label className="flex items-center gap-[5px]">
+          <input type="radio" value="prose" checked={layout === 'prose'} onChange={handleChange} />
           {t.prose}
         </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <input
-            type="radio"
-            value="line-by-line"
-            checked={layout === 'line-by-line'}
-            onChange={handleChange}
-          />
+        <label className="flex items-center gap-[5px]">
+          <input type="radio" value="line-by-line" checked={layout === 'line-by-line'} onChange={handleChange} />
           {t.lineByLine}
         </label>
       </div>
