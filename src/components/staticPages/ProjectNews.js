@@ -13,7 +13,7 @@ const ProjectNews = () => {
   }, []);
 
   return (
-    <div className="project-news-container">
+    <div className="p-5 max-w-[800px] mx-auto font-serif text-[18px] text-[#333]">
       <ReactMarkdown>{content}</ReactMarkdown>
     </div>
   );

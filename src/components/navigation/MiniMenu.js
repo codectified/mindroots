@@ -62,7 +62,7 @@ const MiniMenu = () => {
   const renderContent = () => {
     if (selectedOption === 'settings') {
       return (
-        <div className="content-container">
+        <div className="p-[15px] border border-[#ddd] rounded-[5px] mb-5 bg-[#f9f9f9]">
           {/* Collapse button */}
           <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '4px' }}>
             <button
