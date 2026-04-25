@@ -21,7 +21,7 @@ const ContextShiftSelector = () => {
       <div className="flex items-center gap-[5px] whitespace-nowrap">
         <label>{t.corpusLabel}</label>
         <select
-          className="py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-[#666]"
+          className="py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-muted"
           value={corpusFilter}
           onChange={(e) => setCorpusFilter(e.target.value)}
         >

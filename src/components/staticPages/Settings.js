@@ -68,7 +68,7 @@ const FontSelector = ({ fonts, activeId, onChange, accentClass, activeBg, active
         />
         <div className="flex-1">
           <div className="font-semibold text-primary mb-1">{font.name}</div>
-          <div className="text-[0.85rem] text-[#666] mb-2">{font.description}</div>
+          <div className="text-[0.85rem] text-muted mb-2">{font.description}</div>
           <div
             className="text-[1.4rem] text-[#333] py-1"
             style={{ fontFamily: font.fontFamily }}
@@ -89,23 +89,23 @@ const Settings = () => {
   return (
     <div>
       <h2>{t.typographySettings}</h2>
-      <p className="text-[#666] mb-6">
+      <p className="text-muted mb-6">
         Adjust font sizes and styles across the application. Changes are applied instantly and affect the entire UI.
       </p>
 
       {/* Font Size Controls */}
-      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-[#f8f9fa] md:p-6 md:my-6">
-        <h3 className="m-0 mb-4 text-xl text-[#2c3e50] border-b-2 border-[#2c7fb8] pb-3 font-semibold md:text-2xl md:mb-5">{t.fontSizeControl}</h3>
-        <p className="text-[#666] text-[0.9rem] mb-[15px]">
+      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-surface md:p-6 md:my-6">
+        <h3 className="m-0 mb-4 text-xl text-primary border-b-2 border-accent pb-3 font-semibold md:text-2xl md:mb-5">{t.fontSizeControl}</h3>
+        <p className="text-muted text-[0.9rem] mb-[15px]">
           The English size scales all UI text globally (buttons, menus, headings). Arabic size scales Arabic text independently.
         </p>
         <DualFontScaleSelector />
       </div>
 
       {/* English Font Family */}
-      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-[#f8f9fa] md:p-6 md:my-6">
-        <h3 className="m-0 mb-4 text-xl text-[#2c3e50] border-b-2 border-[#2c7fb8] pb-3 font-semibold md:text-2xl md:mb-5">English Font Style</h3>
-        <p className="text-[#666] text-[0.95rem] mb-[15px]">
+      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-surface md:p-6 md:my-6">
+        <h3 className="m-0 mb-4 text-xl text-primary border-b-2 border-accent pb-3 font-semibold md:text-2xl md:mb-5">English Font Style</h3>
+        <p className="text-muted text-[0.95rem] mb-[15px]">
           Choose the font used for all English UI text, labels, and headings:
         </p>
         <FontSelector
@@ -120,9 +120,9 @@ const Settings = () => {
       </div>
 
       {/* Arabic Font Family */}
-      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-[#f8f9fa] md:p-6 md:my-6">
-        <h3 className="m-0 mb-4 text-xl text-[#2c3e50] border-b-2 border-[#2c7fb8] pb-3 font-semibold md:text-2xl md:mb-5">{t.arabicFontStyle}</h3>
-        <p className="text-[#666] text-[0.95rem] mb-[15px]">
+      <div className="p-4 my-4 border border-[#e0e0e0] rounded-lg bg-surface md:p-6 md:my-6">
+        <h3 className="m-0 mb-4 text-xl text-primary border-b-2 border-accent pb-3 font-semibold md:text-2xl md:mb-5">{t.arabicFontStyle}</h3>
+        <p className="text-muted text-[0.95rem] mb-[15px]">
           Choose your preferred Arabic typography style:
         </p>
         <FontSelector

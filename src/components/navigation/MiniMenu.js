@@ -150,7 +150,7 @@ const MiniMenu = () => {
                     <div className="flex items-center gap-[5px] whitespace-nowrap">
                       <label>{t.secondaryLanguage}</label>
                       <select
-                        className="py-[4px] px-[6px] text-[14px] font-serif m-0 min-w-[100px] w-full border border-[#ccc] rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-[#666] md:py-[5px] md:px-[8px] md:text-[16px] md:min-w-[120px] md:w-auto"
+                        className="py-[4px] px-[6px] text-[14px] font-serif m-0 min-w-[100px] w-full border border-[#ccc] rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-muted md:py-[5px] md:px-[8px] md:text-[16px] md:min-w-[120px] md:w-auto"
                         value={L2}
                         onChange={(e) => setL2(e.target.value)}
                       >

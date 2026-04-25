@@ -17,7 +17,7 @@ const arabicLetters = [
   'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
 ];
 
-const selectClass = 'py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-[#666]';
+const selectClass = 'py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-muted';
 
 const Search = () => {
   const { corpusFilter, surahFilter } = useCorpusFilter();
@@ -207,7 +207,7 @@ const Search = () => {
           </label>
         </div>
         {lexicalTotal > 0 && lastSearchType === 'lexical' && (
-          <p className="mt-1.5 mb-0 text-xs text-[#666]">
+          <p className="mt-1.5 mb-0 text-xs text-muted">
             {t.foundWords(lexicalTotal)}
           </p>
         )}
@@ -249,7 +249,7 @@ const Search = () => {
       </div>
 
       {/* Search logic feedback */}
-      <div className="mb-2.5 text-xs text-[#666]">
+      <div className="mb-2.5 text-xs text-muted">
         <div>🔍 <strong>{t.fetchRoots}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : ''}</div>
         <div>🔀 <strong>{t.combinate}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : ''}</div>
         {r1 && (
@@ -280,7 +280,7 @@ const Search = () => {
           </button>
         </div>
         {totalRoots > 0 && lastSearchType !== 'lexical' && (
-          <p className="m-0 text-xs text-[#666]">
+          <p className="m-0 text-xs text-muted">
             {t.totalRoots(Math.min(totalRoots, resultLimit), totalRoots)}
           </p>
         )}

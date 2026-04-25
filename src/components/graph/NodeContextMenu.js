@@ -3,11 +3,11 @@ import ReactDOM from 'react-dom';
 import { useLabels } from '../../hooks/useLabels';
 
 const menuOptionCls =
-  'w-full bg-[#f8f9fa] border border-[#ddd] rounded text-[#333] text-center cursor-pointer font-serif ' +
+  'w-full bg-surface border border-border-light rounded text-[#333] text-center cursor-pointer font-serif ' +
   'text-[15px] py-[10px] px-3 min-h-[40px] transition-[background-color,border-color] duration-200 ' +
   'md:text-[14px] md:py-2 md:min-h-0 ' +
-  'hover:bg-[#e9ecef] hover:border-[#adb5bd] active:bg-[#dee2e6] active:translate-y-px ' +
-  'focus:outline-none focus:border-[#666] focus:shadow-[0_0_0_2px_rgba(102,102,102,0.2)]';
+  'hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark active:translate-y-px ' +
+  'focus:outline-none focus:border-muted focus:shadow-[0_0_0_2px_rgba(102,102,102,0.2)]';
 
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
@@ -159,7 +159,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
               onClick={() => handleOptionClick(option)}
             >
               {option.label}
-              {option.submenu && <span className="text-[12px] text-[#666] ml-2">▶</span>}
+              {option.submenu && <span className="text-[12px] text-muted ml-2">▶</span>}
             </button>
 
             {option.submenu && openSubmenu === option.action && (
@@ -167,7 +167,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
                 {option.submenu.map((subOption, subIndex) => (
                   <button
                     key={subIndex}
-                    className="block w-full bg-[#f8f9fa] border border-[#ddd] rounded-[3px] py-2 px-[10px] my-0.5 cursor-pointer font-serif text-[14px] text-[#333] text-center transition-colors duration-200 md:py-[6px] md:text-[13px] hover:bg-[#e9ecef] hover:border-[#adb5bd] active:bg-[#dee2e6]"
+                    className="block w-full bg-surface border border-border-light rounded-[3px] py-2 px-[10px] my-0.5 cursor-pointer font-serif text-[14px] text-[#333] text-center transition-colors duration-200 md:py-[6px] md:text-[13px] hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark"
                     onClick={() => handleSubmenuClick(subOption.action)}
                   >
                     {subOption.label}
