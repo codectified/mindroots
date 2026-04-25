@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // profile-page.css → moved to index.css
-import { 
-  faInstagram, 
-  faLinkedin, 
+import {
+  faInstagram,
+  faLinkedin,
   faYoutube,
   faGithub
 } from '@fortawesome/free-brands-svg-icons';
@@ -36,7 +36,8 @@ const ProfilePage = () => {
           <h1 className="mission-statement">
             In a world with more systems than people, you need someone who knows <em>both</em>.
           </h1>
-          <nav className="hero-navigation" style={{ display: 'flex', justifyContent: 'center', flexWrap: 'wrap', gap: '20px' }}>
+          {/* CSS class covers layout; inline was redundant */}
+          <nav className="hero-navigation">
             <a href="#resume" className="nav-link">Resume</a>
             <a href="#projects" className="nav-link">Projects</a>
             <a href="#availability" className="nav-link">Availability</a>
@@ -49,58 +50,33 @@ const ProfilePage = () => {
       <section id="bio" className="bio-section">
         <div className="section-container">
           <h2>Professional Services</h2>
-          
+
           {/* Bio Section Index */}
-          <nav style={{ marginBottom: '30px', display: 'flex', justifyContent: 'center', width: '100%' }}>
-            <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'center', alignItems: 'center', gap: '15px', padding: '10px 20px', backgroundColor: '#f8f9fa', borderRadius: '8px', fontSize: '0.9em' }}>
-              <a href="#it-consulting" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap' }}>Technical Consulting</a>
-              <span style={{ color: '#ccc' }}>•</span>
-              <a href="#communications" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap' }}>Communications</a>
-              <span style={{ color: '#ccc' }}>•</span>
-              <a href="#knowledge-architecture" style={{ color: '#667eea', textDecoration: 'none', fontWeight: '500', whiteSpace: 'nowrap' }}>Knowledge Management</a>
+          <nav className="mb-[30px] flex justify-center w-full">
+            <div className="flex flex-wrap justify-center items-center gap-[15px] px-5 py-[10px] bg-surface rounded-lg text-[0.9em]">
+              <a href="#it-consulting" className="text-[#667eea] no-underline font-medium whitespace-nowrap">Technical Consulting</a>
+              <span className="text-[#ccc]">•</span>
+              <a href="#communications" className="text-[#667eea] no-underline font-medium whitespace-nowrap">Communications</a>
+              <span className="text-[#ccc]">•</span>
+              <a href="#knowledge-architecture" className="text-[#667eea] no-underline font-medium whitespace-nowrap">Knowledge Management</a>
             </div>
           </nav>
-          
+
           {/* About Me Section */}
-          <div style={{ 
-            backgroundColor: '#f8f9fa', 
-            borderRadius: '12px', 
-            padding: '25px 30px', 
-            marginBottom: '40px',
-            border: '1px solid #e9ecef',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.05)'
-          }}>
-            <p style={{ 
-              fontSize: '1.1rem', 
-              lineHeight: '1.7', 
-              color: '#495057', 
-              margin: '0 0 15px 0',
-              textAlign: 'center',
-              fontStyle: 'italic'
-            }}>
+          <div className="bg-surface rounded-xl px-[30px] py-[25px] mb-[40px] border border-[#e9ecef] shadow-[0_2px_8px_rgba(0,0,0,0.05)]">
+            <p className="text-[1.1rem] leading-[1.7] text-[#495057] mb-[15px] text-center italic">
               I build intelligent systems that translate complexity into clarity, enabling effective knowledge transfer and knowledge management.
             </p>
-            <div style={{ textAlign: 'center' }}>
-              <button 
-                className="bio-link" 
-                style={{
-                  border: 'none', 
-                  background: 'none', 
-                  padding: 0, 
-                  color: '#667eea', 
-                  cursor: 'pointer', 
-                  textDecoration: 'none', 
-                  fontWeight: 'normal', 
-                  fontSize: '0.95em', 
-                  fontFamily: 'inherit'
-                }}
+            <div className="text-center">
+              <button
+                className="bio-link border-none bg-transparent p-0 cursor-pointer text-[0.95em] font-inherit"
                 onClick={() => showArticle('/theoption.life/articles/about-my-work.md', 'About My Work and Motivations')}
               >
                 More about my work and motivations →
               </button>
             </div>
           </div>
-          
+
           {/* Information Technology Consulting */}
           <div id="it-consulting" className="bio-subsection">
             <h3>Information Technology Consulting</h3>
@@ -120,9 +96,9 @@ const ProfilePage = () => {
                   </a>
                 </li>
                 <li>
-                  <button 
-                    className="bio-link" 
-                    style={{border: 'none', background: 'none', padding: 0, color: '#667eea', cursor: 'pointer', textDecoration: 'none', fontWeight: 'normal', fontSize: 'inherit', fontFamily: 'inherit'}}
+                  {/* bio-link class covers color/decoration/weight; inline was redundant */}
+                  <button
+                    className="bio-link border-none bg-transparent p-0 cursor-pointer text-[inherit] font-inherit font-normal"
                     onClick={() => showArticle('/theoption.life/articles/IT-strategy.md', 'General Guidelines and Strategy for IT & IS Implementations')}
                   >
                     Article: General Guidelines and Strategy for IT & IS Implentations
@@ -177,9 +153,8 @@ const ProfilePage = () => {
               <h4>Related Links:</h4>
               <ul className="bio-links-list">
                 <li>
-                  <button 
-                    className="bio-link" 
-                    style={{border: 'none', background: 'none', padding: 0, color: '#667eea', cursor: 'pointer', textDecoration: 'none', fontWeight: 'normal', fontSize: 'inherit', fontFamily: 'inherit'}}
+                  <button
+                    className="bio-link border-none bg-transparent p-0 cursor-pointer text-[inherit] font-inherit font-normal"
                     onClick={() => showArticle('/theoption.life/articles/whygraphs.md', 'Graph Technology as the "Natural" approach')}
                   >
                     Article: Graph Technology as the "Natural" approach
@@ -202,13 +177,12 @@ const ProfilePage = () => {
           <h2>Résumé</h2>
           <div className="resume-card">
             <p>View my professional experience and qualifications.</p>
-            <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-              <a 
-                href={`${process.env.PUBLIC_URL}/OI_resume.pdf`} 
-                target="_blank" 
+            <div className="flex gap-[15px] flex-wrap">
+              <a
+                href={`${process.env.PUBLIC_URL}/OI_resume.pdf`}
+                target="_blank"
                 rel="noopener noreferrer"
-                className="cta-button"
-                style={{ textDecoration: 'none', display: 'inline-block' }}
+                className="cta-button no-underline inline-block"
               >
                 View PDF Resume
               </a>
@@ -226,51 +200,51 @@ const ProfilePage = () => {
         <div className="section-container">
           <h2>Projects</h2>
           <div className="project-card">
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '30px', margin: '30px 0' }}>
-              
+            <div className="flex flex-col gap-[30px] my-[30px]">
+
               {/* MindRoots */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
-                <Link to="/mindroots" style={{ textDecoration: 'none', flexShrink: 0 }}>
-                  <img 
+              <div className="flex items-start gap-5">
+                <Link to="/mindroots" className="no-underline flex-shrink-0">
+                  <img
                     src={`${process.env.PUBLIC_URL}/root-tree.jpeg`}
-                    alt="MindRoots" 
-                    style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer' }}
+                    alt="MindRoots"
+                    className="w-20 h-20 rounded-lg cursor-pointer"
                   />
                 </Link>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: '0.95em', lineHeight: '1.6' }}>
+                <div className="flex-1">
+                  <p className="m-0 text-[0.95em] leading-[1.6]">
                     <strong>MindRoots:</strong> An advanced search and language exploration tool, connecting key texts and primary sources with graph technology and cognitive-linguistic ontology design
                   </p>
                 </div>
               </div>
 
               {/* MindRoots GPT */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
-                <a href="https://chatgpt.com/g/g-6837e9a3285081919820781cf0fb2292-mindroots" target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0 }}>
-                  <img 
+              <div className="flex items-start gap-5">
+                <a href="https://chatgpt.com/g/g-6837e9a3285081919820781cf0fb2292-mindroots" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                  <img
                     src={`${process.env.PUBLIC_URL}/MindrootsGPT.png`}
-                    alt="MindRoots GPT" 
-                    style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer' }}
+                    alt="MindRoots GPT"
+                    className="w-20 h-20 rounded-lg cursor-pointer"
                   />
                 </a>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: '0.95em', lineHeight: '1.6' }}>
+                <div className="flex-1">
+                  <p className="m-0 text-[0.95em] leading-[1.6]">
                     <strong>MindRoots GPT:</strong> An AI chatbot which can talk to Mindroots and summarize entries from Lane's Lexicon and other data sources
                   </p>
                 </div>
               </div>
 
               {/* QuranRoots GPT */}
-              <div style={{ display: 'flex', alignItems: 'flex-start', gap: '20px' }}>
-                <a href="https://chatgpt.com/g/g-68c8fbd5dcf48191a399e8045059a8d4-quranroots" target="_blank" rel="noopener noreferrer" style={{ flexShrink: 0 }}>
-                  <img 
+              <div className="flex items-start gap-5">
+                <a href="https://chatgpt.com/g/g-68c8fbd5dcf48191a399e8045059a8d4-quranroots" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                  <img
                     src={`${process.env.PUBLIC_URL}/qroots.png`}
-                    alt="QuranRoots GPT" 
-                    style={{ width: '80px', height: '80px', borderRadius: '8px', cursor: 'pointer' }}
+                    alt="QuranRoots GPT"
+                    className="w-20 h-20 rounded-lg cursor-pointer"
                   />
                 </a>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: '0.95em', lineHeight: '1.6' }}>
+                <div className="flex-1">
+                  <p className="m-0 text-[0.95em] leading-[1.6]">
                     <strong>QuranRoots GPT (Beta):</strong> An AI chatbot with advanced search capability specifically for the quran
                   </p>
                 </div>
