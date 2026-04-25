@@ -44,7 +44,7 @@ import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 // typography.css → merged into index.css
 // base.css → global resets moved to index.css
 // buttons.css → global button reset to index.css; active classes to Tailwind inline
-import './styles/lists.css';
+// lists.css → active rules moved to index.css; dead code (primary-list, corpus-library-list, articles-list, statistics-*, header-spacer) dropped
 // main-menu.css  → converted to Tailwind (MainMenu.js)
 // icon-grid.css  → converted to Tailwind (MainMenu.js)
 // bottom-nav.css → converted to Tailwind (BottomNav.js); body padding moved to index.css
