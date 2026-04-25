@@ -149,7 +149,7 @@ const LazyAnalysisItem = ({ header, isLast }) => {
 
   return (
     <div className="compact-analysis-item">
-      <div className="analysis-header" onClick={handleToggle} style={{ cursor: 'pointer' }}>
+      <div className="analysis-header cursor-pointer" onClick={handleToggle}>
         <span className="expand-indicator">{isExpanded ? '▼' : '▶'}</span>
         <span className="root-text">
           {header.root.arabic} {header.root.english && `(${header.root.english})`}
@@ -165,24 +165,13 @@ const LazyAnalysisItem = ({ header, isLast }) => {
           {error && <div className="error-indicator">{error}</div>}
           {analysisData && (
             <>
-              <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'flex', alignItems: 'center', gap: '12px' }}>
-                <span style={{ fontSize: '16px', fontWeight: 600, color: '#333' }}>
+              <div className="mb-[15px] pb-[10px] border-b border-[#e0e0e0] flex items-center gap-3">
+                <span className="text-[16px] font-semibold text-[#333]">
                   {header.root.arabic} {header.root.english && `(${header.root.english})`}
                 </span>
                 <button
                   onClick={handleViewGraph}
-                  style={{
-                    padding: '8px 16px',
-                    backgroundColor: '#2c7fb8',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '14px',
-                    fontWeight: 500
-                  }}
-                  onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
-                  onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
+                  className="py-2 px-4 bg-accent text-white border-none rounded cursor-pointer text-[14px] font-medium hover:bg-accent-hover transition-colors"
                 >
                   {t.viewGraph}
                 </button>
@@ -233,25 +222,18 @@ const LazyArticleItem = ({ header, isLast }) => {
   const renderArticle = (article) => (
     <div>
       {article.subtitle && (
-        <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', fontStyle: 'italic', color: '#666' }}>
+        <h4 className="m-0 mb-[10px] text-[16px] italic text-muted">
           {article.subtitle}
         </h4>
       )}
-      <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#888' }}>
+      <p className="m-0 mb-[15px] text-[12px] text-[#888]">
         by {article.signature}
       </p>
-      <div style={{ 
-        whiteSpace: 'pre-wrap', 
-        lineHeight: '1.6',
-        fontSize: '14px',
-        maxHeight: '400px',
-        overflowY: 'auto',
-        marginBottom: '10px'
-      }}>
+      <div className="whitespace-pre-wrap leading-[1.6] text-[14px] max-h-[400px] overflow-y-auto mb-[10px]">
         {article.text}
       </div>
       {convertNeo4jDate(article.created_at) && (
-        <div style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>
+        <div className="text-[12px] text-[#888] italic">
           {convertNeo4jDate(article.created_at)}
         </div>
       )}
@@ -260,7 +242,7 @@ const LazyArticleItem = ({ header, isLast }) => {
 
   return (
     <div className="compact-analysis-item">
-      <div className="analysis-header" onClick={handleToggle} style={{ cursor: 'pointer' }}>
+      <div className="analysis-header cursor-pointer" onClick={handleToggle}>
         <span className="expand-indicator">{isExpanded ? '▼' : '▶'}</span>
         <span className="root-text">
           {header.title}
@@ -277,30 +259,15 @@ const LazyArticleItem = ({ header, isLast }) => {
           {articleData && (
             <>
               {articleData.root && articleData.root.root_id && (
-                <div style={{ marginBottom: '15px', paddingBottom: '10px', borderBottom: '1px solid #e0e0e0', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', alignItems: 'center', gap: '12px' }}>
+                <div className="mb-[15px] pb-[10px] border-b border-[#e0e0e0] grid grid-cols-3 items-center gap-3">
                   <button
                     onClick={handleViewGraph}
-                    style={{
-                      padding: '8px 14px',
-                      backgroundColor: '#2c7fb8',
-                      color: 'white',
-                      border: 'none',
-                      borderRadius: '4px',
-                      cursor: 'pointer',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '8px',
-                      justifyContent: 'center'
-                    }}
-                    onMouseOver={(e) => e.target.style.backgroundColor = '#1e5a8a'}
-                    onMouseOut={(e) => e.target.style.backgroundColor = '#2c7fb8'}
+                    className="py-2 px-[14px] bg-accent text-white border-none rounded cursor-pointer text-[14px] font-medium flex items-center gap-2 justify-center hover:bg-accent-hover transition-colors"
                   >
                     <FontAwesomeIcon icon={faNetworkWired} />
                     {t.viewGraphShort}
                   </button>
-                  <span style={{ fontSize: '16px', fontWeight: 600, color: '#333', textAlign: 'center' }}>
+                  <span className="text-[16px] font-semibold text-[#333] text-center">
                     {articleData.root.arabic} {articleData.root.english && `(${articleData.root.english})`}
                   </span>
                   <div />
@@ -428,7 +395,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
   const bubble = (
     <Draggable nodeRef={infoBubbleRef} cancel=".info-bubble-content, .close-button">
       <div ref={infoBubbleRef} className="info-bubble" style={centeredStyle}>
-        <div className="info-bubble-header" style={{ display: 'flex', justifyContent: 'flex-end' }}>
+        <div className="info-bubble-header flex justify-end">
           <button
             className="close-button"
             onClick={onClose}
@@ -439,7 +406,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
         </div>
         <div className="info-bubble-content">
           {(title || (nodeData && nodeData.rootInfo)) && (
-            <div style={{ display: 'grid', gridTemplateColumns: '32px 1fr 32px', alignItems: 'center', marginBottom: '20px', gap: '8px' }}>
+            <div className="grid grid-cols-[32px_1fr_32px] items-center mb-5 gap-2">
               {/* View Graph button - only show for node data */}
               {nodeData && nodeData.rootId ? (
                 <button
@@ -448,28 +415,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                       navigate('/start', { state: { autoExpandRootId: nodeData.rootId } });
                     }
                   }}
-                  style={{
-                    padding: '6px',
-                    backgroundColor: 'transparent',
-                    color: '#2c7fb8',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '32px',
-                    minHeight: '32px'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = '#f0f0f0';
-                    e.target.style.color = '#1e5a8a';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = '#2c7fb8';
-                  }}
+                  className="p-[6px] bg-transparent text-accent border-none rounded cursor-pointer text-[16px] flex items-center justify-center min-w-[32px] min-h-[32px] hover:bg-[#f0f0f0] hover:text-accent-hover transition-colors"
                   title="View Graph"
                 >
                   <FontAwesomeIcon icon={faNetworkWired} />
@@ -477,37 +423,14 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
               ) : (
                 <div />
               )}
-              <h2 style={{ margin: 0, fontSize: '1.5rem', color: '#333', textAlign: 'center' }}>
+              <h2 className="m-0 text-2xl text-[#333] text-center">
                 {title || (nodeData && nodeData.rootInfo ? `${nodeData.rootInfo.arabic} ${nodeData.rootInfo.english ? `(${nodeData.rootInfo.english})` : ''}` : '')}
               </h2>
               {/* Share button - show for all */}
               {shareUrl && (
                 <button
-                  onClick={() => {
-                    navigator.clipboard.writeText(shareUrl);
-                  }}
-                  style={{
-                    padding: '6px',
-                    backgroundColor: 'transparent',
-                    color: '#2c7fb8',
-                    border: 'none',
-                    borderRadius: '4px',
-                    cursor: 'pointer',
-                    fontSize: '16px',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center',
-                    minWidth: '32px',
-                    minHeight: '32px'
-                  }}
-                  onMouseOver={(e) => {
-                    e.target.style.backgroundColor = '#f0f0f0';
-                    e.target.style.color = '#1e5a8a';
-                  }}
-                  onMouseOut={(e) => {
-                    e.target.style.backgroundColor = 'transparent';
-                    e.target.style.color = '#2c7fb8';
-                  }}
+                  onClick={() => { navigator.clipboard.writeText(shareUrl); }}
+                  className="p-[6px] bg-transparent text-accent border-none rounded cursor-pointer text-[16px] flex items-center justify-center min-w-[32px] min-h-[32px] hover:bg-[#f0f0f0] hover:text-accent-hover transition-colors"
                   title="Copy share link to clipboard"
                 >
                   <FontAwesomeIcon icon={faShare} />
