@@ -50,7 +50,7 @@ import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 // bottom-nav.css → converted to Tailwind (BottomNav.js); body padding moved to index.css
 // language-toggle.css → no active usages, removed
 // menu.css → converted to Tailwind (MiniMenu.js, CorpusGraphScreen.js)
-import './styles/info-bubble.css';
+// info-bubble.css → moved to index.css
 // node-context-menu.css → converted to Tailwind (NodeContextMenu.js)
 // markdown.css → moved to index.css (ReactMarkdown descendant selectors)
 // content.css → simple classes to Tailwind inline; about-page moved to index.css

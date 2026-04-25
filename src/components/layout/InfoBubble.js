@@ -8,7 +8,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faShare, faNetworkWired } from '@fortawesome/free-solid-svg-icons';
 import { fetchAnalysisByRoot, fetchArticleById } from '../../services/apiService';
 import { useLabels } from '../../hooks/useLabels';
-import '../../styles/info-bubble.css'; // ensure your CSS is here
+// info-bubble.css → moved to index.css
 
 // Helper function to convert Neo4j date format
 const convertNeo4jDate = (dateValue) => {

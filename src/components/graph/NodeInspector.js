@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { updateValidationFields, addCustomTag } from '../../services/apiService';
 import { useLabels } from '../../hooks/useLabels';
 import { useSettings } from '../../contexts/SettingsContext';
-import '../../styles/info-bubble.css';
+// info-bubble.css → moved to index.css
 
 const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const t = useLabels();
