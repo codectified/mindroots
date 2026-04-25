@@ -253,7 +253,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .attr('y', '.31em')
       .text(d => d.label)
       .style('font-family', d => isArabic(d.label) ? 'var(--font-arabic)' : 'var(--font-serif)')
-      .style('font-size',   d => isArabic(d.label) ? 'var(--arabic-sm)'   : 'var(--text-sm)')
+      .style('font-size',   d => isArabic(d.label) ? 'var(--arabic-base)' : 'var(--text-sm)')
       .style('pointer-events', 'auto')  // Make text clickable
       .style('cursor', 'pointer')       // Show pointer cursor
       .style('user-select', 'none')     // Prevent text selection

@@ -5,8 +5,8 @@ import {
   faSearch,
   faMapMarked,
   faPodcast,
+  faBookOpen,
 } from '@fortawesome/free-solid-svg-icons';
-import { RiBookShelfLine } from 'react-icons/ri';
 import {
   faInstagram,
   faLinkedin,
@@ -116,29 +116,29 @@ const MainMenu = () => {
           className="flex flex-col items-center justify-center bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[200px] min-h-[200px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
           onClick={() => handleNavigation('/corpus-menu')}
         >
-          <RiBookShelfLine className="text-[40px] mb-2.5" />
-          <span className="text-[0.85em] font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.corpusLibrary}</span>
+          <FontAwesomeIcon icon={faBookOpen} className="text-[40px] mb-2.5" />
+          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.corpusLibrary}</span>
         </div>
         <div
           className="flex flex-col items-center justify-center bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[200px] min-h-[200px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
           onClick={() => handleNavigation('/start')}
         >
           <FontAwesomeIcon icon={faMapMarked} className="text-[40px] mb-2.5" />
-          <span className="text-[0.85em] font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.graphExploration}</span>
+          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.graphExploration}</span>
         </div>
         <div
           className="flex flex-col items-center justify-center bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[200px] min-h-[200px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
           onClick={() => handleNavigation('/sandbox')}
         >
           <FontAwesomeIcon icon={faSearch} className="text-[40px] mb-2.5" />
-          <span className="text-[0.85em] font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.positionalRootSearch}</span>
+          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.positionalRootSearch}</span>
         </div>
         <div
           className="flex flex-col items-center justify-center bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[200px] min-h-[200px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
           onClick={() => handleNavigation('/lisan-lab')}
         >
           <FontAwesomeIcon icon={faPodcast} className="text-[40px] mb-2.5" />
-          <span className="text-[0.85em] font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.lisanLab}</span>
+          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.lisanLab}</span>
         </div>
       </div>
 
@@ -151,7 +151,7 @@ const MainMenu = () => {
             <p className="m-0 mb-2.5 font-serif text-[#555] leading-[1.4]">
               <strong>{t.latestReport}</strong>{' '}
               <span onClick={handleShowAnalysis} className="cursor-pointer">
-                <em className="font-semibold text-info">{latestAnalysis.root.arabic}</em>
+                <em className="arabic font-semibold text-info">{latestAnalysis.root.arabic}</em>
                 {latestAnalysis.root.english && ` (${latestAnalysis.root.english})`}
               </span>
             </p>

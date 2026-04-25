@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGlobe, faChevronDown, faChevronUp, faMapMarked, faSearch, faHome, faSliders } from '@fortawesome/free-solid-svg-icons';
-import { RiBookShelfLine } from 'react-icons/ri';
 import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
@@ -206,7 +205,7 @@ const MiniMenu = () => {
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
             <button className="menu-button" onClick={() => handleNavigation('/corpus-menu')}>
-              <RiBookShelfLine />
+              <FontAwesomeIcon icon={faBookOpen} />
             </button>
             <button className={`menu-button ${selectedOption === 'settings' ? 'active' : ''}`} onClick={() => toggleOption('settings')}>
               <FontAwesomeIcon icon={faGlobe} />

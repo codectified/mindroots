@@ -188,7 +188,7 @@ const Search = () => {
             {t.search}
           </button>
         </div>
-        <div className="flex gap-4 text-[13px] text-[#444]">
+        <div className="flex gap-4 text-dynamic-sm text-[#444]">
           <label className="flex items-center gap-1 cursor-pointer">
             <input
               type="checkbox"
@@ -275,7 +275,7 @@ const Search = () => {
           />
           <span className="text-sm min-w-[40px]">{resultLimit}</span>
           <DisplayModeSelector size="large" />
-          <button onClick={handleReset} className="bg-[#888] py-[6px] px-3 text-[13px]">
+          <button onClick={handleReset} className="bg-[#888] py-[6px] px-3 text-dynamic-sm">
             {t.reset}
           </button>
         </div>

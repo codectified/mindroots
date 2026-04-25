@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { updateValidationFields, addCustomTag } from '../../services/apiService';
 import { useLabels } from '../../hooks/useLabels';
+import { useSettings } from '../../contexts/SettingsContext';
 import '../../styles/info-bubble.css';
 
 const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const t = useLabels();
+  const { arabicFontFamily } = useSettings();
   // Navigation state
   const [navigationStatus, setNavigationStatus] = useState({ loading: false, message: '' });
   
@@ -185,7 +187,8 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
       );
     }
     
-    return <span className={`value-${prop.type}`}>{String(prop.value)}</span>;
+    const isArabicField = fieldName === 'arabic';
+    return <span className={`value-${prop.type}`} style={isArabicField ? { fontFamily: arabicFontFamily, fontSize: '1.15rem', lineHeight: '1.8' } : undefined}>{String(prop.value)}</span>;
   };
 
   // Helper to get relationship direction icon

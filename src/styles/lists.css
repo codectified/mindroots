@@ -129,7 +129,7 @@
 .item-arabic {
   color: #1a1a1a;
   font-weight: 600;
-  font-family: 'Noto Sans Arabic', 'Amiri', serif;
+  font-family: var(--font-arabic);
   line-height: 1.6;
 }
 
@@ -361,7 +361,7 @@
   font-size: 1.8rem;
   color: #333;
   margin: 0 0 10px 0;
-  font-family: 'Noto Sans Arabic', 'Noto Serif', serif;
+  font-family: var(--font-arabic);
   font-weight: 600;
   line-height: 1.3;
 }

@@ -154,7 +154,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
                   ...(nodeTypeStyle[node.type] || {})
                 }}
               >
-                <td style={{ padding: '8px', paddingLeft }}>{node.sem ?? node.arabic ?? t.noSemantic}</td>
+                <td className={node.sem != null || node.arabic != null ? 'arabic' : undefined} style={{ padding: '8px', paddingLeft }}>{node.sem ?? node.arabic ?? t.noSemantic}</td>
                 <td style={{ padding: '8px' }}>{node.english ?? t.noEnglish}</td>
                 {showLocationColumn && (
                   <td style={{ padding: '8px', fontSize: '12px', color: '#666', whiteSpace: 'nowrap', fontFamily: 'monospace' }}>

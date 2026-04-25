@@ -6,6 +6,7 @@
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ProfilePage from './components/staticPages/ProfilePage';
@@ -60,6 +61,13 @@ import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
 
 const App = () => {
+  useEffect(() => {
+    const latinScale = localStorage.getItem('fontScaleLatín');
+    const semiticScale = localStorage.getItem('fontScaleSemitic');
+    if (latinScale) document.documentElement.style.setProperty('--font-scale-latin', parseFloat(latinScale));
+    if (semiticScale) document.documentElement.style.setProperty('--font-scale-semitic', parseFloat(semiticScale));
+  }, []);
+
   return (
     <CorpusStatisticsProvider>
     <AdvancedModeProvider>

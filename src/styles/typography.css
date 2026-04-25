@@ -1,233 +1,147 @@
-/* typography.css - Centralized font sizing system with CSS variables */
+/* typography.css — MindRoots universal font system
+ *
+ * HOW SCALING WORKS
+ * ─────────────────
+ * Latin size slider  → updates --font-scale-latin  → changes html { font-size }
+ *                      → every rem-based value in the entire UI scales (Tailwind, CSS, everything)
+ *
+ * Arabic size slider → updates --font-scale-semitic → changes --arabic-* variables (px-based)
+ *                      → only Arabic text scales, independently of Latin
+ *
+ * Latin font family  → SettingsContext updates --font-latin  → body font-family changes globally
+ * Arabic font family → SettingsContext updates --font-arabic → .arabic elements change globally
+ */
+
 /* ============================================
-   Typography System with CSS Variables
+   CSS Custom Properties
    ============================================ */
 
 :root {
-  /* Font scale multipliers for independent control */
-  /* Latin/English scale (affects non-Semitic text) */
-  --font-scale-latin: 1;
-
-  /* Semitic (Arabic) scale - independent for better control */
+  /* Scale multipliers — written by DualFontScaleSelector and restored in App.js */
+  --font-scale-latin:   1;
   --font-scale-semitic: 1;
 
-  /* Legacy global scale (kept for backward compatibility, uses average of both) */
-  --font-scale: 1;
+  /* Active scale — switches based on UI language (set by LanguageContext).
+     Default: Latin. In Arabic UI mode, LanguageContext sets this to var(--font-scale-semitic). */
+  --font-scale-active: var(--font-scale-latin);
 
-  /* Base font sizes - adjusted for comfortable reading */
-  --base-font-size: 16px;
+  /* Latin text sizes — plain rem. Scaling comes from html { font-size } below. */
+  --text-lg:   1.125rem;
+  --text-base: 1rem;
+  --text-sm:   0.875rem;
+  --text-xs:   0.75rem;
+
+  /* Arabic text sizes — px-based, INDEPENDENT of html rem scale.
+     Always driven by --font-scale-semitic regardless of UI language. */
+  --arabic-lg:   calc(21px * var(--font-scale-semitic));
+  --arabic-base: calc(18px * var(--font-scale-semitic));
+  --arabic-sm:   calc(16px * var(--font-scale-semitic));
+  --arabic-xs:   calc(14px * var(--font-scale-semitic));
+
+  /* Font families — updated at runtime by SettingsContext */
+  --font-latin:  'Noto Serif', Georgia, serif;
+  --font-arabic: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif;
+  --font-mono:   'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+
+  /* Active body font — switches based on UI language (set by LanguageContext).
+     Default: Latin. In Arabic UI mode: var(--font-arabic). */
+  --font-body: var(--font-latin);
+
+  /* Misc */
   --base-line-height: 1.6;
-
-  /* Heading sizes - using Latin scale */
-  --h1-size: calc(2.5rem * var(--font-scale-latin));
-  --h2-size: calc(1.875rem * var(--font-scale-latin));
-  --h3-size: calc(1.5rem * var(--font-scale-latin));
-  --h4-size: calc(1.25rem * var(--font-scale-latin));
-  --h5-size: calc(1.1rem * var(--font-scale-latin));
-  --h6-size: calc(1rem * var(--font-scale-latin));
-
-  /* Body text sizes - using Latin scale */
-  --text-lg: calc(1.125rem * var(--font-scale-latin));      /* 18px */
-  --text-base: calc(1rem * var(--font-scale-latin));        /* 16px */
-  --text-sm: calc(0.875rem * var(--font-scale-latin));      /* 14px */
-  --text-xs: calc(0.75rem * var(--font-scale-latin));       /* 12px */
-
-  /* Arabic-specific sizing (uses Semitic scale independently) */
-  --arabic-lg: calc(1.3rem * var(--font-scale-semitic));      /* for large Arabic text */
-  --arabic-base: calc(1.15rem * var(--font-scale-semitic));   /* for standard Arabic text */
-  --arabic-sm: calc(1rem * var(--font-scale-semitic));        /* for small Arabic text */
-  --arabic-xs: calc(0.9rem * var(--font-scale-semitic));      /* for tiny Arabic labels */
-
-  /* Component-specific sizes - using Latin scale */
-  --label-size: calc(0.95rem * var(--font-scale-latin));    /* Labels in forms, tables */
-  --caption-size: calc(0.85rem * var(--font-scale-latin));  /* Small captions, metadata */
-  --button-size: calc(1rem * var(--font-scale-latin));      /* Button text */
-  --input-size: calc(1rem * var(--font-scale-latin));       /* Input field text */
-
-  /* Node Inspector and data display sizes */
-  --property-key-size: calc(0.95rem * var(--font-scale-latin));     /* Property labels */
-  --property-value-size: calc(1.05rem * var(--font-scale-latin));   /* Property values - increased from 0.9rem */
-  --data-table-size: calc(0.95rem * var(--font-scale-latin));       /* Table cell text */
-
-  /* List and menu sizes */
-  --list-item-size: calc(1rem * var(--font-scale-latin));           /* List items - increased from 12px */
-  --menu-item-size: calc(0.95rem * var(--font-scale-latin));        /* Menu item text */
-
-  /* Arabic fonts with fallbacks */
-  --font-arabic: 'Scheherazade New', 'Amiri', 'Noto Serif Arabic', serif;
-  --font-latin: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-  --font-serif: 'Noto Serif', serif;
-  --font-mono: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
-}
-
-/* Font scale preset classes - users can apply these */
-.font-scale-normal {
-  --font-scale: 1;
-}
-
-.font-scale-large {
-  --font-scale: 1.15;
-}
-
-.font-scale-xlarge {
-  --font-scale: 1.3;
-}
-
-.font-scale-xxlarge {
-  --font-scale: 1.5;
 }
 
 /* ============================================
-   Apply typography to elements
+   Universal Latin scaling — OUTSIDE @layer so it beats everything.
+   html font-size drives all rem units app-wide.
    ============================================ */
 
-/*
- * Element-level typography — inside @layer base so Tailwind utilities
- * (text-sm, font-bold, leading-tight, etc.) override when used explicitly.
- * Arabic class-based rules stay outside the layer.
- */
+/* Universal scaling — html font-size drives ALL rem values app-wide.
+   --font-scale-active is var(--font-scale-latin) in English mode,
+   var(--font-scale-semitic) in Arabic mode (set by LanguageContext). */
+html {
+  font-size: calc(16px * var(--font-scale-active));
+}
+
+/* Universal font family — OUTSIDE @layer to beat index.css.
+   --font-body switches between --font-latin and --font-arabic (set by LanguageContext). */
+body {
+  font-family: var(--font-body);
+  line-height: var(--base-line-height);
+}
+
+/* ============================================
+   Global element defaults — inside @layer globals so Tailwind wins.
+   Fixed rem values (scaling handled by html font-size above).
+   ============================================ */
+
 @layer globals {
   body {
-    font-size: var(--base-font-size);
-    line-height: var(--base-line-height);
-    font-family: var(--font-serif);
+    background-color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
   }
 
-  h1 { font-size: var(--h1-size); line-height: 1.2; font-weight: 700; }
-  h2 { font-size: var(--h2-size); line-height: 1.3; font-weight: 600; }
-  h3 { font-size: var(--h3-size); line-height: 1.3; font-weight: 600; }
-  h4 { font-size: var(--h4-size); line-height: 1.4; font-weight: 600; }
-  h5 { font-size: var(--h5-size); line-height: 1.4; font-weight: 600; }
-  h6 { font-size: var(--h6-size); line-height: 1.5; font-weight: 600; }
+  h1 { font-size: 2.5rem;   line-height: 1.2; font-weight: 700; margin-bottom: 15px; text-align: center; }
+  h2 { font-size: 1.875rem; line-height: 1.3; font-weight: 600; margin-bottom: 15px; }
+  h3 { font-size: 1.5rem;   line-height: 1.3; font-weight: 600; margin-bottom: 15px; }
+  h4 { font-size: 1.25rem;  line-height: 1.4; font-weight: 600; }
+  h5 { font-size: 1.1rem;   line-height: 1.4; font-weight: 600; }
+  h6 { font-size: 1rem;     line-height: 1.5; font-weight: 600; }
 
-  p {
-    font-size: var(--text-base);
-    line-height: var(--base-line-height);
-  }
+  p    { font-size: 1rem;    line-height: var(--base-line-height); margin-bottom: 15px; }
+  li   { font-size: 1rem;    margin: 10px 0; cursor: pointer; }
+  td, th { font-size: 0.95rem; }
+  label  { font-size: 0.95rem; }
+  small, .caption, .meta { font-size: 0.85rem; }
 
-  input, textarea, select {
-    font-size: var(--input-size);
-    line-height: 1.5;
-  }
-
-  button, .button { font-size: var(--button-size); }
-
-  li    { font-size: var(--list-item-size); }
-  table { font-size: var(--text-base); }
-  td, th { font-size: var(--data-table-size); }
-  label  { font-size: var(--label-size); }
-  small, .caption, .meta { font-size: var(--caption-size); }
+  input, textarea, select { font-size: 1rem; line-height: 1.5; }
+  button, .button         { font-size: 1rem; }
+  table                   { font-size: 1rem; }
 }
 
 /* ============================================
-   Arabic text specific styling
-   (class-based — stays outside @layer base)
+   Arabic opt-in class
+   Apply to any Arabic text element.
+   font-size uses px (independent of html rem scale).
+   An inline fontSize prop overrides when dynamic size is needed.
    ============================================ */
 
+.arabic,
 .arabic-text,
-[lang="ar"],
-.arabic {
+[lang="ar"] {
   font-family: var(--font-arabic);
   font-size: var(--arabic-base);
   line-height: 1.8;
 }
 
-.arabic-text.large,
-.arabic.large {
-  font-size: var(--arabic-lg);
-}
-
-.arabic-text.small,
-.arabic.small {
-  font-size: var(--arabic-sm);
-}
-
-.arabic-text.tiny,
-.arabic.tiny {
-  font-size: var(--arabic-xs);
-}
+.arabic.large,  .arabic-text.large  { font-size: var(--arabic-lg); }
+.arabic.small,  .arabic-text.small  { font-size: var(--arabic-sm); }
+.arabic.tiny,   .arabic-text.tiny   { font-size: var(--arabic-xs); }
 
 /* ============================================
-   UI Component Sizing
-   ============================================ */
-
-/* Forms and inputs */
-input,
-textarea,
-select {
-  font-size: var(--input-size);
-  line-height: 1.5;
-}
-
-/* Buttons */
-button,
-.button {
-  font-size: var(--button-size);
-}
-
-/* Tables and lists */
-li {
-  font-size: var(--list-item-size);
-}
-
-table {
-  font-size: var(--text-base);
-}
-
-td,
-th {
-  font-size: var(--data-table-size);
-}
-
-/* Labels and captions */
-label {
-  font-size: var(--label-size);
-}
-
-small,
-.caption,
-.meta {
-  font-size: var(--caption-size);
-}
-
-/* ============================================
-   Mobile responsiveness
+   Mobile — tighten Arabic sizes only; Latin scales via html font-size
    ============================================ */
 
 @media (max-width: 768px) {
   :root {
-    --base-font-size: 14px;
-    --h1-size: calc(2rem * var(--font-scale));
-    --h2-size: calc(1.5rem * var(--font-scale));
-    --h3-size: calc(1.25rem * var(--font-scale));
-    --text-lg: calc(1rem * var(--font-scale));
-    --arabic-lg: calc(1.15rem * var(--font-scale));
-    --arabic-base: calc(1rem * var(--font-scale));
+    --arabic-lg:   calc(18px * var(--font-scale-semitic));
+    --arabic-base: calc(16px * var(--font-scale-semitic));
   }
 }
 
 @media (max-width: 480px) {
   :root {
-    --base-font-size: 13px;
-    --h1-size: calc(1.75rem * var(--font-scale));
-    --h2-size: calc(1.3rem * var(--font-scale));
-    --h3-size: calc(1.1rem * var(--font-scale));
-    --arabic-lg: calc(1.1rem * var(--font-scale));
-    --arabic-base: calc(0.95rem * var(--font-scale));
+    --arabic-lg:   calc(17px * var(--font-scale-semitic));
+    --arabic-base: calc(15px * var(--font-scale-semitic));
   }
 }
 
 /* ============================================
-   Print styles
+   Print
    ============================================ */
 
 @media print {
-  :root {
-    --font-scale: 1; /* Reset scale for print */
-  }
-
-  body {
-    font-size: 12pt;
-    line-height: 1.5;
-  }
+  html { font-size: 16px; }
+  body { line-height: 1.5; }
 }

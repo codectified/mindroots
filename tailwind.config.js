@@ -51,19 +51,20 @@ module.exports = {
       // ── Font Families ─────────────────────────────────────────────────────
       fontFamily: {
         serif:  ['Noto Serif', 'Georgia', 'serif'],
-        arabic: ['Scheherazade New', 'Amiri', 'Noto Serif Arabic', 'serif'],
+        arabic: ['Amiri', 'Scheherazade New', 'Noto Naskh Arabic', 'serif'],
         latin:  ['-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'sans-serif'],
         mono:   ['Monaco', 'Menlo', 'Ubuntu Mono', 'monospace'],
       },
 
       // ── Font Sizes ────────────────────────────────────────────────────────
-      // These reference the CSS variables from typography.css so they scale
-      // with the user's DualFontScaleSelector preference.
+      // text-dynamic-* scale with the Latin slider because html font-size
+      // is driven by --font-scale-latin; all rem values scale automatically.
+      // text-arabic-* use px-based CSS variables for independent Arabic scaling.
       fontSize: {
-        'dynamic-base': ['var(--text-base)', { lineHeight: 'var(--base-line-height)' }],
-        'dynamic-lg':   ['var(--text-lg)',   { lineHeight: '1.5' }],
-        'dynamic-sm':   ['var(--text-sm)',   { lineHeight: '1.5' }],
-        'dynamic-xs':   ['var(--text-xs)',   { lineHeight: '1.4' }],
+        'dynamic-base': ['1rem',     { lineHeight: '1.6' }],
+        'dynamic-lg':   ['1.125rem', { lineHeight: '1.5' }],
+        'dynamic-sm':   ['0.875rem', { lineHeight: '1.5' }],
+        'dynamic-xs':   ['0.75rem',  { lineHeight: '1.4' }],
         'arabic-base':  ['var(--arabic-base)', { lineHeight: '1.8' }],
         'arabic-lg':    ['var(--arabic-lg)',   { lineHeight: '1.8' }],
         'arabic-sm':    ['var(--arabic-sm)',   { lineHeight: '1.8' }],

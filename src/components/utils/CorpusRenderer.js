@@ -374,15 +374,15 @@ const handleFreeformLineHighlight = (lineNumber) => {
           )}
         </div>
   
-        <div style={{ 
-          whiteSpace: 'pre-wrap', 
-          textAlign: layout === 'prose' ? 'justify' : 'center', 
+        <div className="arabic" style={{
+          whiteSpace: 'pre-wrap',
+          textAlign: layout === 'prose' ? 'justify' : 'center',
           direction: 'rtl',
           maxWidth: layout === 'prose' ? '800px' : 'none',
           margin: layout === 'prose' ? '0 auto' : '0',
           padding: layout === 'prose' ? '0 20px' : '0',
           lineHeight: layout === 'line-by-line' ? '2.5' : '1.8',
-          fontSize: `${fontSize}px`
+          fontSize: `${fontSize}px`,
         }}>
           {surahNumber !== 9 && (
             <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
@@ -565,7 +565,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
     );
   
     return (
-      <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl', fontSize: `${fontSize}px` }}>
+      <div className="arabic" style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl', fontSize: `${fontSize}px` }}>
         {sortedLines.map(([lineNumber, lineItems]) => {
           const isLineHighlighted = lineItems.every((item) => item.isFreeformHighlighted);
   

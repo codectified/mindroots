@@ -1,8 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faGlobe, faMapMarked, faSearch, faChevronDown, faChevronUp, faSliders } from '@fortawesome/free-solid-svg-icons';
-import { RiBookShelfLine } from 'react-icons/ri';
+import { faGlobe, faMapMarked, faSearch, faChevronDown, faChevronUp, faSliders, faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import LanguageSelector from '../selectors/LanguageSelector';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import NodeLimitSlider from '../selectors/NodeLimitSlider';
@@ -11,7 +10,7 @@ import SemiticLanguageFilter from '../selectors/SemiticLanguageFilter';
 import WordShadeSelector from '../selectors/WordShadeSelector';
 import ModeSelector from '../selectors/ModeSelector';
 import ShowLinksToggle from '../selectors/ShowLinksToggle';
-import FontScaleSelector from '../selectors/FontScaleSelector';
+import DualFontScaleSelector from '../selectors/DualFontScaleSelector';
 import { useAdvancedMode } from '../../contexts/AdvancedModeContext';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useLabels } from '../../hooks/useLabels';
@@ -94,7 +93,7 @@ const BottomNav = () => {
                 </div>
                 {showOtherSettings && (
                   <div className="mb-4 pl-2.5">
-                    <div className="mb-4"><FontScaleSelector /></div>
+                    <div className="mb-4"><DualFontScaleSelector /></div>
                     <button
                       onClick={() => navigate('/settings')}
                       className="flex items-center gap-2 px-3 py-2 mb-4 bg-[#f0f7fd] border border-[#bfe7fd] rounded cursor-pointer text-accent font-medium text-[0.9rem] transition-all duration-200 w-full hover:bg-accent-light hover:border-accent"
@@ -162,9 +161,7 @@ const BottomNav = () => {
           'fixed bottom-0 left-0 right-0 flex justify-center items-center z-modal',
           'bg-[rgba(40,40,40,0.95)] backdrop-blur-sm border-t border-white/10',
           'shadow-[0_-2px_10px_rgba(0,0,0,0.2)] transition-all duration-300',
-          isExpanded
-            ? 'h-[70px] px-5 gap-4 md:h-[65px] xs:h-[60px] md:px-[15px] xs:px-[10px] md:gap-3 xs:gap-2'
-            : 'h-[60px] px-0 gap-0'
+          isExpanded ? 'h-[70px] px-5 gap-4' : 'h-[60px] px-0 gap-0'
         )}
       >
         {/* Left buttons */}
@@ -184,18 +181,18 @@ const BottomNav = () => {
               <FontAwesomeIcon icon={faGlobe} />
             </button>
             <button
-              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5 md:w-[45px] md:h-[45px] md:text-base xs:w-[40px] xs:h-[40px] xs:text-sm"
+              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5"
               onClick={() => handleNavigation('/corpus-menu')}
               title={t.corpusLibrary}
             >
-              <RiBookShelfLine />
+              <FontAwesomeIcon icon={faBookOpen} />
             </button>
           </div>
         )}
 
         {/* Center: MindRoots button — always visible */}
         <button
-          className="w-[55px] h-[55px] rounded-full bg-white border-[3px] border-white/30 cursor-pointer flex items-center justify-center overflow-hidden transition-all duration-300 relative p-0.5 hover:-translate-y-[3px] hover:shadow-[0_5px_20px_rgba(0,0,0,0.3)] md:w-[50px] md:h-[50px] xs:w-[44px] xs:h-[44px]"
+          className="w-[55px] h-[55px] rounded-full bg-white border-[3px] border-white/30 cursor-pointer flex items-center justify-center overflow-hidden transition-all duration-300 relative p-0.5 hover:-translate-y-[3px] hover:shadow-[0_5px_20px_rgba(0,0,0,0.3)]"
           onClick={handleMindRootsClick}
           onMouseDown={handleMouseDown}
           onMouseUp={handleMouseUp}
@@ -213,14 +210,14 @@ const BottomNav = () => {
         {isExpanded && (
           <div className="flex items-center gap-4 md:gap-3 xs:gap-2">
             <button
-              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5 md:w-[45px] md:h-[45px] md:text-base xs:w-[40px] xs:h-[40px] xs:text-sm"
+              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5"
               onClick={() => handleNavigation('/start')}
               title={t.graphExploration}
             >
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
             <button
-              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5 md:w-[45px] md:h-[45px] md:text-base xs:w-[40px] xs:h-[40px] xs:text-sm"
+              className="w-[50px] h-[50px] rounded-full border border-white/20 text-white flex items-center justify-center cursor-pointer text-[18px] transition-all duration-300 bg-white/10 hover:bg-white/20 hover:-translate-y-0.5"
               onClick={() => handleNavigation('/sandbox')}
               title={t.positionalRootSearch}
             >
