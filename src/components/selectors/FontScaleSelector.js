@@ -36,7 +36,7 @@ const FontScaleSelector = () => {
           <button
             key={option.value}
             onClick={() => setFontScale(option.value)}
-            className={`py-[6px] px-3 rounded cursor-pointer text-[0.85rem] transition-all duration-200 ${fontScale === option.value ? 'border-2 border-accent bg-[#e3f2fd] text-accent font-semibold' : 'border border-[#ccc] bg-surface text-[#333] font-medium'}`}
+            className={`py-[6px] px-3 rounded cursor-pointer text-[0.85rem] transition-all duration-200 ${fontScale === option.value ? 'border-2 border-accent bg-accent-light text-accent font-semibold' : 'border border-border bg-surface text-ink font-medium'}`}
             title={option.description}
           >
             {option.label}

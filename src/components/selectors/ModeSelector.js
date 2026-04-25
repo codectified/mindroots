@@ -14,7 +14,7 @@ const ModeSelector = () => {
           onClick={() => !isAdvancedMode || toggleAdvancedMode()}
           className={clsx(
             'px-3 py-1 text-xs rounded border border-border cursor-pointer font-serif transition-all duration-150',
-            !isAdvancedMode ? 'bg-[#333] text-white' : 'bg-surface text-[#333]'
+            !isAdvancedMode ? 'bg-ink text-white' : 'bg-surface text-ink'
           )}
         >
           {t.guided}
@@ -23,7 +23,7 @@ const ModeSelector = () => {
           onClick={() => isAdvancedMode || toggleAdvancedMode()}
           className={clsx(
             'px-3 py-1 text-xs rounded border border-border cursor-pointer font-serif transition-all duration-150',
-            isAdvancedMode ? 'bg-[#333] text-white' : 'bg-surface text-[#333]'
+            isAdvancedMode ? 'bg-ink text-white' : 'bg-surface text-ink'
           )}
         >
           {t.advanced}

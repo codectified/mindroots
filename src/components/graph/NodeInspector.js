@@ -420,13 +420,13 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
 
         {/* Inline tag panel */}
         {showTagPanel && (
-          <div className="px-4 py-[10px] border-b border-[#ddd] bg-[#f8f8f8] flex flex-wrap items-center gap-2">
+          <div className="px-4 py-[10px] border-b border-border-light bg-[#f8f8f8] flex flex-wrap items-center gap-2">
             <input
               type="text"
               placeholder={t.tagKeyPlaceholder}
               value={tagKey}
               onChange={e => setTagKey(e.target.value)}
-              className="py-1 px-2 border border-[#ccc] rounded-[3px] font-mono text-[13px] w-[140px]"
+              className="py-1 px-2 border border-border rounded-[3px] font-mono text-[13px] w-[140px]"
             />
             <input
               type="text"
@@ -434,7 +434,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
               value={tagValue}
               onChange={e => setTagValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAddTag()}
-              className="py-1 px-2 border border-[#ccc] rounded-[3px] text-[13px] flex-1 min-w-[120px]"
+              className="py-1 px-2 border border-border rounded-[3px] text-[13px] flex-1 min-w-[120px]"
             />
             <button
               onClick={handleAddTag}
@@ -445,7 +445,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
             </button>
             <button
               onClick={() => setShowTagPanel(false)}
-              className="py-1 px-2 bg-transparent border border-[#ccc] rounded-[3px] cursor-pointer text-[13px]"
+              className="py-1 px-2 bg-transparent border border-border rounded-[3px] cursor-pointer text-[13px]"
             >
               {t.cancel}
             </button>

@@ -311,7 +311,7 @@ const CorpusRenderer = ({
         <div className="corpus-list-header">
           {/* Number column */}
           <div
-            className="w-[50px] min-w-[50px] flex-shrink-0 text-center cursor-pointer select-none border-r border-[#ddd] pr-3"
+            className="w-[50px] min-w-[50px] flex-shrink-0 text-center cursor-pointer select-none border-r border-border-light pr-3"
             onClick={() => handleColumnSort('original')}
           >
             <div className={`freq-label text-[11px] ${sortBy === 'original' ? 'text-[#2d5a2d]' : 'text-muted'}`}>
@@ -363,7 +363,7 @@ const CorpusRenderer = ({
           >
             <div className="item-content">
               {/* Number */}
-              <div className="w-[50px] min-w-[50px] text-center flex-shrink-0 text-muted font-medium border-r border-[#ddd] pr-3">
+              <div className="w-[50px] min-w-[50px] text-center flex-shrink-0 text-muted font-medium border-r border-border-light pr-3">
                 {item.item_id}
               </div>
 

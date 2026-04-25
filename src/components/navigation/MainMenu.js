@@ -117,34 +117,34 @@ const MainMenu = () => {
           onClick={() => handleNavigation('/corpus-menu')}
         >
           <FontAwesomeIcon icon={faBookOpen} className="text-[40px] mb-2.5" />
-          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.corpusLibrary}</span>
+          <span className="text-dynamic-sm font-serif text-ink break-words leading-[1.3] max-w-[90%]">{t.corpusLibrary}</span>
         </div>
         <div
           className="flex flex-col items-center justify-center bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[200px] min-h-[200px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
           onClick={() => handleNavigation('/start')}
         >
           <FontAwesomeIcon icon={faMapMarked} className="text-[40px] mb-2.5" />
-          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.graphExploration}</span>
+          <span className="text-dynamic-sm font-serif text-ink break-words leading-[1.3] max-w-[90%]">{t.graphExploration}</span>
         </div>
         <div
           className="flex flex-col items-center justify-center bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[200px] min-h-[200px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
           onClick={() => handleNavigation('/sandbox')}
         >
           <FontAwesomeIcon icon={faSearch} className="text-[40px] mb-2.5" />
-          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.positionalRootSearch}</span>
+          <span className="text-dynamic-sm font-serif text-ink break-words leading-[1.3] max-w-[90%]">{t.positionalRootSearch}</span>
         </div>
         <div
           className="flex flex-col items-center justify-center bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[200px] min-h-[200px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
           onClick={() => handleNavigation('/lisan-lab')}
         >
           <FontAwesomeIcon icon={faPodcast} className="text-[40px] mb-2.5" />
-          <span className="text-dynamic-sm font-serif text-[#333] break-words leading-[1.3] max-w-[90%]">{t.lisanLab}</span>
+          <span className="text-dynamic-sm font-serif text-ink break-words leading-[1.3] max-w-[90%]">{t.lisanLab}</span>
         </div>
       </div>
 
       {/* News section */}
       <div className="my-[30px] mx-auto max-w-[600px] px-5 py-5 bg-surface rounded-lg border-l-4 border-info">
-        <h3 className="m-0 mb-5 font-serif text-[#333] text-[20px] font-semibold">{t.latestUpdates}</h3>
+        <h3 className="m-0 mb-5 font-serif text-ink text-[20px] font-semibold">{t.latestUpdates}</h3>
 
         {latestAnalysis && (
           <div className="mb-4 p-4 bg-white rounded-md border border-surface-alt">
@@ -203,16 +203,16 @@ const MainMenu = () => {
       {/* Social links */}
       <div className="mt-auto text-center py-2.5">
         <div className="flex justify-center gap-2.5 mt-2.5">
-          <a href="https://www.instagram.com/omr.ib/" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-[#333] transition-colors duration-300 hover:text-[#e1306c]">
+          <a href="https://www.instagram.com/omr.ib/" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-ink transition-colors duration-300 hover:text-[#e1306c]">
             <FontAwesomeIcon icon={faInstagram} />
           </a>
-          <a href="https://www.linkedin.com/in/ibomar/" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-[#333] transition-colors duration-300 hover:text-[#0077b5]">
+          <a href="https://www.linkedin.com/in/ibomar/" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-ink transition-colors duration-300 hover:text-[#0077b5]">
             <FontAwesomeIcon icon={faLinkedin} />
           </a>
-          <a href="https://www.youtube.com/@codectified" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-[#333] transition-colors duration-300 hover:text-[#ff0000]">
+          <a href="https://www.youtube.com/@codectified" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-ink transition-colors duration-300 hover:text-[#ff0000]">
             <FontAwesomeIcon icon={faYoutube} />
           </a>
-          <a href="https://github.com/codectified/mindroots" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-[#333] transition-colors duration-300 hover:text-[#333]">
+          <a href="https://github.com/codectified/mindroots" target="_blank" rel="noopener noreferrer" className="text-[1.5em] text-ink transition-colors duration-300 hover:text-ink">
             <FontAwesomeIcon icon={faGithub} />
           </a>
         </div>

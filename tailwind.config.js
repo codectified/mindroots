@@ -27,6 +27,10 @@ module.exports = {
           hover:   '#a34a12',   // darker on hover
         },
         muted:    '#666666',    // secondary text, labels
+        ink: {
+          DEFAULT: '#333333',   // body text, dark UI buttons
+          hover:   '#555555',   // hover state for dark buttons
+        },
         neutral: {
           DEFAULT: '#6c757d',   // reset/secondary buttons
           hover:   '#5a6268',

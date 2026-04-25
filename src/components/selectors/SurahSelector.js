@@ -19,7 +19,7 @@ const SurahSelector = () => {
   const clearAll = () => setSurahFilter([]);
   const selectAll = () => setSurahFilter(SURAHS.map(s => s.number));
 
-  const smallBtnCls = 'text-[11px] py-[2px] px-[6px] cursor-pointer border border-[#ccc] rounded-[3px] bg-[#f8f8f8] text-[#333]';
+  const smallBtnCls = 'text-[11px] py-[2px] px-[6px] cursor-pointer border border-border rounded-[3px] bg-[#f8f8f8] text-ink';
 
   return (
     <div className="mt-2">
@@ -31,7 +31,7 @@ const SurahSelector = () => {
           <span className="text-[11px] text-muted">{t.surahSelected(surahFilter.length)}</span>
         )}
       </div>
-      <div className="max-h-[160px] overflow-y-auto border border-[#ddd] rounded p-1 grid grid-cols-2 gap-px text-[12px]">
+      <div className="max-h-[160px] overflow-y-auto border border-border-light rounded p-1 grid grid-cols-2 gap-px text-[12px]">
         {SURAHS.map(surah => {
           const selected = surahFilter.includes(surah.number);
           return (
@@ -46,7 +46,7 @@ const SurahSelector = () => {
                 className="w-3 h-3 cursor-pointer"
               />
               {/* direction has no Tailwind utility — stays inline */}
-              <span className="text-[#333]" style={{ direction: showArabic ? 'rtl' : 'ltr' }}>
+              <span className="text-ink" style={{ direction: showArabic ? 'rtl' : 'ltr' }}>
                 {showArabic ? toArabicNumerals(surah.number) : surah.number}. {showArabic ? surah.arabic : surah.english}
               </span>
             </label>

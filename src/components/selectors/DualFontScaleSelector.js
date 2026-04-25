@@ -54,7 +54,7 @@ const DualFontScaleSelector = () => {
                 'px-3 py-1.5 rounded text-[0.85rem] transition-all duration-200 cursor-pointer',
                 latinScale === option.value
                   ? 'border-2 border-accent bg-accent-light text-accent font-semibold'
-                  : 'border border-border bg-surface text-[#333] font-medium hover:border-border-dark hover:bg-surface-alt'
+                  : 'border border-border bg-surface text-ink font-medium hover:border-border-dark hover:bg-surface-alt'
               )}
             >
               {option.label}
@@ -92,7 +92,7 @@ const DualFontScaleSelector = () => {
                 'px-3 py-1.5 rounded text-[0.85rem] transition-all duration-200 cursor-pointer',
                 semiticScale === option.value
                   ? 'border-2 border-arabic bg-arabic-light text-arabic font-semibold'
-                  : 'border border-border bg-surface text-[#333] font-medium hover:border-border-dark hover:bg-surface-alt'
+                  : 'border border-border bg-surface text-ink font-medium hover:border-border-dark hover:bg-surface-alt'
               )}
             >
               {option.label}

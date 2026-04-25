@@ -70,7 +70,7 @@ const FontSelector = ({ fonts, activeId, onChange, accentClass, activeBg, active
           <div className="font-semibold text-primary mb-1">{font.name}</div>
           <div className="text-[0.85rem] text-muted mb-2">{font.description}</div>
           <div
-            className="text-[1.4rem] text-[#333] py-1"
+            className="text-[1.4rem] text-ink py-1"
             style={{ fontFamily: font.fontFamily }}
           >
             {font.sample}

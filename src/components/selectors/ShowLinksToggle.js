@@ -25,9 +25,9 @@ const ShowLinksToggle = () => {
   const t = useLabels();
 
   const toggleBtnCls = (active, disabled = false) =>
-    `py-1 px-3 text-[12px] rounded border border-[#ccc] font-serif transition-colors ` +
+    `py-1 px-3 text-[12px] rounded border border-border font-serif transition-colors ` +
     (disabled ? 'cursor-not-allowed opacity-50 ' : 'cursor-pointer ') +
-    (active ? 'bg-[#333] text-white' : 'bg-surface text-[#333]');
+    (active ? 'bg-ink text-white' : 'bg-surface text-ink');
 
   return (
     <div className="mb-[10px]">

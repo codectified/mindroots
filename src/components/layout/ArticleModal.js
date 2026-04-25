@@ -25,7 +25,7 @@ const ArticleModal = ({ filePath, title, onClose }) => {
     >
       <div className="bg-white rounded-xl max-w-[800px] w-full max-h-[90vh] shadow-[0_20px_40px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden">
         <div className="px-[30px] py-5 border-b border-[#eee] flex justify-between items-center bg-surface">
-          <h2 className="m-0 text-2xl font-semibold text-[#333]">
+          <h2 className="m-0 text-2xl font-semibold text-ink">
             {title}
           </h2>
           <button

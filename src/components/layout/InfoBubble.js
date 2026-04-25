@@ -166,7 +166,7 @@ const LazyAnalysisItem = ({ header, isLast }) => {
           {analysisData && (
             <>
               <div className="mb-[15px] pb-[10px] border-b border-[#e0e0e0] flex items-center gap-3">
-                <span className="text-[16px] font-semibold text-[#333]">
+                <span className="text-[16px] font-semibold text-ink">
                   {header.root.arabic} {header.root.english && `(${header.root.english})`}
                 </span>
                 <button
@@ -267,7 +267,7 @@ const LazyArticleItem = ({ header, isLast }) => {
                     <FontAwesomeIcon icon={faNetworkWired} />
                     {t.viewGraphShort}
                   </button>
-                  <span className="text-[16px] font-semibold text-[#333] text-center">
+                  <span className="text-[16px] font-semibold text-ink text-center">
                     {articleData.root.arabic} {articleData.root.english && `(${articleData.root.english})`}
                   </span>
                   <div />
@@ -423,7 +423,7 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
               ) : (
                 <div />
               )}
-              <h2 className="m-0 text-2xl text-[#333] text-center">
+              <h2 className="m-0 text-2xl text-ink text-center">
                 {title || (nodeData && nodeData.rootInfo ? `${nodeData.rootInfo.arabic} ${nodeData.rootInfo.english ? `(${nodeData.rootInfo.english})` : ''}` : '')}
               </h2>
               {/* Share button - show for all */}

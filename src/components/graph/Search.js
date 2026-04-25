@@ -17,7 +17,7 @@ const arabicLetters = [
   'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
 ];
 
-const selectClass = 'py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-muted';
+const selectClass = 'py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-ink appearance-none focus:outline-none focus:border-muted';
 
 const Search = () => {
   const { corpusFilter, surahFilter } = useCorpusFilter();
@@ -182,7 +182,7 @@ const Search = () => {
             onChange={(e) => setLexicalQuery(e.target.value)}
             onKeyDown={(e) => e.key === 'Enter' && handleLexicalSearch()}
             placeholder={t.fullTextPlaceholder}
-            className="flex-1 px-[10px] py-[6px] text-sm border border-[#ccc] rounded"
+            className="flex-1 px-[10px] py-[6px] text-sm border border-border rounded"
           />
           <button onClick={handleLexicalSearch} disabled={!lexicalQuery.trim()}>
             {t.search}

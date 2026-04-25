@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import { useLabels } from '../../hooks/useLabels';
 
 const menuOptionCls =
-  'w-full bg-surface border border-border-light rounded text-[#333] text-center cursor-pointer font-serif ' +
+  'w-full bg-surface border border-border-light rounded text-ink text-center cursor-pointer font-serif ' +
   'text-[15px] py-[10px] px-3 min-h-[40px] transition-[background-color,border-color] duration-200 ' +
   'md:text-[14px] md:py-2 md:min-h-0 ' +
   'hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark active:translate-y-px ' +
@@ -148,7 +148,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menu = (
     <div
       ref={menuRef}
-      className="fixed bg-white border border-[#ccc] rounded-[5px] w-[240px] max-w-[80vw] max-h-[70vh] p-3 shadow-[0_2px_10px_rgba(0,0,0,0.2)] z-[1000] font-serif md:w-[200px] md:min-h-[120px] md:max-w-[90vw] md:p-[10px] md:max-h-none"
+      className="fixed bg-white border border-border rounded-[5px] w-[240px] max-w-[80vw] max-h-[70vh] p-3 shadow-[0_2px_10px_rgba(0,0,0,0.2)] z-[1000] font-serif md:w-[200px] md:min-h-[120px] md:max-w-[90vw] md:p-[10px] md:max-h-none"
       style={getCenteredStyle()}
     >
       <div className="flex flex-col gap-2">
@@ -163,11 +163,11 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
             </button>
 
             {option.submenu && openSubmenu === option.action && (
-              <div className={`absolute top-0 min-w-[120px] max-w-[60vw] bg-white border border-[#ccc] rounded p-1 shadow-[2px_2px_8px_rgba(0,0,0,0.15)] z-[1001] md:max-w-none ${getSubmenuPositionCls()}`}>
+              <div className={`absolute top-0 min-w-[120px] max-w-[60vw] bg-white border border-border rounded p-1 shadow-[2px_2px_8px_rgba(0,0,0,0.15)] z-[1001] md:max-w-none ${getSubmenuPositionCls()}`}>
                 {option.submenu.map((subOption, subIndex) => (
                   <button
                     key={subIndex}
-                    className="block w-full bg-surface border border-border-light rounded-[3px] py-2 px-[10px] my-0.5 cursor-pointer font-serif text-[14px] text-[#333] text-center transition-colors duration-200 md:py-[6px] md:text-[13px] hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark"
+                    className="block w-full bg-surface border border-border-light rounded-[3px] py-2 px-[10px] my-0.5 cursor-pointer font-serif text-[14px] text-ink text-center transition-colors duration-200 md:py-[6px] md:text-[13px] hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark"
                     onClick={() => handleSubmenuClick(subOption.action)}
                   >
                     {subOption.label}

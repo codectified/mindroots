@@ -187,14 +187,14 @@ const CorpusGraphScreen = () => {
     <div>
       <div className="flex flex-row gap-[10px]">
         <button
-          className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 disabled:opacity-60"
+          className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 disabled:opacity-60"
           onClick={() => handleNavigation('previous')}
           disabled={navigationLoading}
         >
           <FontAwesomeIcon icon={faArrowLeft} />
         </button>
         <button
-          className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 disabled:opacity-60"
+          className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 disabled:opacity-60"
           onClick={() => handleNavigation('next')}
           disabled={navigationLoading}
         >

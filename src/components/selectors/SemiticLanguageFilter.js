@@ -56,7 +56,7 @@ const SemiticLanguageFilter = () => {
         </div>
       </div>
 
-      <div className="max-h-[300px] overflow-y-auto border border-[#ddd] p-[10px] rounded">
+      <div className="max-h-[300px] overflow-y-auto border border-border-light p-[10px] rounded">
         {Object.entries(semiticLanguageGroups).map(([groupName, languages]) => {
           const allGroupSelected = languages.every(lang => selectedSemiticLanguages.includes(lang));
           const someGroupSelected = languages.some(lang => selectedSemiticLanguages.includes(lang));

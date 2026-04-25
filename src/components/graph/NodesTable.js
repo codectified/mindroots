@@ -121,7 +121,7 @@ const NodesTable = ({ graphData, wordShadeMode, onNodeClick, infoBubble, closeIn
     <>
       <table className="w-full border-collapse">
         <thead>
-          <tr className="border-b border-[#ccc]">
+          <tr className="border-b border-border">
             <th className="p-2 text-left">{t.colSemantic}</th>
             <th className="p-2 text-left">{t.colEnglish}</th>
             {showLocationColumn && (

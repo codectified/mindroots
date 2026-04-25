@@ -85,7 +85,7 @@ const BottomNav = () => {
               <>
                 {/* General section */}
                 <div
-                  className="flex justify-between items-center text-[#333] font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
+                  className="flex justify-between items-center text-ink font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
                   onClick={() => setShowOtherSettings(prev => !prev)}
                 >
                   <strong>{t.general}</strong>
@@ -107,7 +107,7 @@ const BottomNav = () => {
 
                 {/* Graph section */}
                 <div
-                  className="flex justify-between items-center text-[#333] font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
+                  className="flex justify-between items-center text-ink font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
                   onClick={() => setShowGraphSettings(prev => !prev)}
                 >
                   <strong>{t.graph}</strong>
@@ -120,7 +120,7 @@ const BottomNav = () => {
                       <div className="flex items-center gap-[5px] whitespace-nowrap">
                         <label>{t.secondaryLanguage}</label>
                         <select
-                          className="py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-muted"
+                          className="py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-ink appearance-none focus:outline-none focus:border-muted"
                           value={L2}
                           onChange={(e) => setL2(e.target.value)}
                         >
@@ -137,7 +137,7 @@ const BottomNav = () => {
 
                 {/* Filters section */}
                 <div
-                  className="flex justify-between items-center text-[#333] font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
+                  className="flex justify-between items-center text-ink font-semibold select-none cursor-pointer mb-2.5 py-2 border-b border-black/10"
                   onClick={() => setShowFilterSettings(prev => !prev)}
                 >
                   <strong>{t.filters}</strong>

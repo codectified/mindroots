@@ -62,7 +62,7 @@ const MiniMenu = () => {
   const renderContent = () => {
     if (selectedOption === 'settings') {
       return (
-        <div className="p-[15px] border border-[#ddd] rounded-[5px] mb-5 bg-[#f9f9f9]">
+        <div className="p-[15px] border border-border-light rounded-[5px] mb-5 bg-[#f9f9f9]">
           {/* Collapse button */}
           <div className="flex justify-end mb-1">
             <button
@@ -89,7 +89,7 @@ const MiniMenu = () => {
             <>
               {/* 3. General */}
               <div
-                className="font-semibold font-serif text-[#333] text-[14px] cursor-pointer mb-[10px]"
+                className="font-semibold font-serif text-ink text-[14px] cursor-pointer mb-[10px]"
                 onClick={() => setShowOtherSettings((prev) => !prev)}
               >
                 {t.general}
@@ -102,7 +102,7 @@ const MiniMenu = () => {
                   </div>
                   <button
                     onClick={() => navigate('/settings')}
-                    className="flex items-center gap-2 py-2 px-3 mb-[15px] bg-[#f0f7fd] border border-[#bfe7fd] rounded cursor-pointer text-accent font-medium text-[0.9rem] transition-all duration-200 hover:bg-[#e3f2fd] hover:border-accent"
+                    className="flex items-center gap-2 py-2 px-3 mb-[15px] bg-[#f0f7fd] border border-[#bfe7fd] rounded cursor-pointer text-accent font-medium text-[0.9rem] transition-all duration-200 hover:bg-accent-light hover:border-accent"
                   >
                     <FontAwesomeIcon icon={faSliders} />
                     {t.advancedTypography}
@@ -113,7 +113,7 @@ const MiniMenu = () => {
 
               {/* 4. Graph */}
               <div
-                className="font-semibold font-serif text-[#333] text-[14px] cursor-pointer mb-[10px]"
+                className="font-semibold font-serif text-ink text-[14px] cursor-pointer mb-[10px]"
                 onClick={() => setShowGraphSettings((prev) => !prev)}
               >
                 {t.graph}
@@ -126,7 +126,7 @@ const MiniMenu = () => {
                     <div className="flex items-center gap-[5px] whitespace-nowrap">
                       <label>{t.secondaryLanguage}</label>
                       <select
-                        className="py-[4px] px-[6px] text-[14px] font-serif m-0 min-w-[100px] w-full border border-[#ccc] rounded bg-white text-[#333] appearance-none focus:outline-none focus:border-muted md:py-[5px] md:px-[8px] md:text-[16px] md:min-w-[120px] md:w-auto"
+                        className="py-[4px] px-[6px] text-[14px] font-serif m-0 min-w-[100px] w-full border border-border rounded bg-white text-ink appearance-none focus:outline-none focus:border-muted md:py-[5px] md:px-[8px] md:text-[16px] md:min-w-[120px] md:w-auto"
                         value={L2}
                         onChange={(e) => setL2(e.target.value)}
                       >
@@ -143,7 +143,7 @@ const MiniMenu = () => {
 
               {/* 5. Filters */}
               <div
-                className="font-semibold font-serif text-[#333] text-[14px] cursor-pointer mb-[10px]"
+                className="font-semibold font-serif text-ink text-[14px] cursor-pointer mb-[10px]"
                 onClick={() => setShowFilterSettings((prev) => !prev)}
               >
                 {t.filters}
@@ -173,16 +173,16 @@ const MiniMenu = () => {
       <div className="fixed bottom-5 left-5 flex flex-row-reverse items-center gap-2.5 h-[60px] z-[1000] md:absolute md:bottom-auto md:left-auto md:top-5 md:right-5 md:flex-row">
         {isMenuExpanded && (
           <>
-            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/sandbox')}>
+            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/sandbox')}>
               <FontAwesomeIcon icon={faSearch} />
             </button>
-            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/start')}>
+            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/start')}>
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
-            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-[#555] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/corpus-menu')}>
+            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/corpus-menu')}>
               <FontAwesomeIcon icon={faBookOpen} />
             </button>
-            <button className={`w-[50px] h-[50px] flex items-center justify-center rounded-full text-white cursor-pointer border-none text-[14px] p-[6px] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 hover:bg-[#555] ${selectedOption === 'settings' ? 'bg-[#4a4a4a]' : 'bg-[#333]'}`} onClick={() => toggleOption('settings')}>
+            <button className={`w-[50px] h-[50px] flex items-center justify-center rounded-full text-white cursor-pointer border-none text-[14px] p-[6px] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 hover:bg-ink-hover ${selectedOption === 'settings' ? 'bg-[#4a4a4a]' : 'bg-ink'}`} onClick={() => toggleOption('settings')}>
               <FontAwesomeIcon icon={faGlobe} />
             </button>
           </>
@@ -209,7 +209,7 @@ const MiniMenu = () => {
       {isMenuExpanded && (
         <div className="fixed bottom-[80px] left-[30px] flex flex-col-reverse gap-[10px] z-[1000] items-center md:absolute md:top-[80px] md:right-[30px] md:bottom-auto md:left-auto md:flex-col">
           <button
-            className="mini-menu-button w-[30px] h-[30px] min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] flex items-center justify-center rounded-full bg-[#333] text-white cursor-pointer text-[12px] border-none transition-[background-color] duration-200 p-0 flex-shrink-0 hover:bg-[#555]"
+            className="mini-menu-button w-[30px] h-[30px] min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer text-[12px] border-none transition-[background-color] duration-200 p-0 flex-shrink-0 hover:bg-ink-hover"
             onClick={() => handleNavigation('/mindroots')}
           >
             <FontAwesomeIcon icon={faHome} />
@@ -221,7 +221,7 @@ const MiniMenu = () => {
 
       {/* Settings panel */}
       {selectedOption && (
-        <div className="fixed bottom-[80px] left-5 bg-white/95 border border-[#ccc] rounded-[8px] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-[1002] min-w-[300px] max-w-[400px] max-h-[70vh] overflow-y-auto md:absolute md:top-[80px] md:right-5 md:bottom-auto md:left-auto">
+        <div className="fixed bottom-[80px] left-5 bg-white/95 border border-border rounded-[8px] p-5 shadow-[0_4px_12px_rgba(0,0,0,0.15)] z-[1002] min-w-[300px] max-w-[400px] max-h-[70vh] overflow-y-auto md:absolute md:top-[80px] md:right-5 md:bottom-auto md:left-auto">
           {renderContent()}
         </div>
       )}
