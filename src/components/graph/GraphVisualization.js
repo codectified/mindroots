@@ -329,8 +329,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
   }, [data, handleNodeClick, showLinks, showLinkLabels, wordShadeMode]);
 
   return (
-    <div ref={containerRef} style={{ width: '90%', height: 'min(70vh, calc(100vh - 320px))', minHeight: '300px', maxWidth: '100%', position: 'relative' }}>
-      <svg ref={svgRef} width="100%" height="100%" style={{ border: 'none', display: 'block' }}></svg>
+    <div ref={containerRef} className="w-[90%] h-[min(70vh,calc(100vh_-_320px))] min-h-[300px] max-w-full relative">
+      <svg ref={svgRef} width="100%" height="100%" className="border-none block"></svg>
       
       
       {/* Render context menu in advanced mode */}

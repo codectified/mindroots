@@ -7,16 +7,11 @@ const AdditionalSettingsToggle = ({ isExpanded, onToggle }) => {
   const t = useLabels();
   return (
     <div
-      className="additional-settings-toggle"
+      className="additional-settings-toggle pt-[15px] pb-[250px] cursor-pointer"
       onClick={onToggle}
-      style={{
-        paddingTop: '15px',  // Adjust this for more or less space above
-        paddingBottom: '250px',  // Adjust this for more or less space below
-        cursor: 'pointer'
-      }}
     >
       {t.additionalSettings}
-      <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} style={{ marginLeft: '5px' }} />
+      <FontAwesomeIcon icon={isExpanded ? faChevronUp : faChevronDown} className="ml-[5px]" />
     </div>
   );
 };

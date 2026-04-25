@@ -19,74 +19,23 @@ const ArticleModal = ({ filePath, title, onClose }) => {
   if (!isVisible) return null;
 
   return (
-    <div 
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.6)',
-        zIndex: 1000,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        padding: '20px'
-      }}
+    <div
+      className="fixed inset-0 bg-black/60 z-[1000] flex items-center justify-center p-5"
       onClick={handleBackdropClick}
     >
-      <div 
-        style={{
-          background: 'white',
-          borderRadius: '12px',
-          maxWidth: '800px',
-          width: '100%',
-          maxHeight: '90vh',
-          boxShadow: '0 20px 40px rgba(0, 0, 0, 0.3)',
-          display: 'flex',
-          flexDirection: 'column',
-          overflow: 'hidden'
-        }}
-      >
-        <div 
-          style={{
-            padding: '20px 30px',
-            borderBottom: '1px solid #eee',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            background: '#f8f9fa'
-          }}
-        >
-          <h2 style={{ margin: 0, fontSize: '1.5rem', fontWeight: 600, color: '#333' }}>
+      <div className="bg-white rounded-xl max-w-[800px] w-full max-h-[90vh] shadow-[0_20px_40px_rgba(0,0,0,0.3)] flex flex-col overflow-hidden">
+        <div className="px-[30px] py-5 border-b border-[#eee] flex justify-between items-center bg-surface">
+          <h2 className="m-0 text-2xl font-semibold text-[#333]">
             {title}
           </h2>
-          <button 
+          <button
             onClick={onClose}
-            style={{
-              background: 'none',
-              border: 'none',
-              fontSize: '28px',
-              cursor: 'pointer',
-              color: '#666',
-              width: '32px',
-              height: '32px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              borderRadius: '50%'
-            }}
+            className="bg-transparent border-none text-[28px] cursor-pointer text-muted w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-alt transition-colors"
           >
             ×
           </button>
         </div>
-        <div 
-          style={{
-            padding: '30px',
-            overflowY: 'auto',
-            flex: 1
-          }}
-        >
+        <div className="p-[30px] overflow-y-auto flex-1">
           <MarkdownRenderer filePath={filePath} />
         </div>
       </div>

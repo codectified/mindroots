@@ -444,8 +444,8 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
               <Markdown
                 options={{
                   overrides: {
-                    li: { component: ({ children }) => <li style={{ fontSize: '1em' }}>{children}</li> },
-                    ul: { component: ({ children }) => <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>{children}</ul> },
+                    li: { component: ({ children }) => <li>{children}</li> },
+                    ul: { component: ({ children }) => <ul className="pl-5 list-disc">{children}</ul> },
                   },
                 }}
               >
@@ -647,30 +647,23 @@ export default function InfoBubble({ nodeData, filePath, title, onClose, style }
                     {nodeData.articles && nodeData.articles.length > 0 && (
                       <div>
                         {nodeData.articles.map((article, index) => (
-                          <div key={`article-${index}`} style={{ marginBottom: '20px' }}>
-                            <h3 style={{ margin: '0 0 5px 0', fontSize: '18px', fontWeight: 'bold' }}>
+                          <div key={`article-${index}`} className="mb-5">
+                            <h3 className="m-0 mb-[5px] text-[18px] font-bold">
                               {article.title}
                             </h3>
                             {article.subtitle && (
-                              <h4 style={{ margin: '0 0 10px 0', fontSize: '16px', fontStyle: 'italic', color: '#666' }}>
+                              <h4 className="m-0 mb-[10px] text-[16px] italic text-muted">
                                 {article.subtitle}
                               </h4>
                             )}
-                            <p style={{ margin: '0 0 15px 0', fontSize: '12px', color: '#888' }}>
+                            <p className="m-0 mb-[15px] text-[12px] text-[#888]">
                               by {article.signature}
                             </p>
-                            <div style={{
-                              whiteSpace: 'pre-wrap',
-                              lineHeight: '1.6',
-                              fontSize: '14px',
-                              maxHeight: '400px',
-                              overflowY: 'auto',
-                              marginBottom: '10px'
-                            }}>
+                            <div className="whitespace-pre-wrap leading-[1.6] text-[14px] max-h-[400px] overflow-y-auto mb-[10px]">
                               {article.text}
                             </div>
                             {convertNeo4jDate(article.created_at) && (
-                              <div style={{ fontSize: '12px', color: '#888', fontStyle: 'italic' }}>
+                              <div className="text-[12px] text-[#888] italic">
                                 {convertNeo4jDate(article.created_at)}
                               </div>
                             )}

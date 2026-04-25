@@ -34,7 +34,7 @@ const Acknowledgements = () => {
           </a>{' '}
           (morphology and syntax) has been foundational to this project.
         </p>
-        <p style={{ fontStyle: 'italic' }}>
+        <p className="italic">
           In memoriam: Dr. Kais Dukes — may his work continue to benefit learners and researchers.
         </p>
       </section>
@@ -96,34 +96,18 @@ const Acknowledgements = () => {
 
       <section>
         <h3>
-          <button 
+          <button
             onClick={toggleLicenseNotices}
-            style={{
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: 'inherit',
-              fontWeight: 'inherit',
-              color: 'inherit',
-              textDecoration: 'underline',
-              padding: 0
-            }}
+            className="bg-transparent border-none cursor-pointer [font-size:inherit] [font-weight:inherit] text-inherit underline p-0"
           >
             {licenseNoticesExpanded ? '▼' : '▶'} License Notices
           </button>
         </h3>
         
         {licenseNoticesExpanded && (
-          <div style={{ marginTop: '20px' }}>
+          <div className="mt-5">
             <h4>Quranic Arabic Corpus</h4>
-            <pre style={{ 
-              backgroundColor: '#f5f5f5', 
-              padding: '15px', 
-              borderRadius: '4px', 
-              fontSize: '12px',
-              overflow: 'auto',
-              whiteSpace: 'pre-wrap'
-            }}>
+            <pre className="bg-[#f5f5f5] p-[15px] rounded text-[12px] overflow-auto whitespace-pre-wrap">
 {`PLEASE DO NOT REMOVE OR CHANGE THIS COPYRIGHT BLOCK
 #====================================================================
 #
@@ -152,15 +136,8 @@ const Acknowledgements = () => {
 #  Please check updates at: http://corpus.quran.com/download`}
             </pre>
 
-            <h4 style={{ marginTop: '30px' }}>Tanzil Quran Text</h4>
-            <pre style={{ 
-              backgroundColor: '#f5f5f5', 
-              padding: '15px', 
-              borderRadius: '4px', 
-              fontSize: '12px',
-              overflow: 'auto',
-              whiteSpace: 'pre-wrap'
-            }}>
+            <h4 className="mt-[30px]">Tanzil Quran Text</h4>
+            <pre className="bg-[#f5f5f5] p-[15px] rounded text-[12px] overflow-auto whitespace-pre-wrap">
 {`PLEASE DO NOT REMOVE OR CHANGE THIS COPYRIGHT BLOCK
 #====================================================================
 #

@@ -3,11 +3,11 @@ import { useSearchParams } from 'react-router-dom';
 import Markdown from 'markdown-to-jsx';
 
 const CustomListItem = ({ children }) => {
-  return <li style={{ fontSize: '1em' }}>{children}</li>;
+  return <li>{children}</li>;
 };
 
 const CustomList = ({ children }) => {
-  return <ul style={{ paddingLeft: '20px', listStyleType: 'disc' }}>{children}</ul>;
+  return <ul className="pl-5 list-disc">{children}</ul>;
 };
 
 const ArticleViewer = () => {
@@ -71,7 +71,7 @@ const ArticleViewer = () => {
     return (
       <div className="markdown-page">
         <div className="markdown-mindroots">
-          <p style={{ color: '#d32f2f' }}>{error}</p>
+          <p className="text-[#d32f2f]">{error}</p>
         </div>
       </div>
     );
