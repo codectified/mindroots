@@ -17,9 +17,10 @@
    ============================================ */
 
 :root {
-  /* Scale multipliers — written by DualFontScaleSelector and restored in App.js */
-  --font-scale-latin:   1;
-  --font-scale-semitic: 1;
+  /* Scale multipliers — written by DualFontScaleSelector and restored in App.js.
+     Defaults match DualFontScaleSelector initial state and App.js fallback values. */
+  --font-scale-latin:   1.15;
+  --font-scale-semitic: 1.3;
 
   /* Active scale — switches based on UI language (set by LanguageContext).
      Default: Latin. In Arabic UI mode, LanguageContext sets this to var(--font-scale-semitic). */

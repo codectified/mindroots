@@ -62,10 +62,10 @@ import Acknowledgements from './components/staticPages/Acknowledgements';
 
 const App = () => {
   useEffect(() => {
-    const latinScale = localStorage.getItem('fontScaleLatín');
-    const semiticScale = localStorage.getItem('fontScaleSemitic');
-    if (latinScale) document.documentElement.style.setProperty('--font-scale-latin', parseFloat(latinScale));
-    if (semiticScale) document.documentElement.style.setProperty('--font-scale-semitic', parseFloat(semiticScale));
+    const latinScale   = parseFloat(localStorage.getItem('fontScaleLatín'))   || 1.15;
+    const semiticScale = parseFloat(localStorage.getItem('fontScaleSemitic'))  || 1.3;
+    document.documentElement.style.setProperty('--font-scale-latin',   latinScale);
+    document.documentElement.style.setProperty('--font-scale-semitic', semiticScale);
   }, []);
 
   return (

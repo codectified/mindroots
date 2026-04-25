@@ -6,12 +6,12 @@ const DualFontScaleSelector = () => {
   const t = useLabels();
   const [latinScale, setLatinScale] = useState(() => {
     const saved = localStorage.getItem('fontScaleLatín');
-    return saved ? parseFloat(saved) : 1;
+    return saved ? parseFloat(saved) : 1.15; // default: large
   });
 
   const [semiticScale, setSemiticScale] = useState(() => {
     const saved = localStorage.getItem('fontScaleSemitic');
-    return saved ? parseFloat(saved) : 1;
+    return saved ? parseFloat(saved) : 1.3; // default: extra large
   });
 
   const scaleOptions = [
@@ -37,7 +37,7 @@ const DualFontScaleSelector = () => {
       {/* Latin/English Font Scale */}
       <div className="mb-7">
         <h4 className="mt-0 mb-3 text-dynamic-base font-semibold text-primary">
-          {t.latinText}
+          English
         </h4>
         <p className="text-muted text-[0.9rem] mb-2.5">
           {t.fontSizePercent((latinScale * 100).toFixed(0))}
@@ -75,7 +75,7 @@ const DualFontScaleSelector = () => {
       {/* Semitic/Arabic Font Scale */}
       <div className="mb-3">
         <h4 className="mt-0 mb-3 text-dynamic-base font-semibold text-primary">
-          {t.arabicText}
+          Semitic
         </h4>
         <p className="text-muted text-[0.9rem] mb-2.5">
           {t.fontSizePercent((semiticScale * 100).toFixed(0))}
