@@ -11,7 +11,7 @@ const LanguageSelector = () => {
       <div className="flex items-center gap-[5px] whitespace-nowrap">
         <label>{t.languageLabel}</label>
         <select
-          className="py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-ink appearance-none focus:outline-none focus:border-muted"
+          className="select-ui"
           value={L1}
           onChange={(e) => setL1(e.target.value)}
         >

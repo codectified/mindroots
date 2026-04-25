@@ -9,6 +9,23 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer components {
+  /* Large round nav bar buttons — 50px with responsive sizing */
+  .btn-nav-round {
+    @apply w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0;
+  }
+
+  /* Small round utility buttons (DisplayModeSelector, home button) */
+  .mini-menu-button {
+    @apply flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none transition-[background-color] duration-200 p-0 flex-shrink-0 hover:bg-ink-hover;
+  }
+
+  /* Uniform select element styling across all dropdowns */
+  .select-ui {
+    @apply py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-ink appearance-none focus:outline-none focus:border-muted;
+  }
+}
+
 /* ============================================
    Font system — CSS custom properties
    HOW SCALING WORKS:

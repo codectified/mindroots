@@ -16,7 +16,7 @@ const DisplayModeSelector = ({ size = 'small' }) => {
 
   return (
     <button
-      className={`mini-menu-button ${sizeClass} flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none transition-[background-color] duration-200 p-0 flex-shrink-0 hover:bg-ink-hover`}
+      className={`mini-menu-button ${sizeClass}`}
       onClick={handleToggle}
     >
       <FontAwesomeIcon icon={displayMode === 'graph' ? faTable : faProjectDiagram} />

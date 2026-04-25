@@ -17,7 +17,7 @@ const arabicLetters = [
   'ط', 'ظ', 'ع', 'غ', 'ف', 'ق', 'ك', 'ل', 'م', 'ن', 'ه', 'و', 'ي'
 ];
 
-const selectClass = 'py-[5px] px-2 text-base font-serif min-w-[120px] border border-border rounded bg-white text-ink appearance-none focus:outline-none focus:border-muted';
+const selectClass = 'select-ui';
 
 const Search = () => {
   const { corpusFilter, surahFilter } = useCorpusFilter();

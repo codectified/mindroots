@@ -173,16 +173,16 @@ const MiniMenu = () => {
       <div className="fixed bottom-5 left-5 flex flex-row-reverse items-center gap-2.5 h-[60px] z-[1000] md:absolute md:bottom-auto md:left-auto md:top-5 md:right-5 md:flex-row">
         {isMenuExpanded && (
           <>
-            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/sandbox')}>
+            <button className="btn-nav-round" onClick={() => handleNavigation('/sandbox')}>
               <FontAwesomeIcon icon={faSearch} />
             </button>
-            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/start')}>
+            <button className="btn-nav-round" onClick={() => handleNavigation('/start')}>
               <FontAwesomeIcon icon={faMapMarked} />
             </button>
-            <button className="w-[50px] h-[50px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer border-none text-[14px] p-[6px] hover:bg-ink-hover xs:text-[16px] xs:p-2 md:text-[20px] md:p-0" onClick={() => handleNavigation('/corpus-menu')}>
+            <button className="btn-nav-round" onClick={() => handleNavigation('/corpus-menu')}>
               <FontAwesomeIcon icon={faBookOpen} />
             </button>
-            <button className={`w-[50px] h-[50px] flex items-center justify-center rounded-full text-white cursor-pointer border-none text-[14px] p-[6px] xs:text-[16px] xs:p-2 md:text-[20px] md:p-0 hover:bg-ink-hover ${selectedOption === 'settings' ? 'bg-[#4a4a4a]' : 'bg-ink'}`} onClick={() => toggleOption('settings')}>
+            <button className={`btn-nav-round ${selectedOption === 'settings' ? 'bg-[#4a4a4a]' : ''}`} onClick={() => toggleOption('settings')}>
               <FontAwesomeIcon icon={faGlobe} />
             </button>
           </>
@@ -209,7 +209,7 @@ const MiniMenu = () => {
       {isMenuExpanded && (
         <div className="fixed bottom-[80px] left-[30px] flex flex-col-reverse gap-[10px] z-[1000] items-center md:absolute md:top-[80px] md:right-[30px] md:bottom-auto md:left-auto md:flex-col">
           <button
-            className="mini-menu-button w-[30px] h-[30px] min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] flex items-center justify-center rounded-full bg-ink text-white cursor-pointer text-[12px] border-none transition-[background-color] duration-200 p-0 flex-shrink-0 hover:bg-ink-hover"
+            className="mini-menu-button w-[30px] h-[30px] min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] text-[12px]"
             onClick={() => handleNavigation('/mindroots')}
           >
             <FontAwesomeIcon icon={faHome} />
