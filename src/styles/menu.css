@@ -117,8 +117,13 @@
   align-items: center;
 }
 
-/* Mobile-specific menu positioning */  
+/* Mobile-specific menu positioning */
 @media (max-width: 768px) {
+  .menu-button {
+    padding: 8px;
+    font-size: 16px;
+  }
+
   .menu-container {
     position: fixed !important; /* Ensure it's fixed to viewport on mobile */
     top: auto !important;
@@ -171,6 +176,13 @@
     bottom: 80px; /* Mobile: above main menu buttons (20px menu bottom + 60px menu height) */
     right: auto;
     left: 20px; /* Mobile: align with menu container */
+  }
+}
+
+@media (max-width: 480px) {
+  .menu-button {
+    padding: 6px;
+    font-size: 14px;
   }
 }
 }

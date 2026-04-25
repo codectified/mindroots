@@ -9,6 +9,19 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer globals {
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+}
+
 /* Space for fixed bottom nav — kept in sync with BottomNav.js heights */
 body { padding-bottom: 70px; }
 @media (max-width: 768px) { body { padding-bottom: 65px; } }

@@ -100,15 +100,30 @@
   
   .info-bubble-content {
     height: calc(100% - 50px);
+    max-height: 70vh;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
     padding-right: 15px;
     font-size: 16px;
     line-height: 1.5;
   }
-  
+
   .close-button {
-    font-size: 22px;
+    font-size: 20px;
     top: -12px;
     right: -8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-bubble-content {
+    max-height: 50vh;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .close-button {
+    font-size: 18px;
   }
 }
 

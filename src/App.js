@@ -42,7 +42,7 @@ import { SemiticLanguageFilterProvider } from './contexts/SemiticLanguageFilterC
 import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 
 import './styles/typography.css';
-import './styles/base.css';
+// base.css → global resets moved to index.css
 import './styles/buttons.css';
 import './styles/lists.css';
 // main-menu.css  → converted to Tailwind (MainMenu.js)
@@ -55,7 +55,7 @@ import './styles/node-context-menu.css';
 import './styles/markdown.css';
 import './styles/content.css';
 import './styles/settings.css';
-import './styles/media-queries.css';
+// media-queries.css → rules merged into component CSS files; overlay → Layout.js Tailwind
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
