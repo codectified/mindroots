@@ -9,6 +9,56 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ============================================
+   Font system — CSS custom properties
+   HOW SCALING WORKS:
+   Latin slider  → --font-scale-latin  → html { font-size } → all rem values scale
+   Arabic slider → --font-scale-semitic → --arabic-* vars (px-based, independent)
+   Font family   → SettingsContext updates --font-latin / --font-arabic at runtime
+   ============================================ */
+
+:root {
+  --font-scale-latin:   1.15;
+  --font-scale-semitic: 1.3;
+  --font-scale-active:  var(--font-scale-latin);
+
+  --text-lg:   1.125rem;
+  --text-base: 1rem;
+  --text-sm:   0.875rem;
+  --text-xs:   0.75rem;
+
+  --arabic-lg:   calc(21px * var(--font-scale-semitic));
+  --arabic-base: calc(18px * var(--font-scale-semitic));
+  --arabic-sm:   calc(16px * var(--font-scale-semitic));
+  --arabic-xs:   calc(14px * var(--font-scale-semitic));
+
+  --font-latin:  'Noto Serif', Georgia, serif;
+  --font-arabic: 'Amiri', 'Scheherazade New', 'Noto Naskh Arabic', serif;
+  --font-mono:   'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  --font-body:   var(--font-latin);
+
+  --base-line-height: 1.6;
+}
+
+/* html font-size drives all rem values app-wide — OUTSIDE @layer to beat everything */
+html {
+  font-size: calc(16px * var(--font-scale-active));
+}
+
+/* body font-family — OUTSIDE @layer to beat index.css */
+body {
+  font-family: var(--font-body);
+  line-height: var(--base-line-height);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Space for fixed bottom nav — kept in sync with BottomNav.js heights */
+body { padding-bottom: 70px; }
+@media (max-width: 768px) { body { padding-bottom: 65px; } }
+@media (max-width: 480px)  { body { padding-bottom: 60px; } }
+
 @layer globals {
   * {
     margin: 0;
@@ -20,18 +70,62 @@
     list-style: none;
     padding: 0;
   }
+
+  body {
+    background-color: white;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  h1 { font-size: 2.5rem;   line-height: 1.2; font-weight: 700; margin-bottom: 15px; text-align: center; }
+  h2 { font-size: 1.875rem; line-height: 1.3; font-weight: 600; margin-bottom: 15px; }
+  h3 { font-size: 1.5rem;   line-height: 1.3; font-weight: 600; margin-bottom: 15px; }
+  h4 { font-size: 1.25rem;  line-height: 1.4; font-weight: 600; }
+  h5 { font-size: 1.1rem;   line-height: 1.4; font-weight: 600; }
+  h6 { font-size: 1rem;     line-height: 1.5; font-weight: 600; }
+
+  p    { font-size: 1rem;    line-height: var(--base-line-height); margin-bottom: 15px; }
+  li   { font-size: 1rem;    margin: 10px 0; cursor: pointer; }
+  td, th { font-size: 0.95rem; }
+  label  { font-size: 0.95rem; }
+  small, .caption, .meta { font-size: 0.85rem; }
+
+  input, textarea, select { font-size: 1rem; line-height: 1.5; }
+  button, .button         { font-size: 1rem; }
+  table                   { font-size: 1rem; }
 }
 
-/* Space for fixed bottom nav — kept in sync with BottomNav.js heights */
-body { padding-bottom: 70px; }
-@media (max-width: 768px) { body { padding-bottom: 65px; } }
-@media (max-width: 480px)  { body { padding-bottom: 60px; } }
+/* Arabic opt-in utility — apply to any Arabic text element */
+.arabic,
+.arabic-text,
+[lang="ar"] {
+  font-family: var(--font-arabic);
+  font-size: var(--arabic-base);
+  line-height: 1.8;
+}
 
-body {
-  margin: 0;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  /* font-family is set by typography.css via --font-latin variable */
+.arabic.large,  .arabic-text.large  { font-size: var(--arabic-lg); }
+.arabic.small,  .arabic-text.small  { font-size: var(--arabic-sm); }
+.arabic.tiny,   .arabic-text.tiny   { font-size: var(--arabic-xs); }
+
+/* Tighten Arabic sizes on mobile; Latin scales via html font-size */
+@media (max-width: 768px) {
+  :root {
+    --arabic-lg:   calc(18px * var(--font-scale-semitic));
+    --arabic-base: calc(16px * var(--font-scale-semitic));
+  }
+}
+
+@media (max-width: 480px) {
+  :root {
+    --arabic-lg:   calc(17px * var(--font-scale-semitic));
+    --arabic-base: calc(15px * var(--font-scale-semitic));
+  }
+}
+
+@media print {
+  html { font-size: 16px; }
+  body { line-height: 1.5; }
 }
 
 code {

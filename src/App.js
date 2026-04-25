@@ -41,7 +41,7 @@ import { FormFilterProvider } from './contexts/FormFilterContext';
 import { SemiticLanguageFilterProvider } from './contexts/SemiticLanguageFilterContext';
 import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 
-import './styles/typography.css';
+// typography.css → merged into index.css
 // base.css → global resets moved to index.css
 import './styles/buttons.css';
 import './styles/lists.css';
