@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import '../../styles/profile-page.css';
+// profile-page.css → moved to index.css
 import { 
   faInstagram, 
   faLinkedin, 
