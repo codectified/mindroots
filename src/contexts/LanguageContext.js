@@ -3,7 +3,7 @@ import { useAdvancedMode } from './AdvancedModeContext';
 
 const LanguageContext = createContext();
 
-const isArabicL1 = (l1) => l1 === 'sem' || l1 === 'arabic';
+const isArabicL1 = (l1) => l1 === 'arabic';
 
 export const LanguageProvider = ({ children }) => {
   const { isAdvancedMode } = useAdvancedMode();

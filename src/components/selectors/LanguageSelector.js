@@ -16,7 +16,7 @@ const LanguageSelector = () => {
           onChange={(e) => setL1(e.target.value)}
         >
           <option value="sem">Semitic</option>
-          <option value="arabic">Arabic</option>
+          <option value="arabic">العربية</option>
           <option value="english">English</option>
         </select>
       </div>
