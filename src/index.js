@@ -1,5 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
+import '@fontsource/scheherazade-new/400.css';
+import '@fontsource/scheherazade-new/700.css';
+import '@fontsource/amiri/400.css';
+import '@fontsource/amiri/700.css';
+import '@fontsource/noto-kufi-arabic/400.css';
+import '@fontsource/noto-kufi-arabic/700.css';
+import '@fontsource/noto-naskh-arabic/400.css';
+import '@fontsource/noto-naskh-arabic/700.css';
+import './index.css';
 import App from './App';
 
 // Use createRoot instead of ReactDOM.render

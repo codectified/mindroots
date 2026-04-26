@@ -2,10 +2,12 @@ import React, { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { updateValidationFields, addCustomTag } from '../../services/apiService';
 import { useLabels } from '../../hooks/useLabels';
-import '../../styles/info-bubble.css';
+import { useSettings } from '../../contexts/SettingsContext';
+// info-bubble.css → moved to index.css
 
 const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
   const t = useLabels();
+  const { arabicFontFamily } = useSettings();
   // Navigation state
   const [navigationStatus, setNavigationStatus] = useState({ loading: false, message: '' });
   
@@ -185,7 +187,8 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
       );
     }
     
-    return <span className={`value-${prop.type}`}>{String(prop.value)}</span>;
+    const isArabicField = fieldName === 'arabic';
+    return <span className={`value-${prop.type}`} style={isArabicField ? { fontFamily: arabicFontFamily, fontSize: '1.15rem', lineHeight: '1.8' } : undefined}>{String(prop.value)}</span>;
   };
 
   // Helper to get relationship direction icon
@@ -403,12 +406,11 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
             )}
           </div>
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="flex items-center gap-2">
             <button
               onClick={() => { setShowTagPanel(p => !p); setTagStatus({ saving: false, message: '' }); }}
-              className="nav-button"
+              className="nav-button text-[13px] py-[2px] px-2"
               title={t.addTag}
-              style={{ fontSize: '13px', padding: '2px 8px' }}
             >
               {t.addTag}
             </button>
@@ -418,13 +420,13 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
 
         {/* Inline tag panel */}
         {showTagPanel && (
-          <div style={{ padding: '10px 16px', borderBottom: '1px solid #ddd', background: '#f8f8f8', display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: '8px' }}>
+          <div className="px-4 py-[10px] border-b border-border-light bg-[#f8f8f8] flex flex-wrap items-center gap-2">
             <input
               type="text"
               placeholder={t.tagKeyPlaceholder}
               value={tagKey}
               onChange={e => setTagKey(e.target.value)}
-              style={{ padding: '4px 8px', border: '1px solid #ccc', borderRadius: '3px', fontFamily: 'monospace', fontSize: '13px', width: '140px' }}
+              className="py-1 px-2 border border-border rounded-[3px] font-mono text-[13px] w-[140px]"
             />
             <input
               type="text"
@@ -432,23 +434,23 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
               value={tagValue}
               onChange={e => setTagValue(e.target.value)}
               onKeyDown={e => e.key === 'Enter' && handleAddTag()}
-              style={{ padding: '4px 8px', border: '1px solid #ccc', borderRadius: '3px', fontSize: '13px', flex: '1', minWidth: '120px' }}
+              className="py-1 px-2 border border-border rounded-[3px] text-[13px] flex-1 min-w-[120px]"
             />
             <button
               onClick={handleAddTag}
               disabled={tagStatus.saving}
-              style={{ padding: '4px 12px', background: '#4a7c59', color: '#fff', border: 'none', borderRadius: '3px', cursor: 'pointer', fontSize: '13px' }}
+              className="py-1 px-3 bg-[#4a7c59] text-white border-none rounded-[3px] cursor-pointer text-[13px]"
             >
               {tagStatus.saving ? t.saving : t.add}
             </button>
             <button
               onClick={() => setShowTagPanel(false)}
-              style={{ padding: '4px 8px', background: 'none', border: '1px solid #ccc', borderRadius: '3px', cursor: 'pointer', fontSize: '13px' }}
+              className="py-1 px-2 bg-transparent border border-border rounded-[3px] cursor-pointer text-[13px]"
             >
               {t.cancel}
             </button>
             {tagStatus.message && (
-              <span style={{ fontSize: '12px', color: tagStatus.message.startsWith('✓') ? '#4a7c59' : '#c00' }}>
+              <span className={`text-[12px] ${tagStatus.message.startsWith('✓') ? 'text-[#4a7c59]' : 'text-[#c00]'}`}>
                 {tagStatus.message}
               </span>
             )}
@@ -552,7 +554,7 @@ const NodeInspector = ({ nodeData, onClose, onNavigate }) => {
           <section className="inspector-section">
             <details>
               <summary>
-                <h3 style={{ display: 'inline' }}>{t.rawData}</h3>
+                <h3 className="inline">{t.rawData}</h3>
               </summary>
               <div className="raw-data">
                 <pre>{JSON.stringify(nodeData, null, 2)}</pre>

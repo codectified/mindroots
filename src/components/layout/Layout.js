@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
   return (
     <>
       <div className="app">
-        <div className="overlay">
+        <div className="px-4 pt-4 pb-6 xs:px-5 xs:pt-5 md:px-10 md:pt-8 md:pb-8 max-w-[1440px] mx-auto">
           {children}
         </div>
       </div>

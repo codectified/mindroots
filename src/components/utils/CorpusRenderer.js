@@ -25,50 +25,43 @@ const CorpusRenderer = ({
   L2,
   handleSelectCorpusItem,
 }) => {
-  const [showQuranControls, setShowQuranControls] = useState(false); // Quran controls collapsed by default
-  const [tempAyahsPerPage, setTempAyahsPerPage] = useState(ayahsPerPage); // Local state for input
-  const [sortBy, setSortBy] = useState('original'); // 'original', 'root_freq', 'word_freq'
-  const [sortOrder, setSortOrder] = useState('asc'); // 'asc' or 'desc'
+  const [showQuranControls, setShowQuranControls] = useState(false);
+  const [tempAyahsPerPage, setTempAyahsPerPage] = useState(ayahsPerPage);
+  const [sortBy, setSortBy] = useState('original');
+  const [sortOrder, setSortOrder] = useState('asc');
   const {
     highlightGender,
     highlightVerb,
     highlightParticle,
     freeformMode,
-    highlightColor, // Access the selected highlight color
+    highlightColor,
   } = useHighlight();
-  const { layout } = useTextLayout(); // Access the text layout setting
-  const { showStatistics } = useCorpusStatistics(); // Access statistics visibility toggle
+  const { layout } = useTextLayout();
+  const { showStatistics } = useCorpusStatistics();
 
-  // Sync temp state with parent prop changes
   useEffect(() => {
     setTempAyahsPerPage(ayahsPerPage);
   }, [ayahsPerPage]);
 
-  // Handle input changes without immediately applying them
   const handleAyahsPerPageInputChange = (e) => {
-    const value = e.target.value;
-    setTempAyahsPerPage(value);
+    setTempAyahsPerPage(e.target.value);
   };
 
-  // Apply changes on blur or explicit confirmation
   const applyAyahsPerPageChange = () => {
     const validValue = Math.max(1, Math.min(50, parseInt(tempAyahsPerPage) || 10));
     setTempAyahsPerPage(validValue);
     setAyahsPerPage(validValue);
   };
 
-  // Prevent form submission on Enter key
   const handleAyahsPerPageKeyDown = (e) => {
     if (e.key === 'Enter') {
       e.preventDefault();
       applyAyahsPerPageChange();
-      e.target.blur(); // Remove focus after applying
+      e.target.blur();
     }
   };
 
-  // Handle column sorting
   const handleColumnSort = (sortType) => {
-    // If clicking the same column, toggle sort order; otherwise reset to ascending
     if (sortBy === sortType) {
       setSortOrder(sortOrder === 'asc' ? 'desc' : 'asc');
     } else {
@@ -77,16 +70,11 @@ const CorpusRenderer = ({
     }
   };
 
-  // Get sorted items based on current sort configuration
   const getSortedItems = (itemsToSort) => {
-    if (sortBy === 'original') {
-      // Return in original order
-      return [...itemsToSort];
-    }
+    if (sortBy === 'original') return [...itemsToSort];
 
     const sorted = [...itemsToSort].sort((a, b) => {
       let aVal, bVal;
-
       if (sortBy === 'root_freq') {
         aVal = parseFloat(a.qrootfreq) || 0;
         bVal = parseFloat(b.qrootfreq) || 0;
@@ -94,340 +82,216 @@ const CorpusRenderer = ({
         aVal = parseFloat(a.quran_frequency) || 0;
         bVal = parseFloat(b.quran_frequency) || 0;
       }
-
-      if (sortOrder === 'asc') {
-        return aVal - bVal;
-      } else {
-        return bVal - aVal;
-      }
+      return sortOrder === 'asc' ? aVal - bVal : bVal - aVal;
     });
 
     return sorted;
   };
 
-  // Get sort indicator for column headers
   const getSortIndicator = (columnType) => {
     if (sortBy !== columnType) return '';
     return sortOrder === 'asc' ? ' ↑' : ' ↓';
   };
 
-
   const handleFreeformAyaHighlight = (ayaIndex) => {
     if (!freeformMode) return;
-  
     const isAyaCurrentlyHighlighted = items
       .filter((item) => item.aya_index === ayaIndex)
       .every((item) => item.isFreeformHighlighted);
-  
     const updatedItems = items.map((item) =>
       item.aya_index === ayaIndex
-        ? {
-            ...item,
-            isFreeformHighlighted: !isAyaCurrentlyHighlighted, // Toggle highlight
-            highlightColor: !isAyaCurrentlyHighlighted ? highlightColor : null, // Set or clear color
-          }
-        : item // Leave other items unchanged
+        ? { ...item, isFreeformHighlighted: !isAyaCurrentlyHighlighted, highlightColor: !isAyaCurrentlyHighlighted ? highlightColor : null }
+        : item
     );
-  
     setItems(updatedItems);
   };
 
-  // Toggles freeform highlight state for a poetry line
-const handleFreeformLineHighlight = (lineNumber) => {
-  if (!freeformMode) return;
+  const handleFreeformLineHighlight = (lineNumber) => {
+    if (!freeformMode) return;
+    const isLineCurrentlyHighlighted = items
+      .filter((item) => item.line_number === lineNumber)
+      .every((item) => item.isFreeformHighlighted);
+    const updatedItems = items.map((item) =>
+      item.line_number === lineNumber
+        ? { ...item, isFreeformHighlighted: !isLineCurrentlyHighlighted, highlightColor: !isLineCurrentlyHighlighted ? highlightColor : null }
+        : item
+    );
+    setItems(updatedItems);
+  };
 
-  const isLineCurrentlyHighlighted = items
-    .filter((item) => item.line_number === lineNumber)
-    .every((item) => item.isFreeformHighlighted);
-
-  const updatedItems = items.map((item) =>
-    item.line_number === lineNumber
-      ? {
-          ...item,
-          isFreeformHighlighted: !isLineCurrentlyHighlighted, // Toggle highlight
-          highlightColor: !isLineCurrentlyHighlighted ? highlightColor : null, // Set or clear color
-        }
-      : item // Leave other items unchanged
-  );
-
-  setItems(updatedItems);
-};
-
-  // Adjust styles based on highlight settings and Freeform Mode
+  // Dynamic highlight colors from user selection — must remain inline
   const getWordStyle = (item) => {
     if (item.isFreeformHighlighted) {
       return { backgroundColor: item.highlightColor || '#FF4500', borderRadius: '5px', padding: '2px' };
     }
     if (highlightGender && item.gender === highlightGender) {
-      return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue'};
+      return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue' };
     }
-    if (highlightVerb && item.pos === 'verb') {
-      return { color: 'green'};
-    }
-    // Only highlight as particle if pos property exists and is neither noun nor verb
+    if (highlightVerb && item.pos === 'verb') return { color: 'green' };
     if (highlightParticle && item.pos && item.pos !== 'noun' && item.pos !== 'verb') {
-      return { color: 'blue'};
+      return { color: 'blue' };
     }
     return {};
   };
 
 
   const renderQuran = () => {
-    const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+    const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
     const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : null);
-  
-    // Group items by AYA index
+
     const groupedByAya = items.reduce((acc, item) => {
       if (!acc[item.aya_index]) acc[item.aya_index] = [];
       acc[item.aya_index].push(item);
       return acc;
     }, {});
-  
-    // Get current aya range info
+
     const ayaNumbers = Object.keys(groupedByAya).map(Number).sort((a, b) => a - b);
     const currentStartAya = ayaNumbers.length > 0 ? ayaNumbers[0] : 1;
     const currentEndAya = ayaNumbers.length > 0 ? ayaNumbers[ayaNumbers.length - 1] : 1;
     const totalAyasInRange = ayaNumbers.length;
 
+    const prevDisabled = surah <= 1 && currentStartAya <= 1;
+    const nextDisabled = surah >= 114 && currentEndAya >= (ayaCount || 286);
+
+    const navBtnCls =
+      'py-2 px-4 min-w-[70px] border border-[#4a7c4a] rounded-md text-[14px] font-medium ' +
+      'transition-all duration-200 flex items-center justify-center ' +
+      'enabled:bg-[#4a7c4a] enabled:text-white enabled:cursor-pointer ' +
+      'disabled:bg-[#f5f5f5] disabled:text-[#999] disabled:cursor-not-allowed';
+
     return (
       <div>
-        <div className="quran-header" style={{ 
-          marginBottom: '20px', 
-          border: '1px solid #a8d5a8', 
-          borderRadius: '12px',
-          backgroundColor: '#f8fdf8',
-          boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-        }}>
-          {/* Collapsed header with surah name and nav buttons */}
-          <div style={{ 
-            padding: '15px 20px',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'space-between',
-            borderBottom: showQuranControls ? '1px solid #d4edd4' : 'none'
-          }}>
-            <h2 style={{ 
-              margin: '0', 
-              fontSize: '20px', 
-              color: '#2d5a2d',
-              fontWeight: '600'
-            }}>
+        <div className="quran-header mb-5 border border-[#a8d5a8] rounded-xl bg-[#f8fdf8] shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+          <div className={`px-5 py-[15px] flex items-center justify-between ${showQuranControls ? 'border-b border-[#d4edd4]' : ''}`}>
+            <h2 className="m-0 text-[20px] text-[#2d5a2d] font-semibold">
               {L1 === 'sem' ? toArabicNumerals(surah) : surah}. {SURAH_MAP[surah] ? (L1 === 'sem' ? SURAH_MAP[surah].arabic : SURAH_MAP[surah].english) : `Surah ${surah}`}
             </h2>
-            
-            <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              {/* Quick navigation buttons */}
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                <button 
+
+            <div className="flex items-center gap-[15px]">
+              <div className="flex items-center gap-2">
+                <button
                   onClick={() => {
                     if (currentStartAya <= 1) {
-                      // Go to previous surah
-                      if (surah > 1) {
-                        setSurah(surah - 1);
-                        setAya(-1); // Will load from the end of previous surah
-                      }
+                      if (surah > 1) { setSurah(surah - 1); setAya(-1); }
                     } else {
                       setAya(Math.max(1, currentStartAya - ayahsPerPage));
                     }
                   }}
-                  disabled={surah <= 1 && currentStartAya <= 1}
-                  style={{ 
-                    padding: '8px 16px', 
-                    minWidth: '70px',
-                    border: '1px solid #4a7c4a', 
-                    borderRadius: '6px',
-                    backgroundColor: (surah <= 1 && currentStartAya <= 1) ? '#f5f5f5' : '#4a7c4a',
-                    color: (surah <= 1 && currentStartAya <= 1) ? '#999' : '#fff',
-                    cursor: (surah <= 1 && currentStartAya <= 1) ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
+                  disabled={prevDisabled}
+                  className={navBtnCls}
                 >
                   ← Prev
                 </button>
-                
-                <button 
+
+                <button
                   onClick={() => {
                     if (currentEndAya >= (ayaCount || 286)) {
-                      // Go to next surah
-                      if (surah < 114) {
-                        setSurah(surah + 1);
-                        setAya(0); // Will load from the beginning of next surah
-                      }
+                      if (surah < 114) { setSurah(surah + 1); setAya(0); }
                     } else {
                       setAya(currentEndAya + 1);
                     }
                   }}
-                  disabled={surah >= 114 && currentEndAya >= (ayaCount || 286)}
-                  style={{ 
-                    padding: '8px 16px', 
-                    minWidth: '70px',
-                    border: '1px solid #4a7c4a', 
-                    borderRadius: '6px',
-                    backgroundColor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#f5f5f5' : '#4a7c4a',
-                    color: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? '#999' : '#fff',
-                    cursor: (surah >= 114 && currentEndAya >= (ayaCount || 286)) ? 'not-allowed' : 'pointer',
-                    fontSize: '14px',
-                    fontWeight: '500',
-                    transition: 'all 0.2s ease',
-                    display: 'flex',
-                    alignItems: 'center',
-                    justifyContent: 'center'
-                  }}
+                  disabled={nextDisabled}
+                  className={navBtnCls}
                 >
                   Next →
                 </button>
               </div>
-              
-              {/* Three dots to expand full controls */}
-              <button 
+
+              <button
                 onClick={() => setShowQuranControls(!showQuranControls)}
-                style={{ 
-                  background: 'none',
-                  border: 'none',
-                  cursor: 'pointer',
-                  padding: '8px 12px',
-                  borderRadius: '6px',
-                  transition: 'background-color 0.2s',
-                  backgroundColor: showQuranControls ? '#e8f5e8' : 'transparent'
-                }}
-                onMouseEnter={(e) => e.target.style.backgroundColor = '#e8f5e8'}
-                onMouseLeave={(e) => e.target.style.backgroundColor = showQuranControls ? '#e8f5e8' : 'transparent'}
+                className={`bg-transparent border-none cursor-pointer py-2 px-3 rounded-md transition-colors duration-200 hover:bg-[#e8f5e8] ${showQuranControls ? 'bg-[#e8f5e8]' : ''}`}
               >
-                <FontAwesomeIcon 
-                  icon={faEllipsisV} 
-                  style={{ 
-                    color: '#4a7c4a', 
-                    fontSize: '16px' 
-                  }}
-                />
+                <FontAwesomeIcon icon={faEllipsisV} className="text-[#4a7c4a] text-[16px]" />
               </button>
             </div>
           </div>
 
-          {/* Expanded controls */}
           {showQuranControls && (
-            <div className="quran-controls" style={{ padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <div className="surah-selector">
-              <label htmlFor="surah-select">Select Surah: </label>
-              <select 
-                id="surah-select" 
-                value={surah} 
-                onChange={(e) => setSurah(e.target.value)}
-                style={{
-                  padding: '6px 10px',
-                  border: '1px solid #a8d5a8',
-                  borderRadius: '6px',
-                  backgroundColor: '#fff',
-                  fontSize: '14px',
-                  color: '#2d5a2d'
-                }}
-              >
-                {SURAHS.map((s) => (
-                  <option key={s.number} value={s.number}>
-                    {L1 === 'sem' ? toArabicNumerals(s.number) : s.number}. {L1 === 'sem' ? s.arabic : s.english}
-                  </option>
-                ))}
-              </select>
-            </div>
-            
-            {totalAyasInRange > 0 && (
-              <div className="aya-info" style={{ fontSize: '14px', color: '#666' }}>
-                <span className="aya-range-info">
-                  Showing ayat {currentStartAya}
-                  {currentEndAya !== currentStartAya ? `-${currentEndAya}` : ''}{' '}
-                  out of {ayaCount || 286} total
-                </span>
+            <div className="quran-controls p-5 flex flex-col gap-[15px]">
+              <div className="surah-selector">
+                <label htmlFor="surah-select">Select Surah: </label>
+                <select
+                  id="surah-select"
+                  value={surah}
+                  onChange={(e) => setSurah(e.target.value)}
+                  className="px-[10px] py-[6px] border border-[#a8d5a8] rounded-md bg-white text-[14px] text-[#2d5a2d]"
+                >
+                  {SURAHS.map((s) => (
+                    <option key={s.number} value={s.number}>
+                      {L1 === 'sem' ? toArabicNumerals(s.number) : s.number}. {L1 === 'sem' ? s.arabic : s.english}
+                    </option>
+                  ))}
+                </select>
               </div>
-            )}
-            
-            <div className="ayah-controls" style={{ display: 'flex', alignItems: 'center', gap: '15px', flexWrap: 'wrap' }}>
-              <div className="ayahs-per-page-control" style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-                <label htmlFor="ayahs-per-page" style={{ fontSize: '14px' }}>Ayahs per page:</label>
-                <input 
-                  id="ayahs-per-page"
-                  type="number" 
-                  min="1" 
-                  max="50" 
-                  value={tempAyahsPerPage}
-                  onChange={handleAyahsPerPageInputChange}
-                  onBlur={applyAyahsPerPageChange}
-                  onKeyDown={handleAyahsPerPageKeyDown}
-                  style={{ 
-                    width: '60px', 
-                    padding: '6px', 
-                    border: '1px solid #a8d5a8', 
-                    borderRadius: '6px',
-                    backgroundColor: '#fff',
-                    fontSize: '14px',
-                    color: '#2d5a2d'
-                  }}
-                />
+
+              {totalAyasInRange > 0 && (
+                <div className="aya-info text-[14px] text-muted">
+                  <span className="aya-range-info">
+                    Showing ayat {currentStartAya}
+                    {currentEndAya !== currentStartAya ? `-${currentEndAya}` : ''}{' '}
+                    out of {ayaCount || 286} total
+                  </span>
+                </div>
+              )}
+
+              <div className="ayah-controls flex items-center gap-[15px] flex-wrap">
+                <div className="ayahs-per-page-control flex items-center gap-[5px]">
+                  <label htmlFor="ayahs-per-page" className="text-[14px]">Ayahs per page:</label>
+                  <input
+                    id="ayahs-per-page"
+                    type="number"
+                    min="1"
+                    max="50"
+                    value={tempAyahsPerPage}
+                    onChange={handleAyahsPerPageInputChange}
+                    onBlur={applyAyahsPerPageChange}
+                    onKeyDown={handleAyahsPerPageKeyDown}
+                    className="w-[60px] p-[6px] border border-[#a8d5a8] rounded-md bg-white text-[14px] text-[#2d5a2d]"
+                  />
+                </div>
               </div>
-              
-            </div>
             </div>
           )}
         </div>
-  
-        <div style={{ 
-          whiteSpace: 'pre-wrap', 
-          textAlign: layout === 'prose' ? 'justify' : 'center', 
-          direction: 'rtl',
-          maxWidth: layout === 'prose' ? '800px' : 'none',
-          margin: layout === 'prose' ? '0 auto' : '0',
-          padding: layout === 'prose' ? '0 20px' : '0',
-          lineHeight: layout === 'line-by-line' ? '2.5' : '1.8',
-          fontSize: `${fontSize}px`
-        }}>
+
+        {/* fontSize is prop-driven; direction has no Tailwind utility — both stay inline */}
+        <div
+          className={`arabic whitespace-pre-wrap ${layout === 'prose' ? 'text-justify max-w-[800px] mx-auto px-5' : 'text-center'} ${layout === 'line-by-line' ? 'leading-[2.5]' : 'leading-[1.8]'}`}
+          style={{ direction: 'rtl', fontSize: `${fontSize}px` }}
+        >
           {surahNumber !== 9 && (
-            <p style={{ marginBottom: '10px', textAlign: 'center', fontWeight: 'bold' }}>{basmala}</p>
+            <p className="mb-[10px] text-center font-bold">{basmala}</p>
           )}
-  
+
           {Object.entries(groupedByAya).map(([ayaIndex, ayaItems]) => {
             const isAyaHighlighted = ayaItems.every((item) => item.isFreeformHighlighted);
-  
+
             return (
               <React.Fragment key={ayaIndex}>
-                {/* Words within the AYA */}
+                {/* backgroundColor is user-supplied at runtime — must stay inline */}
                 <span
-                  style={{
-                    display: layout === 'prose' ? 'inline' : 'inline-block',
-                    backgroundColor: isAyaHighlighted ? ayaItems[0].highlightColor : 'transparent',
-                    borderRadius: '5px',
-                    padding: '2px',
-                  }}
+                  className={`${layout === 'prose' ? 'inline' : 'inline-block'} rounded-[5px] p-[2px]`}
+                  style={{ backgroundColor: isAyaHighlighted ? ayaItems[0].highlightColor : 'transparent' }}
                 >
                   {ayaItems.map((item, index) => (
                     <React.Fragment key={item.item_id}>
                       <span
-                        onClick={() => handleSelectCorpusItem(item)} // Render graph visualization
-                        style={{
-                          cursor: 'pointer',
-                          ...getWordStyle(item),
-                        }}
+                        onClick={() => handleSelectCorpusItem(item)}
+                        className="cursor-pointer"
+                        style={getWordStyle(item)}
                       >
                         {L2 === 'off' ? (item[L1] || item.arabic) : `${item[L1] || item.arabic} / ${item[L2] || ''}`}
                       </span>
-                      {index < ayaItems.length - 1 && ' '} {/* Add space between words */}
+                      {index < ayaItems.length - 1 && ' '}
                     </React.Fragment>
                   ))}
                 </span><span
                   onClick={(e) => {
-                    e.stopPropagation(); // Prevent word-level logic
+                    e.stopPropagation();
                     freeformMode && handleFreeformAyaHighlight(parseInt(ayaIndex, 10));
                   }}
-                  style={{
-                    cursor: freeformMode ? 'pointer' : 'default',
-                    color: 'gray',
-                    fontWeight: 'bold',
-                    marginLeft: '5px',
-                    marginRight: layout === 'prose' ? '8px' : '5px', // Add space after ayah marker in prose
-                  }}
+                  className={`${freeformMode ? 'cursor-pointer' : 'cursor-default'} text-gray-400 font-bold ml-[5px] ${layout === 'prose' ? 'mr-2' : 'mr-[5px]'}`}
                 >
                   ﴿{ayaIndex}﴾
                 </span>{layout === 'line-by-line' && <br />}
@@ -443,188 +307,164 @@ const handleFreeformLineHighlight = (lineNumber) => {
     const sortedItems = getSortedItems(items);
 
     return (
-    <div className={`corpus-list-container ${customClass}`} style={{ direction: 'ltr' }}>
-      {/* Header Row */}
-      <div className="corpus-list-header" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', padding: '12px 24px' }}>
-        {/* Number Column Header */}
-        <div
-          style={{ width: '50px', minWidth: '50px', flexShrink: 0, textAlign: 'center', cursor: 'pointer', userSelect: 'none', borderRight: '1px solid #ddd', paddingRight: '12px' }}
-          onClick={() => handleColumnSort('original')}
-        >
-          <div className="freq-label" style={{ color: sortBy === 'original' ? '#2d5a2d' : '#666', fontSize: '11px' }}>
-            № ↑
-          </div>
-        </div>
-
-        {/* Name Column Header */}
-        <div style={{ flex: 1, paddingLeft: '12px', textAlign: 'right' }}>
-          <div className="freq-label" style={{ color: '#666', fontSize: '13px' }}>Name</div>
-        </div>
-
-        {/* L2 Translation Column Header (only if enabled) */}
-        {L2 !== 'off' && (
-          <div style={{ flex: 1 }}>
-            <div className="freq-label" style={{ color: '#666', fontSize: '13px' }}></div>
-          </div>
-        )}
-
-        {/* Statistics Headers */}
-        {showStatistics && (
+      <div className={`corpus-list-container ${customClass}`} style={{ direction: 'ltr' }}>
+        <div className="corpus-list-header">
+          {/* Number column */}
           <div
-            style={{ width: '110px', textAlign: 'center', flexShrink: 0, cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => handleColumnSort('root_freq')}
+            className="w-[50px] min-w-[50px] flex-shrink-0 text-center cursor-pointer select-none border-r border-border-light pr-3"
+            onClick={() => handleColumnSort('original')}
           >
-            <div className="freq-label" style={{ color: sortBy === 'root_freq' ? '#2d5a2d' : '#666' }}>
-              Quranic Root<br />Frequency{getSortIndicator('root_freq')}
+            <div className={`freq-label text-[11px] ${sortBy === 'original' ? 'text-[#2d5a2d]' : 'text-muted'}`}>
+              № ↑
             </div>
           </div>
-        )}
-        {showStatistics && (
-          <div
-            style={{ width: '110px', textAlign: 'center', flexShrink: 0, cursor: 'pointer', userSelect: 'none' }}
-            onClick={() => handleColumnSort('word_freq')}
-          >
-            <div className="freq-label" style={{ color: sortBy === 'word_freq' ? '#2d5a2d' : '#666' }}>
-              Quranic Word<br />Frequency{getSortIndicator('word_freq')}
-            </div>
-          </div>
-        )}
 
-        {/* Right padding spacer */}
-        <div style={{ width: '150px', flexShrink: 0 }} />
+          {/* Name column */}
+          <div className="flex-1 pl-3 text-right">
+            <div className="freq-label text-muted text-[13px]">Name</div>
+          </div>
+
+          {L2 !== 'off' && (
+            <div className="flex-1">
+              <div className="freq-label text-muted text-[13px]"></div>
+            </div>
+          )}
+
+          {showStatistics && (
+            <div
+              className="w-[110px] text-center flex-shrink-0 cursor-pointer select-none"
+              onClick={() => handleColumnSort('root_freq')}
+            >
+              <div className={`freq-label ${sortBy === 'root_freq' ? 'text-[#2d5a2d]' : 'text-muted'}`}>
+                Quranic Root<br />Frequency{getSortIndicator('root_freq')}
+              </div>
+            </div>
+          )}
+          {showStatistics && (
+            <div
+              className="w-[110px] text-center flex-shrink-0 cursor-pointer select-none"
+              onClick={() => handleColumnSort('word_freq')}
+            >
+              <div className={`freq-label ${sortBy === 'word_freq' ? 'text-[#2d5a2d]' : 'text-muted'}`}>
+                Quranic Word<br />Frequency{getSortIndicator('word_freq')}
+              </div>
+            </div>
+          )}
+
+          <div className="w-[150px] flex-shrink-0" />
+        </div>
+
+        {sortedItems.map((item, index) => (
+          <div
+            key={item.item_id}
+            className="corpus-item-card"
+            onClick={() => handleSelectCorpusItem(item)}
+            style={getWordStyle(item)}
+          >
+            <div className="item-content">
+              {/* Number */}
+              <div className="w-[50px] min-w-[50px] text-center flex-shrink-0 text-muted font-medium border-r border-border-light pr-3">
+                {item.item_id}
+              </div>
+
+              {/* Arabic name */}
+              <div className="flex-1 pl-3">
+                <div className="item-arabic text-right" style={{ fontSize: `${fontSize}px` }}>
+                  {item[L1] || item.arabic || '—'}
+                </div>
+              </div>
+
+              {L2 !== 'off' && (
+                <div className="item-left">
+                  <div className="item-english">{item[L2] || '—'}</div>
+                  {item.transliteration && (
+                    <div className="item-transliteration">{item.transliteration}</div>
+                  )}
+                </div>
+              )}
+
+              {showStatistics && (
+                <div className="item-frequency">
+                  <div className="freq-count">{item.qrootfreq || '—'}</div>
+                </div>
+              )}
+
+              {showStatistics && (
+                <div className="item-frequency">
+                  <div className="freq-count">{item.quran_frequency || '—'}</div>
+                </div>
+              )}
+
+              <div className="w-[150px] flex-shrink-0" />
+            </div>
+            {index < sortedItems.length - 1 && <div className="item-separator" />}
+          </div>
+        ))}
       </div>
-
-      {/* Data Rows */}
-      {sortedItems.map((item, index) => (
-        <div
-          key={item.item_id}
-          className="corpus-item-card"
-          onClick={() => handleSelectCorpusItem(item)}
-          style={getWordStyle(item)}
-        >
-          <div className="item-content" style={{ display: 'flex', flexDirection: 'row', alignItems: 'center' }}>
-            {/* Number Column */}
-            <div style={{ width: '50px', minWidth: '50px', textAlign: 'center', flexShrink: 0, color: '#666', fontWeight: '500', borderRight: '1px solid #ddd', paddingRight: '12px' }}>
-              {item.item_id}
-            </div>
-
-            {/* Names Column - Arabic */}
-            <div style={{ flex: 1, paddingLeft: '12px' }}>
-              <div className="item-arabic" style={{ fontSize: `${fontSize}px`, textAlign: 'right' }}>
-                {item[L1] || item.arabic || '—'}
-              </div>
-            </div>
-
-            {/* Left side: L2 language (if set) */}
-            {L2 !== 'off' && (
-              <div className="item-left" style={{ flex: 1 }}>
-                <div className="item-english">{item[L2] || '—'}</div>
-                {item.transliteration && (
-                  <div className="item-transliteration">{item.transliteration}</div>
-                )}
-              </div>
-            )}
-
-            {/* Center-Left: Quranic Root Frequency */}
-            {showStatistics && (
-              <div className="item-frequency" style={{ width: '110px', textAlign: 'center' }}>
-                <div className="freq-count">{item.qrootfreq || '—'}</div>
-              </div>
-            )}
-
-            {/* Center-Right: Word Frequency */}
-            {showStatistics && (
-              <div className="item-frequency" style={{ width: '110px', textAlign: 'center' }}>
-                <div className="freq-count">{item.quran_frequency || '—'}</div>
-              </div>
-            )}
-
-            <div style={{ width: '150px', flexShrink: 0 }} />
-          </div>
-          {index < sortedItems.length - 1 && <div className="item-separator" />}
-        </div>
-      ))}
-    </div>
     );
   };
 
   const renderPoetry = () => {
-    // Group items by line_number
     const lines = items.reduce((acc, item) => {
       const lineNumber = item.line_number;
-      if (!acc[lineNumber]) {
-        acc[lineNumber] = [];
-      }
+      if (!acc[lineNumber]) acc[lineNumber] = [];
       acc[lineNumber].push(item);
       return acc;
     }, {});
-  
-    // Sort lines by line_number
+
     const sortedLines = Object.entries(lines).sort(
       ([lineA], [lineB]) => Number(lineA) - Number(lineB)
     );
-  
+
     return (
-      <div style={{ whiteSpace: 'pre-wrap', textAlign: 'center', direction: 'rtl', fontSize: `${fontSize}px` }}>
+      <div
+        className="arabic whitespace-pre-wrap text-center"
+        style={{ direction: 'rtl', fontSize: `${fontSize}px` }}
+      >
         {sortedLines.map(([lineNumber, lineItems]) => {
           const isLineHighlighted = lineItems.every((item) => item.isFreeformHighlighted);
-  
+
           return (
             <React.Fragment key={lineNumber}>
-              {/* Poetry line */}
+              {/* backgroundColor is user-supplied at runtime — must stay inline */}
               <span
-                style={{
-                  display: 'inline-block',
-                  backgroundColor: isLineHighlighted ? lineItems[0].highlightColor : 'transparent',
-                  borderRadius: '5px',
-                  padding: '2px',
-                }}
+                className="inline-block rounded-[5px] p-[2px]"
+                style={{ backgroundColor: isLineHighlighted ? lineItems[0].highlightColor : 'transparent' }}
               >
                 {lineItems
                   .sort((a, b) => {
-                    // Handle different ID formats by corpus
                     if (typeof a.item_id === 'string' && a.item_id.includes(':')) {
-                      // Hierarchical IDs (Corpus 2): surah:ayah:word
                       const [aS, aA, aW] = a.item_id.split(':').map(Number);
                       const [bS, bA, bW] = b.item_id.split(':').map(Number);
                       return aS - bS || aA - bA || aW - bW;
                     } else {
-                      // Integer IDs (Corpus 1 & 3): simple numeric comparison
                       return a.item_id - b.item_id;
                     }
-                  }) // Sort words within each line by position
+                  })
                   .map((item, index) => (
                     <React.Fragment key={item.item_id}>
                       <span
-                        onClick={() => handleSelectCorpusItem(item)} // Render graph visualization
-                        style={{
-                          cursor: 'pointer',
-                          ...getWordStyle(item),
-                        }}
+                        onClick={() => handleSelectCorpusItem(item)}
+                        className="cursor-pointer"
+                        style={getWordStyle(item)}
                       >
                         {L2 === 'off' ? (item[L1] || item.arabic) : `${item[L1] || item.arabic} / ${item[L2] || ''}`}
                       </span>
-                      {index < lineItems.length - 1 && " "} {/* Add space between words */}
+                      {index < lineItems.length - 1 && " "}
                     </React.Fragment>
                   ))}
               </span>
-  
-              {/* Line marker */}
+
               <span
                 onClick={(e) => {
-                  e.stopPropagation(); // Prevent word-level logic
+                  e.stopPropagation();
                   freeformMode && handleFreeformLineHighlight(Number(lineNumber));
                 }}
-                style={{
-                  cursor: freeformMode ? 'pointer' : 'default',
-                  color: 'gray',
-                  fontWeight: 'bold',
-                  marginLeft: '5px',
-                }}
+                className={`${freeformMode ? 'cursor-pointer' : 'cursor-default'} text-gray-400 font-bold ml-[5px]`}
               >
                 ** {lineNumber} **
               </span>
-  
+
               {layout === 'line-by-line' && <br />}
             </React.Fragment>
           );
@@ -638,7 +478,7 @@ const handleFreeformLineHighlight = (lineNumber) => {
     <div>
       {corpusId === '2' ? renderQuran() :
        corpusId === '1' ? renderList() :
-       corpusId === '3' ? renderPoetry() : // Fallback for testing corpus ID 3
+       corpusId === '3' ? renderPoetry() :
        <div>No valid corpus found. Please check the corpus configuration.</div>}
     </div>
   );

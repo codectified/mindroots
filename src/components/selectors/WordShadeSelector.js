@@ -8,38 +8,23 @@ const WordShadeSelector = () => {
   const t = useLabels();
 
   const handleChange = (event) => {
-    setWordShadeMode(event.target.value); // Update the word shade mode
+    setWordShadeMode(event.target.value);
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+    <div className="flex flex-col gap-[10px] py-[10px]">
       <label>{t.wordShadeMode}</label>
-      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <input
-            type="radio"
-            value="none"
-            checked={wordShadeMode === 'none'}
-            onChange={handleChange}
-          />
+      <div className="flex gap-[15px] flex-wrap">
+        <label className="flex items-center gap-[5px]">
+          <input type="radio" value="none" checked={wordShadeMode === 'none'} onChange={handleChange} />
           {t.none}
         </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <input
-            type="radio"
-            value="grammatical"
-            checked={wordShadeMode === 'grammatical'}
-            onChange={handleChange}
-          />
+        <label className="flex items-center gap-[5px]">
+          <input type="radio" value="grammatical" checked={wordShadeMode === 'grammatical'} onChange={handleChange} />
           {t.grammatical}
         </label>
-        <label style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-          <input
-            type="radio"
-            value="ontological"
-            checked={wordShadeMode === 'ontological'}
-            onChange={handleChange}
-          />
+        <label className="flex items-center gap-[5px]">
+          <input type="radio" value="ontological" checked={wordShadeMode === 'ontological'} onChange={handleChange} />
           {t.ontological}
         </label>
       </div>

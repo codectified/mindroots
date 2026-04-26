@@ -11,8 +11,6 @@ const FilterController = () => {
   const { selectedFormClassifications, setSelectedFormClassifications } = useFormFilter();
   const t = useLabels();
 
-  // Hardcoded available classifications - always show these three options and always clickable
-  // All normalized to proper case for display
   const availableClassifications = ['Grammatical', 'Morphological'];
   const classificationLabels = { Grammatical: t.grammatical, Morphological: t.morphological };
   const typeLabels = { phrase: t.phrase, verb: t.verb, noun: t.noun };
@@ -25,24 +23,11 @@ const FilterController = () => {
     }
   };
 
-  const grammaticalColorStyles = {
-    phrase: '#FFCCCC',
-    verb: '#FF6666',
-    noun: '#CC0000',
-    form: '#007bff',
-  };
-
-  const ontologicalColorStyles = {
-    phrase: '#000000', // Black for all word nodes in ontological mode
-    verb: '#000000',
-    noun: '#000000',
-    form: '#007bff', // Form nodes always blue
-  };
+  const grammaticalColorStyles = { phrase: '#FFCCCC', verb: '#FF6666', noun: '#CC0000', form: '#007bff' };
+  const ontologicalColorStyles = { phrase: '#000000', verb: '#000000', noun: '#000000', form: '#007bff' };
 
   const getColorStyles = (type) => {
-    const colorStyles =
-      wordShadeMode === 'grammatical' ? grammaticalColorStyles : ontologicalColorStyles;
-
+    const colorStyles = wordShadeMode === 'grammatical' ? grammaticalColorStyles : ontologicalColorStyles;
     return {
       border: `2px solid ${colorStyles[type]}`,
       backgroundColor: filterWordTypes.includes(type) ? colorStyles[type] : 'transparent',
@@ -50,11 +35,11 @@ const FilterController = () => {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
-
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '5px' }}>
+    <div className="flex flex-col gap-[10px] py-[10px]">
+      <div className="flex flex-col gap-[5px]">
         {['phrase', 'verb', 'noun'].map((type) => (
-          <label key={type} style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <label key={type} className="flex items-center gap-[10px]">
+            {/* border/bg computed from wordShadeMode + filterWordTypes — must stay inline */}
             <input
               type="checkbox"
               checked={filterWordTypes.includes(type)}
@@ -68,21 +53,14 @@ const FilterController = () => {
                 ...getColorStyles(type),
               }}
             />
-            <span
-              style={{
-                color:
-                  wordShadeMode === 'grammatical'
-                    ? grammaticalColorStyles[type]
-                    : ontologicalColorStyles[type],
-              }}
-            >
+            <span style={{ color: wordShadeMode === 'grammatical' ? grammaticalColorStyles[type] : ontologicalColorStyles[type] }}>
               {typeLabels[type]}
             </span>
           </label>
         ))}
 
         <div>
-          <label style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+          <label className="flex items-center gap-[10px]">
             <input
               type="checkbox"
               checked={!hideFormNodes}
@@ -101,39 +79,30 @@ const FilterController = () => {
               {t.formNodes}{!hideFormNodes && availableClassifications.length > 0 ? ':' : ''}
             </span>
           </label>
-          
+
           {!hideFormNodes && (
-            <div style={{ marginLeft: '26px', marginTop: '5px', display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
-              {availableClassifications.map(classification => {
-                return (
-                  <label key={classification} style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '5px'
-                  }}>
-                    <input
-                      type="checkbox"
-                      checked={selectedFormClassifications.includes(classification)}
-                      onChange={() => handleClassificationToggle(classification)}
-                      style={{
-                        appearance: 'none',
-                        width: '16px',
-                        height: '16px',
-                        borderRadius: '50%',
-                        border: `2px solid ${grammaticalColorStyles.form}`,
-                        backgroundColor: selectedFormClassifications.includes(classification) ? grammaticalColorStyles.form : 'transparent',
-                        cursor: 'pointer',
-                      }}
-                    />
-                    <span style={{
-                      color: grammaticalColorStyles.form,
-                      fontSize: '14px'
-                    }}>
-                      {classificationLabels[classification]}
-                    </span>
-                  </label>
-                );
-              })}
+            <div className="ml-[26px] mt-[5px] flex gap-[15px] flex-wrap">
+              {availableClassifications.map(classification => (
+                <label key={classification} className="flex items-center gap-[5px]">
+                  <input
+                    type="checkbox"
+                    checked={selectedFormClassifications.includes(classification)}
+                    onChange={() => handleClassificationToggle(classification)}
+                    style={{
+                      appearance: 'none',
+                      width: '16px',
+                      height: '16px',
+                      borderRadius: '50%',
+                      border: `2px solid ${grammaticalColorStyles.form}`,
+                      backgroundColor: selectedFormClassifications.includes(classification) ? grammaticalColorStyles.form : 'transparent',
+                      cursor: 'pointer',
+                    }}
+                  />
+                  <span className="text-[14px]" style={{ color: grammaticalColorStyles.form }}>
+                    {classificationLabels[classification]}
+                  </span>
+                </label>
+              ))}
             </div>
           )}
         </div>

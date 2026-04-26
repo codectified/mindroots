@@ -185,20 +185,18 @@ const CorpusGraphScreen = () => {
 
   return (
     <div>
-      <div className="navigation-buttons">
-        <button 
-          className="menu-button" 
-          onClick={() => handleNavigation('previous')} 
+      <div className="flex flex-row gap-[10px]">
+        <button
+          className="btn-nav-round disabled:opacity-60"
+          onClick={() => handleNavigation('previous')}
           disabled={navigationLoading}
-          style={{ opacity: navigationLoading ? 0.6 : 1 }}
         >
           <FontAwesomeIcon icon={faArrowLeft} />
         </button>
-        <button 
-          className="menu-button" 
-          onClick={() => handleNavigation('next')} 
+        <button
+          className="btn-nav-round disabled:opacity-60"
+          onClick={() => handleNavigation('next')}
           disabled={navigationLoading}
-          style={{ opacity: navigationLoading ? 0.6 : 1 }}
         >
           <FontAwesomeIcon icon={faArrowRight} />
         </button>

@@ -22,9 +22,9 @@ const About = () => {
 
       <ReactMarkdown>{beforeImage}</ReactMarkdown>
 
-      <div className="graph-image-container">
+      <div className="text-center my-5">
         <a href="/language-mirror.png" target="_blank" rel="noopener noreferrer">
-          <img src="/language-mirror.png" alt="Graph Overview" className="responsive-image" />
+          <img src="/language-mirror.png" alt="Graph Overview" className="max-w-full h-auto cursor-pointer" />
         </a>
       </div>
 

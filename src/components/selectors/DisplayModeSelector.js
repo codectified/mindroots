@@ -10,35 +10,14 @@ const DisplayModeSelector = ({ size = 'small' }) => {
     setDisplayMode((prevMode) => (prevMode === 'graph' ? 'table' : 'graph'));
   };
 
-  const dim = size === 'large' ? '42px' : '30px';
-  const fs  = size === 'large' ? '18px' : '12px';
+  const sizeClass = size === 'large'
+    ? 'w-[42px] h-[42px] min-w-[42px] min-h-[42px] max-w-[42px] max-h-[42px] text-[18px]'
+    : 'w-[30px] h-[30px] min-w-[30px] min-h-[30px] max-w-[30px] max-h-[30px] text-[12px]';
 
   return (
     <button
-      className="mini-menu-button"
+      className={`mini-menu-button ${sizeClass}`}
       onClick={handleToggle}
-      style={{
-        width: dim,
-        height: dim,
-        minWidth: dim,
-        minHeight: dim,
-        maxWidth: dim,
-        maxHeight: dim,
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: '50%',
-        backgroundColor: '#333',
-        color: '#fff',
-        cursor: 'pointer',
-        fontSize: fs,
-        border: 'none',
-        transition: 'background-color 0.2s',
-        padding: '0',
-        flexShrink: 0
-      }}
-      onMouseEnter={(e) => e.target.style.backgroundColor = '#555'}
-      onMouseLeave={(e) => e.target.style.backgroundColor = '#333'}
     >
       <FontAwesomeIcon icon={displayMode === 'graph' ? faTable : faProjectDiagram} />
     </button>

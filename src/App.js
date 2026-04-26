@@ -6,6 +6,7 @@
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ProfilePage from './components/staticPages/ProfilePage';
@@ -40,26 +41,33 @@ import { FormFilterProvider } from './contexts/FormFilterContext';
 import { SemiticLanguageFilterProvider } from './contexts/SemiticLanguageFilterContext';
 import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 
-import './styles/typography.css';
-import './styles/base.css';
-import './styles/buttons.css';
-import './styles/lists.css';
-import './styles/main-menu.css';
-import './styles/icon-grid.css';
-import './styles/menu.css';
-import './styles/bottom-nav.css';
-import './styles/language-toggle.css';
-import './styles/info-bubble.css';
-import './styles/node-context-menu.css';
-import './styles/markdown.css';
-import './styles/content.css';
-import './styles/settings.css';
-import './styles/media-queries.css';
+// typography.css → merged into index.css
+// base.css → global resets moved to index.css
+// buttons.css → global button reset to index.css; active classes to Tailwind inline
+// lists.css → active rules moved to index.css; dead code (primary-list, corpus-library-list, articles-list, statistics-*, header-spacer) dropped
+// main-menu.css  → converted to Tailwind (MainMenu.js)
+// icon-grid.css  → converted to Tailwind (MainMenu.js)
+// bottom-nav.css → converted to Tailwind (BottomNav.js); body padding moved to index.css
+// language-toggle.css → no active usages, removed
+// menu.css → converted to Tailwind (MiniMenu.js, CorpusGraphScreen.js)
+// info-bubble.css → moved to index.css
+// node-context-menu.css → converted to Tailwind (NodeContextMenu.js)
+// markdown.css → moved to index.css (ReactMarkdown descendant selectors)
+// content.css → simple classes to Tailwind inline; about-page moved to index.css
+// settings.css → settings-section/font-scale-buttons to Tailwind inline; range input to index.css
+// media-queries.css → rules merged into component CSS files; overlay → Layout.js Tailwind
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
 
 const App = () => {
+  useEffect(() => {
+    const latinScale   = parseFloat(localStorage.getItem('fontScaleLatín'))   || 1.15;
+    const semiticScale = parseFloat(localStorage.getItem('fontScaleSemitic'))  || 1.3;
+    document.documentElement.style.setProperty('--font-scale-latin',   latinScale);
+    document.documentElement.style.setProperty('--font-scale-semitic', semiticScale);
+  }, []);
+
   return (
     <CorpusStatisticsProvider>
     <AdvancedModeProvider>

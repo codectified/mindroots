@@ -1,7 +1,13 @@
 import React, { useRef, useEffect, useState } from 'react';
 import ReactDOM from 'react-dom';
-import '../../styles/node-context-menu.css';
 import { useLabels } from '../../hooks/useLabels';
+
+const menuOptionCls =
+  'w-full bg-surface border border-border-light rounded text-ink text-center cursor-pointer font-serif ' +
+  'text-[15px] py-[10px] px-3 min-h-[40px] transition-[background-color,border-color] duration-200 ' +
+  'md:text-[14px] md:py-2 md:min-h-0 ' +
+  'hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark active:translate-y-px ' +
+  'focus:outline-none focus:border-muted focus:shadow-[0_0_0_2px_rgba(102,102,102,0.2)]';
 
 const NodeContextMenu = ({ node, position, onClose, onAction }) => {
   const menuRef = useRef(null);
@@ -33,8 +39,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     const menuHeight = isMobile ? 200 : 150;
     const margin = 10;
 
-    // Center menu on click point, clamped to viewport bounds
-    // position.x/y are clientX/clientY (viewport-relative), matching position: fixed
     const centeredLeft = isMobile ? (viewportWidth - menuWidth) / 2 : position.x - menuWidth / 2;
     const centeredTop = position.y - menuHeight / 2;
 
@@ -47,8 +51,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     };
   };
 
-
-  // Get menu options based on node type
   const getMenuOptions = () => {
     if (!node) return [];
 
@@ -111,10 +113,8 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
 
   const handleOptionClick = (option) => {
     if (option.submenu) {
-      // Toggle submenu visibility
       setOpenSubmenu(openSubmenu === option.action ? null : option.action);
     } else {
-      // Execute action and close menu
       onAction(option.action, node);
       onClose();
     }
@@ -125,51 +125,49 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     onClose();
   };
 
-  // Helper function to determine submenu positioning
-  const getSubmenuClass = () => {
-    if (!menuRef.current || !position) return '';
-    
+  const getSubmenuPositionCls = () => {
+    if (!menuRef.current || !position) return 'left-[calc(100%-5px)]';
+
     const menuRect = menuRef.current.getBoundingClientRect();
     const viewportWidth = window.innerWidth;
-    const isMobile = viewportWidth <= 768;
-    const submenuWidth = isMobile ? 120 : 120;
+    const submenuWidth = 120;
     const margin = 10;
-    
-    // Calculate if submenu would overflow on either side
+
     const rightOverflow = menuRect.right + submenuWidth > viewportWidth - margin;
     const leftOverflow = menuRect.left - submenuWidth < margin;
-    
-    // If both sides would overflow, or if centered would be better, use centered positioning
+
     if ((rightOverflow && leftOverflow) || (!rightOverflow && !leftOverflow)) {
-      return 'centered';
+      return 'left-1/2 -translate-x-1/2 top-full mt-[5px]';
     }
-    
-    // Otherwise use left-aligned if right would overflow
-    return rightOverflow ? 'left-aligned' : '';
+
+    return rightOverflow ? 'left-auto right-[calc(100%-5px)]' : 'left-[calc(100%-5px)]';
   };
 
   const menuOptions = getMenuOptions();
 
   const menu = (
-    <div ref={menuRef} className="node-context-menu" style={getCenteredStyle()}>
-      <div className="node-context-menu-content">
+    <div
+      ref={menuRef}
+      className="fixed bg-white border border-border rounded-[5px] w-[240px] max-w-[80vw] max-h-[70vh] p-3 shadow-[0_2px_10px_rgba(0,0,0,0.2)] z-[1000] font-serif md:w-[200px] md:min-h-[120px] md:max-w-[90vw] md:p-[10px] md:max-h-none"
+      style={getCenteredStyle()}
+    >
+      <div className="flex flex-col gap-2">
         {menuOptions.map((option, index) => (
-          <div key={index} className="context-menu-item">
+          <div key={index} className="relative">
             <button
-              className={`context-menu-option ${option.submenu ? 'has-submenu' : ''}`}
+              className={`${menuOptionCls} ${option.submenu ? 'flex justify-between items-center' : ''}`}
               onClick={() => handleOptionClick(option)}
             >
               {option.label}
-              {option.submenu && <span className="submenu-arrow">▶</span>}
+              {option.submenu && <span className="text-[12px] text-muted ml-2">▶</span>}
             </button>
-            
-            {/* Render submenu if it exists and is open */}
+
             {option.submenu && openSubmenu === option.action && (
-              <div className={`context-submenu ${getSubmenuClass()}`}>
+              <div className={`absolute top-0 min-w-[120px] max-w-[60vw] bg-white border border-border rounded p-1 shadow-[2px_2px_8px_rgba(0,0,0,0.15)] z-[1001] md:max-w-none ${getSubmenuPositionCls()}`}>
                 {option.submenu.map((subOption, subIndex) => (
                   <button
                     key={subIndex}
-                    className="context-submenu-option"
+                    className="block w-full bg-surface border border-border-light rounded-[3px] py-2 px-[10px] my-0.5 cursor-pointer font-serif text-[14px] text-ink text-center transition-colors duration-200 md:py-[6px] md:text-[13px] hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark"
                     onClick={() => handleSubmenuClick(subOption.action)}
                   >
                     {subOption.label}
@@ -179,13 +177,10 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
             )}
           </div>
         ))}
-        
-        {/* Close button at the bottom */}
-        <div className="context-menu-item">
-          <button
-            className="context-menu-option"
-            onClick={onClose}
-          >
+
+        {/* Close button */}
+        <div className="relative">
+          <button className={menuOptionCls} onClick={onClose}>
             {t.close}
           </button>
         </div>
@@ -193,7 +188,6 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
     </div>
   );
 
-  // Render as portal like InfoBubble
   return ReactDOM.createPortal(menu, document.body);
 };
 

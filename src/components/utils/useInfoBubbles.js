@@ -1,6 +1,6 @@
 // hooks/useInfoBubbles.js
 import { useRef, useState, useCallback } from 'react';
-import '../../styles/info-bubble.css';
+// info-bubble.css → moved to index.css
 
 
 /**

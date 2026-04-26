@@ -10,24 +10,17 @@ const FormClassificationFilter = () => {
   const [availableClassifications, setAvailableClassifications] = useState([]);
   const allSeenClassifications = useRef(new Set());
 
-  // Extract unique form classifications from current graph data
   useEffect(() => {
     const formNodes = graphData.nodes.filter(node => node.type === 'form');
     const currentClassifications = formNodes
       .map(node => node.classification)
       .filter(classification => classification && classification.trim() !== '');
-    
-    // Add to our running set of all seen classifications
     currentClassifications.forEach(classification => {
       allSeenClassifications.current.add(classification);
     });
-    
-    // Use all seen classifications, not just current ones
-    const classifications = [...allSeenClassifications.current].sort();
-    setAvailableClassifications(classifications);
+    setAvailableClassifications([...allSeenClassifications.current].sort());
   }, [graphData.nodes]);
 
-  // Separate effect for initializing selections
   useEffect(() => {
     if (selectedFormClassifications.length === 0 && availableClassifications.length > 0) {
       setSelectedFormClassifications(availableClassifications);
@@ -42,23 +35,19 @@ const FormClassificationFilter = () => {
     }
   };
 
-  if (hideFormNodes || availableClassifications.length === 0) {
-    return null; // Don't show the filter if form nodes are hidden or no form classifications are available
-  }
+  if (hideFormNodes || availableClassifications.length === 0) return null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', padding: '10px 0' }}>
+    <div className="flex flex-col gap-[10px] py-[10px]">
       <label>Form Classifications:</label>
-      <div style={{ display: 'flex', gap: '15px', flexWrap: 'wrap' }}>
+      <div className="flex gap-[15px] flex-wrap">
         {availableClassifications.map(classification => (
-          <label key={classification} style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
+          <label key={classification} className="flex items-center gap-[5px]">
             <input
               type="checkbox"
               checked={selectedFormClassifications.includes(classification)}
               onChange={() => handleClassificationToggle(classification)}
-              style={{
-                accentColor: '#007bff'
-              }}
+              style={{ accentColor: '#007bff' }}
             />
             {classification}
           </label>

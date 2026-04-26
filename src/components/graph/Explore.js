@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
 import NodesTable from './NodesTable';
-import { fetchRandomNodes, expandGraph, inspectNode, fetchAnalysisData, fetchArticleHeaders, fetchArticleById, fetchRootEntry } from '../../services/apiService';
+import { fetchRandomNodes, expandGraph, fetchAnalysisData, fetchArticleHeaders, fetchArticleById, fetchRootEntry } from '../../services/apiService';
 import ReactMarkdown from 'react-markdown';
 import wordsContent from '../../content/words.md';
 import rootsContent from '../../content/roots.md';
@@ -46,9 +46,7 @@ const Explore = () => {
       const loadRootGraph = async () => {
         try {
           const result = await expandGraph('root', autoExpandRootId, 'word', { L1, L2 });
-          if (result && result.nodes) {
-            setGraphData(result);
-          }
+          if (result && result.nodes) setGraphData(result);
         } catch (error) {
           console.error('Error auto-expanding root:', error);
         }
@@ -65,57 +63,34 @@ const Explore = () => {
     if (rootParam) {
       const loadSharedRoot = async () => {
         try {
-          // Expand the graph for the root
           const result = await expandGraph('root', rootParam, 'word', { L1, L2 });
-          if (result && result.nodes) {
-            setGraphData(result);
-          }
+          if (result && result.nodes) setGraphData(result);
 
-          // Fetch node data similar to 'more-info' action
-          let nodeData = {
-            rootId: rootParam,
-            rootInfo: { arabic: '', english: '' }
-          };
+          let nodeData = { rootId: rootParam, rootInfo: { arabic: '', english: '' } };
 
-          // Try to fetch root entry
           try {
             const entryData = await fetchRootEntry(rootParam);
-            if (entryData) {
-              nodeData.entry = entryData;
-            }
-          } catch (error) {
-            console.error('Error fetching root entry:', error);
-          }
+            if (entryData) nodeData.entry = entryData;
+          } catch (error) { console.error('Error fetching root entry:', error); }
 
-          // Try to fetch analysis data
           try {
             const analysisData = await fetchAnalysisData('root', rootParam);
-            if (analysisData && analysisData.analyses) {
-              nodeData.analyses = analysisData.analyses;
-            }
-          } catch (error) {
-            console.error('Error fetching analysis data:', error);
-          }
+            if (analysisData && analysisData.analyses) nodeData.analyses = analysisData.analyses;
+          } catch (error) { console.error('Error fetching analysis data:', error); }
 
-          // Try to fetch article data for this root
           try {
             const articlesData = await fetchArticleHeaders();
             if (articlesData && Array.isArray(articlesData)) {
-              // Filter articles for this root
               const rootArticles = articlesData.filter(article => article.root_id === parseInt(rootParam));
               if (rootArticles.length > 0) {
-                // Fetch full article data for each
                 const fullArticles = await Promise.all(
                   rootArticles.map(header => fetchArticleById(header.article_id))
                 );
                 nodeData.articles = fullArticles.filter(a => a !== null);
               }
             }
-          } catch (error) {
-            console.error('Error fetching article data:', error);
-          }
+          } catch (error) { console.error('Error fetching article data:', error); }
 
-          // Set the InfoBubble with the collected data
           setInfoBubble({
             nodeData,
             position: { x: window.innerWidth / 2, y: window.innerHeight / 2 }
@@ -128,58 +103,33 @@ const Explore = () => {
     }
   }, [location.search, L1, L2, setGraphData, setInfoBubble]);
 
-
   const loadMarkdownAndFetchData = async (category) => {
     try {
-      // Load markdown content
       let content;
-      if (category === 'word') {
-        content = wordsContent;
-      } else if (category === 'root') {
-        content = rootsContent;
-      } else if (category === 'form') {
-        content = formsContent;
-      }
+      if (category === 'word') content = wordsContent;
+      else if (category === 'root') content = rootsContent;
+      else if (category === 'form') content = formsContent;
 
       const response = await fetch(content);
       const text = await response.text();
       setMarkdownContent(text);
 
-      // Build filter parameters based on category - use global Settings filters
       const filters = { L1, L2 };
 
       if (category === 'word') {
-        // Apply FilterContext (word_type) and SemiticLanguageFilterContext (sem_lang)
         console.log('Word filters - filterWordTypes:', filterWordTypes, 'selectedSemiticLanguages:', selectedSemiticLanguages);
-
-        if (filterWordTypes && filterWordTypes.length > 0) {
-          filters.wordTypes = filterWordTypes;
-        }
+        if (filterWordTypes && filterWordTypes.length > 0) filters.wordTypes = filterWordTypes;
         const effectiveSemLangs = L1 === 'arabic' ? ['Arabic'] : selectedSemiticLanguages;
-        if (effectiveSemLangs && effectiveSemLangs.length > 0) {
-          filters.semLangs = effectiveSemLangs;
-        }
-
+        if (effectiveSemLangs && effectiveSemLangs.length > 0) filters.semLangs = effectiveSemLangs;
         console.log('Final word filters being sent:', filters);
       } else if (category === 'form') {
-        // Use FormFilterContext for form classifications
-        if (selectedFormClassifications.length > 0) {
-          filters.formClassifications = selectedFormClassifications;
-        }
-      }
-      // For root, no filters currently - could add RootTypeFilterContext in future if needed
-
-      // Apply corpus filter
-      if (corpusFilter && corpusFilter !== 'lexicon') {
-        filters.corpus_id = corpusFilter;
-      }
-      if (surahFilter && surahFilter.length > 0) {
-        filters.surah_numbers = surahFilter;
+        if (selectedFormClassifications.length > 0) filters.formClassifications = selectedFormClassifications;
       }
 
-      // Fetch random node from backend
+      if (corpusFilter && corpusFilter !== 'lexicon') filters.corpus_id = corpusFilter;
+      if (surahFilter && surahFilter.length > 0) filters.surah_numbers = surahFilter;
+
       const result = await fetchRandomNodes(category, 1, filters);
-
       if (result && result.nodes) {
         const newNodes = normalizeNodes(result.nodes);
         setGraphData(prevData => ({
@@ -193,12 +143,12 @@ const Explore = () => {
   };
 
   return (
-    <div className="start">
-
-      <div style={{ marginBottom: '12px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <h2 style={{ margin: 0 }}>{t.exploreTitle}</h2>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+    <div>
+      {/* Header */}
+      <div className="mb-3">
+        <div className="flex items-center justify-between">
+          <h2 className="m-0">{t.exploreTitle}</h2>
+          <div className="flex items-center gap-2">
             <ContextShiftSelector />
             <DisplayModeSelector size="large" />
           </div>
@@ -206,46 +156,35 @@ const Explore = () => {
         <SurahSelector />
       </div>
 
-      <div className="button-row">
-        {/* Word Button */}
-        <div className="button-container">
+      {/* Action buttons */}
+      <div className="flex flex-wrap gap-5 items-center my-5">
+        <div className="relative flex items-center gap-[5px]">
           <button onClick={() => loadMarkdownAndFetchData('word')}>{t.word}</button>
         </div>
-
-        {/* Root Button */}
-        <div className="button-container">
+        <div className="relative flex items-center gap-[5px]">
           <button onClick={() => loadMarkdownAndFetchData('root')}>{t.root}</button>
         </div>
-
-        {/* Form Button — hidden in basic mode or when form nodes are toggled off */}
         {isAdvancedMode && !hideFormNodes && (
-          <div className="button-container">
+          <div className="relative flex items-center gap-[5px]">
             <button onClick={() => loadMarkdownAndFetchData('form')}>{t.form}</button>
           </div>
         )}
-
-        {/* Reset Button */}
-        <div className="button-container">
-          <button onClick={handleReset} style={{ backgroundColor: '#888' }}>
-            {t.reset}
-          </button>
+        <div className="relative flex items-center gap-[5px]">
+          <button onClick={handleReset} className="bg-[#888]">{t.reset}</button>
         </div>
       </div>
 
+      {/* Graph or Table */}
       {displayMode === 'graph' ? (
         <GraphVisualization
           data={graphData}
-          onNodeClick={(node, event) =>
-            handleNodeClick(node, L1, L2, event)
-          }
+          onNodeClick={(node, event) => handleNodeClick(node, L1, L2, event)}
         />
       ) : (
         <NodesTable
           graphData={graphData}
           wordShadeMode="grammatical"
-          onNodeClick={(node, event) =>
-            handleNodeClick(node, L1, L2, event)
-          }
+          onNodeClick={(node, event) => handleNodeClick(node, L1, L2, event)}
           infoBubble={infoBubble}
           closeInfoBubble={() => setInfoBubble(null)}
         />

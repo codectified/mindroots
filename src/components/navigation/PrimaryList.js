@@ -187,73 +187,29 @@ const PrimaryList = () => {
   return (
     <div>
       {/* Consolidated Header with Text Settings */}
-      <div className="page-header" style={{ 
-        marginBottom: '20px', 
-        padding: '15px 20px', 
-        border: '1px solid #a8d5a8', 
-        borderRadius: '12px',
-        backgroundColor: '#f8fdf8',
-        boxShadow: '0 2px 4px rgba(0,0,0,0.05)'
-      }}>
-        <div style={{ 
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          marginBottom: showTextSettings ? '15px' : '0'
-        }}>
-          <h1 style={{ 
-            margin: '0', 
-            fontSize: '24px', 
-            color: '#2d5a2d',
-            fontWeight: '600'
-          }}>
+      <div className="page-header mb-5 px-5 py-[15px] border border-[#a8d5a8] rounded-xl bg-[#f8fdf8] shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
+        <div className={`flex items-center justify-between ${showTextSettings ? 'mb-[15px]' : ''}`}>
+          <h1 className="m-0 text-[24px] text-[#2d5a2d] font-semibold">
             {corpusName}
           </h1>
-          <button 
+          <button
             onClick={() => setShowTextSettings(!showTextSettings)}
-            style={{ 
-              background: 'none',
-              border: 'none',
-              cursor: 'pointer',
-              padding: '8px 12px',
-              borderRadius: '6px',
-              transition: 'background-color 0.2s',
-              backgroundColor: showTextSettings ? '#e8f5e8' : 'transparent'
-            }}
-            onMouseEnter={(e) => e.target.style.backgroundColor = '#e8f5e8'}
-            onMouseLeave={(e) => e.target.style.backgroundColor = showTextSettings ? '#e8f5e8' : 'transparent'}
+            className={`bg-transparent border-none cursor-pointer py-2 px-3 rounded-md transition-colors duration-200 hover:bg-[#e8f5e8] ${showTextSettings ? 'bg-[#e8f5e8]' : ''}`}
           >
-            <FontAwesomeIcon 
-              icon={faEllipsisV} 
-              style={{ 
-                color: '#4a7c4a', 
-                fontSize: '18px' 
-              }}
-            />
+            <FontAwesomeIcon icon={faEllipsisV} className="text-[#4a7c4a] text-[18px]" />
           </button>
         </div>
         {showTextSettings && (
-          <div style={{
-            paddingTop: '15px',
-            borderTop: '1px solid #d4edd4',
-            display: 'grid',
-            gridTemplateColumns: 'repeat(2, 1fr)',
-            gap: '15px',
-            alignItems: 'center'
-          }}>
-            {/* Row 1: Text Layout Toggle */}
-            <div style={{ gridColumn: '1 / 2' }}>
+          <div className="pt-[15px] border-t border-[#d4edd4] grid grid-cols-2 gap-[15px] items-center">
+            <div className="col-start-1 col-end-2">
               <TextLayoutToggle />
             </div>
-
-            {/* Row 1: Highlight Controller */}
-            <div style={{ gridColumn: '2 / 3' }}>
+            <div className="col-start-2 col-end-3">
               <HighlightController />
             </div>
 
-            {/* Row 2: Font Size */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '8px', gridColumn: '1 / 2' }}>
-              <label style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500', whiteSpace: 'nowrap' }}>
+            <div className="flex items-center gap-2 col-start-1 col-end-2">
+              <label className="text-[14px] text-[#4a7c4a] font-medium whitespace-nowrap">
                 {t.fontSizeLabel}
               </label>
               <input
@@ -262,49 +218,30 @@ const PrimaryList = () => {
                 max="32"
                 value={fontSize}
                 onChange={(e) => setFontSize(parseInt(e.target.value))}
-                style={{
-                  width: '60px',
-                  accentColor: '#4a7c4a'
-                }}
+                className="w-[60px]"
+                style={{ accentColor: '#4a7c4a' }}
               />
-              <span style={{ fontSize: '12px', color: '#666', minWidth: '30px' }}>
+              <span className="text-[12px] text-muted min-w-[30px]">
                 {fontSize}px
               </span>
             </div>
 
-            {/* Row 2: Show Statistics */}
-            <label style={{ display: 'flex', alignItems: 'center', gap: '8px', cursor: 'pointer', gridColumn: '2 / 3' }}>
+            <label className="flex items-center gap-2 cursor-pointer col-start-2 col-end-3">
               <input
                 type="checkbox"
                 checked={showStatistics}
                 onChange={handleToggleStatistics}
-                style={{ cursor: 'pointer', width: '16px', height: '16px', accentColor: '#4a7c4a', flexShrink: 0 }}
+                className="cursor-pointer w-4 h-4 flex-shrink-0"
+                style={{ accentColor: '#4a7c4a' }}
               />
-              <span style={{ fontSize: '14px', color: '#4a7c4a', fontWeight: '500' }}>
+              <span className="text-[14px] text-[#4a7c4a] font-medium">
                 {t.showStatistics}
               </span>
             </label>
 
-            {/* Row 3: Return to Library Button - spans both columns */}
             <button
-              onClick={() => {
-                navigate('/corpus-menu');
-              }}
-              style={{
-                padding: '8px 16px',
-                backgroundColor: '#4a7c4a',
-                color: 'white',
-                border: 'none',
-                borderRadius: '6px',
-                cursor: 'pointer',
-                fontSize: '14px',
-                fontWeight: '500',
-                transition: 'background-color 0.2s',
-                gridColumn: '1 / -1',
-                justifySelf: 'start'
-              }}
-              onMouseEnter={(e) => e.target.style.backgroundColor = '#3a6a3a'}
-              onMouseLeave={(e) => e.target.style.backgroundColor = '#4a7c4a'}
+              onClick={() => navigate('/corpus-menu')}
+              className="py-2 px-4 bg-[#4a7c4a] text-white border-none rounded-md cursor-pointer text-[14px] font-medium transition-colors hover:bg-[#3a6a3a] col-span-full justify-self-start"
             >
               {t.returnToLibrary}
             </button>
@@ -313,14 +250,7 @@ const PrimaryList = () => {
       </div>
 
       {loading && (
-        <div style={{ 
-          display: 'flex', 
-          justifyContent: 'center', 
-          alignItems: 'center', 
-          padding: '20px',
-          fontSize: '16px',
-          color: '#666'
-        }}>
+        <div className="flex justify-center items-center p-5 text-[16px] text-muted">
           {t.loading}
         </div>
       )}

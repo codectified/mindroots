@@ -17,11 +17,11 @@ const ContextShiftSelector = () => {
   };
 
   return (
-    <div className="selector-row">
-      <div className="selector-pair">
+    <div className="flex flex-wrap items-center gap-x-[15px] gap-y-0.5">
+      <div className="flex items-center gap-[5px] whitespace-nowrap">
         <label>{t.corpusLabel}</label>
         <select
-          className="uniform-select"
+          className="select-ui"
           value={corpusFilter}
           onChange={(e) => setCorpusFilter(e.target.value)}
         >

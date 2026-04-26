@@ -26,27 +26,17 @@ const FontScaleSelector = () => {
 
   return (
     <div>
-      <p style={{ color: '#666', fontSize: '0.9rem', marginBottom: '10px' }}>
+      <p className="text-muted text-[0.9rem] mb-[10px]">
         {t.fontSizePercent((fontScale * 100).toFixed(0))}
       </p>
 
       {/* Scale buttons - compact for mini-menu */}
-      <div className="font-scale-buttons" style={{ display: 'flex', gap: '6px', flexWrap: 'wrap', marginBottom: '12px' }}>
+      <div className="flex flex-wrap gap-[6px] mb-3">
         {scaleOptions.map((option) => (
           <button
             key={option.value}
             onClick={() => setFontScale(option.value)}
-            style={{
-              padding: '6px 12px',
-              border: fontScale === option.value ? '2px solid #2c7fb8' : '1px solid #ccc',
-              borderRadius: '4px',
-              backgroundColor: fontScale === option.value ? '#e3f2fd' : '#f8f9fa',
-              color: fontScale === option.value ? '#2c7fb8' : '#333',
-              cursor: 'pointer',
-              fontWeight: fontScale === option.value ? '600' : '500',
-              fontSize: '0.85rem',
-              transition: 'all 0.2s',
-            }}
+            className={`py-[6px] px-3 rounded cursor-pointer text-[0.85rem] transition-all duration-200 ${fontScale === option.value ? 'border-2 border-accent bg-accent-light text-accent font-semibold' : 'border border-border bg-surface text-ink font-medium'}`}
             title={option.description}
           >
             {option.label}
@@ -55,7 +45,7 @@ const FontScaleSelector = () => {
       </div>
 
       {/* Slider for fine-tuning */}
-      <div style={{ marginBottom: '12px' }}>
+      <div className="mb-3">
         <input
           type="range"
           min="0.75"
@@ -63,25 +53,14 @@ const FontScaleSelector = () => {
           step="0.05"
           value={fontScale}
           onChange={(e) => setFontScale(parseFloat(e.target.value))}
-          style={{ width: '100%', cursor: 'pointer', height: '4px' }}
+          className="w-full cursor-pointer h-1"
         />
       </div>
 
       {/* Reset button */}
       <button
         onClick={() => setFontScale(1)}
-        style={{
-          padding: '4px 10px',
-          backgroundColor: '#6c757d',
-          color: 'white',
-          border: 'none',
-          borderRadius: '4px',
-          cursor: 'pointer',
-          fontSize: '0.85rem',
-          transition: 'background-color 0.2s',
-        }}
-        onMouseEnter={(e) => e.target.style.backgroundColor = '#5a6268'}
-        onMouseLeave={(e) => e.target.style.backgroundColor = '#6c757d'}
+        className="py-1 px-[10px] bg-[#6c757d] text-white border-none rounded cursor-pointer text-[0.85rem] transition-[background-color] duration-200 hover:bg-[#5a6268]"
       >
         {t.reset}
       </button>
