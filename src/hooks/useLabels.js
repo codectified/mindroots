@@ -8,5 +8,5 @@ import { labels } from '../constants/uiLabels';
  */
 export const useLabels = () => {
   const { L1 } = useLanguage();
-  return (L1 === 'sem' || L1 === 'arabic') ? labels.sem : labels.en;
+  return L1 === 'arabic' ? labels.sem : labels.en;
 };

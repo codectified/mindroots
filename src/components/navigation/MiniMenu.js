@@ -130,9 +130,9 @@ const MiniMenu = () => {
                         value={L2}
                         onChange={(e) => setL2(e.target.value)}
                       >
-                        <option value="off">{t.off}</option>
-                        <option value="sem">{t.semitic}</option>
-                        <option value="english">{t.english}</option>
+                        <option value="off">Off</option>
+                        <option value="sem">Semitic</option>
+                        <option value="english">English</option>
                       </select>
                     </div>
                   </div>
