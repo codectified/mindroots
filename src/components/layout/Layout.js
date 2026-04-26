@@ -27,7 +27,7 @@ const Layout = ({ children }) => {
   return (
     <>
       <div className="app">
-        <div className="m-[5px] p-[5px] mt-[80px] xs:m-[10px] xs:p-[10px] md:m-0 md:p-0 md:mt-0">
+        <div className="px-4 pt-4 pb-6 xs:px-5 xs:pt-5 md:px-10 md:pt-8 md:pb-8 max-w-[1440px] mx-auto">
           {children}
         </div>
       </div>
