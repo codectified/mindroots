@@ -1,6 +1,6 @@
 # MindRoots Documentation Index
 
-**Last Updated**: April 5, 2026 (Surah filter + random node optimization)
+**Last Updated**: May 2026 (Observability + Notion projection layer)
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
@@ -19,6 +19,7 @@
 - **[Analysis Nodes](features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system with v2 schema
 - **[Corpus Navigation System](features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position for reliable sequential corpus browsing
 - **[Workspace Module](features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Creative workspace for Custom GPT graphical media with versioned storage, project organization, and PNG rendering
+- **[Observability & Notion Projection](features/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Live Neo4j semantic metrics + Notion as projection layer — backend complete, pending Notion credentials
 - **[Custom GPT Base Instructions](features/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Base template for tenant Custom GPT setup, system prompt, and Actions configuration
 - **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
 - **[Corpus Filter](features/CORPUS-FILTER-DOCUMENTATION.md)** - ✅ Unified corpus scoping via `CorpusFilterContext` — controls all search retrieval and node expansion

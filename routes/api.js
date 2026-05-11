@@ -30,16 +30,18 @@ const lexiconRoutes = require('./modules/lexicon');
 const inspectionRoutes = require('./modules/inspection');
 const contentRoutes = require('./modules/content');
 const workspaceRoutes = require('./modules/workspace');
+const observabilityRoutes = require('./modules/observability');
 
 // Mount modular route modules
 router.use('/', corpusRoutes);           // Corpus data operations
-router.use('/', graphRoutes);            // Graph expansion and visualization  
+router.use('/', graphRoutes);            // Graph expansion and visualization
 router.use('/', searchModernRoutes);     // Modern RadicalPosition-based search (production)
 router.use('/', searchLegacyRoutes);     // Legacy hardcoded r1/r2/r3 search (deprecated)
 router.use('/', gptAdminRoutes);         // GPT integration and admin queries
 router.use('/', lexiconRoutes);          // Dictionary and lexicon entries
 router.use('/', inspectionRoutes);       // Node inspection, navigation, and validation
 router.use('/', contentRoutes);          // Articles and analyses content
-router.use('/', workspaceRoutes);         // Creative workspace module (Custom GPT integration)
+router.use('/', workspaceRoutes);        // Creative workspace module (Custom GPT integration)
+router.use('/', observabilityRoutes);    // Semantic observability layer (Neo4j → Notion)
 
 module.exports = router;
