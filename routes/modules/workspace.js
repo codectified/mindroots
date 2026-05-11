@@ -1,11 +1,12 @@
 /**
  * Workspace Module - Multi-tenant creative workspace for Custom GPT graphical media
  *
- * Provides 4 endpoints:
+ * Provides 5 endpoints:
  * - GET  /workspace          - Browse assets and projects
  * - POST /workspace/create   - Create new graphic or new version
  * - POST /workspace/render   - Render graphic to PNG
  * - POST /workspace/organize - Create project folders
+ * - POST /workspace/upload   - Upload image asset (base64, magic-byte validated)
  *
  * Multi-tenant storage structure:
  *   /workspaces/{tenant}/assets/{category}/              - shared raw materials
@@ -24,6 +25,47 @@ const crypto = require('crypto');
 // ====================================================================
 
 const WORKSPACES_DIR = path.join(__dirname, '../../workspaces');
+
+// Valid asset categories — enforced on both browse and upload
+const ALLOWED_CATEGORIES = ['logos', 'backgrounds', 'templates', 'images'];
+
+// Upload limits and allowed image types (validated by magic bytes, not extension alone)
+const MAX_UPLOAD_BYTES = 10 * 1024 * 1024; // 10MB decoded
+
+const ALLOWED_IMAGE_TYPES = {
+  'image/jpeg': {
+    extensions: ['.jpg', '.jpeg'],
+    magic: (b) => b[0] === 0xFF && b[1] === 0xD8 && b[2] === 0xFF,
+  },
+  'image/png': {
+    extensions: ['.png'],
+    magic: (b) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4E && b[3] === 0x47,
+  },
+  'image/gif': {
+    extensions: ['.gif'],
+    magic: (b) => b.slice(0, 6).toString('ascii').startsWith('GIF8'),
+  },
+  'image/webp': {
+    extensions: ['.webp'],
+    magic: (b) => b.slice(0, 4).toString('ascii') === 'RIFF' && b.slice(8, 12).toString('ascii') === 'WEBP',
+  },
+};
+
+function detectImageMimeType(buf) {
+  if (!buf || buf.length < 12) return null;
+  for (const [mime, def] of Object.entries(ALLOWED_IMAGE_TYPES)) {
+    if (def.magic(buf)) return mime;
+  }
+  return null;
+}
+
+function sanitizeFilename(name) {
+  if (!name || typeof name !== 'string') return null;
+  const base = path.basename(name); // strip any path components
+  const safe = base.replace(/[^a-zA-Z0-9._\-]/g, '_');
+  if (!safe || safe.startsWith('.') || safe.length > 200) return null;
+  return safe;
+}
 
 function getWorkspacePaths(workspaceId) {
   const base = path.join(WORKSPACES_DIR, workspaceId);
@@ -276,7 +318,7 @@ router.get('/workspace', async (req, res) => {
     if (assetsParam === 'true') {
       // Full asset listings with URLs
       const assetData = {};
-      const categories = ['logos', 'backgrounds', 'templates'];
+      const categories = ALLOWED_CATEGORIES;
       for (const category of categories) {
         const categoryDir = path.join(paths.assetsDir, category);
         try {
@@ -295,7 +337,7 @@ router.get('/workspace', async (req, res) => {
     } else {
       // Counts only
       const assetCounts = {};
-      const categories = ['logos', 'backgrounds', 'templates'];
+      const categories = ALLOWED_CATEGORIES;
       for (const category of categories) {
         const categoryDir = path.join(paths.assetsDir, category);
         try {
@@ -887,6 +929,113 @@ router.post('/workspace/organize', async (req, res) => {
   } catch (error) {
     console.error('Error creating project folder:', error);
     res.status(500).json({ error: 'Failed to create project folder', message: error.message });
+  }
+});
+
+// ====================================================================
+// POST /workspace/upload - Upload an image asset (base64-encoded)
+//
+// Security layers (in order):
+//   1. Workspace token required (enforced by authenticateAPI middleware)
+//   2. Category must be in ALLOWED_CATEGORIES allowlist
+//   3. Filename sanitized — path separators and special chars stripped
+//   4. Decoded size capped at MAX_UPLOAD_BYTES (10MB)
+//   5. Magic byte validation — actual binary header checked, not just extension
+//   6. Extension must match the detected MIME type
+//   7. Final path confined to workspace assets dir (traversal guard)
+// ====================================================================
+
+router.post('/workspace/upload', async (req, res) => {
+  const paths = requireWorkspace(req, res);
+  if (!paths) return;
+
+  const { category, filename, data } = req.body;
+
+  // 1. Category allowlist
+  if (!category || !ALLOWED_CATEGORIES.includes(category)) {
+    return res.status(400).json({
+      error: 'Invalid category',
+      message: `category must be one of: ${ALLOWED_CATEGORIES.join(', ')}`,
+    });
+  }
+
+  // 2. Filename sanitization
+  const safeFilename = sanitizeFilename(filename);
+  if (!safeFilename) {
+    return res.status(400).json({
+      error: 'Invalid filename',
+      message: 'Filename must use only letters, numbers, dots, hyphens, and underscores (max 200 chars)',
+    });
+  }
+
+  // 3. Validate and decode base64 payload
+  if (!data || typeof data !== 'string') {
+    return res.status(400).json({ error: 'Missing data', message: 'data must be a base64-encoded image string' });
+  }
+
+  // Strip data URL prefix if the agent includes it (e.g. "data:image/png;base64,...")
+  const base64 = data.replace(/^data:[^;]+;base64,/, '');
+
+  let buffer;
+  try {
+    buffer = Buffer.from(base64, 'base64');
+    if (buffer.length === 0) throw new Error('empty');
+  } catch {
+    return res.status(400).json({ error: 'Invalid data', message: 'data must be valid base64-encoded content' });
+  }
+
+  // 4. Size cap
+  if (buffer.length > MAX_UPLOAD_BYTES) {
+    return res.status(400).json({
+      error: 'File too large',
+      message: `Maximum file size is ${MAX_UPLOAD_BYTES / 1024 / 1024}MB. Received ${(buffer.length / 1024 / 1024).toFixed(2)}MB`,
+    });
+  }
+
+  // 5. Magic byte validation — reject anything that isn't a real image
+  const detectedMime = detectImageMimeType(buffer);
+  if (!detectedMime) {
+    return res.status(400).json({
+      error: 'Unsupported file type',
+      message: 'File content does not match a supported image type. Allowed: JPEG, PNG, GIF, WebP',
+    });
+  }
+
+  // 6. Extension must agree with detected MIME type
+  const ext = path.extname(safeFilename).toLowerCase();
+  if (!ALLOWED_IMAGE_TYPES[detectedMime].extensions.includes(ext)) {
+    return res.status(400).json({
+      error: 'Extension mismatch',
+      message: `File extension "${ext}" does not match detected image type (${detectedMime}). Expected: ${ALLOWED_IMAGE_TYPES[detectedMime].extensions.join(' or ')}`,
+    });
+  }
+
+  try {
+    const categoryDir = path.join(paths.assetsDir, category);
+    const destPath = path.join(categoryDir, safeFilename);
+
+    // 7. Final traversal guard — destination must stay inside this workspace
+    if (!destPath.startsWith(path.resolve(paths.assetsDir) + path.sep)) {
+      return res.status(400).json({ error: 'Invalid path', message: 'Resolved path escapes workspace directory' });
+    }
+
+    await ensureDirectoryExists(categoryDir);
+    await fs.writeFile(destPath, buffer);
+
+    const url = `${paths.assetsUrlBase}/${category}/${safeFilename}`;
+    console.log(`Asset uploaded: ${req.workspace}/${category}/${safeFilename} (${buffer.length} bytes, ${detectedMime})`);
+
+    res.status(201).json({
+      filename: safeFilename,
+      category,
+      url,
+      size: buffer.length,
+      type: detectedMime,
+      message: 'Asset uploaded successfully',
+    });
+  } catch (error) {
+    console.error('Error in POST /workspace/upload:', error);
+    res.status(500).json({ error: 'Failed to upload asset', message: error.message });
   }
 });
 

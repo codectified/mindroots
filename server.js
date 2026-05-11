@@ -18,7 +18,7 @@ const app = express();
 const port = 5001;
 
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '15mb' })); // 15mb accommodates base64-encoded image uploads (~10MB decoded)
 
 // Static file serving for multi-tenant workspaces
 app.use('/workspaces', express.static(path.join(__dirname, 'workspaces')));

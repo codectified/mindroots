@@ -14,8 +14,9 @@ The Workspace Module enables a Custom GPT to:
 3. Retrieve source HTML/CSS/metadata for any version
 4. Get inline (self-contained) HTML previews with embedded CSS
 5. Request PNG rendering in multiple formats per version
-6. Browse available assets (logos, backgrounds, templates)
+6. Browse available assets (logos, backgrounds, templates, images)
 7. Organize work into named project folders
+8. Upload image assets directly (base64, magic-byte validated) — no manual `scp` required
 
 This module operates independently of the MindRoots graph database and linguistic features.
 
@@ -243,6 +244,52 @@ Multiple formats can be rendered per version — each is stored in the `renders`
 
 ---
 
+### Upload Image Asset
+
+**POST** `/api/workspace/upload`
+
+Uploads a base64-encoded image directly into the workspace asset library. Designed for agents — eliminates the need for manual `scp` per client.
+
+**Request:**
+```json
+{
+  "category": "logos",
+  "filename": "client-logo.png",
+  "data": "<base64-encoded image data>"
+}
+```
+
+`data` may optionally include a data URL prefix (e.g. `data:image/png;base64,...`) — it is stripped automatically.
+
+**Security layers (applied in order):**
+| Layer | What it checks |
+|-------|---------------|
+| Workspace token | Auth middleware — only workspace-authenticated agents can write |
+| Category allowlist | Must be one of: `logos`, `backgrounds`, `templates`, `images` |
+| Filename sanitization | Path separators stripped; only `[a-zA-Z0-9._-]` allowed |
+| Size cap | Decoded file must be ≤ 10MB |
+| Magic byte validation | Binary header inspected — not just the filename extension |
+| Extension match | File extension must match the detected MIME type |
+| Path confinement | Resolved destination must stay inside the workspace assets dir |
+
+**Allowed image types:** JPEG (`.jpg`, `.jpeg`), PNG (`.png`), GIF (`.gif`), WebP (`.webp`)
+
+**Response (201):**
+```json
+{
+  "filename": "client-logo.png",
+  "category": "logos",
+  "url": "https://theoption.life/workspaces/cicit/assets/logos/client-logo.png",
+  "size": 48320,
+  "type": "image/png",
+  "message": "Asset uploaded successfully"
+}
+```
+
+If a file with the same filename already exists in the category it is overwritten (intentional — replacing a logo is a valid use case).
+
+---
+
 ### Organize Projects
 
 **POST** `/api/workspace/organize`
@@ -279,7 +326,13 @@ Blocked: CSS `expression()`, `javascript:` in CSS, external `@import` URLs, `beh
 
 ### Path Traversal Protection
 
-Project paths are sanitized to prevent directory traversal attacks.
+Project paths and asset filenames are sanitized to prevent directory traversal attacks. Asset uploads additionally enforce a final resolved-path check — the destination must start with the workspace's `assets/` directory.
+
+### Asset Upload Security
+
+Image uploads use magic byte validation: the binary file header is read and compared against known signatures before the file is written. Mismatches between the file's actual content and its declared extension are rejected. SVG is intentionally not supported (it can embed `<script>` tags and event handlers).
+
+The JSON body parser limit was raised to 15MB (`server.js`) to accommodate base64-encoded images — base64 inflation is ~33%, so a 10MB image becomes ~13.3MB in the request body.
 
 ---
 
@@ -329,33 +382,41 @@ echo -n "$TOKEN" > workspaces/$TENANT/.token
 
 ### Uploading Tenant Assets
 
-Assets are static files (logos, backgrounds, templates) served by nginx. Upload via `scp`:
+**Preferred: via API (agents can do this themselves)**
+
+```bash
+# Encode a local file and POST it
+DATA=$(base64 -i logo.png)
+curl -X POST https://theoption.life/api/workspace/upload \
+  -H "Authorization: Bearer ws_<tenant>_<secret>" \
+  -H "Content-Type: application/json" \
+  -d "{\"category\": \"logos\", \"filename\": \"logo.png\", \"data\": \"$DATA\"}"
+```
+
+**Fallback: manual `scp`** (use when bootstrapping a workspace before token setup)
 
 ```bash
 # Upload a logo (see DEPLOYMENT-PRIVATE.md for SSH/SCP details)
 scp -i <key-path> logo.png <user>@<host>:<app-root>/workspaces/$TENANT/assets/logos/
-
-# Upload a background
-scp -i <key-path> bg.jpg <user>@<host>:<app-root>/workspaces/$TENANT/assets/backgrounds/
 ```
 
 Assets are immediately available at:
 ```
 https://<domain>/workspaces/<tenant>/assets/logos/logo.png
-https://<domain>/workspaces/<tenant>/assets/backgrounds/bg.jpg
 ```
 
-No server restart needed — nginx serves them as static files.
-
-The GPT sees these assets when it calls `getWorkspace` with `assets=true`.
+No server restart needed — Express serves them as static files. The GPT sees uploaded assets when it calls `getWorkspace` with `assets=true`.
 
 ### Asset Categories
 
 | Directory | Purpose | Examples |
 |-----------|---------|----------|
-| `logos/` | Organization logos and branding | host-logo.png, org-icon.svg |
+| `logos/` | Organization logos and branding | host-logo.png, org-icon.png |
 | `backgrounds/` | Background images for graphics | pattern.png, gradient.jpg |
 | `templates/` | Reusable HTML/CSS templates | (future use) |
+| `images/` | General images (photos, illustrations) | header-photo.jpg, calligraphy.png |
+
+The `ALLOWED_CATEGORIES` constant in `workspace.js` is the single source of truth — both the upload endpoint and the browse endpoint use it. Add a new category there if needed.
 
 ### Shared Assets
 
@@ -428,6 +489,12 @@ curl "http://localhost:5001/api/workspace?id=GRAPHIC_ID&version=1&inline=true" \
 curl -X POST http://localhost:5001/api/workspace/render \
   -H "Authorization: Bearer KEY" -H "Content-Type: application/json" \
   -d '{"id": "GRAPHIC_ID", "format": "ig_square"}'
+
+# Upload an image asset (base64-encode a local file first)
+DATA=$(base64 -i /path/to/logo.png)
+curl -X POST http://localhost:5001/api/workspace/upload \
+  -H "Authorization: Bearer KEY" -H "Content-Type: application/json" \
+  -d "{\"category\": \"logos\", \"filename\": \"logo.png\", \"data\": \"$DATA\"}"
 ```
 
 ---

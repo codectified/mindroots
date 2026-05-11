@@ -2,7 +2,7 @@ openapi: 3.1.0
 info:
   title: MindRoots Creative Workspace API
   description: API for creating, versioning, and rendering graphical media via Custom GPT
-  version: 2.0.0
+  version: 2.1.0
 servers:
   - url: https://theoption.life/api
     description: Production server
@@ -115,6 +115,48 @@ components:
       properties:
         project:
           type: string
+        message:
+          type: string
+
+    UploadAssetRequest:
+      type: object
+      required:
+        - category
+        - filename
+        - data
+      properties:
+        category:
+          type: string
+          enum: [logos, backgrounds, templates, images]
+          description: Asset category (determines storage folder)
+        filename:
+          type: string
+          description: Destination filename including extension (e.g. "logo.png"). Letters, numbers, dots, hyphens, underscores only.
+        data:
+          type: string
+          description: |
+            Base64-encoded image content. Optionally prefixed with a data URL header
+            (e.g. "data:image/png;base64,...") — the prefix is stripped automatically.
+            Allowed types: JPEG, PNG, GIF, WebP. Maximum decoded size: 10MB.
+
+    UploadAssetResponse:
+      type: object
+      properties:
+        filename:
+          type: string
+          description: Sanitized filename as stored
+        category:
+          type: string
+        url:
+          type: string
+          format: uri
+          description: Public URL to access the uploaded asset
+        size:
+          type: integer
+          description: Decoded file size in bytes
+        type:
+          type: string
+          description: Detected MIME type (e.g. image/png)
         message:
           type: string
 
@@ -299,3 +341,39 @@ paths:
           description: Missing authorization
         '403':
           description: Invalid API key
+
+  /workspace/upload:
+    post:
+      operationId: uploadAsset
+      summary: Upload an image asset
+      description: |
+        Uploads a base64-encoded image to the workspace asset library.
+
+        Security: category allowlist, filename sanitization, 10MB size cap, and
+        magic-byte validation (file content is inspected, not just the extension).
+        Allowed image types: JPEG, PNG, GIF, WebP.
+
+        If a file with the same filename already exists in the category, it is overwritten.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UploadAssetRequest'
+      responses:
+        '201':
+          description: Asset uploaded successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadAssetResponse'
+        '400':
+          description: Invalid input (bad category, filename, size, or image type)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '401':
+          description: Missing authorization
+        '403':
+          description: Invalid API key or non-workspace token
