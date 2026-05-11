@@ -290,15 +290,43 @@ async function countGraphics(dir) {
 }
 
 /**
- * Middleware: extract workspace from req, return 403 if missing.
+ * Resolve workspace for a request. Two paths:
+ *   1. Workspace-scoped token (ws_*): workspaceId already on req.workspace
+ *   2. Admin/main key: caller must supply ?workspace=<id> query param
+ *      The workspace must already exist (.token file present) — we never
+ *      auto-create workspaces for unknown IDs.
  */
+const fsSync = require('fs');
+
 function requireWorkspace(req, res) {
-  const workspaceId = req.workspace;
-  if (!workspaceId) {
-    res.status(403).json({ error: 'Workspace key required' });
-    return null;
+  // Path 1: workspace-scoped token
+  if (req.workspace) return getWorkspacePaths(req.workspace);
+
+  // Path 2: admin/main key with explicit workspace param
+  if (req.authLevel === 'admin' || req.authLevel === 'main') {
+    const raw = req.query.workspace || req.body?.workspace;
+    if (!raw) {
+      res.status(400).json({
+        error: 'workspace required',
+        message: 'Provide ?workspace=<id> when using an admin or main API key',
+      });
+      return null;
+    }
+    if (!/^[a-zA-Z0-9_-]+$/.test(raw)) {
+      res.status(400).json({ error: 'Invalid workspace ID', message: 'Workspace ID must use only letters, numbers, hyphens, and underscores' });
+      return null;
+    }
+    // Guard: workspace must be provisioned (.token file must exist)
+    const tokenFile = path.join(WORKSPACES_DIR, raw, '.token');
+    if (!fsSync.existsSync(tokenFile)) {
+      res.status(404).json({ error: 'Workspace not found', message: `No provisioned workspace: ${raw}` });
+      return null;
+    }
+    return getWorkspacePaths(raw);
   }
-  return getWorkspacePaths(workspaceId);
+
+  res.status(403).json({ error: 'Workspace key required' });
+  return null;
 }
 
 // ====================================================================
@@ -929,6 +957,52 @@ router.post('/workspace/organize', async (req, res) => {
   } catch (error) {
     console.error('Error creating project folder:', error);
     res.status(500).json({ error: 'Failed to create project folder', message: error.message });
+  }
+});
+
+// ====================================================================
+// GET /workspaces - List all provisioned workspaces (admin/main only)
+// ====================================================================
+
+router.get('/workspaces', async (req, res) => {
+  if (req.authLevel !== 'admin' && req.authLevel !== 'main') {
+    return res.status(403).json({ error: 'Admin or main API key required to list workspaces' });
+  }
+
+  try {
+    const entries = await fs.readdir(WORKSPACES_DIR);
+    const workspaces = [];
+
+    for (const entry of entries) {
+      if (entry.startsWith('_') || entry.startsWith('.')) continue; // skip _shared, hidden dirs
+      const tokenFile = path.join(WORKSPACES_DIR, entry, '.token');
+      try {
+        await fs.access(tokenFile); // only include properly provisioned workspaces
+      } catch {
+        continue;
+      }
+
+      // Count assets across all categories
+      let totalAssets = 0;
+      const assetCounts = {};
+      for (const category of ALLOWED_CATEGORIES) {
+        try {
+          const files = await fs.readdir(path.join(WORKSPACES_DIR, entry, 'assets', category));
+          const count = files.filter(f => !f.startsWith('.')).length;
+          assetCounts[category] = count;
+          totalAssets += count;
+        } catch {
+          assetCounts[category] = 0;
+        }
+      }
+
+      workspaces.push({ id: entry, assets: assetCounts, total_assets: totalAssets });
+    }
+
+    res.json({ workspaces });
+  } catch (error) {
+    console.error('Error in GET /workspaces:', error);
+    res.status(500).json({ error: 'Failed to list workspaces', message: error.message });
   }
 });
 
