@@ -1,6 +1,6 @@
 # MindRoots Documentation Index
 
-**Last Updated**: May 2026 (Master workspace agent + docs reorganization)
+**Last Updated**: May 2026 (Workspace upload, master agent, observability, OpenAPI spec fixes)
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
@@ -41,12 +41,15 @@
 ### **Testing & Quality Assurance**
 - **[Backend Test Results](testing/BACKEND-TEST-RESULTS.md)** - API endpoint testing and validation results
 - **[Frontend Integration Checklist](testing/FRONTEND-INTEGRATION-CHECKLIST.md)** - UI/UX testing procedures
-- **[Search System Tests](testing/RADICAL-SEARCH-TESTS.md)** - Comprehensive search functionality validation
+
+### **Deployment**
+- **[GPT Orchestration Deployment Guide](deployment/GPT-ORCHESTRATION-DEPLOYMENT-GUIDE.md)** - GPT integration deployment steps
+
+### **Database Reference**
+- **[Neo4j Schema](neo4j/schema.md)** - Graph database schema reference
 
 ### **Archived & Historical**
 - **[Backend Deduplication Fixes](archived/BACKEND-DEDUPLICATION-FIXES.md)** - Historical database optimization work
-- **[UI Overhaul Notes](archived/UI-OVERHAUL-NOTES.md)** - Context menu redesign and InfoBubble enhancement history
-- **[Security Implementation](archived/SECURITY-IMPLEMENTATION.md)** - GPT API key security system development
 
 ### **Development Prototypes**
 - **[Experimental Features](development-prototypes/)** - Unused code, experiments, and proof-of-concepts
@@ -64,30 +67,37 @@
 ```
 docs/
 ├── DOCUMENTATION-INDEX.md          # This file - navigation hub
+├── FRONTEND-DESIGN-GUIDE.md        # Frontend architecture and layout patterns
+├── COMPONENT-PATTERNS.md           # Reusable component patterns and examples
 ├── features/                       # Current feature documentation
 │   ├── ANALYSIS-NODES-DOCUMENTATION.md
 │   ├── WORKSPACE-MODULE-DOCUMENTATION.md
 │   ├── OBSERVABILITY-NOTION-PROJECTION.md
 │   ├── CORPUS-FILTER-DOCUMENTATION.md
+│   ├── CORPUS-NAVIGATION-SYSTEM.md
 │   ├── RADICAL-SEARCH-INTEGRATION.md
 │   ├── VALIDATION-SYSTEM-DOCUMENTATION.md
 │   ├── NODE-INSPECTOR-DOCUMENTATION.md
+│   ├── FULLTEXT-SEARCH-DOCUMENTATION.md
+│   ├── SURAH-FILTER-DOCUMENTATION.md
+│   ├── CORPUS-COUNT-ANNOTATION-DOCUMENTATION.md
 │   ├── agent-instructions/          # GPT system prompts and workflow guides
 │   │   ├── CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md   # tenant GPT (ws_* token)
 │   │   ├── MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md     # master agent (admin key)
 │   │   └── MINDROOTS-AGENT-INSTRUCTIONS.md            # linguistics agent
 │   └── openapi-specs/               # OpenAPI Action schemas for GPTs
 │       ├── mindroots-openai-spec.yaml                 # linguistics
-│       ├── master-workspace-openapi-spec.yaml         # master workspace
-│       └── workspace-openapi-spec.yaml                # tenant workspace
+│       ├── master-workspace-openapi-spec.yaml         # master workspace (all tenants)
+│       └── workspace-openapi-spec.yaml                # tenant workspace (ws_* token)
 ├── testing/                        # Test procedures and results  
 │   ├── BACKEND-TEST-RESULTS.md
-│   ├── FRONTEND-INTEGRATION-CHECKLIST.md
-│   └── RADICAL-SEARCH-TESTS.md
+│   └── FRONTEND-INTEGRATION-CHECKLIST.md
+├── deployment/                     # Deployment guides
+│   └── GPT-ORCHESTRATION-DEPLOYMENT-GUIDE.md
+├── neo4j/                          # Database reference
+│   └── schema.md
 ├── archived/                       # Deployed/historical documentation
-│   ├── BACKEND-DEDUPLICATION-FIXES.md
-│   ├── UI-OVERHAUL-NOTES.md
-│   └── SECURITY-IMPLEMENTATION.md
+│   └── BACKEND-DEDUPLICATION-FIXES.md
 └── development-prototypes/         # Experimental and unused code
 ```
 

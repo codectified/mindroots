@@ -19,6 +19,8 @@
 - **[Validation System](docs/features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - ✅ Inline editing and approval workflow
 - **[Radical Search Integration](docs/features/RADICAL-SEARCH-INTEGRATION.md)** - ✅ RadicalPosition-based search
 - **[Analysis Nodes](docs/features/ANALYSIS-NODES-DOCUMENTATION.md)** - ✅ LLM-generated linguistic analysis
+- **[Workspace Module](docs/features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Multi-tenant creative workspace with asset upload + master agent support
+- **[Observability & Notion Projection](docs/features/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Neo4j metrics backend ready, pending Notion credentials
 
 ---
 
@@ -45,7 +47,15 @@ routes/
 ├── api.js                        # Main API router
 └── modules/
     ├── inspection.js             # Node inspection & navigation
+    ├── workspace.js              # Multi-tenant creative workspace (Custom GPT)
+    ├── observability.js          # Neo4j metrics + Notion projection layer
     └── [other modules]           # Feature-specific endpoints
+
+workspaces/                       # Tenant asset + project storage (gitignored except _shared/)
+├── aif/                          # AIF tenant
+├── cicit/                        # CICIT tenant
+├── mindroots/                    # MindRoots branding tenant
+└── _shared/                      # Shared fonts + icons (tracked in git)
 
 server.js                         # Express server entry point
 .env                             # Environment config (not in git)
@@ -115,17 +125,21 @@ node server.js             # Start fresh server
 
 ## 🎯 **Current Status**
 
-**Last Major Work**: Corpus Navigation System Overhaul (October 5, 2025)
-- ✅ Fixed navigation getting stuck after one move
-- ✅ Implemented global_position navigation for Quran
-- ✅ Resolved animation interruption issues
-- ✅ Production-ready and mobile-app ready
+**Last Major Work**: Workspace + Observability overhaul (May 2026)
+- ✅ Multi-tenant workspace: AIF, CICIT, MindRoots tenants provisioned
+- ✅ Asset upload endpoint — agents upload images directly (no manual scp)
+- ✅ Master workspace agent — admin/main key + `?workspace=<id>` accesses all tenants
+- ✅ `GET /api/workspaces` lists all provisioned tenants
+- ✅ OpenAPI specs in `docs/features/openapi-specs/` (tenant, master, linguistics)
+- ✅ Observability backend (`observability.js`) — Neo4j metrics + Notion upsert logic ready
+- ✅ Frontend overhaul: Tailwind CSS, graph viewport fix (`calc(100vh - 160px)`)
+- 🔧 Notion projection pending: add `NOTION_TOKEN` + `NOTION_DATABASE_ID` to `.env`
 
-**Ready for**: Production deployment and mobile app development
+**Previous work**: Corpus Navigation System (October 2025), Frontend overhaul PR #58 (May 2026)
 
 ---
 
 **💡 Remember**: This file is just an index. For detailed implementation info, always check the organized documentation in `docs/`
 
-**Last Updated**: October 5, 2025  
+**Last Updated**: May 2026  
 **File Purpose**: Streamlined index and quick reference only

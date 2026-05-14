@@ -34,32 +34,47 @@ workspaces/                          # Top-level — all tenant data
 │   ├── assets/
 │   │   ├── logos/
 │   │   ├── backgrounds/
-│   │   └── templates/
+│   │   ├── templates/
+│   │   └── images/
 │   └── projects/
 │       ├── .index.json              # ID→project lookup map
 │       ├── ramadan-2026/
 │       │   └── {id}/v001/
 │       └── legacy/
+├── cicit/                           # CICIT GPT workspace
+│   ├── assets/
+│   │   ├── logos/
+│   │   ├── backgrounds/
+│   │   ├── templates/
+│   │   └── images/
+│   └── projects/
+│       └── .index.json
 ├── mindroots/                       # MindRoots branding GPT workspace
 │   ├── assets/
 │   │   ├── logos/
 │   │   ├── backgrounds/
-│   │   └── templates/
+│   │   ├── templates/
+│   │   └── images/
 │   └── projects/
 │       └── .index.json
 ```
 
 ### Tenant Resolution
 
-Workspace identity is encoded in self-describing API tokens:
+Two access patterns:
 
+**Workspace-scoped token** (tenant GPT):
 ```
-ws_<workspaceId>_<randomSecret>
+Authorization: Bearer ws_<workspaceId>_<randomSecret>
 ```
+The auth middleware parses `workspaceId` from the token prefix, reads the `.token` file, and validates the full token. On success it sets `req.workspace`. No per-tenant env vars needed.
 
-Examples: `ws_aif_83fj29fk29`, `ws_mindroots_k29f92jf9`
-
-The auth middleware parses `workspaceId` from the token prefix, reads the `.token` file from that workspace directory, and validates the full token matches. On success it sets `req.workspace`. No per-tenant env vars needed.
+**Admin/main key** (master agent):
+```
+Authorization: Bearer <admin-or-main-key>
+GET/POST /api/workspace?workspace=cicit
+```
+When an admin or main key is used, the caller must supply `?workspace=<id>` on every request. The middleware resolves the workspace from the query param and checks that a `.token` file exists (workspace must be provisioned — never auto-created). This is the pattern used by the master workspace agent.
 
 ### .index.json Format
 
@@ -103,6 +118,26 @@ Supports multiple render formats per version via `renders` map:
 ---
 
 ## API Endpoints
+
+### List All Workspaces
+
+**GET** `/api/workspaces`
+
+Admin/main key only. Returns all provisioned tenant workspaces with per-category asset counts.
+
+```json
+{
+  "workspaces": [
+    { "id": "aif",      "assets": { "logos": 3, "backgrounds": 0, "templates": 0, "images": 0 }, "total_assets": 3 },
+    { "id": "cicit",    "assets": { "logos": 3, "backgrounds": 0, "templates": 0, "images": 2 }, "total_assets": 5 },
+    { "id": "mindroots","assets": { "logos": 1, "backgrounds": 0, "templates": 0, "images": 0 }, "total_assets": 1 }
+  ]
+}
+```
+
+Only directories that have a `.token` file are included — prevents listing non-workspace subdirectories. Directories starting with `_` (e.g. `_shared`) are skipped automatically.
+
+---
 
 ### Browse Workspace
 
@@ -431,6 +466,10 @@ Assets in `workspaces/_shared/` are available to all tenants. These **are** trac
 - `logos/host-logo.jpg` — AIF organization logo
 - `logos/Deif.jpeg` — Imam photo
 
+**CICIT** (`workspaces/cicit/assets/`):
+- `logos/logo.png`, `logos/logo_front.png`, `logos/smalllogo.jpeg` — CICIT branding
+- `images/` — processed event/promo images
+
 **MindRoots** (`workspaces/mindroots/assets/`):
 - `logos/root-tree.jpeg` — MindRoots tree logo
 
@@ -535,6 +574,8 @@ Note: this does **not** affect Puppeteer rendering (which uses base64 data URIs 
 
 ---
 
-**Last Updated**: March 25, 2026
+**Last Updated**: May 2026
 **Module Location**: `routes/modules/workspace.js`
-**OpenAPI Spec**: `docs/features/workspace-openapi-spec.yaml`
+**OpenAPI Specs**:
+- `docs/features/openapi-specs/workspace-openapi-spec.yaml` — tenant agent (ws_* token)
+- `docs/features/openapi-specs/master-workspace-openapi-spec.yaml` — master agent (admin/main key)
