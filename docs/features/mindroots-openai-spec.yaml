@@ -1,450 +1,144 @@
 openapi: 3.1.0
 info:
-  title: TheOption Life — Master Agent API
-  description: |
-    Master agent API with cross-workspace access.
-    Covers three capability domains:
-
-    1. Linguistic graph — read/write access to the Neo4j MindRoots database
-    2. Workspace management — browse, upload assets, create graphics, render images
-       across all provisioned client workspaces
-    3. Observability — live semantic metrics from the graph
-
-    Authentication: Bearer token using the main or admin API key.
-    All workspace operations require ?workspace=<id> to target a specific tenant.
-    Use GET /api/workspaces first to discover available workspace IDs.
-  version: 3.0.0
-
+  title: TheOption Life API
+  description: Read and write access to the MindRoots linguistic graph database.
+  version: 2.0.0
 servers:
   - url: https://theoption.life
     description: Production server
 
-components:
-  securitySchemes:
-    ApiKeyAuth:
-      type: http
-      scheme: bearer
-      description: Main or admin API key. Not a workspace-scoped token.
-
-  parameters:
-    workspaceId:
-      name: workspace
-      in: query
-      required: true
-      schema:
-        type: string
-      description: Workspace ID to operate on (e.g. "aif", "cicit", "mindroots"). Get available IDs from GET /api/workspaces.
-
-  schemas:
-    Error:
-      type: object
-      properties:
-        error:
-          type: string
-        message:
-          type: string
-
-security:
-  - ApiKeyAuth: []
-
 paths:
-
-  # ─────────────────────────────────────────────────────────────────
-  # WORKSPACE MANAGEMENT
-  # ─────────────────────────────────────────────────────────────────
-
-  /api/workspaces:
-    get:
-      operationId: listWorkspaces
-      summary: List all provisioned client workspaces
-      description: Returns all workspace IDs that have been provisioned on the server, with per-category asset counts. Use this to discover available workspace IDs before calling other workspace endpoints.
-      responses:
-        '200':
-          description: List of workspaces
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  workspaces:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        id:
-                          type: string
-                          description: Workspace identifier (use as ?workspace= param)
-                        total_assets:
-                          type: integer
-                        assets:
-                          type: object
-                          description: Per-category asset counts
-                          properties:
-                            logos:
-                              type: integer
-                            backgrounds:
-                              type: integer
-                            templates:
-                              type: integer
-                            images:
-                              type: integer
-        '403':
-          description: Admin or main key required
-
-  /api/workspace:
-    get:
-      operationId: browseWorkspace
-      summary: Browse a workspace's assets and projects
-      description: |
-        Returns asset listings and project summaries for a specific workspace.
-        Lightweight by default (counts only). Use query params to expand.
-      parameters:
-        - $ref: '#/components/parameters/workspaceId'
-        - name: assets
-          in: query
-          schema:
-            type: string
-            enum: ["true"]
-          description: Include full asset file listings with URLs
-        - name: project
-          in: query
-          schema:
-            type: string
-          description: Return full detail for one project
-        - name: id
-          in: query
-          schema:
-            type: string
-          description: Return full detail for one graphic
-        - name: includeVersions
-          in: query
-          schema:
-            type: string
-            enum: ["true"]
-          description: Include version arrays when listing projects
-        - name: version
-          in: query
-          schema:
-            type: integer
-          description: When used with id, returns source html/css/meta for that version
-        - name: inline
-          in: query
-          schema:
-            type: string
-            enum: ["true"]
-          description: When used with id+version, returns self-contained HTML with CSS embedded
-      responses:
-        '200':
-          description: Workspace data
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  assets:
-                    type: object
-                    description: Asset categories (counts or full listings with URLs)
-                  projects:
-                    type: object
-                    description: Project listings
-                  graphic:
-                    type: object
-                    description: Single graphic detail (when id param provided)
-        '403':
-          description: Invalid key or workspace access denied
-        '404':
-          description: Workspace, project, or graphic not found
-
-  /api/workspace/upload:
-    post:
-      operationId: uploadAsset
-      summary: Upload an image asset to a workspace
-      description: |
-        Uploads a base64-encoded image to the workspace asset library.
-        Pass the workspace ID as a query parameter.
-
-        Allowed image types: JPEG, PNG, GIF, WebP. Maximum size: 10MB decoded.
-        File content is validated by magic bytes — not just the filename extension.
-        Existing files with the same name are overwritten.
-      parameters:
-        - $ref: '#/components/parameters/workspaceId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - category
-                - filename
-                - data
-              properties:
-                category:
-                  type: string
-                  enum: [logos, backgrounds, templates, images]
-                  description: Asset category (storage folder)
-                filename:
-                  type: string
-                  description: Destination filename with extension (e.g. "logo.png")
-                data:
-                  type: string
-                  description: Base64-encoded image. May include a data URL prefix (stripped automatically).
-      responses:
-        '201':
-          description: Asset uploaded
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  filename:
-                    type: string
-                  category:
-                    type: string
-                  url:
-                    type: string
-                    format: uri
-                    description: Public URL to access the uploaded asset
-                  size:
-                    type: integer
-                    description: Decoded file size in bytes
-                  type:
-                    type: string
-                    description: Detected MIME type
-                  message:
-                    type: string
-        '400':
-          description: Invalid input (bad category, filename, size, or image content)
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Error'
-        '404':
-          description: Workspace not found
-
-  /api/workspace/create:
-    post:
-      operationId: createGraphic
-      summary: Create a graphic or new version in a workspace
-      description: |
-        Creates a new graphic (provide "project") or a new version of an existing
-        graphic (provide "id"). Returns a preview URL.
-      parameters:
-        - $ref: '#/components/parameters/workspaceId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - html
-              properties:
-                project:
-                  type: string
-                  description: Project name for new graphic (required if no id)
-                id:
-                  type: string
-                  description: Existing graphic ID for new version (required if no project)
-                html:
-                  type: string
-                  description: HTML content (no script tags or event handlers allowed)
-                css:
-                  type: string
-                  description: CSS styles
-                notes:
-                  type: string
-                  description: Notes about this version
-                baseVersion:
-                  type: integer
-                  description: Version this revision is based on (for ancestry tracking)
-      responses:
-        '201':
-          description: Graphic or version created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  project:
-                    type: string
-                  version:
-                    type: integer
-                  previewUrl:
-                    type: string
-                    format: uri
-                  message:
-                    type: string
-        '400':
-          $ref: '#/components/schemas/Error'
-        '404':
-          description: Workspace or graphic not found
-
-  /api/workspace/render:
-    post:
-      operationId: renderGraphic
-      summary: Render a graphic to PNG
-      description: Renders a graphic version to a high-resolution PNG. Supported formats — letter, a4, ig_square, ig_story.
-      parameters:
-        - $ref: '#/components/parameters/workspaceId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - id
-              properties:
-                id:
-                  type: string
-                  description: Graphic ID
-                version:
-                  type: integer
-                  description: Version to render (defaults to latest)
-                format:
-                  type: string
-                  enum: [letter, a4, ig_square, ig_story]
-                  default: letter
-      responses:
-        '200':
-          description: Image rendered
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  id:
-                    type: string
-                  project:
-                    type: string
-                  version:
-                    type: integer
-                  format:
-                    type: string
-                  imageUrl:
-                    type: string
-                    format: uri
-                  message:
-                    type: string
-        '404':
-          description: Workspace, graphic, or version not found
-        '503':
-          description: Puppeteer not installed
-
-  /api/workspace/organize:
-    post:
-      operationId: organizeProject
-      summary: Create a project folder in a workspace
-      description: Creates a project folder. Supports nested paths (e.g. "ramadan-2026/social-media").
-      parameters:
-        - $ref: '#/components/parameters/workspaceId'
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-                - project
-              properties:
-                project:
-                  type: string
-                  description: Project path (e.g. "ramadan-2026" or "ramadan-2026/social-media")
-      responses:
-        '201':
-          description: Project folder created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  project:
-                    type: string
-                  message:
-                    type: string
-        '400':
-          description: Invalid project path
-        '404':
-          description: Workspace not found
-
-  # ─────────────────────────────────────────────────────────────────
-  # LINGUISTIC GRAPH
-  # ─────────────────────────────────────────────────────────────────
-
   /api/execute-query:
     post:
       operationId: executeCypherQuery
-      summary: Execute a Cypher query against the linguistic graph
-      description: Sends a read Cypher query to the Neo4j-based MindRoots graph and returns results.
+      summary: Execute a Cypher query
+      description: Sends a Cypher query to the Neo4j-based linguistic graph and returns query results.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - query
               properties:
                 query:
                   type: string
-                  description: A Cypher query string.
+                  description: A Cypher query string to run on the database.
+              required:
+                - query
       responses:
         '200':
-          description: Query results
+          description: Successful query result
           content:
             application/json:
               schema:
                 type: array
+                description: List of result records
                 items:
                   type: object
-                  additionalProperties: true
+                  properties:
+                    r:
+                      type: object
+                      properties:
+                        identity:
+                          type: integer
+                        labels:
+                          type: array
+                          items:
+                            type: string
+                        properties:
+                          type: object
+                          properties:
+                            r1:
+                              type: string
+                            r2:
+                              type: string
+                            r3:
+                              type: string
+                            root_id:
+                              type: integer
+                            arabic:
+                              type: string
+                            english:
+                              type: string
+                            root_type:
+                              type: string
+                            node_type:
+                              type: string
+                            Triliteral_ID:
+                              type: integer
+                          additionalProperties: true
+                        elementId:
+                          type: string
         '400':
-          description: Invalid query
+          description: Invalid query or malformed request
         '500':
-          description: Server error
+          description: Server error while processing the query
 
   /api/write-root-analysis:
     post:
       operationId: writeRootAnalysis
-      summary: Write a structured Analysis node to the graph
-      description: Creates a new Analysis node linked to a root. Auto-increments version. Supports v2 schema (preferred) and legacy v1.
+      summary: Write a structured Analysis node
+      description: Creates a new Analysis node linked to a given root, with support for both v2 and legacy v1 schemas.
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              required:
-                - rootId
               properties:
                 rootId:
                   type: string
                   description: The root_id of the target root
                 analysis:
                   type: object
+                  description: Analysis fields (v2 schema preferred, v1 still supported)
                   properties:
+                    # v2 Core Fields
                     concrete_origin:
                       type: string
+                      description: Physical/concrete root meaning
                     path_to_abstraction:
                       type: string
+                      description: Semantic evolution pathway
                     fundamental_frame:
                       type: string
+                      description: Conceptual framework
                     basic_stats:
                       type: string
+                      description: Usage statistics
+
+                    # v2 Reference Fields
                     quranic_refs:
                       type: string
+                      description: Quranic usage examples
                     hadith_refs:
                       type: string
+                      description: Hadith examples
                     poetic_refs:
                       type: string
+                      description: Classical poetry references
                     proverbial_refs:
                       type: string
+                      description: Proverbs and idioms
+
+                    # Legacy v1 Fields (for backward compatibility)
+                    lexical_summary:
+                      type: string
+                      description: Comprehensive lexical overview
+                    semantic_path:
+                      type: string
+                      description: Semantic development
+                    words_expressions:
+                      type: string
+                      description: Derived words and expressions
+                    poetic_references:
+                      type: string
+                      description: Legacy poetry references field
+              required:
+                - rootId
       responses:
         '200':
-          description: Analysis node written
+          description: Successful write of Analysis node
           content:
             application/json:
               schema:
@@ -454,82 +148,15 @@ paths:
                     type: boolean
                   analysisId:
                     type: string
+                    description: Identifier for the new Analysis
                   version:
                     type: integer
+                    description: Auto-incremented version number
                   timestamp:
                     type: string
                     format: date-time
+                    description: Creation timestamp
         '400':
-          description: Invalid request
+          description: Invalid request (missing or malformed fields)
         '500':
-          description: Server error
-
-  # ─────────────────────────────────────────────────────────────────
-  # OBSERVABILITY
-  # ─────────────────────────────────────────────────────────────────
-
-  /api/observability/metrics:
-    get:
-      operationId: getObservabilityMetrics
-      summary: Get live semantic graph metrics
-      description: |
-        Runs all registered metric queries against Neo4j and returns a live snapshot.
-        Covers: root/word counts, Quran coverage, corpus linkage, and data quality.
-        No Notion interaction — read-only.
-      responses:
-        '200':
-          description: Live metric snapshot
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                  snapshot:
-                    type: object
-                    description: Keyed by metric group ID (e.g. "core_snapshot")
-                    additionalProperties:
-                      type: object
-        '500':
-          description: Query error
-
-  /api/projection/notion/refresh:
-    post:
-      operationId: refreshNotionProjection
-      summary: Refresh the Notion observability projection
-      description: |
-        Runs live metric queries and updates the corresponding Notion database pages in-place.
-        Creates pages on first run (bootstrap). Never appends new rows.
-        Requires NOTION_TOKEN and NOTION_DATABASE_ID to be configured on the server.
-      responses:
-        '200':
-          description: Notion projection refreshed
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  ok:
-                    type: boolean
-                  refreshed_at:
-                    type: string
-                    format: date-time
-                  snapshot:
-                    type: object
-                  projections:
-                    type: array
-                    items:
-                      type: object
-                      properties:
-                        metric_id:
-                          type: string
-                        action:
-                          type: string
-                          enum: [updated, created]
-                        page_id:
-                          type: string
-        '503':
-          description: Notion credentials not configured
-        '502':
-          description: Notion API error
+          description: Server error while processing the request
