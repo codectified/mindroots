@@ -21,15 +21,6 @@ components:
       scheme: bearer
       description: Main or admin API key. Not a workspace-scoped token.
 
-  parameters:
-    workspaceId:
-      name: workspace
-      in: query
-      required: true
-      schema:
-        type: string
-      description: Workspace ID to operate on (e.g. "aif", "cicit", "mindroots"). Get available IDs from GET /api/workspaces.
-
   schemas:
     Error:
       type: object
@@ -92,7 +83,12 @@ paths:
         Returns asset listings and project summaries for a specific workspace.
         Lightweight by default (counts only). Use query params to expand.
       parameters:
-        - $ref: '#/components/parameters/workspaceId'
+        - name: workspace
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Workspace ID to operate on (e.g. "aif", "cicit", "mindroots"). Get available IDs from GET /api/workspaces.
         - name: assets
           in: query
           schema:
@@ -159,7 +155,12 @@ paths:
         File content is validated by magic bytes — the extension alone is not trusted.
         Existing files with the same name are overwritten.
       parameters:
-        - $ref: '#/components/parameters/workspaceId'
+        - name: workspace
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Workspace ID to operate on (e.g. "aif", "cicit", "mindroots"). Get available IDs from GET /api/workspaces.
       requestBody:
         required: true
         content:
@@ -222,7 +223,12 @@ paths:
         Creates a new graphic (provide "project") or a new version of an existing
         graphic (provide "id"). Returns a preview URL on success.
       parameters:
-        - $ref: '#/components/parameters/workspaceId'
+        - name: workspace
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Workspace ID to operate on (e.g. "aif", "cicit", "mindroots"). Get available IDs from GET /api/workspaces.
       requestBody:
         required: true
         content:
@@ -286,7 +292,12 @@ paths:
         Renders a graphic version to a high-resolution PNG.
         Multiple formats can be rendered per version — each is stored separately.
       parameters:
-        - $ref: '#/components/parameters/workspaceId'
+        - name: workspace
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Workspace ID to operate on (e.g. "aif", "cicit", "mindroots"). Get available IDs from GET /api/workspaces.
       requestBody:
         required: true
         content:
@@ -339,7 +350,12 @@ paths:
       summary: Create a project folder in a workspace
       description: Creates a project folder. Supports nested paths (e.g. "ramadan-2026/social-media").
       parameters:
-        - $ref: '#/components/parameters/workspaceId'
+        - name: workspace
+          in: query
+          required: true
+          schema:
+            type: string
+          description: Workspace ID to operate on (e.g. "aif", "cicit", "mindroots"). Get available IDs from GET /api/workspaces.
       requestBody:
         required: true
         content:

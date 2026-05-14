@@ -1,6 +1,6 @@
 # MindRoots Documentation Index
 
-**Last Updated**: May 2026 (Observability + Notion projection layer)
+**Last Updated**: May 2026 (Master workspace agent + docs reorganization)
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
@@ -18,9 +18,18 @@
 ### **Feature Documentation**
 - **[Analysis Nodes](features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system with v2 schema
 - **[Corpus Navigation System](features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position for reliable sequential corpus browsing
-- **[Workspace Module](features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Creative workspace for Custom GPT graphical media with versioned storage, project organization, and PNG rendering
+- **[Workspace Module](features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Creative workspace for Custom GPT graphical media — versioned storage, project org, PNG rendering, direct asset upload
 - **[Observability & Notion Projection](features/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Live Neo4j semantic metrics + Notion as projection layer — backend complete, pending Notion credentials
-- **[Custom GPT Base Instructions](features/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Base template for tenant Custom GPT setup, system prompt, and Actions configuration
+
+### **Agent Instructions** (`docs/features/agent-instructions/`)
+- **[Tenant Workspace Agent](features/agent-instructions/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Per-client GPT setup (uses `ws_*` token, single workspace only)
+- **[Master Workspace Agent](features/agent-instructions/MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Cross-workspace master agent (admin/main key + `?workspace=<id>`, all tenants)
+- **[MindRoots Linguistics Agent](features/agent-instructions/MINDROOTS-AGENT-INSTRUCTIONS.md)** - Semitic root analysis workflow and graph query patterns
+
+### **OpenAPI Specs** (`docs/features/openapi-specs/`)
+- **[MindRoots Linguistics Spec](features/openapi-specs/mindroots-openai-spec.yaml)** - Linguistics agent: execute-query + write-root-analysis
+- **[Master Workspace Spec](features/openapi-specs/master-workspace-openapi-spec.yaml)** - Master workspace agent: all workspace endpoints across all tenants
+- **[Tenant Workspace Spec](features/openapi-specs/workspace-openapi-spec.yaml)** - Tenant workspace agent: scoped workspace endpoints (used with `ws_*` token)
 - **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
 - **[Corpus Filter](features/CORPUS-FILTER-DOCUMENTATION.md)** - ✅ Unified corpus scoping via `CorpusFilterContext` — controls all search retrieval and node expansion
 - **[Surah Filter & Random Node Optimization](features/SURAH-FILTER-DOCUMENTATION.md)** - ✅ Quran surah sub-filter (multi-select) + count+skip random node selection replacing ORDER BY rand()
@@ -58,12 +67,19 @@ docs/
 ├── features/                       # Current feature documentation
 │   ├── ANALYSIS-NODES-DOCUMENTATION.md
 │   ├── WORKSPACE-MODULE-DOCUMENTATION.md
-│   ├── CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md
-│   ├── workspace-openapi-spec.yaml
+│   ├── OBSERVABILITY-NOTION-PROJECTION.md
 │   ├── CORPUS-FILTER-DOCUMENTATION.md
 │   ├── RADICAL-SEARCH-INTEGRATION.md
 │   ├── VALIDATION-SYSTEM-DOCUMENTATION.md
-│   └── NODE-INSPECTOR-DOCUMENTATION.md
+│   ├── NODE-INSPECTOR-DOCUMENTATION.md
+│   ├── agent-instructions/          # GPT system prompts and workflow guides
+│   │   ├── CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md   # tenant GPT (ws_* token)
+│   │   ├── MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md     # master agent (admin key)
+│   │   └── MINDROOTS-AGENT-INSTRUCTIONS.md            # linguistics agent
+│   └── openapi-specs/               # OpenAPI Action schemas for GPTs
+│       ├── mindroots-openai-spec.yaml                 # linguistics
+│       ├── master-workspace-openapi-spec.yaml         # master workspace
+│       └── workspace-openapi-spec.yaml                # tenant workspace
 ├── testing/                        # Test procedures and results  
 │   ├── BACKEND-TEST-RESULTS.md
 │   ├── FRONTEND-INTEGRATION-CHECKLIST.md
