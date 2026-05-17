@@ -162,12 +162,13 @@ Then add the corresponding `Number` columns to the Notion database. The refresh 
    - Copy the `secret_...` token
 2. Create a Notion database with the columns above
 3. Share the database with your integration (via the database's "..." menu → Connections)
-4. Copy the database ID from the database URL:
-   `https://www.notion.so/{workspace}/{DATABASE_ID}?v=...`
+4. Get the **data source ID** (not the database URL ID):
+   - Open the database → `...` menu → **Manage data sources** → **Copy data source ID**
+   - This is a different ID from the one in the database URL — the URL ID will not work
 5. Fill in `.env` on the server:
    ```
    NOTION_TOKEN=secret_...
-   NOTION_DATABASE_ID=...
+   NOTION_DATABASE_ID=<data_source_id from step 4>
    ```
 6. Restart the server (`pm2 restart all --update-env`)
 7. Run the first refresh — this bootstraps the Notion pages:
@@ -186,6 +187,10 @@ Then add the corresponding `Number` columns to the Notion database. The refresh 
 - Upsert-by-`metric_id` logic in place (stable, title-independent)
 - Core snapshot Cypher query covering roots, words, Quran coverage, linkage, data quality
 - `.env` has placeholder slots for `NOTION_TOKEN` and `NOTION_DATABASE_ID`
+- Notion API upgraded to version `2025-09-03` with `data_sources` path throughout:
+  - All queries now use `/data_sources/{id}/query` (not `/databases/{id}/query`)
+  - Page creation now uses `parent: { data_source_id }` (not `database_id`)
+  - `NOTION_DATABASE_ID` must be the data source ID from "Manage data sources", not the URL ID
 
 **Pending:**
 - Notion integration credentials — see setup steps above

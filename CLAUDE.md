@@ -20,7 +20,7 @@
 - **[Radical Search Integration](docs/features/RADICAL-SEARCH-INTEGRATION.md)** - ✅ RadicalPosition-based search
 - **[Analysis Nodes](docs/features/ANALYSIS-NODES-DOCUMENTATION.md)** - ✅ LLM-generated linguistic analysis
 - **[Workspace Module](docs/features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Multi-tenant creative workspace with asset upload + master agent support
-- **[Observability & Notion Projection](docs/features/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Neo4j metrics backend ready, pending Notion credentials
+- **[Observability & Notion Projection](docs/features/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Neo4j metrics backend + Notion data_sources API ready, pending Notion credentials
 
 ---
 
@@ -131,7 +131,7 @@ node server.js             # Start fresh server
 - ✅ Master workspace agent — admin/main key + `?workspace=<id>` accesses all tenants
 - ✅ `GET /api/workspaces` lists all provisioned tenants
 - ✅ OpenAPI specs in `docs/features/openapi-specs/` (tenant, master, linguistics)
-- ✅ Observability backend (`observability.js`) — Neo4j metrics + Notion upsert logic ready
+- ✅ Observability backend (`observability.js`) — Neo4j metrics + Notion upsert on `data_sources` API (v2025-09-03)
 - ✅ Frontend overhaul: Tailwind CSS, graph viewport fix (`calc(100vh - 160px)`)
 - 🔧 Notion projection pending: add `NOTION_TOKEN` + `NOTION_DATABASE_ID` to `.env`
 
