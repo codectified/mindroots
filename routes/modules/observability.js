@@ -24,7 +24,9 @@
  *
  * Required env vars:
  *   NOTION_TOKEN          Notion integration token (secret_...)
- *   NOTION_DATABASE_ID    Target Notion database ID
+ *   NOTION_DATABASE_ID    Data source ID — obtained from Notion UI via
+ *                         "Manage data sources → Copy data source ID"
+ *                         (NOT the database wrapper URL ID)
  *
  * Expected Notion database columns:
  *   Name               (title)      — human-readable label, may change freely
@@ -48,7 +50,10 @@ const neo4j = require('neo4j-driver');
 const router = express.Router();
 
 const NOTION_API = 'https://api.notion.com/v1';
-const NOTION_VERSION = '2022-06-28';
+// 2025-09-03 is the minimum version that supports the data_sources API.
+// Databases with multiple data sources require /v1/data_sources/* endpoints —
+// the older /v1/databases/* query path returns a validation error for these.
+const NOTION_VERSION = '2025-09-03';
 
 // ====================================================================
 // METRIC DEFINITIONS
@@ -251,7 +256,7 @@ async function upsertNotionPage(dbId, def, data, refreshedAt) {
   );
 
   const searchRes = await axios.post(
-    `${NOTION_API}/databases/${dbId}/query`,
+    `${NOTION_API}/data_sources/${dbId}/query`,
     {
       filter: { property: 'metric_id', rich_text: { equals: def.id } },
       page_size: 1,
@@ -272,7 +277,7 @@ async function upsertNotionPage(dbId, def, data, refreshedAt) {
 
   const created = await axios.post(
     `${NOTION_API}/pages`,
-    { parent: { database_id: dbId }, properties },
+    { parent: { data_source_id: dbId }, properties },
     { headers }
   );
   return { action: 'created', page_id: created.data.id };
@@ -302,7 +307,7 @@ router.get('/observability/status', async (req, res) => {
   if (status.notion_configured) {
     try {
       await axios.get(
-        `${NOTION_API}/databases/${process.env.NOTION_DATABASE_ID}`,
+        `${NOTION_API}/data_sources/${process.env.NOTION_DATABASE_ID}`,
         { headers: notionHeaders() }
       );
       status.notion = 'ok';
