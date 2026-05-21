@@ -6,7 +6,7 @@
  * To view a copy of this license, visit http://creativecommons.org/licenses/by-nc-sa/4.0/
  */
 
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import ProfilePage from './components/staticPages/ProfilePage';
@@ -59,7 +59,9 @@ import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
-import Universe from './components/staticPages/Universe';
+// Lazy-loaded: Three.js (via react-force-graph) is ~700KB and would bust the
+// 400MB build heap limit on the 1GB prod server if compiled in the main chunk.
+const Universe = lazy(() => import('./components/staticPages/Universe'));
 
 const App = () => {
   useEffect(() => {
@@ -109,7 +111,7 @@ const App = () => {
                   <Route path="/lisan-lab/reports" element={<Layout><LisanLabReports /></Layout>}/>
                   <Route path="/article" element={<Layout><ArticleViewer /></Layout>}/>
                   <Route path="/acknowledgements" element={<Layout><Acknowledgements /></Layout>} />
-                  <Route path="/universe" element={<Layout><Universe /></Layout>} />
+                  <Route path="/universe" element={<Layout><Suspense fallback={null}><Universe /></Suspense></Layout>} />
                   <Route path="/news" element={<Layout><MarkdownRenderer filePath="/mindroots/news.md" /></Layout>} />
                   
 
