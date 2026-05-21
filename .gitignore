@@ -16,6 +16,7 @@
 .DS_Store
 .claude/settings.local.json
 DEPLOYMENT-PRIVATE.md
+deploy-prod.sh
 .env.local
 .env.development.local
 .env.test.local

@@ -87,9 +87,9 @@ npm start                        # Runs on port 3000
 4. **Update index** with new documentation
 
 ### **For Production Deployment**
-1. **Git workflow**: Follow critical merge sequence (rebase master first)
+1. **Git workflow**: Commit and push from local Mac first
 2. **API switching**: Comment localhost, uncomment production in apiService.js
-3. **Build**: Use memory flags for 1GB server constraint
+3. **Deploy**: Run `./deploy-prod.sh` locally — builds on Mac, rsyncs to server (no server memory constraint)
 4. **Test**: Verify with production API key
 
 ### **Common Commands**
@@ -97,12 +97,14 @@ npm start                        # Runs on port 3000
 # Test API endpoints
 curl "http://localhost:5001/api/[endpoint]" -H "Authorization: Bearer [key]"
 
-# Build with memory constraints
-GENERATE_SOURCEMAP=false NODE_OPTIONS=--max-old-space-size=400 npm run build
+# Deploy (run from local Mac)
+./deploy-prod.sh                    # frontend only
+./deploy-prod.sh --restart-backend  # also restarts pm2
 
-# Server management
-pkill -f "node server.js"  # Kill running servers
-node server.js             # Start fresh server
+# Server management (via SSH)
+ssh -i ~/Downloads/Development_Code/wp.pem bitnami@theoption.life
+pm2 restart mindroots-backend
+node server.js  # Start fresh server (dev)
 ```
 
 ---
@@ -120,7 +122,7 @@ node server.js             # Start fresh server
 - **Property Wrapping**: Extract from `{value: X, type: "string"}` format
 
 ### **Performance**
-- **Memory Builds**: Frontend builds require memory flags on 1GB server
+- **Memory Builds**: Build runs locally on Mac and is rsynced — server never runs webpack
 - **API Limits**: Most endpoints limit to 25 results
 - **Force Simulation**: Avoid interrupting D3.js animations with duplicate API calls
 
