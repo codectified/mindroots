@@ -2,7 +2,7 @@
 
 **Purpose**: Creative workspace for Custom GPT graphical media — flyers, social posts, and any graphical content with versioned storage, PNG rendering, and shared asset library.
 
-**Status**: Production-ready
+**Status**: Production-ready — see [Known Limitations](#known-limitations) for the asset upload / ChatGPT sandbox gap
 
 ---
 
@@ -538,6 +538,26 @@ curl -X POST http://localhost:5001/api/workspace/upload \
 
 ---
 
+## Known Limitations
+
+### Asset Upload — ChatGPT Sandbox File Gap
+
+**Problem**: When a user uploads an image in the ChatGPT iOS/web app, the file lands in a sandboxed path (`/mnt/data/<uuid>.png`) that the GPT can visually inspect but cannot automatically provide as raw bytes to an action. The current `uploadAsset` schema requires `data` (base64), which the GPT must produce via code interpreter. If it skips or truncates that step, the endpoint silently writes a corrupt file.
+
+**Observed May 2026**: A GPT uploaded without providing actual bytes — corrupt asset written to disk.
+
+**Two viable fixes (not yet implemented):**
+
+**Option A — Multipart/form-data (no new API key required)**
+Change the upload endpoint to accept `multipart/form-data`. The GPT uses code interpreter to open the file and send raw bytes as a binary attachment — no base64 encoding, no size inflation, no truncation risk. Requires verifying that ChatGPT custom GPT actions handle binary multipart uploads reliably.
+
+**Option B — `file_id` (requires `OPENAI_API_KEY` on the backend)**
+GPT passes its OpenAI file ID; backend fetches bytes from `GET https://api.openai.com/v1/files/{file_id}/content`, then runs the existing magic-byte validation pipeline. Cleanest architecture but adds an API dependency.
+
+**Decision pending.** Multipart is preferred if ChatGPT action support is confirmed.
+
+---
+
 ## Migration History
 
 ### Flyer → Workspace (Feb 2026)
@@ -577,5 +597,5 @@ Note: this does **not** affect Puppeteer rendering (which uses base64 data URIs 
 **Last Updated**: May 2026
 **Module Location**: `routes/modules/workspace.js`
 **OpenAPI Specs**:
-- `docs/features/openapi-specs/workspace-openapi-spec.yaml` — tenant agent (ws_* token)
-- `docs/features/openapi-specs/master-workspace-openapi-spec.yaml` — master agent (admin/main key)
+- `docs/features/workspace/openapi-specs/workspace-openapi-spec.yaml` — tenant agent (ws_* token)
+- `docs/features/workspace/openapi-specs/master-workspace-openapi-spec.yaml` — master agent (admin/main key)

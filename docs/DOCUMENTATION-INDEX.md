@@ -1,247 +1,154 @@
 # MindRoots Documentation Index
 
-**Last Updated**: May 2026 (Workspace upload, master agent, observability, OpenAPI spec fixes)
+**Last Updated**: May 2026
 **Purpose**: Comprehensive navigation guide for all MindRoots documentation
 
 ---
 
-## 📋 Quick Navigation
+## Quick Navigation
 
-### **Core Architecture & Setup**
-- **[CLAUDE.md](../CLAUDE.md)** - Main architecture reference and Claude's knowledge base
-- **[README.md](../README.md)** - Project overview and getting started guide
+### Core Architecture & Setup
+- **[CLAUDE.md](../CLAUDE.md)** — Main architecture reference and Claude's knowledge base
+- **[README.md](../README.md)** — Project overview and getting started guide
 
-### **Frontend Design & Development**
-- **[Frontend Design Guide](FRONTEND-DESIGN-GUIDE.md)** - Comprehensive guide to frontend architecture, layout patterns, flexbox alignment, styling conventions, and common pitfalls
-- **[Component Patterns](COMPONENT-PATTERNS.md)** - Reusable component patterns, code examples, and best practices for lists, headers, selectors, modals, and forms
-
-### **Feature Documentation**
-- **[Analysis Nodes](features/ANALYSIS-NODES-DOCUMENTATION.md)** - LLM-generated linguistic analysis system with v2 schema
-- **[Corpus Navigation System](features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position for reliable sequential corpus browsing
-- **[Workspace Module](features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Creative workspace for Custom GPT graphical media — versioned storage, project org, PNG rendering, direct asset upload
-- **[Observability & Notion Projection](features/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Live Neo4j semantic metrics + Notion as projection layer — backend complete, pending Notion credentials
-
-### **Agent Instructions** (`docs/features/agent-instructions/`)
-- **[Tenant Workspace Agent](features/agent-instructions/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Per-client GPT setup (uses `ws_*` token, single workspace only)
-- **[Master Workspace Agent](features/agent-instructions/MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md)** - Cross-workspace master agent (admin/main key + `?workspace=<id>`, all tenants)
-- **[MindRoots Linguistics Agent](features/agent-instructions/MINDROOTS-AGENT-INSTRUCTIONS.md)** - Semitic root analysis workflow and graph query patterns
-
-### **OpenAPI Specs** (`docs/features/openapi-specs/`)
-- **[MindRoots Linguistics Spec](features/openapi-specs/mindroots-openai-spec.yaml)** - Linguistics agent: execute-query + write-root-analysis
-- **[Master Workspace Spec](features/openapi-specs/master-workspace-openapi-spec.yaml)** - Master workspace agent: all workspace endpoints across all tenants
-- **[Tenant Workspace Spec](features/openapi-specs/workspace-openapi-spec.yaml)** - Tenant workspace agent: scoped workspace endpoints (used with `ws_*` token)
-- **[Node Inspector](features/NODE-INSPECTOR-DOCUMENTATION.md)** - Comprehensive node inspection with properties and relationships
-- **[Corpus Filter](features/CORPUS-FILTER-DOCUMENTATION.md)** - ✅ Unified corpus scoping via `CorpusFilterContext` — controls all search retrieval and node expansion
-- **[Surah Filter & Random Node Optimization](features/SURAH-FILTER-DOCUMENTATION.md)** - ✅ Quran surah sub-filter (multi-select) + count+skip random node selection replacing ORDER BY rand()
-- **[Corpus Count Annotation](features/CORPUS-COUNT-ANNOTATION-DOCUMENTATION.md)** - ✅ Root/word nodes annotated with corpus occurrence counts in NodesTable Location column
-- **[Full-Text Search](features/FULLTEXT-SEARCH-DOCUMENTATION.md)** - ✅ Lucene full-text search over Lane's Lexicon definitions, English gloss, and Arabic text
-- **[Radical Search Integration](features/RADICAL-SEARCH-INTEGRATION.md)** - RadicalPosition-based search system architecture
-- **[Validation System](features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - Inline editing and approval workflow for linguistic data
-
-### **Testing & Quality Assurance**
-- **[Backend Test Results](testing/BACKEND-TEST-RESULTS.md)** - API endpoint testing and validation results
-- **[Frontend Integration Checklist](testing/FRONTEND-INTEGRATION-CHECKLIST.md)** - UI/UX testing procedures
-
-### **Deployment**
-- **[GPT Orchestration Deployment Guide](deployment/GPT-ORCHESTRATION-DEPLOYMENT-GUIDE.md)** - GPT integration deployment steps
-
-### **Database Reference**
-- **[Neo4j Schema](neo4j/schema.md)** - Graph database schema reference
-
-### **Archived & Historical**
-- **[Backend Deduplication Fixes](archived/BACKEND-DEDUPLICATION-FIXES.md)** - Historical database optimization work
-
-### **Development Prototypes**
-- **[Experimental Features](development-prototypes/)** - Unused code, experiments, and proof-of-concepts
+### Frontend Design & Development
+- **[Frontend Design Guide](FRONTEND-DESIGN-GUIDE.md)** — Frontend architecture, layout patterns, flexbox alignment, styling conventions, common pitfalls
+- **[Component Patterns](COMPONENT-PATTERNS.md)** — Reusable component patterns, code examples, and best practices
 
 ---
 
-## 📁 Documentation Organization
+## Feature Documentation
 
-### **File Naming Convention**
-- **Features**: `FEATURE-NAME-DOCUMENTATION.md` (uppercase with hyphens)
-- **Testing**: `TEST-TYPE-RESULTS.md` or `COMPONENT-TESTING.md`
-- **Historical**: `FEATURE-DEPLOYMENT-NOTES.md` or `SYSTEM-CHANGES.md`
+### Linguistics Branch (`docs/features/linguistics/`)
 
-### **Directory Structure**
+Arabic morphology graph features — corpus navigation, analysis, search, validation, and UI controls.
+
+| Document | Status | Description |
+|---|---|---|
+| [Analysis Nodes](features/linguistics/ANALYSIS-NODES-DOCUMENTATION.md) | ✅ | LLM-generated linguistic analysis with v2 schema |
+| [Corpus Navigation System](features/linguistics/CORPUS-NAVIGATION-SYSTEM.md) | ✅ | Sequential corpus browsing via `global_position` |
+| [Validation System](features/linguistics/VALIDATION-SYSTEM-DOCUMENTATION.md) | ✅ | Inline editing and approval workflow for linguistic data |
+| [Radical Search Integration](features/linguistics/RADICAL-SEARCH-INTEGRATION.md) | ✅ | RadicalPosition-based search system architecture |
+| [Corpus Filter](features/linguistics/CORPUS-FILTER-DOCUMENTATION.md) | ✅ | Unified corpus scoping via `CorpusFilterContext` |
+| [Surah Filter & Random Node Optimization](features/linguistics/SURAH-FILTER-DOCUMENTATION.md) | ✅ | Quran surah sub-filter + count+skip random node selection |
+| [Corpus Count Annotation](features/linguistics/CORPUS-COUNT-ANNOTATION-DOCUMENTATION.md) | ✅ | Root/word nodes annotated with corpus occurrence counts |
+| [Full-Text Search](features/linguistics/FULLTEXT-SEARCH-DOCUMENTATION.md) | ✅ | Lucene full-text search over Lane's Lexicon, English gloss, Arabic text |
+| [Collapse Functionality](features/linguistics/COLLAPSE-FUNCTIONALITY.md) | ✅ | Node collapse/expand behavior |
+| [Infobubble Positioning](features/linguistics/INFOBUBBLE-POSITIONING-GUIDE.md) | ✅ | Tooltip/infobubble positioning logic |
+| [Font System](features/linguistics/FONT-SYSTEM.md) | ✅ | Dual Latin/Arabic font scale controls |
+| [Typography Controls](features/linguistics/TYPOGRAPHY-CONTROL-DOCUMENTATION.md) | ✅ | Typography control UI documentation |
+| [Mobile Development Readiness](features/linguistics/MOBILE-DEVELOPMENT-READINESS.md) | ✅ | Mobile adaptation status and approach |
+| [GPT Root Analysis Reference](features/linguistics/GPT-ANALYSIS-REFERENCE.md) | ✅ | GPT workflow for creating morphological analysis nodes |
+
+**Agent & API:**
+- [MindRoots Linguistics Agent Instructions](features/linguistics/agent-instructions/MINDROOTS-AGENT-INSTRUCTIONS.md) — Semitic root analysis workflow and graph query patterns
+- [MindRoots OpenAPI Spec](features/linguistics/openapi-specs/mindroots-openai-spec.yaml) — `execute-query` + `write-root-analysis` actions
+
+---
+
+### Workspace Branch (`docs/features/workspace/`)
+
+Multi-tenant creative workspace platform — Custom GPT integration, asset management, graphic generation, observability.
+
+| Document | Status | Description |
+|---|---|---|
+| [Workspace Module](features/workspace/WORKSPACE-MODULE-DOCUMENTATION.md) | ✅ | Full workspace API — versioned graphics, asset upload, PNG rendering |
+| [Observability & Notion Projection](features/workspace/OBSERVABILITY-NOTION-PROJECTION.md) | 🔧 | Live Neo4j metrics + Notion projection layer — pending credentials |
+| [GPT Orchestration Security](features/workspace/GPT-ORCHESTRATION-SECURITY.md) | ✅ | Security model for GPT-facing endpoints |
+
+**Known gap**: `uploadAsset` does not support ChatGPT sandbox file references — see [Known Limitations](features/workspace/WORKSPACE-MODULE-DOCUMENTATION.md#known-limitations) in the workspace doc. `file_id` support planned.
+
+**Agents & API:**
+- [Tenant Workspace Agent Instructions](features/workspace/agent-instructions/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md) — Per-client GPT setup (`ws_*` token, single workspace)
+- [Master Workspace Agent Instructions](features/workspace/agent-instructions/MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md) — Cross-workspace master agent (admin/main key + `?workspace=<id>`)
+- [Tenant Workspace OpenAPI Spec](features/workspace/openapi-specs/workspace-openapi-spec.yaml) — Tenant-scoped workspace actions
+- [Master Workspace OpenAPI Spec](features/workspace/openapi-specs/master-workspace-openapi-spec.yaml) — All-tenant workspace actions
+
+---
+
+## Testing & Quality Assurance (`docs/testing/`)
+- **[Backend Test Results](testing/BACKEND-TEST-RESULTS.md)** — API endpoint testing and validation results
+- **[Frontend Integration Checklist](testing/FRONTEND-INTEGRATION-CHECKLIST.md)** — UI/UX testing procedures
+
+## Deployment (`docs/deployment/`)
+- **[GPT Orchestration Deployment Guide](deployment/GPT-ORCHESTRATION-DEPLOYMENT-GUIDE.md)** — GPT integration deployment steps
+
+## Database Reference (`docs/neo4j/`)
+- **[Neo4j Schema](neo4j/schema.md)** — Graph database schema reference
+
+## Archived & Historical (`docs/archived/`)
+- **[Backend Deduplication Fixes](archived/BACKEND-DEDUPLICATION-FIXES.md)** — Historical database optimization work
+
+## Development Prototypes (`docs/development-prototypes/`)
+- Unused code, experiments, and proof-of-concepts — see [README](development-prototypes/README.md)
+
+---
+
+## Directory Structure
+
 ```
 docs/
-├── DOCUMENTATION-INDEX.md          # This file - navigation hub
-├── FRONTEND-DESIGN-GUIDE.md        # Frontend architecture and layout patterns
-├── COMPONENT-PATTERNS.md           # Reusable component patterns and examples
-├── features/                       # Current feature documentation
-│   ├── ANALYSIS-NODES-DOCUMENTATION.md
-│   ├── WORKSPACE-MODULE-DOCUMENTATION.md
-│   ├── OBSERVABILITY-NOTION-PROJECTION.md
-│   ├── CORPUS-FILTER-DOCUMENTATION.md
-│   ├── CORPUS-NAVIGATION-SYSTEM.md
-│   ├── RADICAL-SEARCH-INTEGRATION.md
-│   ├── VALIDATION-SYSTEM-DOCUMENTATION.md
-│   ├── NODE-INSPECTOR-DOCUMENTATION.md
-│   ├── FULLTEXT-SEARCH-DOCUMENTATION.md
-│   ├── SURAH-FILTER-DOCUMENTATION.md
-│   ├── CORPUS-COUNT-ANNOTATION-DOCUMENTATION.md
-│   ├── agent-instructions/          # GPT system prompts and workflow guides
-│   │   ├── CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md   # tenant GPT (ws_* token)
-│   │   ├── MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md     # master agent (admin key)
-│   │   └── MINDROOTS-AGENT-INSTRUCTIONS.md            # linguistics agent
-│   └── openapi-specs/               # OpenAPI Action schemas for GPTs
-│       ├── mindroots-openai-spec.yaml                 # linguistics
-│       ├── master-workspace-openapi-spec.yaml         # master workspace (all tenants)
-│       └── workspace-openapi-spec.yaml                # tenant workspace (ws_* token)
-├── testing/                        # Test procedures and results  
+├── DOCUMENTATION-INDEX.md          # This file
+├── FRONTEND-DESIGN-GUIDE.md
+├── COMPONENT-PATTERNS.md
+├── features/
+│   ├── linguistics/                # Arabic morphology app features
+│   │   ├── ANALYSIS-NODES-DOCUMENTATION.md
+│   │   ├── COLLAPSE-FUNCTIONALITY.md
+│   │   ├── CORPUS-COUNT-ANNOTATION-DOCUMENTATION.md
+│   │   ├── CORPUS-FILTER-DOCUMENTATION.md
+│   │   ├── CORPUS-NAVIGATION-SYSTEM.md
+│   │   ├── FONT-SYSTEM.md
+│   │   ├── FULLTEXT-SEARCH-DOCUMENTATION.md
+│   │   ├── GPT-ANALYSIS-REFERENCE.md
+│   │   ├── INFOBUBBLE-POSITIONING-GUIDE.md
+│   │   ├── MOBILE-DEVELOPMENT-READINESS.md
+│   │   ├── RADICAL-SEARCH-INTEGRATION.md
+│   │   ├── SURAH-FILTER-DOCUMENTATION.md
+│   │   ├── TYPOGRAPHY-CONTROL-DOCUMENTATION.md
+│   │   ├── VALIDATION-SYSTEM-DOCUMENTATION.md
+│   │   ├── agent-instructions/
+│   │   │   └── MINDROOTS-AGENT-INSTRUCTIONS.md
+│   │   └── openapi-specs/
+│   │       └── mindroots-openai-spec.yaml
+│   └── workspace/                  # Multi-tenant workspace platform features
+│       ├── WORKSPACE-MODULE-DOCUMENTATION.md
+│       ├── GPT-ORCHESTRATION-SECURITY.md
+│       ├── OBSERVABILITY-NOTION-PROJECTION.md
+│       ├── agent-instructions/
+│       │   ├── CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md
+│       │   └── MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md
+│       └── openapi-specs/
+│           ├── workspace-openapi-spec.yaml
+│           └── master-workspace-openapi-spec.yaml
+├── testing/
 │   ├── BACKEND-TEST-RESULTS.md
 │   └── FRONTEND-INTEGRATION-CHECKLIST.md
-├── deployment/                     # Deployment guides
+├── deployment/
 │   └── GPT-ORCHESTRATION-DEPLOYMENT-GUIDE.md
-├── neo4j/                          # Database reference
+├── neo4j/
 │   └── schema.md
-├── archived/                       # Deployed/historical documentation
+├── archived/
 │   └── BACKEND-DEDUPLICATION-FIXES.md
-└── development-prototypes/         # Experimental and unused code
+└── development-prototypes/
 ```
 
 ---
 
-## 🎯 Documentation Categories
+## Documentation Standards
 
-### **Current Active Features** (docs/features/)
-Documentation for features currently in development or recently deployed. These documents are actively maintained and updated.
+### Adding new feature docs
+1. Choose `features/linguistics/` or `features/workspace/` based on which branch the feature belongs to
+2. Follow naming: `FEATURE-NAME-DOCUMENTATION.md` (uppercase with hyphens)
+3. Update this index with the new entry
+4. Update CLAUDE.md if it's a production feature
 
-**Guidelines:**
-- Include implementation details with file paths and line numbers
-- Provide testing steps and verification procedures  
-- Document API endpoints and database schema changes
-- Include troubleshooting sections for common issues
+### Required sections for feature docs
+1. Overview — purpose and scope
+2. Architecture / Implementation details — file paths and line numbers
+3. API Endpoints — with request/response examples
+4. Current State — done vs. pending
+5. Known Limitations — document gaps proactively
 
-### **Testing Documentation** (docs/testing/)
-Test procedures, results, and validation checklists for ensuring code quality and functionality.
-
-**Guidelines:**
-- Document test commands and expected outputs
-- Include both manual and automated testing procedures
-- Provide verification steps for production deployment
-- Record test results and any issues discovered
-
-### **Archived Documentation** (docs/archived/)
-Documentation for features that are deployed, stable, and no longer under active development. Kept for historical reference and troubleshooting.
-
-**Guidelines:**
-- Move feature documentation here after successful production deployment
-- Include final implementation status and lessons learned
-- Maintain for troubleshooting and future reference
-- Add deployment date and final status
-
-### **Development Prototypes** (docs/development-prototypes/)
-Experimental code, unused implementations, and proof-of-concept work that may be referenced in the future.
-
-**Guidelines:**
-- Document experimental approaches and findings
-- Include code that was developed but not implemented
-- Provide context for why approaches were or weren't adopted
-- Useful for future feature development reference
-
----
-
-## 🔍 Search and Navigation Tips
-
-### **Finding Specific Information**
-- **Architecture Questions**: Start with [CLAUDE.md](../CLAUDE.md)
-- **Feature Implementation**: Check `docs/features/` directory
-- **Testing Procedures**: Look in `docs/testing/` directory
-- **Historical Context**: Search `docs/archived/` directory
-
-### **Cross-References**
-Most documents include "See Also" sections linking to related documentation. Follow these links for comprehensive understanding of interconnected systems.
-
-### **File Search Commands**
-```bash
-# Search all documentation for specific terms
-grep -r "search-term" docs/
-
-# Find files by name pattern
-find docs/ -name "*SEARCH*"
-
-# List all feature documentation
-ls docs/features/
-```
-
----
-
-## 📝 Documentation Standards
-
-### **Required Sections for Feature Documents**
-1. **Overview** - Brief description and purpose
-2. **Implementation Details** - Technical implementation with file paths
-3. **API Endpoints** - If applicable, with examples
-4. **Database Schema** - If database changes involved
-5. **Frontend Integration** - UI/UX implementation details
-6. **Testing and Validation** - How to verify functionality
-7. **Troubleshooting** - Common issues and solutions
-
-### **Header Template**
-```markdown
-# Feature Name Documentation
-
-**Date Added**: [Date]
-**Status**: [Development/Testing/Production-Ready]
-**Impact**: [Brief description of what this affects]
-
-## Overview
-[Feature description and purpose]
-
-## Implementation Details
-**Files Changed**: 
-- `path/to/file.js` (lines X-Y) - Description of changes
-- `path/to/other.js` (entire file) - Description of changes
-
-[Additional sections as needed]
-```
-
-### **Cross-Reference Format**
-```markdown
-**See Also**: 
-- [Related Feature](OTHER-FEATURE-DOCUMENTATION.md)
-- [Testing Guide](../testing/FEATURE-TESTING.md)
-- [Architecture Overview](../CLAUDE.md#relevant-section)
-```
-
----
-
-## 🚀 For Developers
-
-### **Adding New Documentation**
-1. **Check this index first** - avoid duplicating existing documentation
-2. **Choose appropriate directory** based on documentation type
-3. **Follow naming conventions** - uppercase with hyphens for features
-4. **Update this index** - add entry with brief description
-5. **Add cross-references** - link to related documentation
-
-### **Updating Existing Documentation**
-1. **Update file content** with new information
-2. **Update "Last Updated" date** in document header
-3. **Add "See Also" references** if new relationships created
-4. **Update this index** if document purpose changes
-
-### **Moving Documentation**
-1. **Update all cross-references** in other documents
-2. **Update this index** with new location
-3. **Consider keeping redirect note** in old location temporarily
-
----
-
-## 🔗 External Resources
-
-### **MindRoots Application**
-- **Production**: https://theoption.life
-- **Local Development**: http://localhost:3000
-- **Backend API**: https://theoption.life/api (production) or http://localhost:5001/api (local)
-
-### **Database and Tools**
-- **Neo4j Database**: Graph database for morphological relationships
-- **PM2 Process Manager**: Production process management
-- **React Development**: Frontend framework documentation
-
----
-
-**💡 Tip**: When working on a feature, always check if documentation already exists in this index before creating new files. This prevents duplication and ensures you're building on existing knowledge.
+### Moving docs between branches
+If a feature grows from linguistic into workspace territory (or vice versa), move it with `git mv` and update both this index and CLAUDE.md.

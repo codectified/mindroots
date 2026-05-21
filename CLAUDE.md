@@ -10,17 +10,20 @@
 
 ### **📁 Core Documentation**
 - **[Complete Documentation Index](docs/DOCUMENTATION-INDEX.md)** - Master navigation guide
-- **[Features Documentation](docs/features/)** - All feature implementations
+- **[Linguistics Features](docs/features/linguistics/)** - Arabic morphology app features
+- **[Workspace Features](docs/features/workspace/)** - Multi-tenant workspace platform features
 - **[Testing Procedures](docs/testing/)** - Test suites and verification steps
 - **[Archived Documentation](docs/archived/)** - Historical/completed features
 
-### **🔑 Current Production Features**
-- **[Corpus Navigation System](docs/features/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position
-- **[Validation System](docs/features/VALIDATION-SYSTEM-DOCUMENTATION.md)** - ✅ Inline editing and approval workflow
-- **[Radical Search Integration](docs/features/RADICAL-SEARCH-INTEGRATION.md)** - ✅ RadicalPosition-based search
-- **[Analysis Nodes](docs/features/ANALYSIS-NODES-DOCUMENTATION.md)** - ✅ LLM-generated linguistic analysis
-- **[Workspace Module](docs/features/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Multi-tenant creative workspace with asset upload + master agent support
-- **[Observability & Notion Projection](docs/features/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Neo4j metrics backend + Notion data_sources API ready, pending Notion credentials
+### **🔑 Current Production Features — Linguistics**
+- **[Corpus Navigation System](docs/features/linguistics/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position
+- **[Validation System](docs/features/linguistics/VALIDATION-SYSTEM-DOCUMENTATION.md)** - ✅ Inline editing and approval workflow
+- **[Radical Search Integration](docs/features/linguistics/RADICAL-SEARCH-INTEGRATION.md)** - ✅ RadicalPosition-based search
+- **[Analysis Nodes](docs/features/linguistics/ANALYSIS-NODES-DOCUMENTATION.md)** - ✅ LLM-generated linguistic analysis
+
+### **🔑 Current Production Features — Workspace**
+- **[Workspace Module](docs/features/workspace/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Multi-tenant creative workspace with asset upload + master agent support (⚠ ChatGPT sandbox upload gap — file_id support pending)
+- **[Observability & Notion Projection](docs/features/workspace/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Neo4j metrics backend + Notion data_sources API ready, pending Notion credentials
 
 ---
 
