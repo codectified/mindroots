@@ -753,3 +753,13 @@ export const fetchRandomNodes = async (nodeType, count = 1, filters = {}) => {
     throw error;
   }
 };
+
+export const fetchObservabilityMetrics = async () => {
+  const response = await api.get('/observability/metrics');
+  return response.data;
+};
+
+export const fetchUniverseGraph = async () => {
+  const response = await api.get('/universe/graph');
+  return response.data;
+};

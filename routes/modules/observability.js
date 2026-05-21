@@ -8,6 +8,8 @@
  *   GET  /observability/metrics        live JSON snapshot from Neo4j (no Notion write)
  *   GET  /observability/status         Neo4j + Notion connectivity check
  *   POST /projection/notion/refresh    update existing Notion pages in-place (upsert by label)
+ *   GET  /universe/graph               full node+link snapshot for 3D universe visualization
+ *                                      (cached in memory for 1 hour — first call is slow)
  *
  * Notion behavior:
  *   Each metric group maps to one fixed Notion page identified by its label.
@@ -48,6 +50,15 @@ const express = require('express');
 const axios = require('axios');
 const neo4j = require('neo4j-driver');
 const router = express.Router();
+
+// ====================================================================
+// UNIVERSE GRAPH CACHE
+// Holds the full node/link snapshot for the /universe/graph endpoint.
+// Built once on first request, refreshed every hour.
+// ====================================================================
+let universeGraphCache = null;
+let universeGraphCachedAt = 0;
+const UNIVERSE_CACHE_TTL = 60 * 60 * 1000; // 1 hour
 
 const NOTION_API = 'https://api.notion.com/v1';
 // 2025-09-03 is the minimum version that supports the data_sources API.
@@ -368,6 +379,97 @@ router.post('/projection/notion/refresh', async (req, res) => {
       error: err.message,
       ...(notionErr && { notion_error: notionErr }),
     });
+  }
+});
+
+// ====================================================================
+// UNIVERSE GRAPH ENDPOINT
+// Returns all nodes (Root, Word, Form, Ayah) + Root→Word links for
+// the 3D universe visualization. Cached in memory for 1 hour so the
+// full-DB traversal only runs once per server process.
+// ====================================================================
+
+router.get('/universe/graph', async (req, res) => {
+  const now = Date.now();
+  if (universeGraphCache && (now - universeGraphCachedAt) < UNIVERSE_CACHE_TTL) {
+    return res.json({ ...universeGraphCache, cached: true });
+  }
+
+  const session = req.driver.session();
+  try {
+    const nodes = [];
+    const links = [];
+
+    // Roots
+    const rootsRes = await session.run(
+      `MATCH (r:Root)
+       RETURN toInteger(r.root_id) AS id, coalesce(r.arabic, r.english, '') AS label`
+    );
+    rootsRes.records.forEach(rec => {
+      nodes.push({ id: `r_${deepConvertIntegers(rec.get('id'))}`, type: 'root', label: rec.get('label') || '' });
+    });
+
+    // Words — dataSize is stored on the node (corpus frequency proxy)
+    const wordsRes = await session.run(
+      `MATCH (w:Word)
+       RETURN toInteger(w.word_id) AS id,
+              coalesce(w.arabic, w.english, '') AS label,
+              coalesce(w.dataSize, 1) AS dataSize`
+    );
+    wordsRes.records.forEach(rec => {
+      nodes.push({
+        id:       `w_${deepConvertIntegers(rec.get('id'))}`,
+        type:     'word',
+        label:    rec.get('label') || '',
+        dataSize: deepConvertIntegers(rec.get('dataSize')),
+      });
+    });
+
+    // Ayahs — scripture layer, displayed in corpus-item gold
+    const ayahsRes = await session.run(
+      `MATCH (a:Ayah) RETURN a.ayah_key AS id`
+    );
+    ayahsRes.records.forEach(rec => {
+      const id = rec.get('id');
+      nodes.push({ id: `a_${id}`, type: 'corpusitem', label: id || '' });
+    });
+
+    // Forms — morphological variants; query guarded so missing label is fine
+    try {
+      const formsRes = await session.run(
+        `MATCH (f:Form)
+         RETURN toInteger(f.form_id) AS id, coalesce(f.arabic, '') AS label
+         LIMIT 10000`
+      );
+      formsRes.records.forEach(rec => {
+        nodes.push({ id: `f_${deepConvertIntegers(rec.get('id'))}`, type: 'form', label: rec.get('label') || '' });
+      });
+    } catch (formErr) {
+      console.warn('[universe] forms query skipped:', formErr.message);
+    }
+
+    // Root → Word structural links
+    const linksRes = await session.run(
+      `MATCH (r:Root)-[:HAS_WORD]->(w:Word)
+       RETURN toInteger(r.root_id) AS src, toInteger(w.word_id) AS tgt`
+    );
+    linksRes.records.forEach(rec => {
+      links.push({
+        source: `r_${deepConvertIntegers(rec.get('src'))}`,
+        target: `w_${deepConvertIntegers(rec.get('tgt'))}`,
+      });
+    });
+
+    universeGraphCache = { nodes, links, computed_at: new Date().toISOString() };
+    universeGraphCachedAt = now;
+    console.log(`[universe] graph computed: ${nodes.length} nodes, ${links.length} links`);
+
+    res.json({ ...universeGraphCache, cached: false });
+  } catch (err) {
+    console.error('[universe] graph error:', err.message);
+    res.status(500).json({ ok: false, error: err.message });
+  } finally {
+    await session.close();
   }
 });
 

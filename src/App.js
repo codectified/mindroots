@@ -59,6 +59,7 @@ import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
+import Universe from './components/staticPages/Universe';
 
 const App = () => {
   useEffect(() => {
@@ -108,6 +109,7 @@ const App = () => {
                   <Route path="/lisan-lab/reports" element={<Layout><LisanLabReports /></Layout>}/>
                   <Route path="/article" element={<Layout><ArticleViewer /></Layout>}/>
                   <Route path="/acknowledgements" element={<Layout><Acknowledgements /></Layout>} />
+                  <Route path="/universe" element={<Layout><Universe /></Layout>} />
                   <Route path="/news" element={<Layout><MarkdownRenderer filePath="/mindroots/news.md" /></Layout>} />
                   
 
