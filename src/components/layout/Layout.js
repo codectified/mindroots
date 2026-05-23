@@ -23,6 +23,18 @@ const Layout = ({ children }) => {
     );
   }
 
+  // Universe — full-screen canvas, BottomNav floats on top
+  if (location.pathname === "/universe") {
+    return (
+      <>
+        <div style={{ position: 'fixed', inset: 0 }}>
+          {children}
+        </div>
+        <BottomNav />
+      </>
+    );
+  }
+
   // All other pages - with bottom navigation and proper spacing
   return (
     <>
