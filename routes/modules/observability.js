@@ -164,16 +164,32 @@ const METRIC_DEFINITIONS = [
     },
   },
 
+  {
+    id: 'node_counts',
+    label: 'Node Counts',
+    description: 'Raw count of each semantic node type in the graph',
+    params: {},
+    query: `
+      CALL { MATCH (n:Root)           RETURN count(n) AS roots }
+      CALL { MATCH (n:Word)           RETURN count(n) AS words }
+      CALL { MATCH (n:CorpusItem)     RETURN count(n) AS corpus_items }
+      CALL { MATCH (n:RadicalPosition) RETURN count(n) AS radical_positions }
+      CALL { MATCH (n:Form)           RETURN count(n) AS forms }
+      CALL { MATCH (n:Analysis)       RETURN count(n) AS analyses }
+      CALL { MATCH (n:Article)        RETURN count(n) AS articles }
+      RETURN {
+        roots: roots, words: words, corpus_items: corpus_items,
+        radical_positions: radical_positions, forms: forms,
+        analyses: analyses, articles: articles
+      } AS result
+    `,
+    transform(record) {
+      return deepConvertIntegers(record.get('result'));
+    },
+    toNotionProps() { return {}; },
+  },
+
   // ── future metric groups ─────────────────────────────────────────────────
-  // {
-  //   id: 'form_coverage',
-  //   label: 'Form Coverage',
-  //   description: 'Word form linkage and morphological coverage',
-  //   params: {},
-  //   query: `...`,
-  //   transform(record) { ... },
-  //   toNotionProps(data) { ... },
-  // },
   // {
   //   id: 'graphrag_health',
   //   label: 'GraphRAG Health',

@@ -1,168 +1,273 @@
-import { useEffect, useState, useRef } from 'react';
-import { ForceGraph3D } from 'react-force-graph';
-import { fetchObservabilityMetrics, fetchUniverseGraph } from '../../services/apiService';
+import { useEffect, useRef, useState } from 'react';
+import { fetchObservabilityMetrics } from '../../services/apiService';
 
-const NODE_COLORS = {
-  root:       '#22c55e',
-  word:       '#ef4444',
-  form:       '#3b82f6',
-  corpusitem: '#eab308',
+const PHI = Math.PI * (3 - Math.sqrt(5));
+
+function fibSphere(count, radius, spread) {
+  const nodes = [];
+  for (let i = 0; i < count; i++) {
+    const y    = 1 - (i / Math.max(count - 1, 1)) * 2;
+    const sinT = Math.sqrt(Math.max(0, 1 - y * y));
+    const th   = PHI * i;
+    const r    = radius + (Math.sin(i * 3.7) * 0.5 + 0.5) * spread - spread / 2;
+    nodes.push({
+      x: Math.cos(th) * sinT * r,
+      y: y * radius,
+      z: Math.sin(th) * sinT * r,
+      s: Math.sin(i * 7.3) * 0.5 + 0.5,
+    });
+  }
+  return nodes;
+}
+
+// Fallback counts shown before metrics load
+const FALLBACK = {
+  radical_positions: 153, roots: 5164, analyses: 58,
+  words: 55140, forms: 30, articles: 3, corpus_items: 78211,
 };
 
-// log scale matching existing GraphVisualization range [1, 27521] → [1, 12]
-function wordNodeSize(dataSize) {
-  const clamped = Math.max(1, Math.min(dataSize || 1, 27521));
-  return 1 + (Math.log10(clamped) / Math.log10(27521)) * 11;
-}
+function buildLayers() {
+  const radicals = fibSphere(153,   35,  5);
+  const roots    = fibSphere(5164,  90, 20);
+  const analysis = fibSphere(58,   145, 10);
+  const words    = fibSphere(20000, 200, 50); // subsampled — visually identical at this scale
+  const forms    = fibSphere(30,   235, 10);
+  const articles = fibSphere(3,    270, 10);
+  const corpus   = fibSphere(20000, 320, 55); // subsampled
 
-// Distribute nodes onto spherical shells by type using the Fibonacci sphere
-// algorithm so nodes are uniformly spread rather than randomly clustered.
-function assignSpherePositions(nodes) {
-  const radii    = { root: 130, word: 320, form: 355, corpusitem: 520 };
-  const totals   = {};
-  const counters = {};
-  nodes.forEach(n => { totals[n.type] = (totals[n.type] || 0) + 1; });
-  Object.keys(totals).forEach(t => { counters[t] = 0; });
+  // Links: root→word, subsampled
+  const links = [];
+  for (let i = 0; i < 5000; i++) {
+    links.push({
+      a: roots[Math.floor(Math.random() * roots.length)],
+      b: words[Math.floor(Math.random() * words.length)],
+    });
+  }
 
-  const PHI = Math.PI * (3 - Math.sqrt(5)); // golden angle
+  // Rendered outermost→innermost so inner layers paint on top
+  const layers = [
+    { nodes: corpus,   color: 'rgba(234,179,8,0.9)',    shadowColor: '#eab308', shadowBlur: 5,  minR: 0.6, base: 0,   sScale: 0.9 },
+    { nodes: articles, color: 'rgba(249,115,22,0.95)',  shadowColor: '#f97316', shadowBlur: 14, minR: 2.0, base: 0,   sScale: 3.5 },
+    { nodes: words,    color: '#ef4444',                shadowColor: null,      shadowBlur: 0,  minR: 0.3, base: 0.3, sScale: 1.2 },
+    { nodes: forms,    color: '#3b82f6',                shadowColor: '#3b82f6', shadowBlur: 8,  minR: 1.5, base: 0,   sScale: 2.5 },
+    { nodes: analysis, color: 'rgba(168,85,247,0.95)',  shadowColor: '#a855f7', shadowBlur: 10, minR: 1.5, base: 0,   sScale: 2.8 },
+    { nodes: roots,    color: 'rgba(34,197,94,0.85)',   shadowColor: '#22c55e', shadowBlur: 6,  minR: 0.6, base: 0.8, sScale: 0.7 },
+    { nodes: radicals, color: 'rgba(255,255,255,0.95)', shadowColor: '#ffffff', shadowBlur: 12, minR: 1.2, base: 0,   sScale: 2.5 },
+  ];
 
-  return nodes.map(node => {
-    const r     = radii[node.type] || 320;
-    const total = totals[node.type] || 1;
-    const i     = counters[node.type]++;
-    const y     = 1 - (i / Math.max(total - 1, 1)) * 2;
-    const sinT  = Math.sqrt(Math.max(0, 1 - y * y));
-    const theta = PHI * i;
-    return {
-      ...node,
-      fx: Math.cos(theta) * sinT * r,
-      fy: y * r,
-      fz: Math.sin(theta) * sinT * r,
-    };
-  });
-}
-
-function StatCard({ label, value, accent }) {
-  const accentClass = {
-    green:  'text-green-400',
-    red:    'text-red-400',
-    yellow: 'text-yellow-400',
-    blue:   'text-blue-400',
-  }[accent] || 'text-gray-300';
-
-  const formatted = value == null
-    ? '—'
-    : typeof value === 'string'
-      ? value
-      : Number(value).toLocaleString();
-
-  return (
-    <div className="flex flex-col items-center px-5 py-3 border-r border-gray-800 last:border-r-0">
-      <span className={`text-base font-mono font-bold ${accentClass}`}>{formatted}</span>
-      <span className="text-xs text-gray-500 mt-0.5 whitespace-nowrap">{label}</span>
-    </div>
-  );
+  return { layers, links };
 }
 
 export default function Universe() {
-  const [metrics, setMetrics]       = useState(null);
-  const [graphData, setGraphData]   = useState(null);
-  const [graphStatus, setGraphStatus] = useState('loading');
+  const canvasRef    = useRef();
   const containerRef = useRef();
-  const [dims, setDims] = useState({ width: 800, height: 600 });
+  const stateRef     = useRef({
+    rot: { x: 0.25, y: 0 }, zoom: 1,
+    dragging: false, lastMouse: { x: 0, y: 0 }, lastTouch: null,
+    layers: null, links: null, raf: null,
+  });
+  const [metrics, setMetrics] = useState(null);
 
-  // Track container size so ForceGraph3D fills the available space
-  useEffect(() => {
-    if (!containerRef.current) return;
-    const ro = new ResizeObserver(([entry]) => {
-      const { width, height } = entry.contentRect;
-      setDims({ width, height });
-    });
-    ro.observe(containerRef.current);
-    return () => ro.disconnect();
-  }, []);
-
-  // Load metrics and graph independently so the stats bar appears quickly
   useEffect(() => {
     fetchObservabilityMetrics()
-      .then(data => setMetrics(data.snapshot?.core_snapshot))
+      .then(d => setMetrics(d.snapshot))
       .catch(err => console.error('[Universe] metrics:', err));
-
-    fetchUniverseGraph()
-      .then(data => {
-        const positioned = assignSpherePositions(data.nodes || []);
-        setGraphData({ nodes: positioned, links: data.links || [] });
-        setGraphStatus('ready');
-      })
-      .catch(err => {
-        console.error('[Universe] graph:', err);
-        setGraphStatus('error');
-      });
   }, []);
 
-  const snap = metrics;
+  useEffect(() => {
+    const canvas    = canvasRef.current;
+    const container = containerRef.current;
+    if (!canvas || !container) return;
+    const ctx = canvas.getContext('2d');
+    const s   = stateRef.current;
+
+    const { layers, links } = buildLayers();
+    s.layers = layers;
+    s.links  = links;
+
+    let cosY, sinY, cosX, sinX;
+    const CULL = -80;
+
+    const updateMatrix = () => {
+      cosY = Math.cos(s.rot.y); sinY = Math.sin(s.rot.y);
+      cosX = Math.cos(s.rot.x); sinX = Math.sin(s.rot.x);
+    };
+
+    const project = (n, cx, cy, persp) => {
+      const rx  = n.x * cosY - n.z * sinY;
+      const rz0 = n.x * sinY + n.z * cosY;
+      const ry  = n.y * cosX - rz0 * sinX;
+      const rz  = n.y * sinX + rz0 * cosX;
+      if (rz <= CULL) return null;
+      const sc = (persp / (persp + rz)) * s.zoom;
+      return { sx: cx + rx * sc, sy: cy + ry * sc, sc };
+    };
+
+    const draw = () => {
+      const w = canvas.width, h = canvas.height;
+      const cx = w / 2, cy = h / 2, persp = 500;
+      ctx.fillStyle = '#0a0a0f';
+      ctx.fillRect(0, 0, w, h);
+      updateMatrix();
+
+      ctx.shadowBlur = 0;
+      ctx.strokeStyle = 'rgba(160,160,160,0.04)';
+      ctx.lineWidth = 0.4;
+      ctx.beginPath();
+      for (const lk of s.links) {
+        const a = project(lk.a, cx, cy, persp);
+        const b = project(lk.b, cx, cy, persp);
+        if (!a || !b) continue;
+        ctx.moveTo(a.sx, a.sy);
+        ctx.lineTo(b.sx, b.sy);
+      }
+      ctx.stroke();
+
+      for (const layer of s.layers) {
+        ctx.shadowColor = layer.shadowColor || 'transparent';
+        ctx.shadowBlur  = layer.shadowBlur;
+        ctx.fillStyle   = layer.color;
+        ctx.beginPath();
+        for (const n of layer.nodes) {
+          const p = project(n, cx, cy, persp);
+          if (!p) continue;
+          const r = Math.max(layer.minR, (layer.base + n.s * layer.sScale) * p.sc);
+          ctx.moveTo(p.sx + r, p.sy);
+          ctx.arc(p.sx, p.sy, r, 0, Math.PI * 2);
+        }
+        ctx.fill();
+        ctx.shadowBlur = 0;
+      }
+
+      s.rot.y += 0.004;
+    };
+
+    const loop = () => { draw(); s.raf = requestAnimationFrame(loop); };
+
+    const resize = () => {
+      canvas.width  = container.offsetWidth;
+      canvas.height = container.offsetHeight;
+    };
+    resize();
+    const ro = new ResizeObserver(resize);
+    ro.observe(container);
+    s.raf = requestAnimationFrame(loop);
+
+    const onDown       = e => { s.dragging = true; s.lastMouse = { x: e.clientX, y: e.clientY }; };
+    const onMove       = e => {
+      if (!s.dragging) return;
+      s.rot.y += (e.clientX - s.lastMouse.x) * 0.01;
+      s.rot.x += (e.clientY - s.lastMouse.y) * 0.01;
+      s.lastMouse = { x: e.clientX, y: e.clientY };
+    };
+    const onUp         = () => { s.dragging = false; };
+    const onWheel      = e => {
+      e.preventDefault();
+      s.zoom = Math.max(0.3, Math.min(4, s.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
+    };
+    const onTouchStart = e => {
+      e.preventDefault();
+      s.lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+    const onTouchMove  = e => {
+      e.preventDefault();
+      if (!s.lastTouch) return;
+      s.rot.y += (e.touches[0].clientX - s.lastTouch.x) * 0.01;
+      s.rot.x += (e.touches[0].clientY - s.lastTouch.y) * 0.01;
+      s.lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    };
+    const onTouchEnd   = () => { s.lastTouch = null; };
+
+    canvas.addEventListener('mousedown',  onDown);
+    window.addEventListener('mousemove',  onMove);
+    window.addEventListener('mouseup',    onUp);
+    canvas.addEventListener('wheel',      onWheel,      { passive: false });
+    canvas.addEventListener('touchstart', onTouchStart, { passive: false });
+    canvas.addEventListener('touchmove',  onTouchMove,  { passive: false });
+    canvas.addEventListener('touchend',   onTouchEnd);
+
+    return () => {
+      cancelAnimationFrame(s.raf);
+      ro.disconnect();
+      canvas.removeEventListener('mousedown',  onDown);
+      window.removeEventListener('mousemove',  onMove);
+      window.removeEventListener('mouseup',    onUp);
+      canvas.removeEventListener('wheel',      onWheel);
+      canvas.removeEventListener('touchstart', onTouchStart);
+      canvas.removeEventListener('touchmove',  onTouchMove);
+      canvas.removeEventListener('touchend',   onTouchEnd);
+    };
+  }, []);
+
+  const counts = metrics?.node_counts   || {};
+  const snap   = metrics?.core_snapshot;
+
+  const legend = [
+    { color: '#ffffff', label: 'Radical Positions', value: counts.radical_positions ?? FALLBACK.radical_positions },
+    { color: '#22c55e', label: 'Roots',              value: counts.roots             ?? snap?.metrics?.total_roots ?? FALLBACK.roots },
+    { color: '#a855f7', label: 'Analysis',           value: counts.analyses          ?? FALLBACK.analyses },
+    { color: '#ef4444', label: 'Words',              value: counts.words             ?? snap?.metrics?.total_words ?? FALLBACK.words },
+    { color: '#3b82f6', label: 'Forms',              value: counts.forms             ?? FALLBACK.forms },
+    { color: '#f97316', label: 'Articles',           value: counts.articles          ?? FALLBACK.articles },
+    { color: '#eab308', label: 'Corpus Items',       value: counts.corpus_items      ?? FALLBACK.corpus_items },
+  ];
+
+  const panel = {
+    position: 'absolute', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(10px)',
+    padding: '12px 16px', borderRadius: 8, fontSize: 12, lineHeight: 1.8, userSelect: 'none',
+  };
 
   return (
-    <div className="flex flex-col h-full" style={{ background: '#000011' }}>
-
-      {/* Stats strip */}
-      <div className="flex flex-wrap border-b border-gray-800 shrink-0">
-        <StatCard label="Roots"        value={snap?.metrics?.total_roots}             accent="green"  />
-        <StatCard label="Words"        value={snap?.metrics?.total_words}             accent="red"    />
-        <StatCard label="Quran Items"  value={snap?.quran?.total_items}               accent="yellow" />
-        <StatCard label="Linked"       value={snap?.quran?.linked_items}              accent="yellow" />
-        <StatCard label="Coverage"     value={snap?.quran?.coverage_percent != null ? `${snap.quran.coverage_percent}%` : null} accent="yellow" />
-        <StatCard label="Corpus Links" value={snap?.linkage?.total_corpus_word_links} accent="blue"   />
-        <StatCard label="Orphan Words" value={snap?.data_quality?.orphan_words}       accent="red"    />
-      </div>
-
-      {/* 3D graph */}
-      <div ref={containerRef} className="flex-1 min-h-0 relative">
-        {graphStatus === 'loading' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 gap-2">
-            <span className="text-sm">Loading universe…</span>
-            <span className="text-xs text-gray-600">First load computes the full graph — may take a moment</span>
-          </div>
-        )}
-        {graphStatus === 'error' && (
-          <div className="absolute inset-0 flex items-center justify-center text-red-500 text-sm">
-            Failed to load universe data.
-          </div>
-        )}
-        {graphStatus === 'ready' && graphData && (
-          <ForceGraph3D
-            graphData={graphData}
-            width={dims.width}
-            height={dims.height}
-            backgroundColor="#000011"
-            nodeColor={node => NODE_COLORS[node.type] || '#ffffff'}
-            nodeVal={node => {
-              if (node.type === 'word')       return wordNodeSize(node.dataSize);
-              if (node.type === 'root')       return 4;
-              if (node.type === 'corpusitem') return 1.5;
-              return 0.8; // form
-            }}
-            nodeLabel={node => node.label || ''}
-            linkColor={() => 'rgba(180,180,180,0.06)'}
-            linkWidth={0.15}
-            cooldownTicks={0}
-            d3AlphaDecay={1}
-          />
-        )}
-      </div>
+    <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', background: '#0a0a0f' }}>
+      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', cursor: 'grab' }} />
 
       {/* Legend */}
-      {graphStatus === 'ready' && (
-        <div className="flex gap-4 px-4 py-2 border-t border-gray-800 shrink-0">
-          {Object.entries({ Root: '#22c55e', Word: '#ef4444', Form: '#3b82f6', Corpus: '#eab308' }).map(([label, color]) => (
-            <div key={label} className="flex items-center gap-1.5">
-              <span className="w-2.5 h-2.5 rounded-full inline-block" style={{ background: color }} />
-              <span className="text-xs text-gray-400">{label}</span>
+      <div style={{ ...panel, top: 16, left: 16 }}>
+        {legend.map(({ color, label, value }) => (
+          <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
+            <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, boxShadow: `0 0 5px ${color}`, marginRight: 8, flexShrink: 0 }} />
+            <span style={{ color: '#aaa' }}>{label}:&nbsp;<span style={{ color: '#fff' }}>{value != null ? Number(value).toLocaleString() : '—'}</span></span>
+          </div>
+        ))}
+      </div>
+
+      {/* Observability stats */}
+      {snap && (
+        <div style={{ ...panel, top: 16, right: 16, color: '#aaa' }}>
+          <div style={{ color: '#555', fontSize: 11, marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Observability</div>
+          {snap.quran?.coverage_percent != null && (
+            <div>Quran coverage:&nbsp;<span style={{ color: '#eab308' }}>{snap.quran.coverage_percent.toFixed(1)}%</span></div>
+          )}
+          {snap.quran?.linked_items != null && (
+            <div>Quran linked:&nbsp;
+              <span style={{ color: '#fff' }}>{Number(snap.quran.linked_items).toLocaleString()}</span>
+              <span style={{ color: '#555' }}> / {Number(snap.quran.total_items).toLocaleString()}</span>
             </div>
-          ))}
-          <span className="ml-auto text-xs text-gray-600">word size ∝ corpus frequency</span>
+          )}
+          {snap.linkage?.roots_in_quran != null && (
+            <div>Roots in Quran:&nbsp;<span style={{ color: '#22c55e' }}>{Number(snap.linkage.roots_in_quran).toLocaleString()}</span></div>
+          )}
+          {snap.linkage?.words_in_quran != null && (
+            <div>Words in Quran:&nbsp;<span style={{ color: '#ef4444' }}>{Number(snap.linkage.words_in_quran).toLocaleString()}</span></div>
+          )}
+          {snap.linkage?.total_corpus_word_links != null && (
+            <div>Corpus links:&nbsp;<span style={{ color: '#fff' }}>{Number(snap.linkage.total_corpus_word_links).toLocaleString()}</span></div>
+          )}
+          {snap.data_quality?.orphan_words != null && (
+            <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #1f1f1f', fontSize: 11, color: snap.data_quality.orphan_words > 0 ? '#f97316' : '#555' }}>
+              Orphan words: {Number(snap.data_quality.orphan_words).toLocaleString()}
+            </div>
+          )}
         </div>
       )}
+
+      <div style={{
+        position: 'absolute', bottom: 16, left: 16,
+        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
+        padding: '5px 12px', borderRadius: 6, fontSize: 11, color: '#555', userSelect: 'none',
+      }}>
+        Drag to rotate · Scroll to zoom
+      </div>
     </div>
   );
 }

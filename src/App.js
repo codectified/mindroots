@@ -59,8 +59,6 @@ import { CorpusStatisticsProvider } from './contexts/CorpusStatisticsContext';
 import LisanLab from './components/staticPages/LisanLab';
 import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
-// Lazy-loaded: Three.js (via react-force-graph) is ~700KB and would bust the
-// 400MB build heap limit on the 1GB prod server if compiled in the main chunk.
 const Universe = lazy(() => import('./components/staticPages/Universe'));
 
 const App = () => {
