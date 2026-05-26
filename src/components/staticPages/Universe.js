@@ -20,7 +20,6 @@ function fibSphere(count, radius, spread) {
   return nodes;
 }
 
-// Fallback counts shown before metrics load
 const FALLBACK = {
   radical_positions: 153, roots: 5164, analyses: 58,
   words: 55140, forms: 30, articles: 3, corpus_items: 78211,
@@ -30,21 +29,11 @@ function buildLayers() {
   const radicals = fibSphere(153,   35,  5);
   const roots    = fibSphere(5164,  90, 20);
   const analysis = fibSphere(58,   145, 10);
-  const words    = fibSphere(20000, 200, 50); // subsampled — visually identical at this scale
+  const words    = fibSphere(55140, 200, 50);
   const forms    = fibSphere(30,   235, 10);
   const articles = fibSphere(3,    270, 10);
-  const corpus   = fibSphere(20000, 320, 55); // subsampled
+  const corpus   = fibSphere(78211, 320, 55);
 
-  // Links: root→word, subsampled
-  const links = [];
-  for (let i = 0; i < 5000; i++) {
-    links.push({
-      a: roots[Math.floor(Math.random() * roots.length)],
-      b: words[Math.floor(Math.random() * words.length)],
-    });
-  }
-
-  // Rendered outermost→innermost so inner layers paint on top
   const layers = [
     { nodes: corpus,   color: 'rgba(234,179,8,0.9)',    shadowColor: '#eab308', shadowBlur: 5,  minR: 0.6, base: 0,   sScale: 0.9 },
     { nodes: articles, color: 'rgba(249,115,22,0.95)',  shadowColor: '#f97316', shadowBlur: 14, minR: 2.0, base: 0,   sScale: 3.5 },
@@ -55,7 +44,7 @@ function buildLayers() {
     { nodes: radicals, color: 'rgba(255,255,255,0.95)', shadowColor: '#ffffff', shadowBlur: 12, minR: 1.2, base: 0,   sScale: 2.5 },
   ];
 
-  return { layers, links };
+  return { layers };
 }
 
 export default function Universe() {
@@ -63,10 +52,18 @@ export default function Universe() {
   const containerRef = useRef();
   const stateRef     = useRef({
     rot: { x: 0.25, y: 0 }, zoom: 1,
-    dragging: false, lastMouse: { x: 0, y: 0 }, lastTouch: null,
-    layers: null, links: null, raf: null,
+    dragging: false, lastMouse: { x: 0, y: 0 },
+    lastTouch: null, pinchDist: null,
+    layers: null, raf: null,
   });
   const [metrics, setMetrics] = useState(null);
+  const [isMobile, setIsMobile] = useState(() => window.innerWidth < 600);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 600);
+    window.addEventListener('resize', check);
+    return () => window.removeEventListener('resize', check);
+  }, []);
 
   useEffect(() => {
     fetchObservabilityMetrics()
@@ -81,9 +78,8 @@ export default function Universe() {
     const ctx = canvas.getContext('2d');
     const s   = stateRef.current;
 
-    const { layers, links } = buildLayers();
+    const { layers } = buildLayers();
     s.layers = layers;
-    s.links  = links;
 
     let cosY, sinY, cosX, sinX;
     const CULL = -80;
@@ -111,18 +107,6 @@ export default function Universe() {
       updateMatrix();
 
       ctx.shadowBlur = 0;
-      ctx.strokeStyle = 'rgba(160,160,160,0.04)';
-      ctx.lineWidth = 0.4;
-      ctx.beginPath();
-      for (const lk of s.links) {
-        const a = project(lk.a, cx, cy, persp);
-        const b = project(lk.b, cx, cy, persp);
-        if (!a || !b) continue;
-        ctx.moveTo(a.sx, a.sy);
-        ctx.lineTo(b.sx, b.sy);
-      }
-      ctx.stroke();
-
       for (const layer of s.layers) {
         ctx.shadowColor = layer.shadowColor || 'transparent';
         ctx.shadowBlur  = layer.shadowBlur;
@@ -153,30 +137,51 @@ export default function Universe() {
     ro.observe(container);
     s.raf = requestAnimationFrame(loop);
 
-    const onDown       = e => { s.dragging = true; s.lastMouse = { x: e.clientX, y: e.clientY }; };
-    const onMove       = e => {
+    const onDown = e => { s.dragging = true; s.lastMouse = { x: e.clientX, y: e.clientY }; };
+    const onMove = e => {
       if (!s.dragging) return;
       s.rot.y += (e.clientX - s.lastMouse.x) * 0.01;
       s.rot.x += (e.clientY - s.lastMouse.y) * 0.01;
       s.lastMouse = { x: e.clientX, y: e.clientY };
     };
-    const onUp         = () => { s.dragging = false; };
-    const onWheel      = e => {
+    const onUp    = () => { s.dragging = false; };
+    const onWheel = e => {
       e.preventDefault();
       s.zoom = Math.max(0.3, Math.min(4, s.zoom * (e.deltaY > 0 ? 0.9 : 1.1)));
     };
+
+    const touchDist = t =>
+      Math.hypot(t[1].clientX - t[0].clientX, t[1].clientY - t[0].clientY);
+
     const onTouchStart = e => {
       e.preventDefault();
-      s.lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      if (e.touches.length === 2) {
+        s.pinchDist = touchDist(e.touches);
+        s.lastTouch = null;
+      } else {
+        s.pinchDist = null;
+        s.lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
     };
-    const onTouchMove  = e => {
+    const onTouchMove = e => {
       e.preventDefault();
-      if (!s.lastTouch) return;
-      s.rot.y += (e.touches[0].clientX - s.lastTouch.x) * 0.01;
-      s.rot.x += (e.touches[0].clientY - s.lastTouch.y) * 0.01;
-      s.lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      if (e.touches.length === 2) {
+        const d = touchDist(e.touches);
+        if (s.pinchDist) s.zoom = Math.max(0.3, Math.min(4, s.zoom * (d / s.pinchDist)));
+        s.pinchDist = d;
+        s.lastTouch = null;
+      } else if (e.touches.length === 1 && s.lastTouch) {
+        s.rot.y += (e.touches[0].clientX - s.lastTouch.x) * 0.01;
+        s.rot.x += (e.touches[0].clientY - s.lastTouch.y) * 0.01;
+        s.lastTouch = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      }
     };
-    const onTouchEnd   = () => { s.lastTouch = null; };
+    const onTouchEnd = e => {
+      if (e.touches.length < 2) s.pinchDist = null;
+      s.lastTouch = e.touches.length === 1
+        ? { x: e.touches[0].clientX, y: e.touches[0].clientY }
+        : null;
+    };
 
     canvas.addEventListener('mousedown',  onDown);
     window.addEventListener('mousemove',  onMove);
@@ -199,7 +204,7 @@ export default function Universe() {
     };
   }, []);
 
-  const counts = metrics?.node_counts   || {};
+  const counts = metrics?.node_counts || {};
   const snap   = metrics?.core_snapshot;
 
   const legend = [
@@ -213,26 +218,43 @@ export default function Universe() {
   ];
 
   const panel = {
-    position: 'absolute', background: 'rgba(0,0,0,0.72)', backdropFilter: 'blur(10px)',
-    padding: '12px 16px', borderRadius: 8, fontSize: 12, lineHeight: 1.8, userSelect: 'none',
+    position: 'absolute',
+    background: 'rgba(0,0,0,0.72)',
+    backdropFilter: 'blur(10px)',
+    padding: isMobile ? '7px 10px' : '12px 16px',
+    borderRadius: 8,
+    fontSize: isMobile ? 10 : 12,
+    lineHeight: 1.75,
+    userSelect: 'none',
   };
 
   return (
     <div ref={containerRef} style={{ position: 'relative', width: '100%', height: '100%', background: '#0a0a0f' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', cursor: 'grab' }} />
+      <canvas
+        ref={canvasRef}
+        style={{ display: 'block', width: '100%', height: '100%', cursor: 'grab', touchAction: 'none' }}
+      />
 
       {/* Legend */}
-      <div style={{ ...panel, top: 16, left: 16 }}>
+      <div style={{ ...panel, top: 16, left: 16, maxWidth: isMobile ? 138 : 'none' }}>
         {legend.map(({ color, label, value }) => (
           <div key={label} style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ width: 8, height: 8, borderRadius: '50%', background: color, boxShadow: `0 0 5px ${color}`, marginRight: 8, flexShrink: 0 }} />
-            <span style={{ color: '#aaa' }}>{label}:&nbsp;<span style={{ color: '#fff' }}>{value != null ? Number(value).toLocaleString() : '—'}</span></span>
+            <div style={{
+              width: 7, height: 7, borderRadius: '50%',
+              background: color, boxShadow: `0 0 5px ${color}`,
+              marginRight: 6, flexShrink: 0,
+            }} />
+            <span style={{ color: '#aaa' }}>
+              {label}:&nbsp;<span style={{ color: '#fff' }}>
+                {value != null ? Number(value).toLocaleString() : '—'}
+              </span>
+            </span>
           </div>
         ))}
       </div>
 
-      {/* Observability stats */}
-      {snap && (
+      {/* Observability stats — desktop only */}
+      {snap && !isMobile && (
         <div style={{ ...panel, top: 16, right: 16, color: '#aaa' }}>
           <div style={{ color: '#555', fontSize: 11, marginBottom: 6, letterSpacing: '0.06em', textTransform: 'uppercase' }}>Observability</div>
           {snap.quran?.coverage_percent != null && (
@@ -261,13 +283,6 @@ export default function Universe() {
         </div>
       )}
 
-      <div style={{
-        position: 'absolute', bottom: 16, left: 16,
-        background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(6px)',
-        padding: '5px 12px', borderRadius: 6, fontSize: 11, color: '#555', userSelect: 'none',
-      }}>
-        Drag to rotate · Scroll to zoom
-      </div>
     </div>
   );
 }
