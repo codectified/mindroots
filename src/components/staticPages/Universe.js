@@ -25,14 +25,15 @@ const FALLBACK = {
   words: 55140, forms: 30, articles: 3, corpus_items: 78211,
 };
 
-function buildLayers() {
-  const radicals = fibSphere(153,   35,  5);
-  const roots    = fibSphere(5164,  90, 20);
-  const analysis = fibSphere(58,   145, 10);
-  const words    = fibSphere(55140, 200, 50);
-  const forms    = fibSphere(30,   235, 10);
-  const articles = fibSphere(3,    270, 10);
-  const corpus   = fibSphere(78211, 320, 55);
+function buildLayers(mobile) {
+  const sc = mobile ? 0.15 : 1;
+  const radicals = fibSphere(153,                          35,  5);
+  const roots    = fibSphere(5164,                         90, 20);
+  const analysis = fibSphere(58,                          145, 10);
+  const words    = fibSphere(Math.round(55140 * sc), 200, 50);
+  const forms    = fibSphere(30,                          235, 10);
+  const articles = fibSphere(3,                           270, 10);
+  const corpus   = fibSphere(Math.round(78211 * sc), 320, 55);
 
   const layers = [
     { nodes: corpus,   color: 'rgba(234,179,8,0.9)',    shadowColor: '#eab308', shadowBlur: 5,  minR: 0.6, base: 0,   sScale: 0.9 },
@@ -78,7 +79,7 @@ export default function Universe() {
     const ctx = canvas.getContext('2d');
     const s   = stateRef.current;
 
-    const { layers } = buildLayers();
+    const { layers } = buildLayers(window.innerWidth < 600);
     s.layers = layers;
 
     let cosY, sinY, cosX, sinX;
