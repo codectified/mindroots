@@ -3,9 +3,13 @@ import * as d3 from 'd3';
 import { fetchBiradicals, fetchRadicalPositions, fetchR3Depth } from '../../services/apiService';
 import { useSize } from '../analytics/shared';
 import { PHON_CLASSES, CLASS_META, sameClass } from '../analytics/phonology';
-import Scatter3D    from '../analytics/Scatter3D';
-import DepthMap     from '../analytics/DepthMap';
-import NetworkGraph from '../analytics/NetworkGraph';
+import Scatter3D      from '../analytics/Scatter3D';
+import DepthMap       from '../analytics/DepthMap';
+import NetworkGraph   from '../analytics/NetworkGraph';
+import OCPMatrix      from '../analytics/OCPMatrix';
+import DepthFertility from '../analytics/DepthFertility';
+import ZipfChart      from '../analytics/ZipfChart';
+import LeadershipChart from '../analytics/LeadershipChart';
 
 // ─── Chart 1 · Fertility vs Gravity ─────────────────────────────────────────
 
@@ -307,12 +311,16 @@ function EcologyChart({ data }) {
 // ─── Main Analytics Page ─────────────────────────────────────────────────────
 
 const CHARTS = [
-  { id: 1, label: 'Fertility × Gravity' },
-  { id: 2, label: 'Bi-Radical Heatmap' },
-  { id: 3, label: 'Position Ecology' },
-  { id: 4, label: '3D Space' },
-  { id: 5, label: 'r3 Depth' },
-  { id: 6, label: 'Radical Network' },
+  { id: 1,  label: 'Fertility × Gravity' },
+  { id: 2,  label: 'Bi-Radical Heatmap'  },
+  { id: 3,  label: 'Position Ecology'    },
+  { id: 4,  label: '3D Space'            },
+  { id: 5,  label: 'r3 Depth'            },
+  { id: 6,  label: 'Radical Network'     },
+  { id: 7,  label: 'OCP Matrix'          },
+  { id: 8,  label: 'Depth × Fertility'   },
+  { id: 9,  label: 'Zipf'                },
+  { id: 10, label: 'Leadership'          },
 ];
 
 export default function Analytics() {
@@ -376,9 +384,13 @@ export default function Analytics() {
         {!loading && !error && chart === 1 && <ScatterChart  data={biradicals} />}
         {!loading && !error && chart === 2 && <Heatmap       data={biradicals} />}
         {!loading && !error && chart === 3 && <EcologyChart  data={positions} />}
-        {!loading && !error && chart === 4 && <Scatter3D     data={biradicals} />}
-        {!loading && !error && chart === 5 && <DepthMap      biradicals={biradicals} depths={depths} />}
-        {!loading && !error && chart === 6 && <NetworkGraph  data={biradicals} />}
+        {!loading && !error && chart === 4  && <Scatter3D      data={biradicals} />}
+        {!loading && !error && chart === 5  && <DepthMap       biradicals={biradicals} depths={depths} />}
+        {!loading && !error && chart === 6  && <NetworkGraph   data={biradicals} />}
+        {!loading && !error && chart === 7  && <OCPMatrix      data={biradicals} />}
+        {!loading && !error && chart === 8  && <DepthFertility biradicals={biradicals} depths={depths} />}
+        {!loading && !error && chart === 9  && <ZipfChart      data={biradicals} />}
+        {!loading && !error && chart === 10 && <LeadershipChart data={positions} />}
       </div>
     </div>
   );
