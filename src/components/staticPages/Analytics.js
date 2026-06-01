@@ -328,6 +328,7 @@ const REPORTS = {
 // ─── Main Analytics Page ─────────────────────────────────────────────────────
 
 const CHARTS = [
+  { id: 0,  label: 'Overview'            },
   { id: 1,  label: 'Fertility × Gravity' },
   { id: 2,  label: 'Bi-Radical Heatmap'  },
   { id: 3,  label: 'Position Ecology'    },
@@ -347,7 +348,7 @@ export default function Analytics() {
   const [depths,     setDepths]     = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState(null);
-  const [chart,      setChart]      = useState(1);
+  const [chart,      setChart]      = useState(0);
 
   useEffect(() => {
     Promise.all([fetchBiradicals(), fetchRadicalPositions(), fetchR3Depth()])
@@ -369,10 +370,13 @@ export default function Analytics() {
   });
 
   const counts = biradicals.length;
-  const totalRoots = biradicals.reduce((s, d) => s + d.root_count, 0);
+  const trueRoots = depths.reduce((s, d) => s + d.r3_count, 0);
+  const totalWords = biradicals.reduce((s, d) => s + d.total_words, 0);
+  const totalCorpus = biradicals.reduce((s, d) => s + d.total_corpus, 0);
   const seenRadicals = new Set(biradicals.flatMap(d => d.pair_key.split('-').filter(Boolean))).size;
   const totalPossible = seenRadicals > 0 ? seenRadicals * (seenRadicals - 1) : 0;
-  const avgRoots = counts > 0 ? (totalRoots / counts).toFixed(1) : '—';
+  const coverage = totalPossible > 0 ? ((counts / totalPossible) * 100).toFixed(0) : '—';
+  const avgRoots = counts > 0 ? (trueRoots / counts).toFixed(1) : '—';
   const r3Coverage = counts > 0 ? `${((depths.length / counts) * 100).toFixed(0)}% of families` : '';
 
   return (
@@ -390,11 +394,11 @@ export default function Analytics() {
       {/* stats bar — single scrollable row */}
       {counts > 0 && (
         <div style={{ display: 'flex', gap: 18, padding: '6px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          <Stat value={counts.toLocaleString()}       color="#eab308" label="r1-r2 families"      sub="bi-radical root clusters" />
-          <Stat value={totalPossible > 0 ? `${((counts / totalPossible) * 100).toFixed(0)}%` : '—'} color="#22c55e" label="of possible pairs" sub={`${seenRadicals} radicals → ${totalPossible} ordered pairs`} />
-          <Stat value={totalRoots.toLocaleString()}   color="#a855f7" label="tri-radical roots"   sub={`${avgRoots} per family avg`} />
-          <Stat value={depths.length.toLocaleString()} color="#3b82f6" label="r3 depth mapped"    sub={r3Coverage} />
-          <Stat value={depths[0]?.r3_count ?? '—'}   color="#f97316" label="max r3 variants"     sub="most 3rd-radical completions on one pair" />
+          <Stat value={counts.toLocaleString()}        color="#eab308" label="r1-r2 families"     sub="bi-radical root clusters" />
+          <Stat value={`${coverage}%`}               color="#22c55e" label="of possible r1-r2s" sub={`${seenRadicals} consonants, ${totalPossible} ordered pairs`} />
+          <Stat value={trueRoots.toLocaleString()}    color="#a855f7" label="tri-literal roots"  sub={`distinct r1-r2-r3 combos · ${avgRoots} per family`} />
+          <Stat value={totalWords.toLocaleString()}   color="#22c55e" label="lexical words"      sub="word forms derived from roots" />
+          <Stat value={depths[0]?.r3_count ?? '—'}   color="#f97316" label="max r3 variants"    sub="3rd-radical options on one pair" />
         </div>
       )}
 
@@ -402,6 +406,7 @@ export default function Analytics() {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
         {loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
         {error   && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
+        {!loading && !error && chart === 0 && <Overview biradicals={biradicals} depths={depths} counts={counts} trueRoots={trueRoots} totalWords={totalWords} totalCorpus={totalCorpus} seenRadicals={seenRadicals} totalPossible={totalPossible} coverage={coverage} />}
         {!loading && !error && chart === 1 && <ScatterChart  data={biradicals} />}
         {!loading && !error && chart === 2 && <Heatmap       data={biradicals} />}
         {!loading && !error && chart === 3 && <EcologyChart  data={positions} />}
@@ -444,6 +449,66 @@ function Centered({ children }) {
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       {children}
+    </div>
+  );
+}
+
+// ─── Overview Page ────────────────────────────────────────────────────────────
+
+function Overview({ counts, trueRoots, totalWords, totalCorpus, seenRadicals, totalPossible, coverage }) {
+  const fmt = n => n.toLocaleString();
+  return (
+    <div style={{ width: '100%', height: '100%', overflowY: 'auto', padding: '20px 18px 16px', boxSizing: 'border-box' }}>
+
+      <div style={{ color: '#333', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>Arabic Morphology · Data Overview</div>
+
+      {/* four headline numbers */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 22 }}>
+        <BigStat value={fmt(counts)}      color="#eab308" label="Bi-Radical Families"
+          desc="Unique first-two-consonant combinations that have at least one tri-literal root" />
+        <BigStat value={fmt(trueRoots)}   color="#a855f7" label="Tri-Literal Roots"
+          desc="Distinct r1-r2-r3 consonant combinations confirmed in this database" />
+        <BigStat value={fmt(totalWords)}  color="#22c55e" label="Lexical Words"
+          desc="Total word forms derived from these roots (including all morphological patterns)" />
+        <BigStat value={fmt(totalCorpus)} color="#3b82f6" label="Corpus Occurrences"
+          desc="Total times these words appear in the analyzed Arabic text corpus" />
+      </div>
+
+      {/* explanatory sections */}
+      <InfoSection title="What is a bi-radical family?">
+        Arabic words are built from 3-consonant roots (e.g., ك-ت-ب for writing). The first two consonants form a "family" — a group of roots that share a phonological and often semantic core. The family ك-ت underlies كَتَبَ (to write), كِتَاب (book), كَتَمَ (to conceal), and others. These {fmt(counts)} families are the scaffolding of the Arabic lexicon.
+      </InfoSection>
+
+      <InfoSection title="Root count vs Lane's Lexicon">
+        Edward Lane's Arabic-English Lexicon (~5,000 entries) documents base consonantal roots as a scholar would list them. The {fmt(trueRoots)} roots here are distinct r1-r2-r3 consonant combinations found in the graph database — this includes roots from the Quran, classical dictionaries, and extended Arabic, which together exceed Lane's classical subset. The number is close to Lane's when filtered to core classical roots only.
+      </InfoSection>
+
+      <InfoSection title={`${coverage}% of consonant pair space is occupied`}>
+        With {seenRadicals} distinct consonants in the data, there are {fmt(totalPossible)} theoretically possible ordered r1-r2 pairs. Only {coverage}% are occupied by an actual family. The missing {100 - parseInt(coverage)}% is not random — it is shaped by the Obligatory Contour Principle (OCP), a phonological law that suppresses same-class consonants from occupying adjacent root positions. See the OCP Matrix chart for the full breakdown.
+      </InfoSection>
+
+      <InfoSection title="How to use the visualizations">
+        Start with <strong style={{ color: '#eab308' }}>Fertility × Gravity</strong> for the big picture of how families distribute. Use <strong style={{ color: '#f97316' }}>OCP Matrix</strong> to see the phonological constraints. <strong style={{ color: '#22c55e' }}>Zipf</strong> shows how corpus usage concentrates in a few dominant families. <strong style={{ color: '#a855f7' }}>Dark Matter</strong> shows which pairs are absent and whether the absence is predicted or mysterious.
+      </InfoSection>
+    </div>
+  );
+}
+
+function BigStat({ value, label, desc, color }) {
+  return (
+    <div style={{ padding: '14px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
+      <div style={{ color, fontSize: 26, fontWeight: 700, lineHeight: 1, marginBottom: 5 }}>{value}</div>
+      <div style={{ color: '#aaa', fontSize: 11, fontWeight: 600, marginBottom: 5 }}>{label}</div>
+      <div style={{ color: '#333', fontSize: 10, lineHeight: 1.55 }}>{desc}</div>
+    </div>
+  );
+}
+
+function InfoSection({ title, children }) {
+  return (
+    <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+      <div style={{ color: '#666', fontSize: 11, fontWeight: 600, marginBottom: 6 }}>{title}</div>
+      <div style={{ color: '#444', fontSize: 11, lineHeight: 1.7 }}>{children}</div>
     </div>
   );
 }
