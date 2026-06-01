@@ -26,7 +26,7 @@ const FALLBACK = {
 };
 
 function buildLayers(mobile) {
-  const sc = mobile ? 0.15 : 1;
+  const sc = mobile ? 0.15 : 0.30;
   const radicals = fibSphere(153,                          35,  5);
   const roots    = fibSphere(5164,                         90, 20);
   const analysis = fibSphere(58,                          145, 10);
