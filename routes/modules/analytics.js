@@ -85,4 +85,33 @@ router.get('/analytics/radical-positions', async (req, res) => {
   }
 });
 
+// GET /analytics/r3-depth
+// For each r1-r2 pair, how many distinct r3 completions exist in Root nodes
+router.get('/analytics/r3-depth', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const result = await session.run(`
+      MATCH (r:Root)
+      WHERE r.r1 IS NOT NULL AND r.r2 IS NOT NULL AND r.r3 IS NOT NULL
+      WITH r.r1 + '-' + r.r2 AS pair_key,
+           count(DISTINCT r.r3)    AS r3_count,
+           collect(DISTINCT r.r3)  AS r3_values
+      RETURN pair_key, r3_count, r3_values
+      ORDER BY r3_count DESC
+    `);
+    res.json({
+      depths: result.records.map(r => ({
+        pair_key:  r.get('pair_key'),
+        r3_count:  toNum(r.get('r3_count')),
+        r3_values: r.get('r3_values'),
+      })),
+    });
+  } catch (err) {
+    console.error('[analytics/r3-depth]', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;

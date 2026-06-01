@@ -773,3 +773,8 @@ export const fetchRadicalPositions = async () => {
   const response = await api.get('/analytics/radical-positions');
   return response.data;
 };
+
+export const fetchR3Depth = async () => {
+  const response = await api.get('/analytics/r3-depth');
+  return response.data;
+};
