@@ -77,6 +77,7 @@ export default function OCPMatrix({ data }) {
 
   const ocpDelta = crossAvg - sameAvg;
   const ocpPct   = sameAvg > 0 ? (ocpDelta / crossAvg * 100) : 0;
+  const isMobile = w > 0 && w < 500;
 
   return (
     <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
@@ -146,24 +147,28 @@ export default function OCPMatrix({ data }) {
 
       {/* OCP finding callout */}
       <div style={{
-        position: 'absolute', top: 12, right: 16,
-        background: 'rgba(0,0,0,0.85)', border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 8, padding: '10px 14px', fontSize: 12, lineHeight: 1.9,
+        position: 'absolute', top: 8, right: isMobile ? 4 : 16,
+        background: 'rgba(0,0,0,0.88)', border: '1px solid rgba(255,255,255,0.08)',
+        borderRadius: 8, padding: isMobile ? '5px 8px' : '10px 14px',
+        fontSize: isMobile ? 10 : 12, lineHeight: 1.7,
+        maxWidth: isMobile ? 120 : 'none',
       }}>
-        <div style={{ color: '#444', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>OCP signal</div>
-        <div style={{ color: '#aaa' }}>same-class avg: <span style={{ color: '#ef4444', fontWeight: 700 }}>{(sameAvg * 100).toFixed(1)}%</span></div>
-        <div style={{ color: '#aaa' }}>cross-class avg: <span style={{ color: '#22c55e', fontWeight: 700 }}>{(crossAvg * 100).toFixed(1)}%</span></div>
-        <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #1a1a1a', color: '#555', fontSize: 11 }}>
-          {ocpDelta > 0.02
-            ? `cross-class is ${ocpPct.toFixed(0)}% more occupied → OCP confirmed`
-            : 'no strong OCP signal detected'}
-        </div>
+        {!isMobile && <div style={{ color: '#444', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>OCP signal</div>}
+        <div style={{ color: '#aaa' }}>same: <span style={{ color: '#ef4444', fontWeight: 700 }}>{(sameAvg * 100).toFixed(1)}%</span></div>
+        <div style={{ color: '#aaa' }}>cross: <span style={{ color: '#22c55e', fontWeight: 700 }}>{(crossAvg * 100).toFixed(1)}%</span></div>
+        {!isMobile && (
+          <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #1a1a1a', color: '#555', fontSize: 11 }}>
+            {ocpDelta > 0.02
+              ? `cross-class is ${ocpPct.toFixed(0)}% more occupied → OCP confirmed`
+              : 'no strong OCP signal detected'}
+          </div>
+        )}
       </div>
 
       {/* hover tooltip */}
       {hovered && matrix[hovered] && (
         <div style={{
-          position: 'absolute', bottom: 56, left: 16,
+          position: 'absolute', bottom: isMobile ? 42 : 56, left: 16,
           background: 'rgba(0,0,0,0.88)', border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: 8, padding: '10px 14px', fontSize: 13, lineHeight: 1.7, pointerEvents: 'none',
         }}>

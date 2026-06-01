@@ -50,7 +50,7 @@ export default function LeadershipChart({ data }) {
   const maxTotal = useMemo(() => Math.max(...radicals.map(r => r.total)), [radicals]);
   const n = radicals.length;
 
-  const m = { top: 8, right: 220, bottom: 8, left: 40 };
+  const m = { top: 8, right: w > 0 ? Math.min(200, Math.max(80, w - 260)) : 200, bottom: 8, left: 40 };
   const rowH    = Math.max(16, Math.min(28, Math.floor((h - m.top - m.bottom) / (n || 1))));
   const barZone = w - m.left - m.right;
   const halfW   = barZone * 0.45; // left half = leadership bar, right half = absolute bars

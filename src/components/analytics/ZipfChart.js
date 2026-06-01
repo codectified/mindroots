@@ -120,7 +120,8 @@ export default function ZipfChart({ data }) {
       <div style={{
         position: 'absolute', top: 12, right: 16,
         background: 'rgba(0,0,0,0.85)', border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 8, padding: '10px 14px', fontSize: 12, lineHeight: 1.9, minWidth: 100,
+        borderRadius: 8, padding: '8px 10px', fontSize: 11, lineHeight: 1.8,
+        maxWidth: 'calc(40% - 16px)',
       }}>
         <div style={{ color: '#444', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>power law fit</div>
         <div style={{ color: '#aaa' }}>slope: <span style={{ color: '#eab308', fontWeight: 700 }}>{slope.toFixed(2)}</span></div>

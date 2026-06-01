@@ -193,7 +193,7 @@ export default function Scatter3D({ data }) {
 
   return (
     <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <canvas ref={canvasRef} style={{ display: 'block', cursor: 'grab', touchAction: 'none' }} />
+      <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', cursor: 'grab', touchAction: 'none' }} />
       <div style={{ position: 'absolute', bottom: 12, left: 12, fontSize: 11, color: '#333', userSelect: 'none' }}>
         x = words · y = corpus · z = form diversity · color = gravity density (green→low, red→high)
       </div>
