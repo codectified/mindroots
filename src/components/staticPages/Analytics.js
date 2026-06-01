@@ -370,6 +370,10 @@ export default function Analytics() {
 
   const counts = biradicals.length;
   const totalRoots = biradicals.reduce((s, d) => s + d.root_count, 0);
+  const seenRadicals = new Set(biradicals.flatMap(d => d.pair_key.split('-').filter(Boolean))).size;
+  const totalPossible = seenRadicals > 0 ? seenRadicals * (seenRadicals - 1) : 0;
+  const avgRoots = counts > 0 ? (totalRoots / counts).toFixed(1) : '—';
+  const r3Coverage = counts > 0 ? `${((depths.length / counts) * 100).toFixed(0)}% of families` : '';
 
   return (
     <div style={{ width: '100%', height: '100%', background: '#0a0a0f', display: 'flex', flexDirection: 'column', color: '#fff', paddingBottom: 60 }}>
@@ -385,13 +389,12 @@ export default function Analytics() {
 
       {/* stats bar — single scrollable row */}
       {counts > 0 && (
-        <div style={{ display: 'flex', gap: 16, padding: '6px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
-          <Stat label="families"   value={counts}                                            color="#eab308" />
-          <Stat label="of 1,024"   value={`${((counts / 1024) * 100).toFixed(0)}%`}          color="#22c55e" />
-          <Stat label="unmapped"   value={(1024 - counts).toLocaleString()}                  color="#444"    />
-          <Stat label="roots"      value={totalRoots.toLocaleString()}                       color="#a855f7" />
-          <Stat label="r3 records" value={depths.length.toLocaleString()}                    color="#3b82f6" />
-          <Stat label="max r3"     value={depths[0]?.r3_count ?? '—'}                        color="#f97316" />
+        <div style={{ display: 'flex', gap: 18, padding: '6px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <Stat value={counts.toLocaleString()}       color="#eab308" label="r1-r2 families"      sub="bi-radical root clusters" />
+          <Stat value={totalPossible > 0 ? `${((counts / totalPossible) * 100).toFixed(0)}%` : '—'} color="#22c55e" label="of possible pairs" sub={`${seenRadicals} radicals → ${totalPossible} ordered pairs`} />
+          <Stat value={totalRoots.toLocaleString()}   color="#a855f7" label="tri-radical roots"   sub={`${avgRoots} per family avg`} />
+          <Stat value={depths.length.toLocaleString()} color="#3b82f6" label="r3 depth mapped"    sub={r3Coverage} />
+          <Stat value={depths[0]?.r3_count ?? '—'}   color="#f97316" label="max r3 variants"     sub="most 3rd-radical completions on one pair" />
         </div>
       )}
 
@@ -427,11 +430,12 @@ export default function Analytics() {
   );
 }
 
-function Stat({ label, value, color }) {
+function Stat({ label, value, color, sub }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column' }}>
-      <span style={{ color, fontSize: 15, fontWeight: 600, lineHeight: 1.2 }}>{value}</span>
-      <span style={{ color: '#333', fontSize: 11 }}>{label}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
+      <span style={{ color, fontSize: 14, fontWeight: 600, lineHeight: 1.2 }}>{value}</span>
+      <span style={{ color: '#555', fontSize: 10, lineHeight: 1.4 }}>{label}</span>
+      {sub && <span style={{ color: '#2d2d2d', fontSize: 9, lineHeight: 1.3 }}>{sub}</span>}
     </div>
   );
 }
