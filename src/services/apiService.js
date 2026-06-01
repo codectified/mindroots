@@ -763,3 +763,13 @@ export const fetchUniverseGraph = async () => {
   const response = await api.get('/universe/graph');
   return response.data;
 };
+
+export const fetchBiradicals = async () => {
+  const response = await api.get('/analytics/biradicals');
+  return response.data;
+};
+
+export const fetchRadicalPositions = async () => {
+  const response = await api.get('/analytics/radical-positions');
+  return response.data;
+};

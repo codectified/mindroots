@@ -31,6 +31,7 @@ const inspectionRoutes = require('./modules/inspection');
 const contentRoutes = require('./modules/content');
 const workspaceRoutes = require('./modules/workspace');
 const observabilityRoutes = require('./modules/observability');
+const analyticsRoutes     = require('./modules/analytics');
 
 // Mount modular route modules
 router.use('/', corpusRoutes);           // Corpus data operations
@@ -43,5 +44,6 @@ router.use('/', inspectionRoutes);       // Node inspection, navigation, and val
 router.use('/', contentRoutes);          // Articles and analyses content
 router.use('/', workspaceRoutes);        // Creative workspace module (Custom GPT integration)
 router.use('/', observabilityRoutes);    // Semantic observability layer (Neo4j → Notion)
+router.use('/', analyticsRoutes);        // Linguistic analytics (bi-radical, radical positions)
 
 module.exports = router;
