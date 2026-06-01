@@ -10,6 +10,7 @@ import OCPMatrix      from '../analytics/OCPMatrix';
 import DepthFertility from '../analytics/DepthFertility';
 import ZipfChart      from '../analytics/ZipfChart';
 import LeadershipChart from '../analytics/LeadershipChart';
+import DarkMatter      from '../analytics/DarkMatter';
 
 // ─── Chart 1 · Fertility vs Gravity ─────────────────────────────────────────
 
@@ -308,6 +309,22 @@ function EcologyChart({ data }) {
   );
 }
 
+// ─── Interpretive Reports ────────────────────────────────────────────────────
+
+const REPORTS = {
+  1:  '654 bi-radical families map the morphological genome of Arabic. Sacred cores (high gravity, low fertility) carry enormous textual weight from few words — the Quranic register. Civilizations (high in both) are the generative backbone: knowledge, movement, governance. The gap between gravity and fertility is not a diagonal but a split — most families specialize, not generalize.',
+  2:  'Each cell is a possible r1-r2 consonant pairing. Dark cells are absent — either OCP-forbidden (same phonological class, red-bordered axis) or phonotactically restricted. Some r1 consonants generate far more families than others, revealing that Arabic\'s morphological real estate is unevenly distributed across its consonant inventory.',
+  3:  'Arabic radicals are not positionally interchangeable. Some strongly prefer r1 (semantic initiators), others cluster in r2 (modifiers), a few specialize in r3 (completors). This positional specialization correlates with articulatory properties — gutturals and coronals behave differently, encoding phonological constraints into the morphological hierarchy itself.',
+  4:  'Adding form diversity (z-axis) separates two families that look identical in 2D: those producing many words but few morphological patterns vs those generating the full paradigmatic range. Color encodes gravity density — how corpus-heavy each word is on average. Red clusters are semantically dense: few words, each appearing many times. Green clusters are productive but light.',
+  5:  'r3 depth measures how far Arabic committed to each bi-radical core. A family with 20+ r3 completions has been extensively elaborated — the r1-r2 pair acts as a phonological attractor. The deepest families are Arabic\'s most generative morphological engines. Black cells are structurally absent; the dim zone is families that exist but weren\'t deeply explored.',
+  6:  'Radicals that pull to the center of the force graph are morphological hubs — dense participation in both r1 and r2 roles. Edge thickness encodes root count per pairing. Same-colored edges (same phonological class) should appear thinner and more peripheral — the OCP signal expressed as network topology rather than occupancy percentages.',
+  7:  'The Obligatory Contour Principle (McCarthy 1986) predicts same-class consonant pairs will be underrepresented in r1-r2 position. Diagonal cells (red border) show same-class occupancy; off-diagonal shows cross-class. If cross-class average substantially exceeds same-class, OCP operates at the articulatory class level — not just at identity (a radical paired with itself, which never appears).',
+  8:  'Structural depth (r3 diversity) and lexical fertility (word count) are genuinely independent morphological dimensions. Most families specialize: they go wide (many words from few patterns) or deep (few words from many consonantal variations), rarely both. Generative engines in the top-right are Arabic\'s most committed roots. Sprouts in the bottom-left are narrow, young, or phonotactically constrained.',
+  9:  'Corpus gravity across bi-radical families follows a steep power law. Top families (red dots) command orders-of-magnitude more textual presence than the long tail. A slope steeper than −1 means concentration exceeds classic Zipf — consistent with the heavy gravitational pull of Quranic vocabulary on the corpus: a small set of roots dominates everything.',
+  10: 'Leadership = r1 share of a radical\'s total root appearances. Above 45% → morphological initiator; below 25% → follower. Phonological class coloring tests whether leadership is articulatory: if gutturals systematically score low and coronals high, the phonology of the consonant itself may be driving its positional preference across the entire root system.',
+  11: 'The invisible lexical space: pairs of Arabic consonants that could form bi-radical families but don\'t. Gold (mystery) pairs are cross-class and phonologically permitted — the language could have gone there but didn\'t. Red (OCP) pairs are same-class, theoretically suppressed by articulatory constraint. The mystery pairs are the most interesting: some may exist in historical or dialectal Arabic, others may reveal deeper phonotactic laws not captured by the five-class model.',
+};
+
 // ─── Main Analytics Page ─────────────────────────────────────────────────────
 
 const CHARTS = [
@@ -319,8 +336,9 @@ const CHARTS = [
   { id: 6,  label: 'Radical Network'     },
   { id: 7,  label: 'OCP Matrix'          },
   { id: 8,  label: 'Depth × Fertility'   },
-  { id: 9,  label: 'Zipf'                },
+  { id: 9,  label: 'Zipf'               },
   { id: 10, label: 'Leadership'          },
+  { id: 11, label: 'Dark Matter'         },
 ];
 
 export default function Analytics() {
@@ -354,26 +372,26 @@ export default function Analytics() {
   const totalRoots = biradicals.reduce((s, d) => s + d.root_count, 0);
 
   return (
-    <div style={{ width: '100%', height: '100%', background: '#0a0a0f', display: 'flex', flexDirection: 'column', color: '#fff' }}>
-      {/* header */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, flexWrap: 'wrap', rowGap: 8 }}>
-        <span style={{ color: '#333', fontSize: 11, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Arabic Morphology</span>
-        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+    <div style={{ width: '100%', height: '100%', background: '#0a0a0f', display: 'flex', flexDirection: 'column', color: '#fff', paddingBottom: 60 }}>
+      {/* header — single scrollable row of tabs */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, minWidth: 0 }}>
+        <span style={{ color: '#333', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Morphology</span>
+        <div style={{ display: 'flex', gap: 5, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', minWidth: 0 }}>
           {CHARTS.map(c => (
-            <button key={c.id} style={tab(chart === c.id)} onClick={() => setChart(c.id)}>{c.label}</button>
+            <button key={c.id} style={{ ...tab(chart === c.id), flexShrink: 0 }} onClick={() => setChart(c.id)}>{c.label}</button>
           ))}
         </div>
       </div>
 
-      {/* stats bar */}
+      {/* stats bar — single scrollable row */}
       {counts > 0 && (
-        <div style={{ display: 'flex', gap: 20, padding: '8px 16px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0, flexWrap: 'wrap' }}>
-          <Stat label="bi-radical families"  value={counts}                                                color="#eab308" />
-          <Stat label="of 1,024 possible"    value={`${((counts / 1024) * 100).toFixed(0)}%`}             color="#22c55e" />
-          <Stat label="unmapped pairs"        value={(1024 - counts).toLocaleString()}                     color="#444" />
-          <Stat label="total roots"           value={totalRoots.toLocaleString()}                          color="#a855f7" />
-          <Stat label="r3 depth records"      value={depths.length.toLocaleString()}                       color="#3b82f6" />
-          <Stat label="max r3 completions"    value={depths[0]?.r3_count ?? '—'}                           color="#f97316" />
+        <div style={{ display: 'flex', gap: 16, padding: '6px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+          <Stat label="families"   value={counts}                                            color="#eab308" />
+          <Stat label="of 1,024"   value={`${((counts / 1024) * 100).toFixed(0)}%`}          color="#22c55e" />
+          <Stat label="unmapped"   value={(1024 - counts).toLocaleString()}                  color="#444"    />
+          <Stat label="roots"      value={totalRoots.toLocaleString()}                       color="#a855f7" />
+          <Stat label="r3 records" value={depths.length.toLocaleString()}                    color="#3b82f6" />
+          <Stat label="max r3"     value={depths[0]?.r3_count ?? '—'}                        color="#f97316" />
         </div>
       )}
 
@@ -391,7 +409,20 @@ export default function Analytics() {
         {!loading && !error && chart === 8  && <DepthFertility biradicals={biradicals} depths={depths} />}
         {!loading && !error && chart === 9  && <ZipfChart      data={biradicals} />}
         {!loading && !error && chart === 10 && <LeadershipChart data={positions} />}
+        {!loading && !error && chart === 11 && <DarkMatter      data={biradicals} />}
       </div>
+
+      {/* interpretive report strip */}
+      {!loading && !error && REPORTS[chart] && (
+        <div style={{
+          padding: '8px 14px',
+          borderTop: '1px solid rgba(255,255,255,0.04)',
+          fontSize: 11, color: '#444', lineHeight: 1.65,
+          flexShrink: 0,
+        }}>
+          {REPORTS[chart]}
+        </div>
+      )}
     </div>
   );
 }
