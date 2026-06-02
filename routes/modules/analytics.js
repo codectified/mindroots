@@ -1,5 +1,7 @@
 const express = require('express');
 const neo4j   = require('neo4j-driver');
+const fs      = require('fs');
+const path    = require('path');
 const router  = express.Router();
 
 const toNum = v => {
@@ -9,24 +11,43 @@ const toNum = v => {
   return Number(v);
 };
 
-// In-memory cache (avoids repeated expensive corpus traversals)
-const cache = new Map();
-const CACHE_TTL = 15 * 60 * 1000; // 15 minutes
+// ── Persistent disk cache ────────────────────────────────────────────────────
+// Survives server restarts. Stored alongside this module.
+const CACHE_FILE = path.join(__dirname, 'analytics-cache.json');
+const CACHE_TTL  = 24 * 60 * 60 * 1000; // 24 hours
+
+let cache = {};
+try {
+  const raw = fs.readFileSync(CACHE_FILE, 'utf8');
+  cache = JSON.parse(raw);
+  // prune stale entries on load
+  const now = Date.now();
+  Object.keys(cache).forEach(k => { if (now - cache[k].ts > CACHE_TTL) delete cache[k]; });
+  console.log(`[analytics] loaded ${Object.keys(cache).length} cache entries from disk`);
+} catch (_) {
+  // no cache file yet — start fresh
+}
+
+const saveCache = () => {
+  try { fs.writeFileSync(CACHE_FILE, JSON.stringify(cache)); } catch (_) {}
+};
 
 const cached = async (key, fn) => {
-  const hit = cache.get(key);
+  const hit = cache[key];
   if (hit && Date.now() - hit.ts < CACHE_TTL) return hit.data;
   const data = await fn();
-  cache.set(key, { data, ts: Date.now() });
+  cache[key] = { data, ts: Date.now() };
+  saveCache();
   return data;
 };
 
-// Graph traversal for corpus-filtered queries:
-//   (CorpusItem) -[:HAS_WORD]-> (Word) <-[:HAS_WORD]- (Root)
-//
-// Returns an optional surah WHERE clause to append after the base MATCH.
+// ── Query helpers ────────────────────────────────────────────────────────────
+// Graph traversal: (CorpusItem)-[:HAS_WORD]->(Word)<-[:HAS_WORD]-(Root)
+// surahFilter returns an AND clause for WHERE, or empty string.
 const surahFilter = (surah) =>
   surah ? `AND toInteger(split(ci.item_id, ':')[0]) = toInteger($surah)` : '';
+
+// ── Routes ───────────────────────────────────────────────────────────────────
 
 // GET /analytics/corpora
 router.get('/analytics/corpora', async (req, res) => {
@@ -99,6 +120,7 @@ router.get('/analytics/biradicals', async (req, res) => {
 });
 
 // GET /analytics/radical-positions[?corpus_id=2[&surah=36]]
+// Single traversal via UNWIND instead of 3× UNION ALL — 3× cheaper for corpus queries.
 router.get('/analytics/radical-positions', async (req, res) => {
   const { corpus_id, surah } = req.query;
   const session = req.driver.session();
@@ -107,24 +129,21 @@ router.get('/analytics/radical-positions', async (req, res) => {
     const data = await cached(cacheKey, async () => {
       let result;
       if (corpus_id) {
-        const sf = surahFilter(surah);
         result = await session.run(`
           MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
-          WHERE r.r1 IS NOT NULL ${sf}
-          WITH r.r1 AS radical, 'r1' AS position,
-               count(DISTINCT r) AS roots, count(DISTINCT w) AS words, count(w) AS corpus
-          RETURN radical, position, roots, words, corpus
-          UNION ALL
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
-          WHERE r.r2 IS NOT NULL ${sf}
-          WITH r.r2 AS radical, 'r2' AS position,
-               count(DISTINCT r) AS roots, count(DISTINCT w) AS words, count(w) AS corpus
-          RETURN radical, position, roots, words, corpus
-          UNION ALL
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
-          WHERE r.r3 IS NOT NULL ${sf}
-          WITH r.r3 AS radical, 'r3' AS position,
-               count(DISTINCT r) AS roots, count(DISTINCT w) AS words, count(w) AS corpus
+          WHERE (r.r1 IS NOT NULL OR r.r2 IS NOT NULL OR r.r3 IS NOT NULL) ${surahFilter(surah)}
+          WITH r, w, count(w) AS w_count
+          UNWIND [
+            CASE WHEN r.r1 IS NOT NULL THEN {rad: r.r1, pos: 'r1'} ELSE null END,
+            CASE WHEN r.r2 IS NOT NULL THEN {rad: r.r2, pos: 'r2'} ELSE null END,
+            CASE WHEN r.r3 IS NOT NULL THEN {rad: r.r3, pos: 'r3'} ELSE null END
+          ] AS rp
+          WHERE rp IS NOT NULL
+          WITH rp.rad AS radical, rp.pos AS position, r, w, w_count
+          WITH radical, position,
+               count(DISTINCT r) AS roots,
+               count(DISTINCT w) AS words,
+               sum(w_count)      AS corpus
           RETURN radical, position, roots, words, corpus
           ORDER BY radical
         `, { corpusId: corpus_id, surah: surah || null });
