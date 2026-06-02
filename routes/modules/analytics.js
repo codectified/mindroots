@@ -21,25 +21,12 @@ const cached = async (key, fn) => {
   return data;
 };
 
-// Corpus-filtered path:
-//   CorpusItem.root (Arabic, no diacritics) → Root.plain_root
-//   There is no HAS_ROOT relationship in the graph — join is via property.
+// Graph traversal for corpus-filtered queries:
+//   (CorpusItem) -[:HAS_WORD]-> (Word) <-[:HAS_WORD]- (Root)
 //
-// Returns cypher fragment that yields root_plain (string) and ci_count (int).
-// The outer query then does: MATCH (r:Root {plain_root: root_plain}) ...
-const corpusAggClause = (surah) => {
-  if (surah) {
-    return `
-      WITH ci, split(ci.item_id, ':') AS parts
-      WHERE toInteger(parts[0]) = toInteger($surah) AND ci.root IS NOT NULL
-      WITH ci.root AS root_plain, count(ci) AS ci_count
-    `;
-  }
-  return `
-    WHERE ci.root IS NOT NULL
-    WITH ci.root AS root_plain, count(ci) AS ci_count
-  `;
-};
+// Returns an optional surah WHERE clause to append after the base MATCH.
+const surahFilter = (surah) =>
+  surah ? `AND toInteger(split(ci.item_id, ':')[0]) = toInteger($surah)` : '';
 
 // GET /analytics/corpora
 router.get('/analytics/corpora', async (req, res) => {
@@ -73,16 +60,13 @@ router.get('/analytics/biradicals', async (req, res) => {
     const data = await cached(cacheKey, async () => {
       let result;
       if (corpus_id) {
-        const aggClause = corpusAggClause(surah);
         result = await session.run(`
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})
-          ${aggClause}
-          MATCH (r:Root {plain_root: root_plain})
-          WHERE r.r1 IS NOT NULL AND r.r2 IS NOT NULL
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
+          WHERE r.r1 IS NOT NULL AND r.r2 IS NOT NULL ${surahFilter(surah)}
           WITH r.r1 + '-' + r.r2 AS pair_key,
-               count(DISTINCT r)       AS root_count,
-               count(DISTINCT root_plain) AS total_words,
-               sum(ci_count)           AS total_corpus
+               count(DISTINCT r) AS root_count,
+               count(DISTINCT w) AS total_words,
+               count(w)          AS total_corpus
           RETURN pair_key, root_count, total_words, total_corpus
           ORDER BY total_corpus DESC
         `, { corpusId: corpus_id, surah: surah || null });
@@ -123,30 +107,24 @@ router.get('/analytics/radical-positions', async (req, res) => {
     const data = await cached(cacheKey, async () => {
       let result;
       if (corpus_id) {
-        const aggClause = corpusAggClause(surah);
+        const sf = surahFilter(surah);
         result = await session.run(`
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})
-          ${aggClause}
-          MATCH (r:Root {plain_root: root_plain})
-          WHERE r.r1 IS NOT NULL
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
+          WHERE r.r1 IS NOT NULL ${sf}
           WITH r.r1 AS radical, 'r1' AS position,
-               count(DISTINCT r) AS roots, count(DISTINCT root_plain) AS words, sum(ci_count) AS corpus
+               count(DISTINCT r) AS roots, count(DISTINCT w) AS words, count(w) AS corpus
           RETURN radical, position, roots, words, corpus
           UNION ALL
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})
-          ${aggClause}
-          MATCH (r:Root {plain_root: root_plain})
-          WHERE r.r2 IS NOT NULL
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
+          WHERE r.r2 IS NOT NULL ${sf}
           WITH r.r2 AS radical, 'r2' AS position,
-               count(DISTINCT r) AS roots, count(DISTINCT root_plain) AS words, sum(ci_count) AS corpus
+               count(DISTINCT r) AS roots, count(DISTINCT w) AS words, count(w) AS corpus
           RETURN radical, position, roots, words, corpus
           UNION ALL
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})
-          ${aggClause}
-          MATCH (r:Root {plain_root: root_plain})
-          WHERE r.r3 IS NOT NULL
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
+          WHERE r.r3 IS NOT NULL ${sf}
           WITH r.r3 AS radical, 'r3' AS position,
-               count(DISTINCT r) AS roots, count(DISTINCT root_plain) AS words, sum(ci_count) AS corpus
+               count(DISTINCT r) AS roots, count(DISTINCT w) AS words, count(w) AS corpus
           RETURN radical, position, roots, words, corpus
           ORDER BY radical
         `, { corpusId: corpus_id, surah: surah || null });
@@ -201,13 +179,9 @@ router.get('/analytics/r3-depth', async (req, res) => {
     const data = await cached(cacheKey, async () => {
       let result;
       if (corpus_id) {
-        const aggClause = corpusAggClause(surah);
         result = await session.run(`
-          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})
-          ${aggClause}
-          WITH DISTINCT root_plain
-          MATCH (r:Root {plain_root: root_plain})
-          WHERE r.r1 IS NOT NULL AND r.r2 IS NOT NULL AND r.r3 IS NOT NULL
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
+          WHERE r.r1 IS NOT NULL AND r.r2 IS NOT NULL AND r.r3 IS NOT NULL ${surahFilter(surah)}
           WITH r.r1 + '-' + r.r2 AS pair_key,
                count(DISTINCT r.r3)   AS r3_count,
                collect(DISTINCT r.r3) AS r3_values
