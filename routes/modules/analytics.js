@@ -140,7 +140,7 @@ router.get('/analytics/radical-positions', async (req, res) => {
             CASE WHEN r.r2 IS NOT NULL THEN {rad: r.r2, pos: 'r2'} ELSE null END,
             CASE WHEN r.r3 IS NOT NULL THEN {rad: r.r3, pos: 'r3'} ELSE null END
           ] AS rp
-          WHERE rp IS NOT NULL
+          WITH words, corpus, rp WHERE rp IS NOT NULL
           WITH rp.rad AS radical, rp.pos AS position, words, corpus
           WITH radical, position,
                count(*) AS roots,
