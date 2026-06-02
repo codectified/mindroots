@@ -61,19 +61,21 @@ export default function LeadershipChart({ data }) {
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       {/* controls */}
-      <div style={{ display: 'flex', gap: 8, padding: '10px 16px', flexShrink: 0, alignItems: 'center' }}>
-        <span style={{ color: '#444', fontSize: 11 }}>sort:</span>
-        {[['leadership', 'by leadership'], ['total', 'by total roots'], ['class', 'by class']].map(([key, label]) => (
-          <button key={key} onClick={() => setSortBy(key)} style={{
-            padding: '3px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
-            background: sortBy === key ? 'rgba(255,255,255,0.1)' : 'transparent',
-            border: '1px solid rgba(255,255,255,0.12)',
-            color: sortBy === key ? '#fff' : '#555',
-          }}>{label}</button>
-        ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 5, padding: '8px 14px', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
+          <span style={{ color: '#444', fontSize: 11, flexShrink: 0 }}>sort:</span>
+          {[['leadership', 'leadership score'], ['total', 'total roots'], ['class', 'phon. class']].map(([key, label]) => (
+            <button key={key} onClick={() => setSortBy(key)} style={{
+              padding: '3px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+              background: sortBy === key ? 'rgba(255,255,255,0.1)' : 'transparent',
+              border: '1px solid rgba(255,255,255,0.12)',
+              color: sortBy === key ? '#fff' : '#555',
+            }}>{label}</button>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
           {Object.entries(CLASS_META).map(([cls, meta]) => (
-            <span key={cls} style={{ fontSize: 10, color: meta.color, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span key={cls} style={{ fontSize: 10, color: meta.color, display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
               <span style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, display: 'inline-block' }} />
               {meta.label}
             </span>

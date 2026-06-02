@@ -23,8 +23,8 @@ const Layout = ({ children }) => {
     );
   }
 
-  // Universe — full-screen canvas, BottomNav floats on top
-  if (location.pathname === "/universe") {
+  // Full-screen views — BottomNav floats on top
+  if (location.pathname === "/universe" || location.pathname === "/analytics") {
     return (
       <>
         <div style={{ position: 'fixed', inset: 0 }}>

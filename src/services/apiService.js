@@ -764,17 +764,25 @@ export const fetchUniverseGraph = async () => {
   return response.data;
 };
 
-export const fetchBiradicals = async () => {
-  const response = await api.get('/analytics/biradicals');
+const buildParams = (corpusId, surah) => {
+  const p = new URLSearchParams();
+  if (corpusId && corpusId !== 'all') p.set('corpus_id', corpusId);
+  if (surah) p.set('surah', surah);
+  const s = p.toString();
+  return s ? `?${s}` : '';
+};
+
+export const fetchBiradicals = async (corpusId, surah) => {
+  const response = await api.get(`/analytics/biradicals${buildParams(corpusId, surah)}`);
   return response.data;
 };
 
-export const fetchRadicalPositions = async () => {
-  const response = await api.get('/analytics/radical-positions');
+export const fetchRadicalPositions = async (corpusId, surah) => {
+  const response = await api.get(`/analytics/radical-positions${buildParams(corpusId, surah)}`);
   return response.data;
 };
 
-export const fetchR3Depth = async () => {
-  const response = await api.get('/analytics/r3-depth');
+export const fetchR3Depth = async (corpusId, surah) => {
+  const response = await api.get(`/analytics/r3-depth${buildParams(corpusId, surah)}`);
   return response.data;
 };

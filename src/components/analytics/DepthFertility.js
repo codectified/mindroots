@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { PHON_CLASSES, CLASS_META } from './phonology';
 import { useSize } from './shared';
 
 // Depth × Fertility Scatter
@@ -27,7 +28,7 @@ export default function DepthFertility({ biradicals, depths }) {
 
   const m = { top: 40, right: 40, bottom: 60, left: 60 };
 
-  const { joined, xScale, yScale, rScale, colorScale } = useMemo(() => {
+  const { joined, xScale, yScale, rScale } = useMemo(() => {
     const depthMap = {};
     depths.forEach(d => { depthMap[d.pair_key] = d.r3_count; });
 
@@ -47,10 +48,7 @@ export default function DepthFertility({ biradicals, depths }) {
       .domain([0, d3.max(j, d => d.root_count) || 1])
       .range([3, 16]);
 
-    const cs = d3.scaleSequential(d3.interpolate('#1a0a2e', '#a855f7'))
-      .domain([0, Math.log1p(d3.max(j, d => d.total_corpus) || 1)]);
-
-    return { joined: j, xScale: xs, yScale: ys, rScale: rs, colorScale: cs };
+    return { joined: j, xScale: xs, yScale: ys, rScale: rs };
   }, [biradicals, depths, w, h]); // eslint-disable-line
 
   const outliers = useMemo(() => {
@@ -109,7 +107,7 @@ export default function DepthFertility({ biradicals, depths }) {
           const r  = rScale(d.root_count);
           const isOut = outliers.has(d.pair_key);
           const isHov = hovered?.pair_key === d.pair_key;
-          const col   = colorScale(Math.log1p(d.total_corpus));
+          const col   = PHON_CLASSES[d.pair_key.split('-')[0]]?.color || '#666';
           return (
             <g key={d.pair_key}
               onMouseEnter={() => setHovered(d)}
@@ -117,9 +115,9 @@ export default function DepthFertility({ biradicals, depths }) {
               style={{ cursor: 'default' }}>
               <circle cx={cx} cy={cy} r={r}
                 fill={isHov ? '#fff' : col}
-                stroke={isOut ? '#eab308' : isHov ? '#fff' : 'none'}
+                stroke={isOut ? '#fff' : 'none'}
                 strokeWidth={1.5}
-                opacity={isHov ? 1 : 0.8}
+                opacity={isHov ? 1 : 0.65}
               />
               {isOut && (
                 <text x={cx} y={cy - r - 4} textAnchor="middle"
@@ -139,7 +137,8 @@ export default function DepthFertility({ biradicals, depths }) {
           background: 'rgba(0,0,0,0.88)', border: '1px solid rgba(255,255,255,0.1)',
           borderRadius: 8, padding: '10px 14px', fontSize: 13, lineHeight: 1.75,
         }}>
-          <div style={{ fontSize: 20, fontFamily: 'serif', color: '#a855f7', marginBottom: 4 }}>{hovered.pair_key}</div>
+          <div style={{ fontSize: 20, fontFamily: 'serif', color: PHON_CLASSES[hovered.pair_key.split('-')[0]]?.color || '#a855f7', marginBottom: 4 }}>{hovered.pair_key}</div>
+          <div style={{ color: '#444', fontSize: 10, marginBottom: 4 }}>{PHON_CLASSES[hovered.pair_key.split('-')[0]]?.class} r1 · {PHON_CLASSES[hovered.pair_key.split('-')[1]]?.class} r2</div>
           <div style={{ color: '#aaa' }}>words: <span style={{ color: '#22c55e' }}>{hovered.total_words.toLocaleString()}</span></div>
           <div style={{ color: '#aaa' }}>r3 depth: <span style={{ color: '#a855f7', fontWeight: 700 }}>{hovered.r3_count}</span><span style={{ color: '#444' }}> / 28</span></div>
           <div style={{ color: '#aaa' }}>roots: <span style={{ color: '#fff' }}>{hovered.root_count}</span></div>
@@ -147,14 +146,18 @@ export default function DepthFertility({ biradicals, depths }) {
         </div>
       )}
 
-      {/* color legend */}
-      <div style={{ position: 'absolute', bottom: 16, right: 16, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ color: '#333', fontSize: 10 }}>low corpus</span>
-        <svg width={60} height={8}>
-          <defs><linearGradient id="df-g"><stop offset="0%" stopColor="#1a0a2e" /><stop offset="100%" stopColor="#a855f7" /></linearGradient></defs>
-          <rect width={60} height={8} rx={2} fill="url(#df-g)" />
-        </svg>
-        <span style={{ color: '#555', fontSize: 10 }}>high corpus</span>
+      {/* class legend */}
+      <div style={{ position: 'absolute', bottom: 16, right: 16, display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {Object.entries(CLASS_META).map(([cls, meta]) => (
+          <span key={cls} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: meta.color }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, display: 'inline-block', flexShrink: 0 }} />
+            {meta.label} <span style={{ color: '#333', fontSize: 9 }}>(r1)</span>
+          </span>
+        ))}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#555', marginTop: 2 }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid #fff', display: 'inline-block', flexShrink: 0 }} />
+          outlier
+        </span>
       </div>
     </div>
   );

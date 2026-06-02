@@ -24,12 +24,12 @@ export default function Scatter3D({ data }) {
     const s         = stateRef.current;
 
     // ── data prep ───────────────────────────────────────────────
-    const valid = data.filter(d => d.total_words > 0 && d.total_corpus > 0 && d.avg_forms > 0);
+    const valid = data.filter(d => d.total_words > 0 && d.total_corpus > 0);
 
-    // log-transform skewed axes, linear for form diversity
+    // log-transform all three axes (all are heavily skewed)
     const lw = valid.map(d => Math.log1p(d.total_words));
     const lc = valid.map(d => Math.log1p(d.total_corpus));
-    const af = valid.map(d => d.avg_forms);
+    const lr = valid.map(d => Math.log1p(d.root_count));
 
     const norm = (arr, scale) => {
       const lo = Math.min(...arr), hi = Math.max(...arr);
@@ -39,12 +39,15 @@ export default function Scatter3D({ data }) {
 
     const xs = norm(lw, 160);
     const ys = norm(lc, 160);
-    const zs = norm(af,  80);
+    const zs = norm(lr,  80);
 
-    const ratios   = valid.map(d => d.total_corpus / Math.max(d.total_words, 1));
-    const maxRatio = Math.max(...ratios);
-    const colorFn  = d3.scaleSequential(d3.interpolateRdYlGn).domain([maxRatio, 0]);
-    const rScale   = d3.scaleSqrt()
+    // Color by corpus/word ratio, but use percentile clamping so colors spread evenly
+    const ratios = valid.map(d => d.total_corpus / Math.max(d.total_words, 1));
+    ratios.sort((a, b) => a - b);
+    const p10 = ratios[Math.floor(ratios.length * 0.10)];
+    const p90 = ratios[Math.floor(ratios.length * 0.90)];
+    const colorFn = d3.scaleSequential(d3.interpolateRdYlGn).domain([p90, p10]);
+    const rScale  = d3.scaleSqrt()
       .domain([0, Math.max(...valid.map(d => d.root_count))])
       .range([2, 10]);
 
@@ -79,9 +82,9 @@ export default function Scatter3D({ data }) {
 
     // axis endpoints
     const AXES = [
-      { end: [200, 0, 0],  label: 'words',   color: '#2d4a2d' },
-      { end: [0, -200, 0], label: 'corpus',  color: '#4a2d2d' },
-      { end: [0, 0, 200],  label: 'forms',   color: '#2d2d4a' },
+      { end: [200, 0, 0],  label: 'words',        color: '#2d4a2d' },
+      { end: [0, -200, 0], label: 'corpus',       color: '#4a2d2d' },
+      { end: [0, 0, 200],  label: 'family size',  color: '#2d2d4a' },
     ];
 
     const draw = () => {
@@ -192,14 +195,14 @@ export default function Scatter3D({ data }) {
   }, [data]);
 
   return (
-    <div ref={containerRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
+    <div ref={containerRef} style={{ position: 'absolute', inset: 0 }}>
       <canvas ref={canvasRef} style={{ display: 'block', width: '100%', height: '100%', cursor: 'grab', touchAction: 'none' }} />
       <div style={{ position: 'absolute', bottom: 12, left: 12, fontSize: 11, color: '#333', userSelect: 'none' }}>
-        x = words · y = corpus · z = form diversity · color = gravity density (green→low, red→high)
+        x = words · y = corpus · z = family size (roots) · color = corpus-per-word ratio
       </div>
       {/* color legend */}
       <div style={{ position: 'absolute', top: 12, right: 12, display: 'flex', alignItems: 'center', gap: 6 }}>
-        <span style={{ color: '#444', fontSize: 11 }}>low density</span>
+        <span style={{ color: '#444', fontSize: 11 }}>low ratio</span>
         <svg width={80} height={10}>
           <defs>
             <linearGradient id="s3d-grad">
@@ -210,7 +213,7 @@ export default function Scatter3D({ data }) {
           </defs>
           <rect width={80} height={10} rx={3} fill="url(#s3d-grad)" />
         </svg>
-        <span style={{ color: '#444', fontSize: 11 }}>high density</span>
+        <span style={{ color: '#444', fontSize: 11 }}>high ratio</span>
       </div>
     </div>
   );

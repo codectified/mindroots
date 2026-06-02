@@ -1,150 +1,155 @@
 import { useMemo, useRef, useState } from 'react';
 import * as d3 from 'd3';
+import { PHON_CLASSES } from './phonology';
 import { useSize } from './shared';
 
-// Zipf Distribution of Bi-Radical Families by Corpus Gravity
+// Ranked Corpus Distribution
 //
-// Sorts all 654 families by total_corpus descending and plots:
-//   x = log(rank)   — position in the sorted list
-//   y = log(corpus) — corpus gravity
+// Shows the top bi-radical families sorted by corpus gravity (descending).
+// The steep drop-off from left to right is the Zipf distribution in Arabic:
+// a small number of root families dominate the vast majority of textual usage.
 //
-// A straight line on log-log = power law (Zipfian distribution).
-// Slope is computed via linear regression. Zipf's law for word
-// frequencies predicts slope ≈ -1. A steeper slope means gravity
-// is MORE concentrated (a few families dominate everything).
-// A shallower slope means more even distribution.
+// This is not a statistical curiosity — it reflects real linguistic structure.
+// The top families are the semantic cores of Classical Arabic: existence,
+// knowledge, speech, movement, divine action. Everything else is periphery.
 //
-// The "elbow" where the curve breaks from the line is the transition
-// between dominant families and the long tail.
+// Color = phonological class of r1 consonant.
+// Toggle to log scale to see the power-law curve that underlies the distribution.
 
 export default function ZipfChart({ data }) {
   const wrapRef = useRef();
   const { w, h } = useSize(wrapRef);
   const [hovered, setHovered] = useState(null);
+  const [logScale, setLogScale] = useState(false);
+  const [showN, setShowN] = useState(40);
 
-  const m = { top: 40, right: 120, bottom: 60, left: 70 };
-
-  const { sorted, slope, intercept, r2, xScale, yScale, topN } = useMemo(() => {
-    const s = [...data]
-      .filter(d => d.total_corpus > 0)
+  const sorted = useMemo(() =>
+    [...data].filter(d => d.total_corpus > 0)
       .sort((a, b) => b.total_corpus - a.total_corpus)
-      .map((d, i) => ({ ...d, rank: i + 1 }));
+      .slice(0, showN)
+      .map((d, i) => ({
+        ...d,
+        rank: i + 1,
+        r1: d.pair_key.split('-')[0],
+        color: PHON_CLASSES[d.pair_key.split('-')[0]]?.color || '#666',
+      })),
+    [data, showN]);
 
-    // Linear regression on log(rank) vs log(corpus)
-    const xs = s.map(d => Math.log10(d.rank));
-    const ys = s.map(d => Math.log10(d.total_corpus));
-    const n  = s.length;
-    const mx = xs.reduce((a, v) => a + v, 0) / n;
-    const my = ys.reduce((a, v) => a + v, 0) / n;
-    const num = xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0);
-    const den = xs.reduce((a, x) => a + (x - mx) ** 2, 0);
-    const sl  = den > 0 ? num / den : 0;
-    const ic  = my - sl * mx;
+  const top5corpus = useMemo(() => sorted.slice(0, 5).reduce((s, d) => s + d.total_corpus, 0), [sorted]);
+  const totalCorpus = useMemo(() => data.reduce((s, d) => s + d.total_corpus, 0), [data]);
+  const top5pct = totalCorpus > 0 ? ((top5corpus / totalCorpus) * 100).toFixed(0) : '—';
 
-    // R²
-    const ssTot = ys.reduce((a, y) => a + (y - my) ** 2, 0);
-    const ssRes = ys.reduce((a, y, i) => a + (y - (sl * xs[i] + ic)) ** 2, 0);
-    const r2Val = ssTot > 0 ? 1 - ssRes / ssTot : 0;
+  const pad = { top: 12, right: 8, bottom: 48, left: 48 };
+  const innerW = Math.max(0, w - pad.left - pad.right);
+  const innerH = Math.max(0, h - pad.top - pad.bottom - 52); // 52 = stats strip + controls
 
-    const xS = d3.scaleLog().domain([1, s.length]).range([m.left, w - m.right]).nice();
-    const yS = d3.scaleLog()
-      .domain([Math.max(1, d3.min(s, d => d.total_corpus)), d3.max(s, d => d.total_corpus)])
-      .range([h - m.bottom, m.top]).nice();
+  const maxCorpus = sorted.length ? sorted[0].total_corpus : 1;
+  const xScale = useMemo(() => {
+    if (!innerW || !sorted.length) return null;
+    const domain = logScale
+      ? [sorted[sorted.length - 1]?.total_corpus || 1, maxCorpus]
+      : [0, maxCorpus];
+    return logScale
+      ? d3.scaleLog().domain(domain).range([0, innerW]).nice()
+      : d3.scaleLinear().domain(domain).range([0, innerW]);
+  }, [sorted, innerW, logScale, maxCorpus]);
 
-    return { sorted: s, slope: sl, intercept: ic, r2: r2Val, xScale: xS, yScale: yS, topN: s.slice(0, 12) };
-  }, [data, w, h]); // eslint-disable-line
-
-  // Fit line endpoints
-  const fitLine = xScale ? [
-    { x: xScale.domain()[0], y: 10 ** (slope * Math.log10(xScale.domain()[0]) + intercept) },
-    { x: xScale.domain()[1], y: 10 ** (slope * Math.log10(xScale.domain()[1]) + intercept) },
-  ] : [];
-
-  const topKeys = new Set(topN.map(d => d.pair_key));
+  const barH = sorted.length ? Math.max(6, Math.min(20, Math.floor(innerH / sorted.length) - 1)) : 12;
 
   return (
-    <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg width={w} height={h} style={{ display: 'block' }}>
-        {/* regression line */}
-        {fitLine.length === 2 && (
-          <line
-            x1={xScale(fitLine[0].x)} y1={yScale(Math.max(yScale.domain()[0], fitLine[0].y))}
-            x2={xScale(fitLine[1].x)} y2={yScale(Math.max(yScale.domain()[0], fitLine[1].y))}
-            stroke="rgba(234,179,8,0.25)" strokeWidth={1.5} strokeDasharray="6 4"
-          />
-        )}
+    <div ref={wrapRef} style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
 
-        {/* x axis */}
-        {xScale && xScale.ticks(6).map(t => (
-          <g key={t} transform={`translate(${xScale(t)},${h - m.bottom})`}>
-            <line y2={5} stroke="rgba(255,255,255,0.15)" />
-            <text y={17} textAnchor="middle" fill="#444" fontSize={10}>{t}</text>
-          </g>
-        ))}
-        <text x={(m.left + w - m.right) / 2} y={h - 8} textAnchor="middle" fill="#444" fontSize={11}>rank (log scale)</text>
-
-        {/* y axis */}
-        {yScale && yScale.ticks(5).map(t => (
-          <g key={t} transform={`translate(${m.left},${yScale(t)})`}>
-            <line x2={-5} stroke="rgba(255,255,255,0.15)" />
-            <text x={-10} dy="0.35em" textAnchor="end" fill="#444" fontSize={10}>{d3.format('~s')(t)}</text>
-          </g>
-        ))}
-        <text transform={`translate(14,${(m.top + h - m.bottom) / 2}) rotate(-90)`} textAnchor="middle" fill="#444" fontSize={11}>corpus gravity (log scale)</text>
-
-        {/* dots */}
-        {xScale && yScale && sorted.map(d => {
-          const cx   = xScale(d.rank);
-          const rawY = d.total_corpus;
-          if (rawY < yScale.domain()[0]) return null;
-          const cy   = yScale(rawY);
-          const isTop = topKeys.has(d.pair_key);
-          const isHov = hovered?.pair_key === d.pair_key;
-          return (
-            <g key={d.pair_key}
-              onMouseEnter={() => setHovered(d)}
-              onMouseLeave={() => setHovered(null)}>
-              <circle cx={cx} cy={cy} r={isTop ? 5 : 3}
-                fill={isHov ? '#fff' : isTop ? '#ef4444' : 'rgba(168,85,247,0.6)'}
-                stroke={isTop ? '#ef4444' : 'none'} strokeWidth={1}
-              />
-              {isTop && (
-                <text x={cx + 7} y={cy + 3} fill="#ef4444" fontSize={10} style={{ fontFamily: 'serif', direction: 'rtl' }}>{d.pair_key}</text>
-              )}
-            </g>
-          );
-        })}
-      </svg>
-
-      {/* stats panel */}
-      <div style={{
-        position: 'absolute', top: 12, right: 16,
-        background: 'rgba(0,0,0,0.85)', border: '1px solid rgba(255,255,255,0.08)',
-        borderRadius: 8, padding: '8px 10px', fontSize: 11, lineHeight: 1.8,
-        maxWidth: 'calc(40% - 16px)',
-      }}>
-        <div style={{ color: '#444', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 4 }}>power law fit</div>
-        <div style={{ color: '#aaa' }}>slope: <span style={{ color: '#eab308', fontWeight: 700 }}>{slope.toFixed(2)}</span></div>
-        <div style={{ color: '#aaa' }}>R²: <span style={{ color: '#22c55e', fontWeight: 700 }}>{(r2 * 100).toFixed(0)}%</span></div>
-        <div style={{ marginTop: 6, paddingTop: 6, borderTop: '1px solid #1a1a1a', color: '#555', fontSize: 10, lineHeight: 1.6 }}>
-          Zipf law: slope = −1<br />
-          {Math.abs(slope) > 1.1 ? 'steeper → more concentrated' : Math.abs(slope) < 0.9 ? 'shallower → more even' : 'near Zipfian'}
-        </div>
+      {/* summary callout */}
+      <div style={{ padding: '8px 14px', flexShrink: 0, borderBottom: '1px solid rgba(255,255,255,0.04)', display: 'flex', gap: 20, alignItems: 'baseline', flexWrap: 'wrap' }}>
+        <span style={{ color: '#eab308', fontWeight: 700, fontSize: 14 }}>Top 5 = {top5pct}% of corpus</span>
+        <span style={{ color: '#333', fontSize: 11 }}>The most-used root families dominate usage by orders of magnitude. Everything else is the long tail.</span>
       </div>
 
-      {/* hover tooltip */}
-      {hovered && (
-        <div style={{
-          position: 'absolute', bottom: 56, left: 16, pointerEvents: 'none',
-          background: 'rgba(0,0,0,0.88)', border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: 8, padding: '10px 14px', fontSize: 13, lineHeight: 1.75,
-        }}>
-          <div style={{ fontSize: 18, fontFamily: 'serif', color: '#a855f7', marginBottom: 4 }}>{hovered.pair_key}</div>
-          <div style={{ color: '#aaa' }}>rank: <span style={{ color: '#fff' }}>#{hovered.rank}</span></div>
-          <div style={{ color: '#aaa' }}>corpus: <span style={{ color: '#ef4444' }}>{hovered.total_corpus.toLocaleString()}</span></div>
-          <div style={{ color: '#aaa' }}>words: <span style={{ color: '#22c55e' }}>{hovered.total_words.toLocaleString()}</span></div>
-        </div>
-      )}
+      {/* controls */}
+      <div style={{ display: 'flex', gap: 8, padding: '6px 14px', flexShrink: 0, alignItems: 'center', flexWrap: 'wrap' }}>
+        <span style={{ color: '#444', fontSize: 11 }}>show top:</span>
+        {[20, 40, 80].map(n => (
+          <button key={n} onClick={() => setShowN(n)} style={{
+            padding: '2px 8px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
+            background: showN === n ? 'rgba(255,255,255,0.1)' : 'transparent',
+            border: '1px solid rgba(255,255,255,0.12)', color: showN === n ? '#fff' : '#555',
+          }}>{n}</button>
+        ))}
+        <button onClick={() => setLogScale(s => !s)} style={{
+          marginLeft: 8, padding: '2px 8px', borderRadius: 5, fontSize: 11, cursor: 'pointer',
+          background: logScale ? 'rgba(234,179,8,0.15)' : 'transparent',
+          border: `1px solid ${logScale ? '#eab308' : 'rgba(255,255,255,0.12)'}`,
+          color: logScale ? '#eab308' : '#555',
+        }}>log scale</button>
+      </div>
+
+      {/* chart */}
+      <div style={{ flex: 1, overflow: 'auto', position: 'relative', minHeight: 0 }}>
+        <svg width={w} height={pad.top + sorted.length * (barH + 1) + pad.bottom} style={{ display: 'block' }}>
+          {/* x axis ticks */}
+          {xScale && xScale.ticks(4).map(t => {
+            const x = pad.left + xScale(t);
+            return (
+              <g key={t} transform={`translate(${x},${pad.top + sorted.length * (barH + 1)})`}>
+                <line y2={5} stroke="rgba(255,255,255,0.1)" />
+                <text y={16} textAnchor="middle" fill="#333" fontSize={9}>{d3.format('~s')(t)}</text>
+              </g>
+            );
+          })}
+          <text x={pad.left + innerW / 2} y={pad.top + sorted.length * (barH + 1) + 34}
+            textAnchor="middle" fill="#333" fontSize={10}>corpus occurrences</text>
+
+          {/* bars */}
+          {xScale && sorted.map((d, i) => {
+            const barW = Math.max(1, xScale(d.total_corpus) - (logScale ? xScale(xScale.domain()[0]) : 0));
+            const y = pad.top + i * (barH + 1);
+            const isHov = hovered?.pair_key === d.pair_key;
+            return (
+              <g key={d.pair_key}
+                onMouseEnter={() => setHovered(d)}
+                onMouseLeave={() => setHovered(null)}>
+                {isHov && <rect x={0} y={y} width={w} height={barH + 1} fill="rgba(255,255,255,0.025)" />}
+                {/* rank label */}
+                <text x={pad.left - 4} y={y + barH / 2} textAnchor="end" dominantBaseline="middle"
+                  fill="#222" fontSize={8}>{d.rank}</text>
+                {/* bar */}
+                <rect x={pad.left} y={y} width={barW} height={barH}
+                  fill={d.color} opacity={isHov ? 1 : 0.7} rx={1} />
+                {/* Arabic label */}
+                <text x={pad.left + barW + 4} y={y + barH / 2} dominantBaseline="middle"
+                  fill={isHov ? '#fff' : d.color} fontSize={Math.min(barH, 11)}
+                  fontFamily="serif" direction="rtl">
+                  {d.pair_key}
+                </text>
+                {/* corpus value on wider bars */}
+                {barW > 60 && (
+                  <text x={pad.left + barW - 4} y={y + barH / 2} textAnchor="end" dominantBaseline="middle"
+                    fill="rgba(0,0,0,0.5)" fontSize={8}>
+                    {d3.format('~s')(d.total_corpus)}
+                  </text>
+                )}
+              </g>
+            );
+          })}
+        </svg>
+
+        {/* hover detail */}
+        {hovered && (
+          <div style={{
+            position: 'absolute', top: 8, right: 8, pointerEvents: 'none',
+            background: 'rgba(0,0,0,0.9)', border: '1px solid rgba(255,255,255,0.1)',
+            borderRadius: 8, padding: '10px 14px', fontSize: 12, lineHeight: 1.8,
+          }}>
+            <div style={{ fontSize: 20, fontFamily: 'serif', color: hovered.color, marginBottom: 4 }}>{hovered.pair_key}</div>
+            <div style={{ color: '#aaa' }}>rank: <span style={{ color: '#fff' }}>#{hovered.rank}</span></div>
+            <div style={{ color: '#aaa' }}>corpus: <span style={{ color: '#eab308', fontWeight: 700 }}>{hovered.total_corpus.toLocaleString()}</span></div>
+            <div style={{ color: '#aaa' }}>words: <span style={{ color: '#22c55e' }}>{hovered.total_words.toLocaleString()}</span></div>
+            <div style={{ color: '#aaa' }}>share: <span style={{ color: '#a855f7' }}>
+              {totalCorpus > 0 ? ((hovered.total_corpus / totalCorpus) * 100).toFixed(2) : '—'}%
+            </span></div>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

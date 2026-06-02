@@ -1,6 +1,6 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import * as d3 from 'd3';
-import { fetchBiradicals, fetchRadicalPositions, fetchR3Depth } from '../../services/apiService';
+import { fetchBiradicals, fetchRadicalPositions, fetchR3Depth, fetchCorpora } from '../../services/apiService';
 import { useSize } from '../analytics/shared';
 import { PHON_CLASSES, CLASS_META, sameClass } from '../analytics/phonology';
 import Scatter3D      from '../analytics/Scatter3D';
@@ -11,6 +11,9 @@ import DepthFertility from '../analytics/DepthFertility';
 import ZipfChart      from '../analytics/ZipfChart';
 import LeadershipChart from '../analytics/LeadershipChart';
 import DarkMatter      from '../analytics/DarkMatter';
+import Depth3D              from '../analytics/Depth3D';
+import DirectionalityChart  from '../analytics/DirectionalityChart';
+import RadicalGravity        from '../analytics/RadicalGravity';
 
 // ─── Chart 1 · Fertility vs Gravity ─────────────────────────────────────────
 
@@ -66,24 +69,44 @@ function ScatterChart({ data }) {
         ))}
         <text transform={`translate(16,${(m.top + h - m.bottom) / 2}) rotate(-90)`} textAnchor="middle" fill="#444" fontSize={12}>corpus gravity (occurrences)</text>
         {filtered.map(d => {
+          const r1 = d.pair_key.split('-')[0];
+          const clsColor = PHON_CLASSES[r1]?.color || '#666';
           const cx = xScale(d.total_words), cy = yScale(d.total_corpus);
           const r  = rScale(d.root_count);
           const isOut = outliers.has(d.pair_key), isHov = hovered?.pair_key === d.pair_key;
           return (
             <g key={d.pair_key} onMouseEnter={() => setHovered(d)} onMouseLeave={() => setHovered(null)} style={{ cursor: 'default' }}>
-              <circle cx={cx} cy={cy} r={r} fill={isHov ? '#fff' : isOut ? '#eab308' : 'rgba(34,197,94,0.6)'} stroke={isHov || isOut ? (isHov ? '#fff' : '#eab308') : 'none'} strokeWidth={1} />
-              {isOut && <text x={cx} y={cy - r - 4} textAnchor="middle" fill="#eab308" fontSize={11} style={{ fontFamily: 'serif', direction: 'rtl' }}>{d.pair_key}</text>}
+              <circle cx={cx} cy={cy} r={r}
+                fill={isHov ? '#fff' : clsColor}
+                stroke={isOut ? '#fff' : 'none'} strokeWidth={1.5}
+                opacity={isHov ? 1 : 0.65} />
+              {isOut && <text x={cx} y={cy - r - 4} textAnchor="middle" fill={clsColor} fontSize={10} style={{ fontFamily: 'serif', direction: 'rtl' }}>{d.pair_key}</text>}
             </g>
           );
         })}
       </svg>
+      {/* class legend */}
+      <div style={{ position: 'absolute', bottom: 44, right: 10, display: 'flex', flexDirection: 'column', gap: 3 }}>
+        {Object.entries(CLASS_META).map(([cls, meta]) => (
+          <span key={cls} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: meta.color }}>
+            <span style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, display: 'inline-block', flexShrink: 0 }} />
+            {meta.label} <span style={{ color: '#333', fontSize: 9 }}>(r1)</span>
+          </span>
+        ))}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#555' }}>
+          <span style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid #fff', display: 'inline-block', flexShrink: 0 }} />
+          notable
+        </span>
+        <span style={{ color: '#222', fontSize: 9, marginTop: 2 }}>size = root count</span>
+      </div>
       {hovered && (
-        <div style={{ position: 'absolute', top: 16, right: 16, background: 'rgba(0,0,0,0.85)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', fontSize: 13, lineHeight: 1.7, pointerEvents: 'none' }}>
-          <div style={{ fontSize: 20, fontFamily: 'serif', direction: 'rtl', color: '#eab308', marginBottom: 4 }}>{hovered.pair_key}</div>
+        <div style={{ position: 'absolute', top: 16, left: 16, background: 'rgba(0,0,0,0.88)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', fontSize: 13, lineHeight: 1.7, pointerEvents: 'none' }}>
+          <div style={{ fontSize: 20, fontFamily: 'serif', direction: 'rtl', color: PHON_CLASSES[hovered.pair_key.split('-')[0]]?.color || '#eab308', marginBottom: 2 }}>{hovered.pair_key}</div>
+          <div style={{ color: '#444', fontSize: 10, marginBottom: 6 }}>{PHON_CLASSES[hovered.pair_key.split('-')[0]]?.class} r1 · {PHON_CLASSES[hovered.pair_key.split('-')[1]]?.class} r2</div>
           <div style={{ color: '#aaa' }}>roots: <span style={{ color: '#fff' }}>{hovered.root_count}</span></div>
           <div style={{ color: '#aaa' }}>words: <span style={{ color: '#22c55e' }}>{hovered.total_words.toLocaleString()}</span></div>
           <div style={{ color: '#aaa' }}>corpus: <span style={{ color: '#ef4444' }}>{hovered.total_corpus.toLocaleString()}</span></div>
-          <div style={{ color: '#aaa' }}>gravity/word: <span style={{ color: '#a855f7' }}>{(hovered.total_corpus / Math.max(hovered.total_words, 1)).toFixed(1)}×</span></div>
+          <div style={{ color: '#aaa' }}>corpus/word: <span style={{ color: '#a855f7' }}>{(hovered.total_corpus / Math.max(hovered.total_words, 1)).toFixed(1)}×</span></div>
         </div>
       )}
     </div>
@@ -238,6 +261,7 @@ function EcologyChart({ data }) {
   const wrapRef = useRef();
   const { w, h } = useSize(wrapRef);
   const [metric, setMetric] = useState('roots');
+  const [posFilter, setPosFilter] = useState('all');
   const [hovered, setHovered] = useState(null);
 
   const { radicals, grouped, maxVal } = useMemo(() => {
@@ -246,52 +270,72 @@ function EcologyChart({ data }) {
       if (!g[d.radical]) g[d.radical] = { r1: 0, r2: 0, r3: 0 };
       g[d.radical][d.position] = d[metric];
     });
-    const rads = Object.keys(g).sort();
-    const mv   = d3.max(rads, r => Math.max(g[r].r1, g[r].r2, g[r].r3)) || 1;
+    let rads = Object.keys(g);
+    if (posFilter === 'all') {
+      rads = rads.sort();
+    } else {
+      rads = rads.sort((a, b) => (g[b]?.[posFilter] || 0) - (g[a]?.[posFilter] || 0));
+    }
+    const mv = posFilter === 'all'
+      ? d3.max(rads, r => Math.max(g[r].r1, g[r].r2, g[r].r3)) || 1
+      : d3.max(rads, r => g[r][posFilter] || 0) || 1;
     return { radicals: rads, grouped: g, maxVal: mv };
-  }, [data, metric]);
+  }, [data, metric, posFilter]);
 
-  const m = { top: 8, right: 16, bottom: 8, left: 36 };
-  const rowH   = Math.max(14, Math.min(24, Math.floor((h - m.top - m.bottom) / (radicals.length || 1))));
-  const barH   = Math.floor(rowH * 0.28);
-  const barGap = 2;
+  const m = { top: 8, right: 60, bottom: 8, left: 36 };
+  const rowH    = Math.max(14, Math.min(24, Math.floor((h - m.top - m.bottom) / (radicals.length || 1))));
+  const barH    = posFilter === 'all' ? Math.floor(rowH * 0.28) : Math.floor(rowH * 0.7);
+  const barGap  = 2;
   const maxBarW = w - m.left - m.right;
 
   return (
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
-      <div style={{ display: 'flex', gap: 8, padding: '10px 16px', flexShrink: 0 }}>
+      <div style={{ display: 'flex', gap: 6, padding: '8px 12px', flexShrink: 0, flexWrap: 'wrap', alignItems: 'center' }}>
         {METRICS.map(mx => (
           <button key={mx.key} onClick={() => setMetric(mx.key)} style={{
-            padding: '4px 12px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
+            padding: '3px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
             background: metric === mx.key ? 'rgba(255,255,255,0.12)' : 'transparent',
             border: '1px solid rgba(255,255,255,0.15)', color: metric === mx.key ? '#fff' : '#555',
           }}>{mx.label}</button>
         ))}
-        <div style={{ marginLeft: 'auto', display: 'flex', gap: 12, alignItems: 'center' }}>
-          {['r1','r2','r3'].map(p => (
-            <span key={p} style={{ fontSize: 11, color: '#555', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ width: 10, height: 10, borderRadius: 2, background: POS_COLORS[p], display: 'inline-block' }} /> {p}
-            </span>
-          ))}
-        </div>
+        <span style={{ color: '#222', marginLeft: 4 }}>|</span>
+        {['all', 'r1', 'r2', 'r3'].map(p => (
+          <button key={p} onClick={() => setPosFilter(p)} style={{
+            padding: '3px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
+            background: posFilter === p ? (p === 'all' ? 'rgba(255,255,255,0.12)' : POS_COLORS[p] + '33') : 'transparent',
+            border: `1px solid ${posFilter === p ? (p === 'all' ? 'rgba(255,255,255,0.3)' : POS_COLORS[p]) : 'rgba(255,255,255,0.12)'}`,
+            color: posFilter === p ? (p === 'all' ? '#fff' : POS_COLORS[p]) : '#555',
+          }}>{p === 'all' ? 'all positions' : p}</button>
+        ))}
       </div>
       <div ref={wrapRef} style={{ flex: 1, overflow: 'auto', position: 'relative' }}>
         <svg width={w} height={Math.max(h, radicals.length * rowH + m.top + m.bottom)} style={{ display: 'block' }}>
           {radicals.map((rad, ri) => {
             const g = grouped[rad], y0 = m.top + ri * rowH, isHov = hovered === rad;
+            const clsColor = PHON_CLASSES[rad]?.color || '#666';
             return (
               <g key={rad} onMouseEnter={() => setHovered(rad)} onMouseLeave={() => setHovered(null)}>
                 {isHov && <rect x={0} y={y0} width={w} height={rowH} fill="rgba(255,255,255,0.03)" />}
                 <text x={m.left - 4} y={y0 + rowH / 2} textAnchor="end" dominantBaseline="middle"
-                  fill={isHov ? '#fff' : '#666'} fontSize={Math.min(rowH - 2, 13)} style={{ fontFamily: 'serif' }}>
+                  fill={isHov ? '#fff' : clsColor} fontSize={Math.min(rowH - 2, 13)} style={{ fontFamily: 'serif' }}>
                   {rad}
                 </text>
-                {['r1','r2','r3'].map((pos, pi) => {
-                  const val = g?.[pos] || 0;
+                {posFilter === 'all' ? (
+                  ['r1','r2','r3'].map((pos, pi) => {
+                    const val = g?.[pos] || 0;
+                    const bw  = (val / maxVal) * maxBarW;
+                    const by  = y0 + (rowH - (barH * 3 + barGap * 2)) / 2 + pi * (barH + barGap);
+                    return <rect key={pos} x={m.left} y={by} width={Math.max(1, bw)} height={barH} fill={POS_COLORS[pos]} opacity={0.8} rx={1} />;
+                  })
+                ) : (() => {
+                  const val = g?.[posFilter] || 0;
                   const bw  = (val / maxVal) * maxBarW;
-                  const by  = y0 + (rowH - (barH * 3 + barGap * 2)) / 2 + pi * (barH + barGap);
-                  return <rect key={pos} x={m.left} y={by} width={Math.max(1, bw)} height={barH} fill={POS_COLORS[pos]} opacity={0.8} rx={1} />;
-                })}
+                  const by  = y0 + (rowH - barH) / 2;
+                  return <>
+                    <rect x={m.left} y={by} width={Math.max(1, bw)} height={barH} fill={clsColor} opacity={isHov ? 1 : 0.75} rx={1} />
+                    {bw > 30 && <text x={m.left + bw - 3} y={y0 + rowH / 2} textAnchor="end" dominantBaseline="middle" fill="rgba(0,0,0,0.5)" fontSize={8}>{val.toLocaleString()}</text>}
+                  </>;
+                })()}
               </g>
             );
           })}
@@ -323,6 +367,9 @@ const REPORTS = {
   9:  'Corpus gravity across bi-radical families follows a steep power law. Top families (red dots) command orders-of-magnitude more textual presence than the long tail. A slope steeper than −1 means concentration exceeds classic Zipf — consistent with the heavy gravitational pull of Quranic vocabulary on the corpus: a small set of roots dominates everything.',
   10: 'Leadership = r1 share of a radical\'s total root appearances. Above 45% → morphological initiator; below 25% → follower. Phonological class coloring tests whether leadership is articulatory: if gutturals systematically score low and coronals high, the phonology of the consonant itself may be driving its positional preference across the entire root system.',
   11: 'The invisible lexical space: pairs of Arabic consonants that could form bi-radical families but don\'t. Gold (mystery) pairs are cross-class and phonologically permitted — the language could have gone there but didn\'t. Red (OCP) pairs are same-class, theoretically suppressed by articulatory constraint. The mystery pairs are the most interesting: some may exist in historical or dialectal Arabic, others may reveal deeper phonotactic laws not captured by the five-class model.',
+  14: 'Which Arabic radicals are the heaviest root anchors? x-axis: how strongly each radical prefers r1 over r2 (rightward = initiator, leftward = follower). y-axis: total corpus flowing through families where this radical appears in r1 — its absolute gravitational weight as a root anchor (log scale). Dot size = distinct roots initiated. Dot border: green = directionality analysis confirms r1 dominance across reversible pairs, red = the radical actually loses when its r1 direction competes with the reverse. The top-right quadrant contains the primary anchors — consonants that are both heavy and consistent r1 initiators. Language acquisition research shows high-frequency, morphologically rich vocabulary is acquired earlier. If the primary anchors cluster in specific phonological classes, those consonants may be acquired first not just for articulatory reasons but because they appear in the most-repeated, semantically central words. Switching the corpus filter to Quran shows which radicals anchor Quranic vocabulary specifically.',
+  13: 'For any consonant pair {X,Y} where both X-Y and Y-X exist as attested families, which ordering is more productive? The asymmetry score (fwd−rev)/(fwd+rev) measures directional dominance from −1 (reverse completely dominates) to +1 (forward completely dominates). Pair view shows the most asymmetric pairs across corpus, words, depth, and root metrics — bold label is the dominant direction. Class view reveals whether phonological classes systematically prefer r1 or r2: a guttural class consistently below the centerline means gutturals are morphological followers; one above means they anchor roots. The 5×5 matrix shows which class tends to dominate when any two classes meet in a root.',
+  12: 'The r3 depth landscape in three dimensions. Each point in the floor grid is a bi-radical family (r1 × r2 consonant pair). Height encodes how many distinct r3 consonants complete that pair — how far Arabic committed to elaborating that root core. Tall columns are morphological attractors: the r1-r2 pair pulled the language into deep phonological elaboration. Color reveals whether that depth is concentrated in one phonological class or spread across all five. Drag to rotate, scroll to zoom.',
 };
 
 // ─── Main Analytics Page ─────────────────────────────────────────────────────
@@ -340,6 +387,42 @@ const CHARTS = [
   { id: 9,  label: 'Zipf'               },
   { id: 10, label: 'Leadership'          },
   { id: 11, label: 'Dark Matter'         },
+  { id: 12, label: 'Depth 3D'           },
+  { id: 13, label: 'Directionality'    },
+  { id: 14, label: 'Radical Gravity'  },
+];
+
+// 114 Quran surah names [number, arabic, english]
+const SURAHS = [
+  [1,'الفاتحة','Al-Fatiha'],[2,'البقرة','Al-Baqara'],[3,'آل عمران','Ali Imran'],[4,'النساء','An-Nisa'],
+  [5,'المائدة','Al-Maida'],[6,'الأنعام','Al-Anam'],[7,'الأعراف','Al-Araf'],[8,'الأنفال','Al-Anfal'],
+  [9,'التوبة','At-Tawba'],[10,'يونس','Yunus'],[11,'هود','Hud'],[12,'يوسف','Yusuf'],
+  [13,'الرعد','Ar-Rad'],[14,'إبراهيم','Ibrahim'],[15,'الحجر','Al-Hijr'],[16,'النحل','An-Nahl'],
+  [17,'الإسراء','Al-Isra'],[18,'الكهف','Al-Kahf'],[19,'مريم','Maryam'],[20,'طه','Ta-Ha'],
+  [21,'الأنبياء','Al-Anbiya'],[22,'الحج','Al-Hajj'],[23,'المؤمنون','Al-Muminun'],[24,'النور','An-Nur'],
+  [25,'الفرقان','Al-Furqan'],[26,'الشعراء','Ash-Shuara'],[27,'النمل','An-Naml'],[28,'القصص','Al-Qasas'],
+  [29,'العنكبوت','Al-Ankabut'],[30,'الروم','Ar-Rum'],[31,'لقمان','Luqman'],[32,'السجدة','As-Sajda'],
+  [33,'الأحزاب','Al-Ahzab'],[34,'سبأ','Saba'],[35,'فاطر','Fatir'],[36,'يس','Ya-Sin'],
+  [37,'الصافات','As-Saffat'],[38,'ص','Sad'],[39,'الزمر','Az-Zumar'],[40,'غافر','Ghafir'],
+  [41,'فصلت','Fussilat'],[42,'الشورى','Ash-Shura'],[43,'الزخرف','Az-Zukhruf'],[44,'الدخان','Ad-Dukhan'],
+  [45,'الجاثية','Al-Jathiya'],[46,'الأحقاف','Al-Ahqaf'],[47,'محمد','Muhammad'],[48,'الفتح','Al-Fath'],
+  [49,'الحجرات','Al-Hujurat'],[50,'ق','Qaf'],[51,'الذاريات','Adh-Dhariyat'],[52,'الطور','At-Tur'],
+  [53,'النجم','An-Najm'],[54,'القمر','Al-Qamar'],[55,'الرحمن','Ar-Rahman'],[56,'الواقعة','Al-Waqia'],
+  [57,'الحديد','Al-Hadid'],[58,'المجادلة','Al-Mujadila'],[59,'الحشر','Al-Hashr'],[60,'الممتحنة','Al-Mumtahina'],
+  [61,'الصف','As-Saf'],[62,'الجمعة','Al-Jumuah'],[63,'المنافقون','Al-Munafiqun'],[64,'التغابن','At-Taghabun'],
+  [65,'الطلاق','At-Talaq'],[66,'التحريم','At-Tahrim'],[67,'الملك','Al-Mulk'],[68,'القلم','Al-Qalam'],
+  [69,'الحاقة','Al-Haqqa'],[70,'المعارج','Al-Maarij'],[71,'نوح','Nuh'],[72,'الجن','Al-Jinn'],
+  [73,'المزمل','Al-Muzzammil'],[74,'المدثر','Al-Muddaththir'],[75,'القيامة','Al-Qiyama'],[76,'الإنسان','Al-Insan'],
+  [77,'المرسلات','Al-Mursalat'],[78,'النبأ','An-Naba'],[79,'النازعات','An-Naziat'],[80,'عبس','Abasa'],
+  [81,'التكوير','At-Takwir'],[82,'الانفطار','Al-Infitar'],[83,'المطففين','Al-Mutaffifin'],[84,'الانشقاق','Al-Inshiqaq'],
+  [85,'البروج','Al-Buruj'],[86,'الطارق','At-Tariq'],[87,'الأعلى','Al-Ala'],[88,'الغاشية','Al-Ghashiya'],
+  [89,'الفجر','Al-Fajr'],[90,'البلد','Al-Balad'],[91,'الشمس','Ash-Shams'],[92,'الليل','Al-Layl'],
+  [93,'الضحى','Ad-Duha'],[94,'الشرح','Ash-Sharh'],[95,'التين','At-Tin'],[96,'العلق','Al-Alaq'],
+  [97,'القدر','Al-Qadr'],[98,'البينة','Al-Bayyina'],[99,'الزلزلة','Az-Zalzala'],[100,'العاديات','Al-Adiyat'],
+  [101,'القارعة','Al-Qariah'],[102,'التكاثر','At-Takathur'],[103,'العصر','Al-Asr'],[104,'الهمزة','Al-Humaza'],
+  [105,'الفيل','Al-Fil'],[106,'قريش','Quraysh'],[107,'الماعون','Al-Maun'],[108,'الكوثر','Al-Kawthar'],
+  [109,'الكافرون','Al-Kafirun'],[110,'النصر','An-Nasr'],[111,'المسد','Al-Masad'],[112,'الإخلاص','Al-Ikhlas'],
+  [113,'الفلق','Al-Falaq'],[114,'الناس','An-Nas'],
 ];
 
 export default function Analytics() {
@@ -349,9 +432,32 @@ export default function Analytics() {
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState(null);
   const [chart,      setChart]      = useState(0);
+  const [corpora,    setCorpora]    = useState([]);
+  const [corpusId,   setCorpusId]   = useState('all');
+  const [surah,      setSurah]      = useState(null); // only active when corpusId === '2'
+  const [surahSearch, setSurahSearch] = useState('');
 
+  const isQuran = corpusId === '2';
+
+  // Load corpora list once
   useEffect(() => {
-    Promise.all([fetchBiradicals(), fetchRadicalPositions(), fetchR3Depth()])
+    fetchCorpora().then(d => setCorpora(Array.isArray(d) ? d : [])).catch(() => {});
+  }, []);
+
+  // Clear surah when leaving Quran corpus
+  useEffect(() => {
+    if (!isQuran) setSurah(null);
+  }, [isQuran]);
+
+  // Re-fetch all analytics data when corpus or surah changes
+  useEffect(() => {
+    setLoading(true);
+    setError(null);
+    Promise.all([
+      fetchBiradicals(corpusId, surah),
+      fetchRadicalPositions(corpusId, surah),
+      fetchR3Depth(corpusId, surah),
+    ])
       .then(([b, p, r]) => {
         setBiradicals(b.biradicals || []);
         setPositions(p.positions   || []);
@@ -359,7 +465,7 @@ export default function Analytics() {
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
-  }, []);
+  }, [corpusId, surah]);
 
   const tab = active => ({
     padding: '6px 14px', borderRadius: 6, fontSize: 12, cursor: 'pointer',
@@ -381,13 +487,75 @@ export default function Analytics() {
 
   return (
     <div style={{ width: '100%', height: '100%', background: '#0a0a0f', display: 'flex', flexDirection: 'column', color: '#fff', paddingBottom: 60 }}>
-      {/* header — single scrollable row of tabs */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '10px 12px', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0, minWidth: 0 }}>
-        <span style={{ color: '#333', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Morphology</span>
-        <div style={{ display: 'flex', gap: 5, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', minWidth: 0 }}>
-          {CHARTS.map(c => (
-            <button key={c.id} style={{ ...tab(chart === c.id), flexShrink: 0 }} onClick={() => setChart(c.id)}>{c.label}</button>
-          ))}
+      {/* header — chart tabs + corpus selector */}
+      <div style={{ display: 'flex', flexDirection: 'column', borderBottom: '1px solid rgba(255,255,255,0.06)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 12px', minWidth: 0 }}>
+          <span style={{ color: '#333', fontSize: 10, letterSpacing: '0.08em', textTransform: 'uppercase', flexShrink: 0 }}>Morphology</span>
+          <div style={{ display: 'flex', gap: 5, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', minWidth: 0 }}>
+            {CHARTS.map(c => (
+              <button key={c.id} style={{ ...tab(chart === c.id), flexShrink: 0 }} onClick={() => setChart(c.id)}>{c.label}</button>
+            ))}
+          </div>
+        </div>
+        {/* Corpus + Surah filter row */}
+        <div style={{ display: 'flex', flexDirection: 'column', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '5px 12px 4px', flexWrap: 'wrap' }}>
+            <span style={{ color: '#333', fontSize: 10, flexShrink: 0 }}>corpus:</span>
+            {[{ id: 'all', english: 'All corpora' }, ...corpora].map(c => {
+              const active = corpusId === String(c.id);
+              return (
+                <button key={c.id} onClick={() => { setCorpusId(String(c.id)); setSurah(null); }} style={{
+                  padding: '2px 10px', borderRadius: 5, fontSize: 10, cursor: 'pointer',
+                  background: active ? 'rgba(168,85,247,0.18)' : 'transparent',
+                  border: `1px solid ${active ? '#a855f7' : 'rgba(255,255,255,0.07)'}`,
+                  color: active ? '#a855f7' : '#444',
+                  flexShrink: 0,
+                }}>{c.english || c.arabic || `Corpus ${c.id}`}</button>
+              );
+            })}
+            {loading && <span style={{ color: '#333', fontSize: 10, marginLeft: 4 }}>loading…</span>}
+          </div>
+          {/* Surah selector — only when Quran selected */}
+          {isQuran && (
+            <div style={{ padding: '4px 12px 6px', display: 'flex', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
+              <span style={{ color: '#333', fontSize: 10, flexShrink: 0 }}>surah:</span>
+              <button onClick={() => setSurah(null)} style={{
+                padding: '2px 8px', borderRadius: 5, fontSize: 10, cursor: 'pointer',
+                background: !surah ? 'rgba(168,85,247,0.18)' : 'transparent',
+                border: `1px solid ${!surah ? '#a855f7' : 'rgba(255,255,255,0.07)'}`,
+                color: !surah ? '#a855f7' : '#444', flexShrink: 0,
+              }}>All</button>
+              <input
+                value={surahSearch}
+                onChange={e => setSurahSearch(e.target.value)}
+                placeholder="search surah…"
+                style={{
+                  background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
+                  borderRadius: 5, padding: '2px 8px', fontSize: 10, color: '#ccc', width: 110, outline: 'none',
+                }}
+              />
+              <div style={{ display: 'flex', gap: 4, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none', maxWidth: 'calc(100vw - 260px)' }}>
+                {SURAHS
+                  .filter(([n, ar, en]) => !surahSearch || en.toLowerCase().includes(surahSearch.toLowerCase()) || String(n).includes(surahSearch) || ar.includes(surahSearch))
+                  .map(([n, ar, en]) => {
+                    const active = surah === String(n);
+                    return (
+                      <button key={n} onClick={() => setSurah(String(n))} title={`${n}. ${en} · ${ar}`} style={{
+                        padding: '2px 7px', borderRadius: 5, fontSize: 10, cursor: 'pointer', flexShrink: 0,
+                        background: active ? 'rgba(234,179,8,0.18)' : 'transparent',
+                        border: `1px solid ${active ? '#eab308' : 'rgba(255,255,255,0.06)'}`,
+                        color: active ? '#eab308' : '#555',
+                      }}>{n}</button>
+                    );
+                  })}
+              </div>
+              {surah && (
+                <span style={{ color: '#eab308', fontSize: 10, flexShrink: 0 }}>
+                  {SURAHS[parseInt(surah) - 1]?.[2]} · {SURAHS[parseInt(surah) - 1]?.[1]}
+                </span>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -418,6 +586,9 @@ export default function Analytics() {
         {!loading && !error && chart === 9  && <ZipfChart      data={biradicals} />}
         {!loading && !error && chart === 10 && <LeadershipChart data={positions} />}
         {!loading && !error && chart === 11 && <DarkMatter      data={biradicals} />}
+        {!loading && !error && chart === 12 && <Depth3D              data={depths} />}
+        {!loading && !error && chart === 13 && <DirectionalityChart  biradicals={biradicals} depths={depths} />}
+        {!loading && !error && chart === 14 && <RadicalGravity       positions={positions} biradicals={biradicals} />}
       </div>
 
       {/* interpretive report strip */}
