@@ -129,21 +129,23 @@ router.get('/analytics/radical-positions', async (req, res) => {
     const data = await cached(cacheKey, async () => {
       let result;
       if (corpus_id) {
+        // Aggregate per Root FIRST (collapses 73K CorpusItem rows → ~1K Root rows),
+        // then unwind positions on the small aggregated table — stays within memory limits.
         result = await session.run(`
           MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
           WHERE (r.r1 IS NOT NULL OR r.r2 IS NOT NULL OR r.r3 IS NOT NULL) ${surahFilter(surah)}
-          WITH r, w, count(w) AS w_count
+          WITH r, count(DISTINCT w) AS words, count(w) AS corpus
           UNWIND [
             CASE WHEN r.r1 IS NOT NULL THEN {rad: r.r1, pos: 'r1'} ELSE null END,
             CASE WHEN r.r2 IS NOT NULL THEN {rad: r.r2, pos: 'r2'} ELSE null END,
             CASE WHEN r.r3 IS NOT NULL THEN {rad: r.r3, pos: 'r3'} ELSE null END
           ] AS rp
           WHERE rp IS NOT NULL
-          WITH rp.rad AS radical, rp.pos AS position, r, w, w_count
+          WITH rp.rad AS radical, rp.pos AS position, words, corpus
           WITH radical, position,
-               count(DISTINCT r) AS roots,
-               count(DISTINCT w) AS words,
-               sum(w_count)      AS corpus
+               count(*) AS roots,
+               sum(words) AS words,
+               sum(corpus) AS corpus
           RETURN radical, position, roots, words, corpus
           ORDER BY radical
         `, { corpusId: corpus_id, surah: surah || null });
