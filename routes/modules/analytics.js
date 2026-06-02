@@ -67,7 +67,7 @@ router.get('/analytics/biradicals', async (req, res) => {
                count(DISTINCT r) AS root_count,
                count(DISTINCT w) AS total_words,
                count(w)          AS total_corpus
-          RETURN pair_key, root_count, total_words, total_corpus
+          RETURN pair_key, root_count, total_words, total_corpus, 0 AS avg_forms
           ORDER BY total_corpus DESC
         `, { corpusId: corpus_id, surah: surah || null });
       } else {
