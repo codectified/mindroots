@@ -22,18 +22,17 @@ const cached = async (key, fn) => {
 };
 
 // Build the CorpusItem MATCH clause depending on filter params.
-// corpus_id only: traverse via Corpus node
-// corpus_id + surah: same, plus filter CorpusItem.item_id by surah prefix (Quran hierarchical IDs)
+// Uses corpus_id property on CorpusItem (same pattern as all other corpus routes).
+// surah filter: Quran item_id format is "surah:ayah:word" — filter on first segment.
 const corpusClause = (corpus_id, surah) => {
   if (surah) {
-    // Quran items: item_id = "surah:ayah:word"
     return `
-      MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(ci:CorpusItem)
+      MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})
       WITH ci, split(ci.item_id, ':') AS parts
       WHERE toInteger(parts[0]) = toInteger($surah)
     `;
   }
-  return `MATCH (corpus:Corpus {corpus_id: toInteger($corpusId)})<-[:BELONGS_TO]-(ci:CorpusItem)`;
+  return `MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})`;
 };
 
 // GET /analytics/corpora

@@ -129,7 +129,13 @@ export default function Scatter3D({ data }) {
       s.rot.y += 0.003;
     };
 
-    const resize = () => { canvas.width = container.offsetWidth; canvas.height = container.offsetHeight; };
+    const resize = () => {
+      const rect = canvas.getBoundingClientRect();
+      if (rect.width > 0 && rect.height > 0) {
+        canvas.width  = Math.round(rect.width);
+        canvas.height = Math.round(rect.height);
+      }
+    };
     resize();
     const ro = new ResizeObserver(resize);
     ro.observe(container);
