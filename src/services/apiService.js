@@ -786,3 +786,8 @@ export const fetchR3Depth = async (corpusId, surah) => {
   const response = await api.get(`/analytics/r3-depth${buildParams(corpusId, surah)}`);
   return response.data;
 };
+
+export const fetchTopRoots = async (corpusId, surah) => {
+  const response = await api.get(`/analytics/top-roots${buildParams(corpusId, surah)}`);
+  return response.data;
+};

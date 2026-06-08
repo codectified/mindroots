@@ -235,4 +235,49 @@ router.get('/analytics/r3-depth', async (req, res) => {
   }
 });
 
+// GET /analytics/top-roots[?corpus_id=2[&surah=36]]
+router.get('/analytics/top-roots', async (req, res) => {
+  const { corpus_id, surah } = req.query;
+  const session = req.driver.session();
+  try {
+    const cacheKey = `top-roots:${corpus_id || 'all'}:${surah || ''}`;
+    const data = await cached(cacheKey, async () => {
+      let result;
+      if (corpus_id) {
+        result = await session.run(`
+          MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
+          WHERE r.r1 IS NOT NULL AND r.r2 IS NOT NULL AND r.r3 IS NOT NULL ${surahFilter(surah)}
+          WITH r, count(DISTINCT w) AS words, count(w) AS corpus
+          RETURN r.r1 AS r1, r.r2 AS r2, r.r3 AS r3, words, corpus
+          ORDER BY corpus DESC
+          LIMIT 20
+        `, { corpusId: corpus_id, surah: surah || null });
+      } else {
+        result = await session.run(`
+          MATCH (r:Root)
+          WHERE r.r1 IS NOT NULL AND r.r2 IS NOT NULL AND r.r3 IS NOT NULL
+          RETURN r.r1 AS r1, r.r2 AS r2, r.r3 AS r3,
+                 r.feature_word_count   AS words,
+                 r.feature_corpus_count AS corpus
+          ORDER BY corpus DESC
+          LIMIT 20
+        `);
+      }
+      return result.records.map(r => ({
+        r1:     r.get('r1'),
+        r2:     r.get('r2'),
+        r3:     r.get('r3'),
+        words:  toNum(r.get('words')),
+        corpus: toNum(r.get('corpus')),
+      }));
+    });
+    res.json({ roots: data });
+  } catch (err) {
+    console.error('[analytics/top-roots]', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await session.close();
+  }
+});
+
 module.exports = router;

@@ -1,8 +1,11 @@
 import { useEffect, useState, useMemo, useRef } from 'react';
 import * as d3 from 'd3';
-import { fetchBiradicals, fetchRadicalPositions, fetchR3Depth, fetchCorpora } from '../../services/apiService';
+import { fetchBiradicals, fetchRadicalPositions, fetchR3Depth, fetchCorpora, fetchTopRoots } from '../../services/apiService';
 import { useSize } from '../analytics/shared';
 import { PHON_CLASSES, CLASS_META, sameClass } from '../analytics/phonology';
+import Overview        from '../analytics/Overview';
+import FertilityGravity from '../analytics/FertilityGravity';
+import SoundProfile    from '../analytics/SoundProfile';
 import Scatter3D      from '../analytics/Scatter3D';
 import DepthMap       from '../analytics/DepthMap';
 import NetworkGraph   from '../analytics/NetworkGraph';
@@ -15,103 +18,6 @@ import Depth3D              from '../analytics/Depth3D';
 import DirectionalityChart  from '../analytics/DirectionalityChart';
 import RadicalGravity        from '../analytics/RadicalGravity';
 
-// ─── Chart 1 · Fertility vs Gravity ─────────────────────────────────────────
-
-function ScatterChart({ data }) {
-  const wrapRef = useRef();
-  const { w, h } = useSize(wrapRef);
-  const [hovered, setHovered] = useState(null);
-  const m = { top: 40, right: 40, bottom: 60, left: 70 };
-
-  const filtered = useMemo(() => data.filter(d => d.total_words > 0 && d.total_corpus > 0), [data]);
-  const xScale = useMemo(() => d3.scaleLog().domain([1, d3.max(filtered, d => d.total_words) || 1]).range([m.left, w - m.right]).nice(), [filtered, w]); // eslint-disable-line
-  const yScale = useMemo(() => d3.scaleLog().domain([1, d3.max(filtered, d => d.total_corpus) || 1]).range([h - m.bottom, m.top]).nice(), [filtered, h]); // eslint-disable-line
-  const rScale = useMemo(() => d3.scaleSqrt().domain([0, d3.max(filtered, d => d.root_count) || 1]).range([3, 18]), [filtered]);
-
-  const outliers = useMemo(() => {
-    const byCorpus = [...filtered].sort((a, b) => b.total_corpus - a.total_corpus).slice(0, 6);
-    const byWords  = [...filtered].sort((a, b) => b.total_words  - a.total_words).slice(0, 6);
-    const byRatio  = [...filtered].map(d => ({ ...d, ratio: d.total_corpus / Math.max(d.total_words, 1) })).sort((a, b) => b.ratio - a.ratio).slice(0, 6);
-    return new Set([...byCorpus, ...byWords, ...byRatio].map(d => d.pair_key));
-  }, [filtered]);
-
-  const xMid = Math.sqrt(xScale.domain()[0] * xScale.domain()[1]);
-  const yMid = Math.sqrt(yScale.domain()[0] * yScale.domain()[1]);
-  const quadrants = [
-    { label: 'civilizations',   x: xMid * 8,   y: yMid * 8   },
-    { label: 'word factories',  x: xMid * 8,   y: yMid * 0.1 },
-    { label: 'sacred cores',    x: xMid * 0.1, y: yMid * 8   },
-    { label: 'quiet provinces', x: xMid * 0.1, y: yMid * 0.1 },
-  ];
-
-  return (
-    <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative' }}>
-      <svg width={w} height={h} style={{ display: 'block' }}>
-        <line x1={xScale(xMid)} y1={m.top} x2={xScale(xMid)} y2={h - m.bottom} stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
-        <line x1={m.left} y1={yScale(yMid)} x2={w - m.right} y2={yScale(yMid)} stroke="rgba(255,255,255,0.05)" strokeDasharray="4 4" />
-        {quadrants.map(q => {
-          const px = xScale(Math.max(xScale.domain()[0], Math.min(xScale.domain()[1], q.x)));
-          const py = yScale(Math.max(yScale.domain()[0], Math.min(yScale.domain()[1], q.y)));
-          return <text key={q.label} x={px} y={py} textAnchor="middle" fill="rgba(255,255,255,0.08)" fontSize={11} fontStyle="italic">{q.label}</text>;
-        })}
-        {xScale.ticks(6).map(t => (
-          <g key={t} transform={`translate(${xScale(t)},${h - m.bottom})`}>
-            <line y2={5} stroke="rgba(255,255,255,0.2)" />
-            <text y={18} textAnchor="middle" fill="#555" fontSize={10}>{d3.format('~s')(t)}</text>
-          </g>
-        ))}
-        <text x={(m.left + w - m.right) / 2} y={h - 10} textAnchor="middle" fill="#444" fontSize={12}>lexical fertility (words)</text>
-        {yScale.ticks(6).map(t => (
-          <g key={t} transform={`translate(${m.left},${yScale(t)})`}>
-            <line x2={-5} stroke="rgba(255,255,255,0.2)" />
-            <text x={-10} dy="0.35em" textAnchor="end" fill="#555" fontSize={10}>{d3.format('~s')(t)}</text>
-          </g>
-        ))}
-        <text transform={`translate(16,${(m.top + h - m.bottom) / 2}) rotate(-90)`} textAnchor="middle" fill="#444" fontSize={12}>corpus gravity (occurrences)</text>
-        {filtered.map(d => {
-          const r1 = d.pair_key.split('-')[0];
-          const clsColor = PHON_CLASSES[r1]?.color || '#666';
-          const cx = xScale(d.total_words), cy = yScale(d.total_corpus);
-          const r  = rScale(d.root_count);
-          const isOut = outliers.has(d.pair_key), isHov = hovered?.pair_key === d.pair_key;
-          return (
-            <g key={d.pair_key} onMouseEnter={() => setHovered(d)} onMouseLeave={() => setHovered(null)} style={{ cursor: 'default' }}>
-              <circle cx={cx} cy={cy} r={r}
-                fill={isHov ? '#fff' : clsColor}
-                stroke={isOut ? '#fff' : 'none'} strokeWidth={1.5}
-                opacity={isHov ? 1 : 0.65} />
-              {isOut && <text x={cx} y={cy - r - 4} textAnchor="middle" fill={clsColor} fontSize={10} style={{ fontFamily: 'serif', direction: 'rtl' }}>{d.pair_key}</text>}
-            </g>
-          );
-        })}
-      </svg>
-      {/* class legend */}
-      <div style={{ position: 'absolute', bottom: 44, right: 10, display: 'flex', flexDirection: 'column', gap: 3 }}>
-        {Object.entries(CLASS_META).map(([cls, meta]) => (
-          <span key={cls} style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: meta.color }}>
-            <span style={{ width: 8, height: 8, borderRadius: '50%', background: meta.color, display: 'inline-block', flexShrink: 0 }} />
-            {meta.label} <span style={{ color: '#333', fontSize: 9 }}>(r1)</span>
-          </span>
-        ))}
-        <span style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 10, color: '#555' }}>
-          <span style={{ width: 8, height: 8, borderRadius: '50%', border: '1.5px solid #fff', display: 'inline-block', flexShrink: 0 }} />
-          notable
-        </span>
-        <span style={{ color: '#222', fontSize: 9, marginTop: 2 }}>size = root count</span>
-      </div>
-      {hovered && (
-        <div style={{ position: 'absolute', top: 16, left: 16, background: 'rgba(0,0,0,0.88)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8, padding: '10px 14px', fontSize: 13, lineHeight: 1.7, pointerEvents: 'none' }}>
-          <div style={{ fontSize: 20, fontFamily: 'serif', direction: 'rtl', color: PHON_CLASSES[hovered.pair_key.split('-')[0]]?.color || '#eab308', marginBottom: 2 }}>{hovered.pair_key}</div>
-          <div style={{ color: '#444', fontSize: 10, marginBottom: 6 }}>{PHON_CLASSES[hovered.pair_key.split('-')[0]]?.class} r1 · {PHON_CLASSES[hovered.pair_key.split('-')[1]]?.class} r2</div>
-          <div style={{ color: '#aaa' }}>roots: <span style={{ color: '#fff' }}>{hovered.root_count}</span></div>
-          <div style={{ color: '#aaa' }}>words: <span style={{ color: '#22c55e' }}>{hovered.total_words.toLocaleString()}</span></div>
-          <div style={{ color: '#aaa' }}>corpus: <span style={{ color: '#ef4444' }}>{hovered.total_corpus.toLocaleString()}</span></div>
-          <div style={{ color: '#aaa' }}>corpus/word: <span style={{ color: '#a855f7' }}>{(hovered.total_corpus / Math.max(hovered.total_words, 1)).toFixed(1)}×</span></div>
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ─── Chart 2 · Bi-Radical Heatmap (with phonological overlay) ───────────────
 
@@ -390,6 +296,7 @@ const CHARTS = [
   { id: 12, label: 'Depth 3D'           },
   { id: 13, label: 'Directionality'    },
   { id: 14, label: 'Radical Gravity'  },
+  { id: 15, label: 'Sound Profile'    },
 ];
 
 // 114 Quran surah names [number, arabic, english]
@@ -429,6 +336,7 @@ export default function Analytics() {
   const [biradicals, setBiradicals] = useState([]);
   const [positions,  setPositions]  = useState([]);
   const [depths,     setDepths]     = useState([]);
+  const [topRoots,   setTopRoots]   = useState([]);
   const [loading,    setLoading]    = useState(true);
   const [error,      setError]      = useState(null);
   const [chart,      setChart]      = useState(0);
@@ -457,11 +365,13 @@ export default function Analytics() {
       fetchBiradicals(corpusId, surah),
       fetchRadicalPositions(corpusId, surah),
       fetchR3Depth(corpusId, surah),
+      fetchTopRoots(corpusId, surah),
     ])
-      .then(([b, p, r]) => {
+      .then(([b, p, r, t]) => {
         setBiradicals(b.biradicals || []);
         setPositions(p.positions   || []);
         setDepths(r.depths         || []);
+        setTopRoots(t.roots        || []);
       })
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
@@ -574,8 +484,8 @@ export default function Analytics() {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
         {loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
         {error   && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
-        {!loading && !error && chart === 0 && <Overview biradicals={biradicals} depths={depths} counts={counts} trueRoots={trueRoots} totalWords={totalWords} totalCorpus={totalCorpus} seenRadicals={seenRadicals} totalPossible={totalPossible} coverage={coverage} />}
-        {!loading && !error && chart === 1 && <ScatterChart  data={biradicals} />}
+        {!loading && !error && chart === 0 && <Overview biradicals={biradicals} positions={positions} depths={depths} topRoots={topRoots} corpusLabel={corpusId === 'all' ? null : (corpora.find(c => String(c.id) === corpusId)?.english || `Corpus ${corpusId}`)} />}
+        {!loading && !error && chart === 1 && <FertilityGravity biradicals={biradicals} depths={depths} positions={positions} />}
         {!loading && !error && chart === 2 && <Heatmap       data={biradicals} />}
         {!loading && !error && chart === 3 && <EcologyChart  data={positions} />}
         {!loading && !error && chart === 4  && <Scatter3D      data={biradicals} />}
@@ -589,6 +499,7 @@ export default function Analytics() {
         {!loading && !error && chart === 12 && <Depth3D              data={depths} />}
         {!loading && !error && chart === 13 && <DirectionalityChart  biradicals={biradicals} depths={depths} />}
         {!loading && !error && chart === 14 && <RadicalGravity       positions={positions} biradicals={biradicals} />}
+        {!loading && !error && chart === 15 && <SoundProfile biradicals={biradicals} positions={positions} corpusLabel={corpusId === 'all' ? null : (corpora.find(c => String(c.id) === corpusId)?.english || `Corpus ${corpusId}`)} />}
       </div>
 
       {/* interpretive report strip */}
@@ -624,62 +535,3 @@ function Centered({ children }) {
   );
 }
 
-// ─── Overview Page ────────────────────────────────────────────────────────────
-
-function Overview({ counts, trueRoots, totalWords, totalCorpus, seenRadicals, totalPossible, coverage }) {
-  const fmt = n => n.toLocaleString();
-  return (
-    <div style={{ width: '100%', height: '100%', overflowY: 'auto', padding: '20px 18px 16px', boxSizing: 'border-box' }}>
-
-      <div style={{ color: '#333', fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 10 }}>Arabic Morphology · Data Overview</div>
-
-      {/* four headline numbers */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 22 }}>
-        <BigStat value={fmt(counts)}      color="#eab308" label="Bi-Radical Families"
-          desc="Unique first-two-consonant combinations that have at least one tri-literal root" />
-        <BigStat value={fmt(trueRoots)}   color="#a855f7" label="Tri-Literal Roots"
-          desc="Distinct r1-r2-r3 consonant combinations confirmed in this database" />
-        <BigStat value={fmt(totalWords)}  color="#22c55e" label="Lexical Words"
-          desc="Total word forms derived from these roots (including all morphological patterns)" />
-        <BigStat value={fmt(totalCorpus)} color="#3b82f6" label="Corpus Occurrences"
-          desc="Total times these words appear in the analyzed Arabic text corpus" />
-      </div>
-
-      {/* explanatory sections */}
-      <InfoSection title="What is a bi-radical family?">
-        Arabic words are built from 3-consonant roots (e.g., ك-ت-ب for writing). The first two consonants form a "family" — a group of roots that share a phonological and often semantic core. The family ك-ت underlies كَتَبَ (to write), كِتَاب (book), كَتَمَ (to conceal), and others. These {fmt(counts)} families are the scaffolding of the Arabic lexicon.
-      </InfoSection>
-
-      <InfoSection title="Root count vs Lane's Lexicon">
-        Edward Lane's Arabic-English Lexicon (~5,000 entries) documents base consonantal roots as a scholar would list them. The {fmt(trueRoots)} roots here are distinct r1-r2-r3 consonant combinations found in the graph database — this includes roots from the Quran, classical dictionaries, and extended Arabic, which together exceed Lane's classical subset. The number is close to Lane's when filtered to core classical roots only.
-      </InfoSection>
-
-      <InfoSection title={`${coverage}% of consonant pair space is occupied`}>
-        With {seenRadicals} distinct consonants in the data, there are {fmt(totalPossible)} theoretically possible ordered r1-r2 pairs. Only {coverage}% are occupied by an actual family. The missing {100 - parseInt(coverage)}% is not random — it is shaped by the Obligatory Contour Principle (OCP), a phonological law that suppresses same-class consonants from occupying adjacent root positions. See the OCP Matrix chart for the full breakdown.
-      </InfoSection>
-
-      <InfoSection title="How to use the visualizations">
-        Start with <strong style={{ color: '#eab308' }}>Fertility × Gravity</strong> for the big picture of how families distribute. Use <strong style={{ color: '#f97316' }}>OCP Matrix</strong> to see the phonological constraints. <strong style={{ color: '#22c55e' }}>Zipf</strong> shows how corpus usage concentrates in a few dominant families. <strong style={{ color: '#a855f7' }}>Dark Matter</strong> shows which pairs are absent and whether the absence is predicted or mysterious.
-      </InfoSection>
-    </div>
-  );
-}
-
-function BigStat({ value, label, desc, color }) {
-  return (
-    <div style={{ padding: '14px 14px', background: 'rgba(255,255,255,0.03)', borderRadius: 10, border: '1px solid rgba(255,255,255,0.06)' }}>
-      <div style={{ color, fontSize: 26, fontWeight: 700, lineHeight: 1, marginBottom: 5 }}>{value}</div>
-      <div style={{ color: '#aaa', fontSize: 11, fontWeight: 600, marginBottom: 5 }}>{label}</div>
-      <div style={{ color: '#333', fontSize: 10, lineHeight: 1.55 }}>{desc}</div>
-    </div>
-  );
-}
-
-function InfoSection({ title, children }) {
-  return (
-    <div style={{ marginBottom: 18, paddingBottom: 18, borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-      <div style={{ color: '#666', fontSize: 11, fontWeight: 600, marginBottom: 6 }}>{title}</div>
-      <div style={{ color: '#444', fontSize: 11, lineHeight: 1.7 }}>{children}</div>
-    </div>
-  );
-}
