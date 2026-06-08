@@ -249,7 +249,7 @@ function FamilyProfile({ pairKey, biradicals, depths, topRoots }) {
 
       {/* Hero pair */}
       <div style={{ textAlign: 'center', padding: '20px 0 18px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10, direction: 'rtl' }}>
           <span style={{ fontSize: 88, fontFamily: 'serif', color: c1Color, lineHeight: 1, textShadow: `0 0 70px ${c1Color}50` }}>{r1}</span>
           <span style={{ fontSize: 40, color: '#333', fontWeight: 200, alignSelf: 'center', lineHeight: 1 }}>—</span>
           <span style={{ fontSize: 88, fontFamily: 'serif', color: c2Color, lineHeight: 1, textShadow: `0 0 70px ${c2Color}50` }}>{r2}</span>
@@ -351,10 +351,13 @@ function RootProfile({ root }) {
   useEffect(() => {
     setRootWords(null);
     setWordsLoading(true);
-    fetchRootWords(r1, r2, r3)
-      .then(d => setRootWords(d.words || []))
-      .catch(() => setRootWords([]))
-      .finally(() => setWordsLoading(false));
+    const timer = setTimeout(() => {
+      fetchRootWords(r1, r2, r3)
+        .then(d => setRootWords(d.words || []))
+        .catch(() => setRootWords([]))
+        .finally(() => setWordsLoading(false));
+    }, 300);
+    return () => clearTimeout(timer);
   }, [r1, r2, r3]);
 
   return (
@@ -362,7 +365,7 @@ function RootProfile({ root }) {
 
       {/* Hero triradical */}
       <div style={{ textAlign: 'center', padding: '20px 0 18px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8, direction: 'rtl' }}>
           {[[r1, c1],[r2, c2],[r3, c3]].map(([rad, meta], i) => (
             <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               {i > 0 && <span style={{ fontSize: 32, color: '#2a2a2a', fontWeight: 200, lineHeight: 1 }}>-</span>}
