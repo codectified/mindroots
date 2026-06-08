@@ -791,3 +791,9 @@ export const fetchTopRoots = async (corpusId, surah) => {
   const response = await api.get(`/analytics/top-roots${buildParams(corpusId, surah)}`);
   return response.data;
 };
+
+export const fetchRootWords = async (r1, r2, r3) => {
+  const p = new URLSearchParams({ r1, r2, r3 });
+  const response = await api.get(`/analytics/root-words?${p}`);
+  return response.data;
+};

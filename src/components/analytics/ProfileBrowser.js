@@ -1,9 +1,10 @@
 import { useMemo, useState, useEffect, useCallback } from 'react';
 import { PHON_CLASSES, CLASS_META, PHONETIC_META } from './phonology';
+import { fetchRootWords } from '../../services/apiService';
 
 // ── Constants ─────────────────────────────────────────────────────────────────
 
-const CLASS_ORDER = ['guttural', 'dorsal', 'emphatic', 'coronal', 'labial'];
+const CLASS_ORDER  = ['guttural', 'dorsal', 'emphatic', 'coronal', 'labial'];
 const MANNER_ORDER = ['plosive', 'nasal', 'trill', 'lateral', 'affricate', 'fricative', 'semivowel'];
 const MANNER_LABEL = {
   plosive: 'Stop', fricative: 'Fricative', nasal: 'Nasal',
@@ -17,18 +18,28 @@ const SORT_OPTS = {
   root:   [['corpus','gravity'],['words','fertile']],
 };
 
+// ── Style tokens ──────────────────────────────────────────────────────────────
+
+const T = {
+  sectionHdr: { color: '#7a7a7a', fontSize: 10, fontWeight: 500, letterSpacing: '0.1em', textTransform: 'uppercase' },
+  label:      { color: '#666' },
+  body:       { color: '#999', fontSize: 12, lineHeight: 1.8 },
+  dim:        { color: '#555' },
+  divider:    { borderTop: '1px solid rgba(255,255,255,0.07)', margin: '0 0 14px 0' },
+};
+
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
-const clsColor = rad => CLASS_META[PHON_CLASSES[rad]?.class]?.color || '#555';
+const clsColor = rad => CLASS_META[PHON_CLASSES[rad]?.class]?.color || '#666';
 const clsLabel = rad => CLASS_META[PHON_CLASSES[rad]?.class]?.label || '';
 
 function buildSoundStory(rad, posStats, nFamiliesR1) {
-  const phon = PHONETIC_META[rad];
+  const phon  = PHONETIC_META[rad];
   const total = (posStats.r1 || 0) + (posStats.r2 || 0) + (posStats.r3 || 0) || 1;
   const r1pct = Math.round((posStats.r1 || 0) / total * 100);
-  const role = r1pct >= 45 ? `a morphological initiator — ${r1pct}% of its corpus weight opens roots`
-             : r1pct <= 28 ? `a morphological follower, carrying most weight in middle and final positions`
-             : `positionally versatile, distributed across all three root slots`;
+  const role  = r1pct >= 45 ? `a morphological initiator — ${r1pct}% of its corpus weight opens roots`
+              : r1pct <= 28 ? `a morphological follower, carrying most weight in middle and final positions`
+              : `positionally versatile, spread across all three root slots`;
   const phonLabel = phon
     ? `${phon.voicing} ${phon.emphatic ? 'emphatic ' : ''}${MANNER_LABEL[phon.manner] || phon.manner} at the ${phon.place}`
     : '';
@@ -43,66 +54,72 @@ function buildFamilyStory(pairKey, biral, r3Count) {
   const [r1, r2] = pairKey.split('-');
   const c1 = clsLabel(r1), c2 = clsLabel(r2);
   const sameClass = PHON_CLASSES[r1]?.class === PHON_CLASSES[r2]?.class;
-  const ocpNote = sameClass
-    ? ' As a same-class pair it is an OCP exception — phonotactically marked and relatively rare.'
-    : '';
-  const weight = biral.total_corpus > 50000 ? 'a high-gravity family'
-               : biral.total_corpus > 5000  ? 'a moderately active family'
-               : 'a quiet, specialized family';
-  return `${pairKey} joins ${c1} with ${c2}, yielding ${biral.root_count} roots elaborated across ${r3Count} of 28 possible r3 consonants. It is ${weight} with ${biral.total_corpus.toLocaleString()} corpus occurrences.${ocpNote}`;
+  const ocpNote   = sameClass ? ' As a same-class pair it is an OCP exception — phonotactically marked and relatively rare.' : '';
+  const weight    = biral.total_corpus > 50000 ? 'a high-gravity family'
+                  : biral.total_corpus > 5000  ? 'a moderately active family'
+                  : 'a quiet, specialized family';
+  return `${pairKey} joins ${c1} with ${c2}, yielding ${biral.root_count} roots elaborated across ${r3Count} of 28 possible r3 slots. It is ${weight} with ${biral.total_corpus.toLocaleString()} corpus occurrences.${ocpNote}`;
 }
 
 // ── Shared sub-components ─────────────────────────────────────────────────────
 
-function SectionHdr({ children }) {
+function Section({ title, children, count }) {
   return (
-    <div style={{ color: '#222', fontSize: 8, letterSpacing: '0.12em', textTransform: 'uppercase',
-                  borderBottom: '1px solid rgba(255,255,255,0.04)', paddingBottom: 4, marginBottom: 8 }}>
+    <div style={{ marginBottom: 20 }}>
+      <div style={{ ...T.sectionHdr, borderBottom: '1px solid rgba(255,255,255,0.07)', paddingBottom: 5, marginBottom: 10 }}>
+        {title}{count != null ? <span style={{ ...T.dim, fontWeight: 400, marginLeft: 6 }}>· {count}</span> : null}
+      </div>
       {children}
     </div>
   );
 }
 
-function Section({ title, children }) {
-  return <div style={{ marginBottom: 18 }}><SectionHdr>{title}</SectionHdr>{children}</div>;
-}
-
-function Chip({ children, color }) {
+function Chip({ children, color, size = 13 }) {
   return (
     <span style={{
-      fontSize: 12, fontFamily: 'serif', color: color || '#eab308',
-      background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.06)',
-      padding: '2px 8px', borderRadius: 4, display: 'inline-block',
+      fontSize: size, fontFamily: 'serif', color: color || '#eab308',
+      background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.08)',
+      padding: '3px 9px', borderRadius: 5, display: 'inline-block',
     }}>
       {children}
     </span>
   );
 }
 
-function StatRow({ label, val, maxVal, color }) {
+function StatBar({ label, val, maxVal, color }) {
   const pct = maxVal > 0 ? (val / maxVal) * 100 : 0;
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 5 }}>
-      <span style={{ color: '#2a2a2a', fontSize: 9, minWidth: 20 }}>{label}</span>
-      <div style={{ flex: 1, height: 3, background: 'rgba(255,255,255,0.05)', borderRadius: 2 }}>
-        <div style={{ width: `${pct}%`, height: '100%', background: color, opacity: 0.7, borderRadius: 2 }} />
+    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6 }}>
+      <span style={{ ...T.label, fontSize: 11, minWidth: 24 }}>{label}</span>
+      <div style={{ flex: 1, height: 4, background: 'rgba(255,255,255,0.07)', borderRadius: 2 }}>
+        <div style={{ width: `${pct}%`, height: '100%', background: color, opacity: 0.75, borderRadius: 2 }} />
       </div>
-      <span style={{ color, fontSize: 9, minWidth: 52, textAlign: 'right', opacity: 0.8 }}>
+      <span style={{ color, fontSize: 11, minWidth: 60, textAlign: 'right', opacity: 0.9 }}>
         {val.toLocaleString()}
       </span>
     </div>
   );
 }
 
-// ── Hero glyph block ──────────────────────────────────────────────────────────
+function BigStat({ val, color, label }) {
+  return (
+    <div>
+      <div style={{ color, fontSize: 26, fontWeight: 700, lineHeight: 1 }}>{val}</div>
+      <div style={{ ...T.dim, fontSize: 10, marginTop: 3 }}>{label}</div>
+    </div>
+  );
+}
 
-function HeroGlyph({ rad, size = 88 }) {
-  const color = clsColor(rad);
+function Badge({ children, color }) {
   return (
     <span style={{
-      fontSize: size, fontFamily: 'serif', color, lineHeight: 1,
-      textShadow: `0 0 60px ${color}50, 0 0 120px ${color}18`,
-    }}>{rad}</span>
+      background: (color || '#888') + '18',
+      border: `1px solid ${(color || '#888')}40`,
+      color: color || '#888',
+      fontSize: 10, padding: '2px 9px', borderRadius: 10, letterSpacing: '0.05em',
+    }}>
+      {children}
+    </span>
   );
 }
 
@@ -118,66 +135,63 @@ function SoundProfile({ rad, positions, biradicals }) {
     return s;
   }, [rad, positions]);
 
-  const allCorpus = posStats.r1 + posStats.r2 + posStats.r3;
-
+  const allCorpus  = posStats.r1 + posStats.r2 + posStats.r3;
   const r1Families = useMemo(() =>
     biradicals.filter(d => d.pair_key.startsWith(rad + '-'))
-              .sort((a, b) => b.total_corpus - a.total_corpus).slice(0, 12),
+              .sort((a, b) => b.total_corpus - a.total_corpus).slice(0, 14),
     [rad, biradicals]);
-
   const r2Partners = useMemo(() =>
     biradicals.filter(d => d.pair_key.endsWith('-' + rad))
-              .sort((a, b) => b.total_corpus - a.total_corpus).slice(0, 12),
+              .sort((a, b) => b.total_corpus - a.total_corpus).slice(0, 14),
     [rad, biradicals]);
-
   const story = useMemo(() => buildSoundStory(rad, posStats, r1Families.length), [rad, posStats, r1Families]);
 
-  const pairRad   = phon?.pair;
+  const pairRad  = phon?.pair;
   const pairColor = pairRad ? clsColor(pairRad) : null;
-  const pairPhon  = pairRad ? PHONETIC_META[pairRad] : null;
 
   return (
-    <div style={{ padding: '14px 20px 28px' }}>
+    <div style={{ padding: '20px 24px 32px' }}>
 
       {/* Hero */}
-      <div style={{ textAlign: 'center', padding: '20px 0 14px' }}>
-        <HeroGlyph rad={rad} size={92} />
+      <div style={{ textAlign: 'center', padding: '20px 0 18px' }}>
+        <div style={{ fontSize: 96, fontFamily: 'serif', color, lineHeight: 1, textShadow: `0 0 70px ${color}55, 0 0 140px ${color}1a` }}>
+          {rad}
+        </div>
         {phon && (
-          <div style={{ color: '#3a3a3a', fontSize: 10, marginTop: 8, letterSpacing: '0.05em' }}>
-            {phon.voicing}{phon.emphatic ? ' emphatic' : ''} {MANNER_LABEL[phon.manner] || phon.manner} · {phon.place}
+          <div style={{ color: '#888', fontSize: 12, marginTop: 10, letterSpacing: '0.04em' }}>
+            {phon.voicing}{phon.emphatic ? ' · emphatic' : ''} · {MANNER_LABEL[phon.manner] || phon.manner} · {phon.place}
           </div>
         )}
-        <div style={{ marginTop: 5 }}>
-          <span style={{ background: color + '22', border: `1px solid ${color}40`, color, fontSize: 9, padding: '2px 10px', borderRadius: 10, letterSpacing: '0.06em' }}>
-            {clsLabel(rad)}
-          </span>
+        <div style={{ marginTop: 8, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
+          <Badge color={color}>{clsLabel(rad)}</Badge>
+          {phon && <Badge color={phon.voicing === 'voiced' ? '#22c55e' : '#ef4444'}>{phon.voicing}</Badge>}
+          {phon && <Badge>{MANNER_LABEL[phon.manner] || phon.manner}</Badge>}
         </div>
       </div>
 
       {/* Corpus weight */}
       <Section title="Corpus Weight">
-        <StatRow label="all" val={allCorpus}   maxVal={allCorpus}   color={color} />
-        <StatRow label="r1"  val={posStats.r1} maxVal={allCorpus}   color={color} />
-        <StatRow label="r2"  val={posStats.r2} maxVal={allCorpus}   color={color} />
-        <StatRow label="r3"  val={posStats.r3} maxVal={allCorpus}   color={color} />
+        <StatBar label="all" val={allCorpus}   maxVal={allCorpus}   color={color} />
+        <StatBar label="r1"  val={posStats.r1} maxVal={allCorpus}   color={color} />
+        <StatBar label="r2"  val={posStats.r2} maxVal={allCorpus}   color={color} />
+        <StatBar label="r3"  val={posStats.r3} maxVal={allCorpus}   color={color} />
       </Section>
 
       {/* Phonetic pair */}
       {pairRad && (
         <Section title={phon.emphatic ? 'Emphatic / Plain Pair' : 'Voiced / Voiceless Pair'}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 20 }}>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 48, fontFamily: 'serif', color, lineHeight: 1, textShadow: `0 0 30px ${color}40` }}>{rad}</div>
-              <div style={{ color: '#2a2a2a', fontSize: 8, marginTop: 4 }}>{phon.voicing}{phon.emphatic ? ' · emphatic' : ''}</div>
+              <div style={{ fontSize: 52, fontFamily: 'serif', color, lineHeight: 1, textShadow: `0 0 30px ${color}45` }}>{rad}</div>
+              <div style={{ color: '#777', fontSize: 10, marginTop: 5 }}>{phon.voicing}{phon.emphatic ? ' · emphatic' : ''}</div>
             </div>
-            <div style={{ color: '#1a1a1a', fontSize: 20 }}>↔</div>
+            <div style={{ color: '#444', fontSize: 22 }}>↔</div>
             <div style={{ textAlign: 'center' }}>
-              <div style={{ fontSize: 48, fontFamily: 'serif', color: pairColor, lineHeight: 1, textShadow: `0 0 30px ${pairColor}40` }}>{pairRad}</div>
-              <div style={{ color: '#2a2a2a', fontSize: 8, marginTop: 4 }}>{pairPhon?.voicing}{phon.emphatic ? ' · plain' : ''}</div>
+              <div style={{ fontSize: 52, fontFamily: 'serif', color: pairColor, lineHeight: 1, textShadow: `0 0 30px ${pairColor}45` }}>{pairRad}</div>
+              <div style={{ color: '#777', fontSize: 10, marginTop: 5 }}>{PHONETIC_META[pairRad]?.voicing}{phon.emphatic ? ' · plain' : ''}</div>
             </div>
-            <div style={{ color: '#2a2a2a', fontSize: 9, marginLeft: 8, lineHeight: 1.6 }}>
-              {phon.place}<br/>
-              {MANNER_LABEL[phon.manner] || phon.manner}
+            <div style={{ color: '#666', fontSize: 11, marginLeft: 8, lineHeight: 1.7 }}>
+              {phon.place}<br />{MANNER_LABEL[phon.manner] || phon.manner}
             </div>
           </div>
         </Section>
@@ -185,8 +199,8 @@ function SoundProfile({ rad, positions, biradicals }) {
 
       {/* Families as r1 */}
       {r1Families.length > 0 && (
-        <Section title={`Families Anchored (r1) · ${r1Families.length}`}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <Section title="Families Anchored (r1)" count={r1Families.length}>
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {r1Families.map(d => {
               const [, r2] = d.pair_key.split('-');
               return <Chip key={d.pair_key} color={clsColor(r2)}>{d.pair_key}</Chip>;
@@ -197,8 +211,8 @@ function SoundProfile({ rad, positions, biradicals }) {
 
       {/* Families as r2 */}
       {r2Partners.length > 0 && (
-        <Section title={`Appears as r2 · ${r2Partners.length} families`}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <Section title="Appears as r2" count={r2Partners.length}>
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {r2Partners.map(d => {
               const [r1] = d.pair_key.split('-');
               return <Chip key={d.pair_key} color={clsColor(r1)}>{d.pair_key}</Chip>;
@@ -209,9 +223,8 @@ function SoundProfile({ rad, positions, biradicals }) {
 
       {/* Story */}
       <Section title="Story">
-        <p style={{ color: '#444', fontSize: 10, lineHeight: 1.8, margin: 0 }}>{story}</p>
+        <p style={{ ...T.body, margin: 0 }}>{story}</p>
       </Section>
-
     </div>
   );
 }
@@ -219,54 +232,54 @@ function SoundProfile({ rad, positions, biradicals }) {
 // ── Family Profile ────────────────────────────────────────────────────────────
 
 function FamilyProfile({ pairKey, biradicals, depths, topRoots }) {
-  const [r1, r2]  = pairKey.split('-');
-  const c1Color   = clsColor(r1), c2Color = clsColor(r2);
-  const c1Label   = clsLabel(r1), c2Label = clsLabel(r2);
-  const biral     = biradicals.find(d => d.pair_key === pairKey);
-  const depth     = depths.find(d => d.pair_key === pairKey);
-  const r3Set     = useMemo(() => new Set(depth?.r3_values || []), [depth]);
-
-  const topInFamily = useMemo(() =>
+  const [r1, r2] = pairKey.split('-');
+  const c1Color  = clsColor(r1), c2Color = clsColor(r2);
+  const biral    = biradicals.find(d => d.pair_key === pairKey);
+  const depth    = depths.find(d => d.pair_key === pairKey);
+  const r3Set    = useMemo(() => new Set(depth?.r3_values || []), [depth]);
+  const topInFam = useMemo(() =>
     topRoots.filter(r => r.r1 === r1 && r.r2 === r2).sort((a, b) => b.corpus - a.corpus),
     [pairKey, topRoots]);
-
   const story = useMemo(() =>
     biral ? buildFamilyStory(pairKey, biral, r3Set.size) : '',
     [pairKey, biral, r3Set.size]);
 
   return (
-    <div style={{ padding: '14px 20px 28px' }}>
+    <div style={{ padding: '20px 24px 32px' }}>
 
       {/* Hero pair */}
-      <div style={{ textAlign: 'center', padding: '20px 0 14px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 8 }}>
-          <span style={{ fontSize: 84, fontFamily: 'serif', color: c1Color, lineHeight: 1, textShadow: `0 0 60px ${c1Color}45` }}>{r1}</span>
-          <span style={{ fontSize: 36, color: '#1f1f1f', fontWeight: 300, alignSelf: 'center' }}>—</span>
-          <span style={{ fontSize: 84, fontFamily: 'serif', color: c2Color, lineHeight: 1, textShadow: `0 0 60px ${c2Color}45` }}>{r2}</span>
+      <div style={{ textAlign: 'center', padding: '20px 0 18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontSize: 88, fontFamily: 'serif', color: c1Color, lineHeight: 1, textShadow: `0 0 70px ${c1Color}50` }}>{r1}</span>
+          <span style={{ fontSize: 40, color: '#333', fontWeight: 200, alignSelf: 'center', lineHeight: 1 }}>—</span>
+          <span style={{ fontSize: 88, fontFamily: 'serif', color: c2Color, lineHeight: 1, textShadow: `0 0 70px ${c2Color}50` }}>{r2}</span>
         </div>
-        <div style={{ color: '#333', fontSize: 10, marginTop: 6, letterSpacing: '0.04em' }}>
-          <span style={{ color: c1Color }}>{c1Label}</span>
-          <span style={{ color: '#1f1f1f' }}> × </span>
-          <span style={{ color: c2Color }}>{c2Label}</span>
+        <div style={{ color: '#888', fontSize: 12, marginTop: 10 }}>
+          <span style={{ color: c1Color }}>{clsLabel(r1)}</span>
+          <span style={{ color: '#444' }}> × </span>
+          <span style={{ color: c2Color }}>{clsLabel(r2)}</span>
         </div>
+        {PHON_CLASSES[r1]?.class === PHON_CLASSES[r2]?.class && (
+          <div style={{ marginTop: 6 }}><Badge color="#ef4444">OCP exception</Badge></div>
+        )}
       </div>
 
       {/* Stats */}
       {biral && (
         <Section title="Family Stats">
-          <div style={{ display: 'flex', gap: 24, flexWrap: 'wrap' }}>
-            <Stat val={biral.root_count} color="#a855f7" label="roots" />
-            <Stat val={`${(biral.total_corpus / 1000).toFixed(1)}k`} color="#ef4444" label="corpus" />
-            <Stat val={`${(biral.total_words / 1000).toFixed(1)}k`} color="#22c55e" label="words" />
-            {depth && <Stat val={`${depth.r3_count}/28`} color="#eab308" label="r3 depth" />}
+          <div style={{ display: 'flex', gap: 28, flexWrap: 'wrap' }}>
+            <BigStat val={biral.root_count} color="#a855f7" label="roots" />
+            <BigStat val={`${(biral.total_corpus / 1000).toFixed(1)}k`} color="#ef4444" label="corpus" />
+            <BigStat val={`${(biral.total_words / 1000).toFixed(1)}k`} color="#22c55e" label="words" />
+            {depth && <BigStat val={`${depth.r3_count}/28`} color="#eab308" label="r3 depth" />}
           </div>
         </Section>
       )}
 
-      {/* All root members from depths */}
+      {/* All root members */}
       {depth?.r3_values?.length > 0 && (
-        <Section title={`Root Members · ${depth.r3_values.length} roots`}>
-          <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
+        <Section title="Root Members" count={depth.r3_values.length}>
+          <div style={{ display: 'flex', gap: 5, flexWrap: 'wrap' }}>
             {[...depth.r3_values].map(r3 => (
               <Chip key={r3} color={clsColor(r3)}>{r1}-{r2}-{r3}</Chip>
             ))}
@@ -274,24 +287,23 @@ function FamilyProfile({ pairKey, biradicals, depths, topRoots }) {
         </Section>
       )}
 
-      {/* r3 depth by phonological class */}
+      {/* r3 depth by class */}
       {depth?.r3_values?.length > 0 && (
         <Section title="r3 Depth by Class">
           {CLASS_ORDER.map(cls => {
             const members = ALL_CONSONANTS.filter(c => PHON_CLASSES[c]?.class === cls);
-            const color   = CLASS_META[cls]?.color || '#555';
+            const color   = CLASS_META[cls]?.color || '#666';
             return (
-              <div key={cls} style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 6 }}>
-                <span style={{ color: '#1f1f1f', fontSize: 8, minWidth: 52, textAlign: 'right' }}>
+              <div key={cls} style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 7 }}>
+                <span style={{ color: '#666', fontSize: 10, minWidth: 58, textAlign: 'right' }}>
                   {CLASS_META[cls]?.label}
                 </span>
-                <div style={{ display: 'flex', gap: 5 }}>
+                <div style={{ display: 'flex', gap: 6 }}>
                   {members.map(c => (
                     <span key={c} style={{
-                      fontSize: 14, fontFamily: 'serif',
-                      color: r3Set.has(c) ? color : '#181818',
-                      textShadow: r3Set.has(c) ? `0 0 10px ${color}60` : 'none',
-                      transition: 'color 0.15s',
+                      fontSize: 15, fontFamily: 'serif',
+                      color: r3Set.has(c) ? color : '#252525',
+                      textShadow: r3Set.has(c) ? `0 0 12px ${color}60` : 'none',
                     }}>{c}</span>
                   ))}
                 </div>
@@ -301,15 +313,17 @@ function FamilyProfile({ pairKey, biradicals, depths, topRoots }) {
         </Section>
       )}
 
-      {/* Top roots from topRoots data (with corpus stats) */}
-      {topInFamily.length > 0 && (
-        <Section title={`Top Roots by Corpus · ${topInFamily.length} shown`}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
-            {topInFamily.map(r => (
-              <div key={`${r.r1}-${r.r2}-${r.r3}`} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {/* Top roots with corpus stats */}
+      {topInFam.length > 0 && (
+        <Section title="Top Roots by Corpus" count={topInFam.length}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+            {topInFam.map(r => (
+              <div key={`${r.r1}-${r.r2}-${r.r3}`} style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                 <Chip color={clsColor(r.r3)}>{r.r1}-{r.r2}-{r.r3}</Chip>
-                <span style={{ color: '#ef4444', fontSize: 9 }}>{r.corpus.toLocaleString()}</span>
-                <span style={{ color: '#22c55e', fontSize: 9 }}>{r.words.toLocaleString()} words</span>
+                <span style={{ color: '#ef4444', fontSize: 11 }}>{r.corpus.toLocaleString()}</span>
+                <span style={{ color: '#555', fontSize: 10 }}>corpus</span>
+                <span style={{ color: '#22c55e', fontSize: 11 }}>{r.words.toLocaleString()}</span>
+                <span style={{ color: '#555', fontSize: 10 }}>words</span>
               </div>
             ))}
           </div>
@@ -318,9 +332,8 @@ function FamilyProfile({ pairKey, biradicals, depths, topRoots }) {
 
       {/* Story */}
       <Section title="Story">
-        <p style={{ color: '#444', fontSize: 10, lineHeight: 1.8, margin: 0 }}>{story}</p>
+        <p style={{ ...T.body, margin: 0 }}>{story}</p>
       </Section>
-
     </div>
   );
 }
@@ -330,45 +343,79 @@ function FamilyProfile({ pairKey, biradicals, depths, topRoots }) {
 function RootProfile({ root }) {
   const { r1, r2, r3, corpus, words } = root;
   const [c1, c2, c3] = [r1, r2, r3].map(r => CLASS_META[PHON_CLASSES[r]?.class]);
+  const isGeminate   = r2 === r3;
+
+  const [rootWords, setRootWords] = useState(null);
+  const [wordsLoading, setWordsLoading] = useState(false);
+
+  useEffect(() => {
+    setRootWords(null);
+    setWordsLoading(true);
+    fetchRootWords(r1, r2, r3)
+      .then(d => setRootWords(d.words || []))
+      .catch(() => setRootWords([]))
+      .finally(() => setWordsLoading(false));
+  }, [r1, r2, r3]);
 
   return (
-    <div style={{ padding: '14px 20px 28px' }}>
-      <div style={{ textAlign: 'center', padding: '20px 0 16px' }}>
-        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'baseline', gap: 6 }}>
+    <div style={{ padding: '20px 24px 32px' }}>
+
+      {/* Hero triradical */}
+      <div style={{ textAlign: 'center', padding: '20px 0 18px' }}>
+        <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: 8 }}>
           {[[r1, c1],[r2, c2],[r3, c3]].map(([rad, meta], i) => (
-            <span key={i} style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
-              {i > 0 && <span style={{ fontSize: 26, color: '#1f1f1f' }}>-</span>}
-              <span style={{ fontSize: 74, fontFamily: 'serif', color: meta?.color || '#eab308', lineHeight: 1, textShadow: `0 0 50px ${meta?.color || '#eab308'}40` }}>
+            <span key={i} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              {i > 0 && <span style={{ fontSize: 32, color: '#2a2a2a', fontWeight: 200, lineHeight: 1 }}>-</span>}
+              <span style={{ fontSize: 80, fontFamily: 'serif', color: meta?.color || '#eab308', lineHeight: 1, textShadow: `0 0 60px ${meta?.color || '#eab308'}45` }}>
                 {rad}
               </span>
             </span>
           ))}
         </div>
-        <div style={{ marginTop: 8, display: 'flex', gap: 5, justifyContent: 'center' }}>
+        <div style={{ marginTop: 10, display: 'flex', gap: 6, justifyContent: 'center', flexWrap: 'wrap' }}>
           {[c1, c2, c3].filter(Boolean).map((c, i) => (
-            <span key={i} style={{ background: c.color + '20', border: `1px solid ${c.color}40`, color: c.color, fontSize: 8, padding: '2px 8px', borderRadius: 10 }}>
-              {c.label}
-            </span>
+            <Badge key={i} color={c.color}>{c.label}</Badge>
           ))}
+          {isGeminate && <Badge color="#a855f7">geminate</Badge>}
         </div>
       </div>
+
+      {/* Stats */}
       <Section title="Corpus Weight">
-        <div style={{ display: 'flex', gap: 24 }}>
-          <Stat val={corpus?.toLocaleString()} color="#ef4444" label="corpus" />
-          <Stat val={words?.toLocaleString()}  color="#22c55e" label="words"  />
+        <div style={{ display: 'flex', gap: 28 }}>
+          <BigStat val={corpus?.toLocaleString()} color="#ef4444" label="corpus" />
+          <BigStat val={words?.toLocaleString()}  color="#22c55e" label="words"  />
         </div>
       </Section>
-    </div>
-  );
-}
 
-// ── Stat display helper ───────────────────────────────────────────────────────
-
-function Stat({ val, color, label }) {
-  return (
-    <div>
-      <div style={{ color, fontSize: 22, fontWeight: 700, lineHeight: 1 }}>{val}</div>
-      <div style={{ color: '#2a2a2a', fontSize: 8, marginTop: 2 }}>{label}</div>
+      {/* Words derived from this root */}
+      <Section title="Words" count={rootWords?.length ?? null}>
+        {wordsLoading && (
+          <div style={{ color: '#444', fontSize: 11 }}>loading words…</div>
+        )}
+        {!wordsLoading && rootWords?.length === 0 && (
+          <div style={{ color: '#444', fontSize: 11 }}>no words found for this root</div>
+        )}
+        {!wordsLoading && rootWords?.length > 0 && (
+          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+            {rootWords.map(w => (
+              <div key={w.word_id} style={{
+                background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
+                borderRadius: 6, padding: '6px 12px', textAlign: 'center', minWidth: 48,
+              }}>
+                <div style={{ fontSize: 18, fontFamily: 'serif', color: c1?.color || '#eab308', lineHeight: 1.2 }}>
+                  {w.arabic}
+                </div>
+                {w.english && (
+                  <div style={{ fontSize: 9, color: '#666', marginTop: 3, maxWidth: 90, wordBreak: 'break-word' }}>
+                    {w.english}
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </Section>
     </div>
   );
 }
@@ -380,24 +427,20 @@ export default function ProfileBrowser({ biradicals, positions, depths, topRoots
   const [sort,        setSort]        = useState('corpus');
   const [selectedKey, setSelectedKey] = useState(null);
 
-  // Reset on type change
   useEffect(() => { setSort('corpus'); setSelectedKey(null); }, [type]);
 
-  // Corpus totals per sound
   const soundCorpus = useMemo(() => {
     const m = {};
     positions.forEach(p => { m[p.radical] = (m[p.radical] || 0) + p.corpus; });
     return m;
   }, [positions]);
 
-  // Depth map for families
   const depthMap = useMemo(() => {
     const m = {};
     depths.forEach(d => { m[d.pair_key] = d.r3_count; });
     return m;
   }, [depths]);
 
-  // Build entity list
   const entities = useMemo(() => {
     if (type === 'sound') {
       return ALL_CONSONANTS
@@ -406,7 +449,7 @@ export default function ProfileBrowser({ biradicals, positions, depths, topRoots
           if (sort === 'class')   return CLASS_ORDER.indexOf(PHON_CLASSES[a]?.class) - CLASS_ORDER.indexOf(PHON_CLASSES[b]?.class);
           if (sort === 'manner')  return MANNER_ORDER.indexOf(PHONETIC_META[a]?.manner) - MANNER_ORDER.indexOf(PHONETIC_META[b]?.manner);
           if (sort === 'voicing') return (PHONETIC_META[a]?.voicing === 'voiced' ? 0 : 1) - (PHONETIC_META[b]?.voicing === 'voiced' ? 0 : 1);
-          return 0; // alpha fallback
+          return 0;
         })
         .map(r => ({ key: r, label: r, color: clsColor(r), val: soundCorpus[r] || 0 }));
     }
@@ -436,17 +479,16 @@ export default function ProfileBrowser({ biradicals, positions, depths, topRoots
           label: `${r.r1}-${r.r2}-${r.r3}`,
           color: clsColor(r.r1),
           val:   r.corpus,
+          isGeminate: r.r2 === r.r3,
         }));
     }
     return [];
   }, [type, sort, soundCorpus, depthMap, biradicals, topRoots]);
 
-  // Auto-select first on list change
   useEffect(() => {
     if (entities.length > 0) setSelectedKey(entities[0].key);
   }, [entities]);
 
-  // Keyboard navigation
   const handleKey = useCallback(e => {
     if (!['ArrowDown','ArrowUp'].includes(e.key)) return;
     const idx = entities.findIndex(en => en.key === selectedKey);
@@ -459,78 +501,79 @@ export default function ProfileBrowser({ biradicals, positions, depths, topRoots
     return () => window.removeEventListener('keydown', handleKey);
   }, [handleKey]);
 
-  const maxVal   = useMemo(() => Math.max(...entities.map(e => e.val), 1), [entities]);
+  const maxVal    = useMemo(() => Math.max(...entities.map(e => e.val), 1), [entities]);
   const selEntity = entities.find(e => e.key === selectedKey);
 
   return (
     <div style={{ display: 'flex', width: '100%', height: '100%', overflow: 'hidden' }}>
 
       {/* ── Sidebar ─────────────────────────────────────────────────────────── */}
-      <div style={{ width: 164, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
+      <div style={{ width: 170, flexShrink: 0, display: 'flex', flexDirection: 'column', borderRight: '1px solid rgba(255,255,255,0.07)', overflow: 'hidden' }}>
 
-        {/* Corpus label */}
         {corpusLabel && (
-          <div style={{ padding: '4px 8px', color: '#222', fontSize: 8, letterSpacing: '0.08em', textTransform: 'uppercase', borderBottom: '1px solid rgba(255,255,255,0.03)', flexShrink: 0 }}>
+          <div style={{ padding: '5px 10px', color: '#666', fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
             {corpusLabel}
           </div>
         )}
 
         {/* Type tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.07)', flexShrink: 0 }}>
           {['sound','family','root'].map(t => (
             <button key={t} onClick={() => setType(t)} style={{
-              flex: 1, padding: '6px 0', fontSize: 8, cursor: 'pointer', border: 'none',
+              flex: 1, padding: '7px 0', fontSize: 9, cursor: 'pointer', border: 'none',
               textTransform: 'uppercase', letterSpacing: '0.06em',
               background: type === t ? 'rgba(255,255,255,0.08)' : 'transparent',
-              color: type === t ? '#ccc' : '#2a2a2a',
-              borderBottom: `1px solid ${type === t ? 'rgba(255,255,255,0.18)' : 'transparent'}`,
+              color: type === t ? '#ddd' : '#555',
+              borderBottom: `1px solid ${type === t ? 'rgba(255,255,255,0.2)' : 'transparent'}`,
             }}>{t}</button>
           ))}
         </div>
 
         {/* Sort chips */}
-        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', padding: '5px 6px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0 }}>
+        <div style={{ display: 'flex', gap: 3, flexWrap: 'wrap', padding: '5px 7px', borderBottom: '1px solid rgba(255,255,255,0.05)', flexShrink: 0 }}>
           {(SORT_OPTS[type] || []).map(([k, lbl]) => (
             <button key={k} onClick={() => setSort(k)} style={{
-              padding: '1px 6px', borderRadius: 3, fontSize: 7, cursor: 'pointer',
+              padding: '2px 7px', borderRadius: 4, fontSize: 8, cursor: 'pointer',
               background: sort === k ? 'rgba(255,255,255,0.12)' : 'transparent',
-              border: `1px solid ${sort === k ? 'rgba(255,255,255,0.18)' : 'rgba(255,255,255,0.05)'}`,
-              color: sort === k ? '#ccc' : '#2a2a2a',
+              border: `1px solid ${sort === k ? 'rgba(255,255,255,0.2)' : 'rgba(255,255,255,0.08)'}`,
+              color: sort === k ? '#ccc' : '#555',
             }}>{lbl}</button>
           ))}
         </div>
 
         {/* Entity list */}
-        <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1a1a1a transparent' }}>
+        <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#222 transparent' }}>
           {entities.map(en => {
-            const isSel = en.key === selectedKey;
-            const barW  = Math.max(2, Math.round((en.val / maxVal) * 38));
-            const fontSize = type === 'root' ? 9 : type === 'family' ? 11 : 15;
+            const isSel    = en.key === selectedKey;
+            const barW     = Math.max(2, Math.round((en.val / maxVal) * 36));
+            const fontSize = type === 'root' ? 10 : type === 'family' ? 12 : 16;
             return (
               <div key={en.key} onClick={() => setSelectedKey(en.key)} style={{
-                display: 'flex', alignItems: 'center', gap: 6, padding: '5px 8px',
+                display: 'flex', alignItems: 'center', gap: 6, padding: '6px 9px',
                 cursor: 'pointer', userSelect: 'none',
                 background: isSel ? 'rgba(255,255,255,0.07)' : 'transparent',
                 borderLeft: `2px solid ${isSel ? en.color : 'transparent'}`,
               }}>
                 <span style={{
                   fontFamily: 'serif', fontSize,
-                  color: isSel ? en.color : en.color + '88',
-                  minWidth: type === 'root' ? 56 : type === 'family' ? 28 : 16,
+                  color: isSel ? en.color : en.color + 'bb',
+                  minWidth: type === 'root' ? 58 : type === 'family' ? 30 : 18,
                   lineHeight: 1.3,
                 }}>{en.label}</span>
-                <div style={{ width: barW, height: 2, background: en.color, opacity: isSel ? 0.8 : 0.25, borderRadius: 1, flexShrink: 0 }} />
+                {en.isGeminate && (
+                  <span style={{ fontSize: 7, color: '#a855f7', opacity: 0.7, flexShrink: 0 }}>●</span>
+                )}
+                <div style={{ width: barW, height: 2, background: en.color, opacity: isSel ? 0.9 : 0.3, borderRadius: 1, flexShrink: 0 }} />
               </div>
             );
           })}
         </div>
-
       </div>
 
       {/* ── Profile panel ───────────────────────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#1a1a1a transparent' }}>
+      <div style={{ flex: 1, overflowY: 'auto', scrollbarWidth: 'thin', scrollbarColor: '#222 transparent' }}>
         {!selEntity && (
-          <div style={{ padding: 24, color: '#1f1f1f', fontSize: 10 }}>select an entity from the list</div>
+          <div style={{ padding: 28, color: '#444', fontSize: 12 }}>select an entity from the list</div>
         )}
         {selEntity && type === 'sound' && (
           <SoundProfile rad={selectedKey} positions={positions} biradicals={biradicals} />
@@ -543,7 +586,6 @@ export default function ProfileBrowser({ biradicals, positions, depths, topRoots
           return root ? <RootProfile root={root} /> : null;
         })()}
       </div>
-
     </div>
   );
 }
