@@ -71,3 +71,37 @@ export function sameClass(r1, r2) {
   const c2 = PHON_CLASSES[r2]?.class;
   return c1 && c2 && c1 === c2;
 }
+
+// Detailed phonetic properties per consonant.
+// pair: voiced↔voiceless minimal pair, or emphatic↔plain pair.
+export const PHONETIC_META = {
+  'ب': { voicing: 'voiced',    manner: 'plosive',   place: 'bilabial',        emphatic: false, pair: 'ف'  },
+  'ف': { voicing: 'voiceless', manner: 'fricative', place: 'labiodental',     emphatic: false, pair: 'ب'  },
+  'م': { voicing: 'voiced',    manner: 'nasal',     place: 'bilabial',        emphatic: false, pair: null },
+  'و': { voicing: 'voiced',    manner: 'semivowel', place: 'bilabial',        emphatic: false, pair: null },
+  'ت': { voicing: 'voiceless', manner: 'plosive',   place: 'dental',          emphatic: false, pair: 'د'  },
+  'د': { voicing: 'voiced',    manner: 'plosive',   place: 'dental',          emphatic: false, pair: 'ت'  },
+  'ث': { voicing: 'voiceless', manner: 'fricative', place: 'dental',          emphatic: false, pair: 'ذ'  },
+  'ذ': { voicing: 'voiced',    manner: 'fricative', place: 'dental',          emphatic: false, pair: 'ث'  },
+  'ر': { voicing: 'voiced',    manner: 'trill',     place: 'alveolar',        emphatic: false, pair: null },
+  'ز': { voicing: 'voiced',    manner: 'fricative', place: 'alveolar',        emphatic: false, pair: 'س'  },
+  'س': { voicing: 'voiceless', manner: 'fricative', place: 'alveolar',        emphatic: false, pair: 'ز'  },
+  'ش': { voicing: 'voiceless', manner: 'fricative', place: 'palato-alveolar', emphatic: false, pair: 'ج'  },
+  'ج': { voicing: 'voiced',    manner: 'affricate', place: 'palato-alveolar', emphatic: false, pair: 'ش'  },
+  'ل': { voicing: 'voiced',    manner: 'lateral',   place: 'alveolar',        emphatic: false, pair: null },
+  'ن': { voicing: 'voiced',    manner: 'nasal',     place: 'alveolar',        emphatic: false, pair: null },
+  'ي': { voicing: 'voiced',    manner: 'semivowel', place: 'palatal',         emphatic: false, pair: null },
+  'ص': { voicing: 'voiceless', manner: 'fricative', place: 'alveolar',        emphatic: true,  pair: 'س'  },
+  'ض': { voicing: 'voiced',    manner: 'fricative', place: 'alveolar',        emphatic: true,  pair: 'ز'  },
+  'ط': { voicing: 'voiceless', manner: 'plosive',   place: 'dental',          emphatic: true,  pair: 'ت'  },
+  'ظ': { voicing: 'voiced',    manner: 'fricative', place: 'dental',          emphatic: true,  pair: 'ذ'  },
+  'خ': { voicing: 'voiceless', manner: 'fricative', place: 'velar',           emphatic: false, pair: 'غ'  },
+  'غ': { voicing: 'voiced',    manner: 'fricative', place: 'uvular',          emphatic: false, pair: 'خ'  },
+  'ك': { voicing: 'voiceless', manner: 'plosive',   place: 'velar',           emphatic: false, pair: null },
+  'ق': { voicing: 'voiceless', manner: 'plosive',   place: 'uvular',          emphatic: false, pair: null },
+  'ح': { voicing: 'voiceless', manner: 'fricative', place: 'pharyngeal',      emphatic: false, pair: 'ع'  },
+  'ع': { voicing: 'voiced',    manner: 'fricative', place: 'pharyngeal',      emphatic: false, pair: 'ح'  },
+  'ه': { voicing: 'voiceless', manner: 'fricative', place: 'laryngeal',       emphatic: false, pair: null },
+  'ء': { voicing: 'voiceless', manner: 'plosive',   place: 'laryngeal',       emphatic: false, pair: null },
+  'ا': { voicing: 'voiced',    manner: 'semivowel', place: 'laryngeal',       emphatic: false, pair: null },
+};

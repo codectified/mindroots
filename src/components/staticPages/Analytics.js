@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { fetchBiradicals, fetchRadicalPositions, fetchR3Depth, fetchCorpora, fetchTopRoots } from '../../services/apiService';
 import { useSize } from '../analytics/shared';
 import { PHON_CLASSES, CLASS_META, sameClass } from '../analytics/phonology';
-import Overview        from '../analytics/Overview';
+import ProfileBrowser  from '../analytics/ProfileBrowser';
 import FertilityGravity from '../analytics/FertilityGravity';
 import SoundProfile    from '../analytics/SoundProfile';
 import Scatter3D      from '../analytics/Scatter3D';
@@ -484,7 +484,7 @@ export default function Analytics() {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
         {loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
         {error   && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
-        {!loading && !error && chart === 0 && <Overview biradicals={biradicals} positions={positions} depths={depths} topRoots={topRoots} corpusLabel={corpusId === 'all' ? null : (corpora.find(c => String(c.id) === corpusId)?.english || `Corpus ${corpusId}`)} />}
+        {!loading && !error && chart === 0 && <ProfileBrowser biradicals={biradicals} positions={positions} depths={depths} topRoots={topRoots} corpusLabel={corpusId === 'all' ? null : (corpora.find(c => String(c.id) === corpusId)?.english || `Corpus ${corpusId}`)} />}
         {!loading && !error && chart === 1 && <FertilityGravity biradicals={biradicals} depths={depths} positions={positions} />}
         {!loading && !error && chart === 2 && <Heatmap       data={biradicals} />}
         {!loading && !error && chart === 3 && <EcologyChart  data={positions} />}
