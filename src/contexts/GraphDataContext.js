@@ -819,6 +819,9 @@ const handleContextMenuAction = async (action, node, position = null) => {
           case 'corpusitem':
             inspectNodeId = node.item_id?.low !== undefined ? node.item_id.low : node.item_id;
             break;
+          case 'ayah':
+            inspectNodeId = node.ayah_key;
+            break;
           default:
             inspectNodeId = node.word_id || node.root_id || node.form_id || node.item_id;
         }

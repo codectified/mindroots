@@ -127,6 +127,102 @@ router.get('/inspect/corpusitem/:corpusId/:itemId', async (req, res) => {
   }
 });
 
+// Node Inspector - Get comprehensive ayah information
+// Ayah nodes use a string key ("surah:ayah", e.g. "2:3") instead of an integer ID,
+// so they need their own route ahead of the generic /inspect/:nodeType/:nodeId
+router.get('/inspect/ayah/:ayahKey', async (req, res) => {
+  const session = req.driver.session();
+  try {
+    const { ayahKey } = req.params;
+
+    if (!/^\d+:\d+$/.test(ayahKey)) {
+      return res.status(400).json({
+        error: `Invalid ayah key: ${ayahKey}. Expected format "surah:ayah" (e.g. "2:3")`
+      });
+    }
+
+    const query = `
+      MATCH (n:Ayah {ayah_key: $ayahKey})
+
+      // Get all node properties
+      WITH n, keys(n) as propertyKeys
+
+      // Get relationship counts by type and direction
+      OPTIONAL MATCH (n)-[r]->(target)
+      WITH n, propertyKeys, type(r) as outRelType, count(target) as outCount
+      WITH n, propertyKeys, collect({type: outRelType, direction: 'outgoing', count: outCount}) as outgoingRels
+
+      OPTIONAL MATCH (source)-[r]->(n)
+      WITH n, propertyKeys, outgoingRels, type(r) as inRelType, count(source) as inCount
+      WITH n, propertyKeys, outgoingRels, collect({type: inRelType, direction: 'incoming', count: inCount}) as incomingRels
+
+      // Get connected node type counts
+      OPTIONAL MATCH (n)-[:HAS_ITEM]->(ci:CorpusItem)
+      WITH n, propertyKeys, outgoingRels, incomingRels, count(ci) as corpusItemCount
+
+      OPTIONAL MATCH (s:Surah)-[:HAS_AYAH]->(n)
+      WITH n, propertyKeys, outgoingRels, incomingRels, corpusItemCount, count(s) as surahCount
+
+      RETURN n,
+             propertyKeys,
+             outgoingRels + incomingRels as relationships,
+             {
+               corpusItems: corpusItemCount,
+               surahs: surahCount
+             } as connectedCounts
+    `;
+
+    const result = await session.run(query, { ayahKey });
+
+    if (result.records.length === 0) {
+      return res.status(404).json({
+        error: `No Ayah found with ayah_key: ${ayahKey}`
+      });
+    }
+
+    const record = result.records[0];
+    const node = record.get('n').properties;
+    const propertyKeys = record.get('propertyKeys');
+    const relationships = record.get('relationships');
+    const connectedCounts = record.get('connectedCounts');
+
+    // Convert Neo4j integers and organize data
+    const nodeData = convertIntegers(node);
+    const relationshipData = convertIntegers(relationships.filter(r => r.type !== null));
+    const connectedData = convertIntegers(connectedCounts);
+
+    // Organize properties in the format expected by NodeInspector
+    const organizedProperties = {};
+    propertyKeys.forEach(key => {
+      const value = nodeData[key];
+      organizedProperties[key] = {
+        value: value,
+        type: typeof value,
+        isEmpty: value === null || value === undefined || value === ''
+      };
+    });
+
+    res.json({
+      nodeType: 'Ayah',
+      nodeId: ayahKey,
+      properties: organizedProperties,
+      relationships: relationshipData,
+      connectedNodeCounts: connectedData,
+      summary: {
+        totalProperties: propertyKeys.length,
+        totalRelationships: relationshipData.reduce((sum, r) => sum + r.count, 0),
+        totalConnectedNodes: Object.values(connectedData).reduce((sum, count) => sum + count, 0)
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in ayah inspect endpoint:', error);
+    res.status(500).json({ error: 'Internal server error', message: error.message });
+  } finally {
+    await session.close();
+  }
+});
+
 // Node Inspector - Get comprehensive node information (for other node types)
 router.get('/inspect/:nodeType/:nodeId', async (req, res) => {
   try {
@@ -799,10 +895,11 @@ router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
 
   try {
     // Validate node type — CorpusItem not supported (uses composite nodeId)
-    const validNodeTypes = ['word', 'root', 'form'];
+    const validNodeTypes = ['word', 'root', 'form', 'ayah'];
     if (!validNodeTypes.includes(nodeType.toLowerCase())) {
       return res.status(400).json({ error: `Custom tags are not supported for node type: ${nodeType}` });
     }
+    const isAyah = nodeType.toLowerCase() === 'ayah';
 
     // Validate key format: lowercase alphanumeric and underscores only, must start with a letter
     if (!key || !/^[a-z][a-z0-9_]*$/.test(key)) {
@@ -813,7 +910,8 @@ router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
     const systemFields = [
       'word_id', 'root_id', 'form_id', 'item_id', 'corpus_id', 'entry_id',
       'arabic', 'definitions', 'hanswehr_entry', 'global_position',
-      'surah_number', 'ayah_number', 'word_position'
+      'surah_number', 'ayah_number', 'word_position',
+      'ayah_key', 'surah_id', 'ayah_id', 'node_type'
     ];
     if (systemFields.includes(key) || key.endsWith('_validated_count')) {
       return res.status(400).json({ error: `Cannot overwrite system field: ${key}` });
@@ -824,12 +922,21 @@ router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
       return res.status(400).json({ error: 'Value must be a string' });
     }
 
-    const capitalizedNodeType = nodeType.charAt(0).toUpperCase() + nodeType.slice(1);
-    const idProperty = `${nodeType.toLowerCase()}_id`;
-
-    // Find the node
-    const nodeQuery = `MATCH (n:${capitalizedNodeType}) WHERE n.${idProperty} = $nodeId RETURN n`;
-    const nodeResult = await session.run(nodeQuery, { nodeId: parseInt(nodeId) });
+    // Find the node — Ayah nodes use a string key ("surah:ayah"), others an integer ID
+    let nodeQuery, nodeParams;
+    if (isAyah) {
+      if (!/^\d+:\d+$/.test(nodeId)) {
+        return res.status(400).json({ error: `Invalid ayah key: ${nodeId}. Expected format "surah:ayah" (e.g. "2:3")` });
+      }
+      nodeQuery = `MATCH (n:Ayah {ayah_key: $nodeId}) RETURN n`;
+      nodeParams = { nodeId };
+    } else {
+      const capitalizedNodeType = nodeType.charAt(0).toUpperCase() + nodeType.slice(1);
+      const idProperty = `${nodeType.toLowerCase()}_id`;
+      nodeQuery = `MATCH (n:${capitalizedNodeType}) WHERE n.${idProperty} = $nodeId RETURN n`;
+      nodeParams = { nodeId: parseInt(nodeId) };
+    }
+    const nodeResult = await session.run(nodeQuery, nodeParams);
 
     if (nodeResult.records.length === 0) {
       return res.status(404).json({ error: 'Node not found' });

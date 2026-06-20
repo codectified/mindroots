@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useHighlight } from '../../contexts/HighlightContext';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
+import { useGraphData } from '../../contexts/GraphDataContext';
+import NodeContextMenu from '../graph/NodeContextMenu';
+import NodeInspector from '../graph/NodeInspector';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { SURAHS, toArabicNumerals } from '../../constants/surahs';
@@ -38,6 +41,14 @@ const CorpusRenderer = ({
   } = useHighlight();
   const { layout } = useTextLayout();
   const { showStatistics } = useCorpusStatistics();
+  const {
+    contextMenu,
+    setContextMenu,
+    handleContextMenuAction,
+    nodeInspectorData,
+    setNodeInspectorData,
+    handleNodeNavigation,
+  } = useGraphData();
 
   useEffect(() => {
     setTempAyahsPerPage(ayahsPerPage);
@@ -117,6 +128,31 @@ const CorpusRenderer = ({
         : item
     );
     setItems(updatedItems);
+  };
+
+  // Clicking an ayah marker (﴿N﴾) opens the node context menu for the Ayah node,
+  // unless freeform highlight mode is active (which keeps its highlight behavior)
+  const handleAyahMarkerClick = (event, ayaIndex) => {
+    event.stopPropagation();
+
+    if (freeformMode) {
+      handleFreeformAyaHighlight(parseInt(ayaIndex, 10));
+      return;
+    }
+
+    const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : null);
+    if (!surahNumber) return;
+
+    setContextMenu({
+      node: {
+        type: 'ayah',
+        ayah_key: `${surahNumber}:${ayaIndex}`,
+        surah_id: surahNumber,
+        ayah_id: parseInt(ayaIndex, 10),
+        corpus_id: 2,
+      },
+      position: { x: event.clientX, y: event.clientY },
+    });
   };
 
   // Dynamic highlight colors from user selection — must remain inline
@@ -287,11 +323,8 @@ const CorpusRenderer = ({
                     </React.Fragment>
                   ))}
                 </span><span
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    freeformMode && handleFreeformAyaHighlight(parseInt(ayaIndex, 10));
-                  }}
-                  className={`${freeformMode ? 'cursor-pointer' : 'cursor-default'} text-gray-400 font-bold ml-[5px] ${layout === 'prose' ? 'mr-2' : 'mr-[5px]'}`}
+                  onClick={(e) => handleAyahMarkerClick(e, ayaIndex)}
+                  className={`cursor-pointer text-gray-400 font-bold ml-[5px] ${layout === 'prose' ? 'mr-2' : 'mr-[5px]'}`}
                 >
                   ﴿{ayaIndex}﴾
                 </span>{layout === 'line-by-line' && <br />}
@@ -480,6 +513,25 @@ const CorpusRenderer = ({
        corpusId === '1' ? renderList() :
        corpusId === '3' ? renderPoetry() :
        <div>No valid corpus found. Please check the corpus configuration.</div>}
+
+      {/* Context menu for ayah markers */}
+      {contextMenu && (
+        <NodeContextMenu
+          node={contextMenu.node}
+          position={contextMenu.position}
+          onAction={(action, node) => handleContextMenuAction(action, node, contextMenu?.position)}
+          onClose={() => setContextMenu(null)}
+        />
+      )}
+
+      {/* Node inspector */}
+      {nodeInspectorData && (
+        <NodeInspector
+          nodeData={nodeInspectorData}
+          onClose={() => setNodeInspectorData(null)}
+          onNavigate={handleNodeNavigation}
+        />
+      )}
     </div>
   );
 };
