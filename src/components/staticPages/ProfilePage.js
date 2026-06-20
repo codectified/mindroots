@@ -41,8 +41,7 @@ const ProfilePage = () => {
             <a href="#projects" className="nav-link">Projects</a>
             <a href="#professional-services" className="nav-link">Services</a>
             <a href="#resume" className="nav-link">Resume</a>
-            <a href="#availability" className="nav-link">Availability</a>
-            <a href="#contact" className="nav-link">Contact</a>
+            <a href="#contact" className="nav-link">Connect</a>
           </nav>
         </div>
       </section>
@@ -252,22 +251,6 @@ const ProfilePage = () => {
                 <span className="coming-soon">(Coming Soon)</span>
               </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Calendar Section */}
-      <section id="availability" className="calendar-section">
-        <div className="section-container">
-          <h2>Availability</h2>
-          <div className="calendar-container">
-            <iframe
-              src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FChicago&showPrint=0&mode=WEEK&src=b21hcmlicmFoaW0xMTMwQGdtYWlsLmNvbQ&color=%23039be5"
-              style={{ border: "solid 1px #777", width: "100%", height: "600px" }}
-              frameBorder="0"
-              scrolling="no"
-              title="Schedule Calendar"
-            ></iframe>
           </div>
         </div>
       </section>
