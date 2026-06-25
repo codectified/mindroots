@@ -1,0 +1,13 @@
+{
+  "model": "intfloat/multilingual-e5-large",
+  "dims": 1024,
+  "count": 6236,
+  "passage_prefix": "passage: ",
+  "query_prefix": "query: ",
+  "normalized": true,
+  "similarity": "cosine (dot product on normalized vectors)",
+  "device": "mps",
+  "dtype": "float32",
+  "text_variant": "diacritized arabic (full_arabic, as-is)",
+  "embed_seconds": 83.7
+}

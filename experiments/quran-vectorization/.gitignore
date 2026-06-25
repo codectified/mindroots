@@ -1,0 +1,3 @@
+venv/
+embeddings.npy
+__pycache__/
