@@ -115,6 +115,61 @@ Findings:
   multi-narrative Meccan (7 Al-Araf, 37 As-Saffat, 27 An-Naml, 18 Al-Kahf,
   20 Ta-Ha) that sweep many prophet stories.
 
+## Experiment 4 — whitening (`whiten.py` → `out/whiten_*`)
+
+Suppress the dominant length/register axis and see if topical structure surfaces.
+
+- **The dominant axes *are* length.** PC1 = 16.3% of variance, r=−0.73 with ayah
+  length (PC2 = 5.9%, r=+0.53). The top two directions of the raw space are the
+  length/register axis (and it co-varies with Meccan/Medinan).
+- **Whitening** = mean-center → PCA to 213 comps (90% var) → unit-variance each.
+- **Length decoupled:** variance of ayah length explained by clusters drops
+  **0.71 → 0.23**. The whitened UMAP loses its macro-gradient (isotropic blob).
+- **Topical / root / syntactic clusters emerge**, spanning lengths & revelation:
+  - Fire (`أصحاب النار`, `النار ذات الوقود`) — 3w to 16w ayahs together
+  - root **ذ-ك-ر** (remembrance): `أفلا تذكرون`, `إنما أنت مذكر`, `التذكرة`
+  - **ح-ب-ب/ح-ب-ط** (love / nullified deeds): `تحبون العاجلة`, `حبطت أعمالهم`
+  - demonstrative **أولئك** ("those are…") — a pure syntactic-formula cluster
+- Caveat: two large catch-all clusters (~1800, ~2100) stay generic mid-length;
+  short-verse residue remains (R² 0.23 ≠ 0). Whitening *reweights* toward topic,
+  doesn't fully erase length. But the root/topic clusters are unambiguous.
+
+Takeaway for a root-based project: latent **root/lexical** structure is present in
+the e5 space but masked by length until whitened. `clusters_whitened.csv` has the
+per-ayah whitened assignments.
+
+## Experiment 5 — root distributions over the existing space (`root_dist.py`)
+
+No new embeddings. `root_export.js` pulls root→ayah membership (1,642 Quranic
+roots, ~50k token occurrences); `root_dist.py` masks each root's ayahs over the
+existing UMAP and computes spread stats (mean pairwise dist, localization =
+ratio to corpus baseline, convex-hull area, density, DBSCAN component count,
+dominant k=8 cluster). Outputs: `root_gallery.png`, `root_distribution_report.md`,
+`root_stats.csv`.
+
+The organizing principle: **content fields localize, function/discourse words
+spread, homonyms split.**
+
+- **Highly localized** (loc≈0.26–0.6): topical/lexical fields — n-k-ḥ *marriage*
+  (89% in the legislative cluster), n-s-w *women*, r-ḥ-m *mercy* (0.53),
+  j-n-n *garden*, n-w-r *light*, r-b-b *Lord*. Coherent semantic fields tied to
+  one register.
+- **Broadly distributed** (loc>1.3): q-w-l *say* (1383 ayahs), y-w-m *day*
+  (0.94), k-t-b *book/prescribe*, dh-k-r *remember*, j-b-l *mountain*,
+  sh-r-b *drink* — discourse/temporal/pervasive words that appear everywhere.
+- **Split into multiple clusters**: ṣ-l-w (3 comps, 54% outside its main blob) —
+  the root conflates *prayer* and *roasting/burning in fire* (yaṣlā nāran);
+  ṣ-b-ḥ *dawn / glorify*; s-b-q, k-r-m, y-s-r. Multi-modality = polysemy/homonymy.
+- **Unexpectedly concentrated off-center**: n-k-ḥ, n-s-w, gh-ḍ-b *anger* — tight
+  clumps far from the global centroid, sitting inside the long-Medinan
+  legislative lobe.
+
+**Honest caveat:** the underlying UMAP is length/register-dominated (Exp 2–4), so
+"localized" here largely means *register-coherent* (marriage law lives in long
+Medinan verses). The clean proof is dh-k-r: **broad** in this raw space, yet it
+formed a tight **semantic** cluster after whitening (Exp 4). Raw-space root
+masks show register coherence; whitening is needed to isolate pure semantics.
+
 ## Next experiments to consider
 
 - A second pass on **diacritic-stripped + imlā'ī-normalized** text and compare
