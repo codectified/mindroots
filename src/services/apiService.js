@@ -791,3 +791,14 @@ export const fetchTopRoots = async (corpusId, surah) => {
   const response = await api.get(`/analytics/top-roots${buildParams(corpusId, surah)}`);
   return response.data;
 };
+
+export const fetchProjection = async ({ centerType, center, projection, corpusId, surah }) => {
+  const p = new URLSearchParams();
+  p.set('center_type', centerType);
+  p.set('center', center);
+  p.set('projection', projection);
+  if (corpusId && corpusId !== 'all') p.set('corpus_id', corpusId);
+  if (surah) p.set('surah', surah);
+  const response = await api.get(`/analytics/projection?${p.toString()}`);
+  return response.data;
+};

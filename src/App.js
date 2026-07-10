@@ -61,6 +61,7 @@ import LisanLabReports from './components/staticPages/LisanLabReports';
 import Acknowledgements from './components/staticPages/Acknowledgements';
 const Universe  = lazy(() => import('./components/staticPages/Universe'));
 const Analytics = lazy(() => import('./components/staticPages/Analytics'));
+const ProjectionLab = lazy(() => import('./components/staticPages/ProjectionLab'));
 
 const App = () => {
   useEffect(() => {
@@ -112,6 +113,7 @@ const App = () => {
                   <Route path="/acknowledgements" element={<Layout><Acknowledgements /></Layout>} />
                   <Route path="/universe"   element={<Layout><Suspense fallback={null}><Universe /></Suspense></Layout>} />
                   <Route path="/analytics" element={<Layout><Suspense fallback={null}><Analytics /></Suspense></Layout>} />
+                  <Route path="/projection" element={<Layout><Suspense fallback={null}><ProjectionLab /></Suspense></Layout>} />
                   <Route path="/news" element={<Layout><MarkdownRenderer filePath="/mindroots/news.md" /></Layout>} />
                   
 
