@@ -17,6 +17,7 @@
 
 ### **🔑 Current Production Features — Linguistics**
 - **[Corpus Navigation System](docs/features/linguistics/CORPUS-NAVIGATION-SYSTEM.md)** - ✅ Fixed navigation with global_position
+- **[Node Inspector](docs/features/linguistics/NODE-INSPECTOR-DOCUMENTATION.md)** - ✅ Inspector hub, custom tagger, ayah inspection via corpus reader
 - **[Validation System](docs/features/linguistics/VALIDATION-SYSTEM-DOCUMENTATION.md)** - ✅ Inline editing and approval workflow
 - **[Radical Search Integration](docs/features/linguistics/RADICAL-SEARCH-INTEGRATION.md)** - ✅ RadicalPosition-based search
 - **[Analysis Nodes](docs/features/linguistics/ANALYSIS-NODES-DOCUMENTATION.md)** - ✅ LLM-generated linguistic analysis

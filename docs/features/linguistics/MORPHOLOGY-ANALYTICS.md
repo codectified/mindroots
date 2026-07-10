@@ -31,33 +31,85 @@ A second key distinction emerged between **fertility** (how many words a bi-radi
 
 ---
 
-## Charts
+## Design Philosophy: Surface → Deep
 
-### Chart 0 · Overview (landing page)
+The Overview is designed to progress from the most accessible layer of language structure to the most abstract:
 
-Headline stats with plain-English explanations:
-- What a bi-radical family is
-- Why the root count differs from Lane's Lexicon
-- What coverage means and what the missing 20% represents
-- How to navigate the visualizations
+1. **Sounds** — individual consonants, their phonetic properties, corpus presence
+2. **Roots** — the tri-literal combinations that carry meaning
+3. **Families** — the bi-radical cores that organize root space
+4. **Topology** — OCP, pair matrices, structural patterns
+
+This order mirrors how language is actually encountered and experienced. The deepest structural analysis (topology) only makes sense once the surface layers are understood. The `ProfileBrowser` (Chart 0) embodies this philosophy — you browse entities at whatever level you choose, and each entity's profile moves from the sensory (what does it sound like, where is it produced) to the structural (how many families does it anchor, what is its corpus weight).
 
 ---
 
-### Chart 1 · Fertility × Gravity Scatter
+## Charts
 
-- **x**: `total_words` (log scale) — how many distinct words a family produces
-- **y**: `total_corpus` (log scale) — how many times those words appear in the corpus
-- **size**: `root_count`
-- **color**: phonological class of r1 consonant
-- **labels**: top outliers by corpus, by words, and by gravity/word ratio (white-ringed)
+### Chart 0 · Overview / Profile Browser (`ProfileBrowser.js`)
 
-**Quadrants:**
-| | Low fertility | High fertility |
+An entity-centered browser replacing the old static text overview. Rather than showing aggregate charts, it allows browsing individual linguistic entities — each entity gets a full profile card.
+
+**Three entity types** (tabs in left sidebar):
+- **Sound** — individual Arabic consonants (all 25+ in `PHON_CLASSES`)
+- **Family** — bi-radical pairs (top 150 by selected sort)
+- **Root** — tri-literal roots (top 20 from `/analytics/top-roots`)
+
+**Sort options** change per entity type:
+- Sounds: gravity (corpus total), class (articulatory group), manner (stop/fricative/nasal…), voice (voiced/voiceless), A-Z
+- Families: active (corpus), prolific (root count), deep (r3 breadth), class (r1 phonological class)
+- Roots: gravity (corpus), fertile (word count)
+
+**Keyboard navigation**: ↑↓ arrow keys browse the list.
+
+#### Sound Profile
+- Hero glyph (large, class-colored, with glow)
+- Phonetic label: voicing + manner + place of articulation
+- Class badge
+- Corpus weight bars: All / R1 / R2 / R3 (normalized, class-colored)
+- **Phonetic pair** (voiced ↔ voiceless or emphatic ↔ plain): both glyphs side by side with voicing label — e.g. ع ↔ ح (pharyngeal voiced / voiceless)
+- Families anchored as r1 (chips, colored by r2 class)
+- Families where it appears as r2 (chips, colored by r1 class)
+- Story paragraph (generated from data: positional role, phonetic class, pair, n families)
+
+#### Family Profile
+- Hero pair: r1 and r2 glyphs large, each in their class color with glow
+- Class interaction label: "Guttural × Coronal"
+- Stats: root count / corpus (k) / words (k) / r3 depth (N/28)
+- **All root members** from `depths.r3_values` — every r3 consonant that completes this pair, displayed as `r1-r2-r3` chips colored by r3 class
+- **r3 depth by class** — grid organized by phonological class; lit consonants show which classes were "explored" as r3 completions
+- Top roots with per-root corpus stats (from `/analytics/top-roots` filtered by r1+r2)
+- Story paragraph (generated from data: class pair, root count, depth, corpus weight, OCP note if same-class)
+
+#### Root Profile
+- Hero triradical: three large glyphs with dashes, each in its consonant's class color
+- Class badges per consonant
+- Corpus and words counts
+
+---
+
+### Chart 1 · Fertility × Gravity Scatter (`FertilityGravity.js`)
+
+Extracted from inline code. Supports four entity types switchable in the header:
+
+| Entity | x (fertility) | y (gravity) |
 |---|---|---|
-| **High gravity** | Sacred cores | Civilizations |
-| **Low gravity** | Quiet provinces | Word factories |
+| Bi-radicals | total_words per family | total_corpus per family |
+| Radicals | words across all positions | corpus across all positions |
+| Rad×Position | words in this position | corpus in this position |
+| Roots (per-root avg) | total_words / root_count | total_corpus / root_count |
 
-The gravity-per-word ratio (tooltip) is the most revealing single number — it measures how corpus-dense each word from that family tends to be.
+**Quadrant labels** placed at the data median (not geometric center):
+- **Civilizations** (high fertility, high gravity)
+- **Sacred Cores** (low fertility, high gravity)
+- **Word Factories** (high fertility, low gravity)
+- **Dormant Seeds** (low fertility, low gravity)
+
+**Outlier labels**: top 5 by fertility, gravity, gravity-per-word, root count, and form diversity — each ringed distinctively.
+
+**Bubble size** toggle: root count / form diversity / commitment ratio (r3 count / 28) / corpus density.
+
+**Story mode**: click a point → narrative paragraph describing that entity's archetype, metrics, and linguistic role.
 
 ---
 
@@ -87,11 +139,9 @@ Reveals whether certain radicals **lead** (dominate r1), **follow** (dominate r3
 - **x**: log(total_words) — lexical fertility
 - **y**: log(total_corpus) — corpus gravity
 - **z**: log(root_count) — family size (how many roots the family contains)
-- **color**: corpus/words ratio, percentile-clamped (p10–p90) to spread colors evenly; green = low ratio, red = high ratio
+- **color**: corpus/words ratio, percentile-clamped (p10–p90); green = low ratio, red = high ratio
 - **labeled**: top 6 by corpus, top 6 by words, top 6 by gravity/word ratio
 - **interaction**: drag to rotate, scroll/pinch to zoom, auto-rotates
-
-Adding family size as a third axis separates two classes that look identical in 2D: families with high fertility and gravity but few roots (concentrated families) vs those generating many roots across the full paradigmatic range. The color (corpus/word ratio) reveals semantic density — red clusters are words that appear many times each; green clusters are productive but lightly used.
 
 ---
 
@@ -100,8 +150,6 @@ Adding family size as a third axis separates two classes that look identical in 
 - **grid**: r1 × r2 heatmap
 - **color**: count of distinct r3 completions (dark = many, black = structurally absent, dim = no r3 data)
 - **tooltip**: shows the exact r3 consonants that complete the pair
-
-Depth measures how far the language "committed" to a bi-radical core. A pair with 20+ r3 completions is a generative engine. A pair with 1–2 is narrow: acknowledged but unexplored. Compare with Chart 2 (breadth) to find families that went wide vs deep.
 
 ---
 
@@ -112,8 +160,6 @@ Depth measures how far the language "committed" to a bi-radical core. A pair wit
 - **color**: phonological class
 - **interaction**: D3 force-directed, drag nodes to reorganize
 
-Radicals at the center with thick outgoing edges are morphological initiators. Those with thick incoming edges are receivers. OCP signature: same-colored edges should be visibly thinner/fewer than cross-color edges.
-
 ---
 
 ### Chart 7 · OCP Class Matrix
@@ -123,8 +169,6 @@ Radicals at the center with thick outgoing edges are morphological initiators. T
 - **diagonal**: same-class pairs (red border) — OCP-predicted underoccupied
 - **callout**: `same-class avg` vs `cross-class avg`, OCP delta
 
-A dark diagonal with a bright off-diagonal is the OCP signature. The delta: if cross-class occupancy is 30%+ higher than same-class, OCP operates at the articulatory class level. Emphatics classified separately from plain coronals because pharyngealization makes them behave differently.
-
 ---
 
 ### Chart 8 · Depth × Fertility Scatter
@@ -133,7 +177,6 @@ A dark diagonal with a bright off-diagonal is the OCP signature. The delta: if c
 - **y**: `r3_count` — structural depth (distinct r3 completions, linear)
 - **size**: `root_count`
 - **color**: phonological class of r1 consonant
-- **labels**: top 5 by depth, top 5 by fertility, top 4 by product of both
 
 **Quadrants:**
 | | Low fertility | High fertility |
@@ -141,63 +184,139 @@ A dark diagonal with a bright off-diagonal is the OCP signature. The delta: if c
 | **High depth** | Exploratory cores | Generative engines |
 | **Low depth** | Sprouts | Narrow producers |
 
-Depth and fertility are genuinely independent. A family can generate hundreds of words while exploring only 2–3 r3 variations, or explore many r3 paths while remaining lexically contained.
-
 ---
 
 ### Chart 9 · Corpus Distribution (Zipf)
 
 - **bars**: top N bi-radical families ranked by corpus gravity (descending)
 - **color**: phonological class of r1 consonant
-- **callout**: "Top 5 = X% of corpus" — the Zipf concentration expressed plainly
-- **controls**: show top 20/40/80 families; toggle linear/log x-axis
-- **hover**: rank, corpus count, word count, share %
-
-The steep left-to-right drop is the Zipf power law: a small number of root families dominate the vast majority of textual usage. The top families are the semantic cores of Classical Arabic: existence, knowledge, speech, movement, divine action. The log-scale toggle reveals the power-law curve underneath the absolute counts.
+- **callout**: "Top 5 = X% of corpus"
+- **controls**: show top 20/40/80; toggle linear/log x-axis
 
 ---
 
 ### Chart 10 · Leadership Score
 
 - **metric**: `r1_roots / (r1_roots + r2_roots + r3_roots)` per radical
-- **left bar**: leadership score (0–1), colored by phonological class
-- **right bars**: absolute r1/r2/r3 root counts
-- **sort**: by leadership score, total roots, or phonological class
-- **legend**: all 5 classes shown in separate row below controls
-
-**Interpretation**:
-- Score > 0.45 → morphological initiator (strongly prefers r1)
-- Score ≈ 0.33 → positionally neutral
-- Score < 0.25 → follower (avoids r1)
-
-**OCP connection**: If phonological classes (gutturals, emphatics) systematically score below 0.33, their articulatory properties may impose constraints on which position they can occupy — evidence of phonological class-level position asymmetry.
+- **interpretation**: > 0.45 = initiator, ~0.33 = neutral, < 0.25 = follower
 
 ---
 
 ### Chart 11 · Dark Matter
 
-- **input**: all possible r1-r2 ordered pairs among 29 consonants (812 pairs)
-- **classification**:
-  - **Green** (attested): present as BiRadicalCluster in data
-  - **Red** (OCP-absent): same-class pairs, suppressed by articulatory constraint
-  - **Gold** (mystery): cross-class, absent, no OCP prediction
-- **mystery pairs**: listed as badges grouped by r1 phonological class
+- **Green** (attested): present as BiRadicalCluster in data
+- **Red** (OCP-absent): same-class pairs, suppressed by articulatory constraint
+- **Gold** (mystery): cross-class, absent, no OCP prediction
 
-The mystery pairs are the most interesting. Cross-class and phonologically permitted, they represent paths the language could have taken but didn't. Some may exist in historical, dialectal, or loaned Arabic. Others may reveal secondary articulatory constraints beyond the five-class OCP model (gestural overlap, co-articulatory constraints, frequency-based suppression).
+The mystery pairs are cross-class and phonologically permitted — the language could have taken these paths but didn't.
 
 ---
 
 ### Chart 12 · Depth 3D (r3 Terrain)
 
-- **floor grid**: r1 × r2 consonant index positions (same 29 consonants, indexed by sorted position)
-- **height**: r3_count — how many distinct r3 consonants complete that pair (up = deep)
+- **floor grid**: r1 × r2 consonant index positions
+- **height**: r3_count — how many distinct r3 consonants complete that pair
 - **color**: phonological class of r1 consonant
-- **size**: dot radius proportional to r3_count (max 8px)
-- **vertical sticks**: drawn for families with r3 ≥ 3 (showing the height clearly)
-- **gold labels**: top 30% deepest families labeled with pair_key
 - **interaction**: drag to rotate, scroll/pinch to zoom, auto-rotates
 
-The r3 depth landscape as navigable terrain. Tall columns are morphological attractors: the r1-r2 pair pulled the language into deep phonological elaboration. Color clustering reveals whether depth is concentrated in one phonological class or spread across all five. The dark valleys between columns are the family density — some regions of the r1×r2 grid are consistently more generative than others.
+---
+
+### Chart 13 · Directionality
+
+For any pair {X, Y} where both X-Y and Y-X exist: which direction dominates? Asymmetry score = (fwd−rev)/(fwd+rev). Class view shows which phonological classes systematically prefer r1 or r2.
+
+---
+
+### Chart 14 · Radical Gravity
+
+Per-radical corpus weight as r1 anchor vs positional preference. Top-right quadrant = primary anchors (heavy and consistent r1 initiators).
+
+---
+
+### Chart 15 · Sound Profile (`SoundProfile.js`)
+
+Pentagon radar + 5×5 pair matrix. Originally the Overview; moved to its own tab when ProfileBrowser replaced Chart 0.
+
+**Radar pentagon**: five phonological class axes ordered back-to-front (guttural → dorsal → emphatic → coronal → labial), showing class weight for selected metric. r2-only sub-polygon shown faint for comparison.
+
+**5×5 pair matrix**: r1-class × r2-class, cell opacity = log-scaled corpus/words/roots value. Hover shows top 5 bi-radical pairs for that class intersection. Same-class diagonal (OCP zone) rendered distinctly.
+
+**Metric toggle**: gravity (corpus) / fertility (words) / depth (roots).
+
+**OCP ratio** shown below radar: cross-class avg per pair ÷ same-class avg per pair.
+
+---
+
+## Technical Implementation
+
+### Backend
+
+```
+routes/modules/analytics.js
+  GET /analytics/biradicals          — BiRadicalCluster nodes, all or corpus-scoped
+  GET /analytics/radical-positions   — Root nodes aggregated by r1/r2/r3 with words+corpus
+  GET /analytics/r3-depth            — Distinct r3 counts + r3_values per r1-r2 pair
+  GET /analytics/top-roots           — Top 20 roots by corpus, all or corpus-scoped
+  GET /analytics/corpora             — Available corpus list
+```
+
+All endpoints support `?corpus_id=N&surah=N` query params. Results cached to `analytics-cache.json` (24h TTL, survives pm2 restarts).
+
+### Frontend
+
+```
+src/components/staticPages/Analytics.js   — container: data fetch, chart routing, corpus/surah filters
+src/services/apiService.js                — fetchBiradicals, fetchRadicalPositions, fetchR3Depth,
+                                            fetchTopRoots, fetchCorpora
+
+src/components/analytics/
+  phonology.js         — PHON_CLASSES, CLASS_META, PHONETIC_META, sameClass(), phonClass()
+  shared.js            — useSize hook (ResizeObserver)
+  ProfileBrowser.js    — Chart 0: entity browser (Sound / Family / Root profiles)
+  FertilityGravity.js  — Chart 1: scatter with entity switching, quadrants, story mode
+  SoundProfile.js      — Chart 15: pentagon radar + 5×5 pair matrix
+  Scatter3D.js         — Chart 4: canvas 3D (fertility × gravity × family size)
+  DepthMap.js          — Chart 5: r3 depth heatmap
+  NetworkGraph.js      — Chart 6: D3 force simulation
+  OCPMatrix.js         — Chart 7: 5×5 class occupancy matrix
+  DepthFertility.js    — Chart 8: depth × fertility scatter
+  ZipfChart.js         — Chart 9: ranked bar chart
+  LeadershipChart.js   — Chart 10: per-radical r1 share bars
+  DarkMatter.js        — Chart 11: absent pair grid + mystery classification
+  Depth3D.js           — Chart 12: canvas 3D terrain
+  DirectionalityChart.js — Chart 13: directional asymmetry analysis
+  RadicalGravity.js    — Chart 14: radical corpus weight vs r1 preference
+```
+
+Charts 2–3 are inline in `Analytics.js`; all others are separate component files.
+
+### Data Flow
+
+```
+Analytics.js useEffect (corpus_id, surah changes)
+  → Promise.all([fetchBiradicals, fetchRadicalPositions, fetchR3Depth, fetchTopRoots])
+  → sets: biradicals[], positions[], depths[], topRoots[]
+  → passed as props to whichever chart is active
+```
+
+### Phonological Classification
+
+Defined in `src/components/analytics/phonology.js`.
+
+| Class | Color | Members | Articulation |
+|---|---|---|---|
+| Labial | Blue (#3b82f6) | ب م ف و | lips |
+| Coronal | Green (#22c55e) | ت ث ج د ذ ر ز س ش ل ن ي | front of tongue |
+| Emphatic | Orange (#f97316) | ص ض ط ظ | pharyngealized coronals |
+| Dorsal | Purple (#a855f7) | خ غ ك ق | back of tongue / uvula |
+| Guttural | Red (#ef4444) | ح ع ه ء | pharynx / larynx |
+
+`PHONETIC_META` (added June 2026) extends each consonant with:
+- `voicing`: `'voiced'` | `'voiceless'`
+- `manner`: `'plosive'` | `'fricative'` | `'nasal'` | `'lateral'` | `'trill'` | `'affricate'` | `'semivowel'`
+- `place`: bilabial, labiodental, dental, alveolar, palato-alveolar, palatal, velar, uvular, pharyngeal, laryngeal
+- `emphatic`: boolean (pharyngealized coronals)
+- `pair`: the voiced↔voiceless (or emphatic↔plain) counterpart consonant, e.g. ع ↔ ح, ت ↔ د, س ↔ ص
 
 ---
 
@@ -225,78 +344,19 @@ Arabic radicals are not positionally neutral. Leadership scores (Chart 10) clust
 
 ### 6. Dark Matter Structure
 
-Of the ~158 absent pairs (in our 29-consonant model), approximately 70–80% are OCP-same-class (expected), while the remaining 20–30% are **mystery dark matter** — cross-class pairs with no theoretical prediction. These mystery pairs cluster non-randomly: certain r1 consonants (especially gutturals) have more mystery-absent r2 partners than others, suggesting secondary articulatory constraints beyond the five-class OCP.
+Of the ~158 absent pairs (in our 29-consonant model), approximately 70–80% are OCP-same-class (expected), while the remaining 20–30% are **mystery dark matter** — cross-class pairs with no theoretical prediction. These mystery pairs cluster non-randomly: certain r1 consonants have more mystery-absent r2 partners than others, suggesting secondary articulatory constraints beyond the five-class OCP.
 
 ---
 
 ## Open Research Questions
 
-1. **Directionality asymmetry**: For any consonant pair {X, Y}, is X-Y more productive than Y-X? Is directionality systematic — do gutturals consistently prefer being r1 over r2, or do certain class pairs always resolve in one direction?
-
-2. **Quran-specific distribution**: Which bi-radical families dominate Quranic text specifically vs the broader corpus? The `CorpusItem` nodes in Neo4j have `quran_frequency` and `corpus_id` — a new analytics endpoint could expose Quran-only counts per pair_key.
-
-3. **Do mystery dark matter pairs appear in dialectal or historical Arabic?** Cross-checking against wider corpora could reveal which pairs are truly forbidden vs merely rare in Classical Arabic.
-
-4. **Does r3 depth correlate with corpus gravity?** High depth might mean high gravity (the language committed deeply AND used it heavily), or they may be independent axes.
-
-5. **Is the empty space stable across historical Arabic?** Loanword integration over time might fill some dark matter slots. This requires corpus-tagged data by time period.
-
-6. **Can we predict which absent pairs are phonologically "possible" vs "forbidden"?** A pair absent in Arabic but attested in a cognate Semitic language (Hebrew, Aramaic, Amharic) would be "possible-but-avoided" — the most structurally revealing case.
+1. **Quran-specific distribution**: Which families dominate Quranic text specifically vs the broader corpus?
+2. **Do mystery dark matter pairs appear in dialectal or historical Arabic?**
+3. **Does r3 depth correlate with corpus gravity independently?**
+4. **Per-root word forms**: A `/analytics/root-words?root=ع-ل-م` endpoint would unlock the morphological paradigm view — all word forms derived from a given root.
+5. **Psychological / physiological layer**: The articulatory (place + manner) dimension of sounds is captured in `PHONETIC_META`. A future layer could connect this to cognitive salience or acquisition order data.
+6. **Can we predict absent pairs from cognate Semitic languages?** A pair absent in Arabic but attested in Hebrew/Aramaic/Amharic would be "possible-but-avoided" — the most structurally revealing case.
 
 ---
 
-## Technical Implementation
-
-```
-Backend:
-  routes/modules/analytics.js
-    GET /analytics/biradicals        — BiRadicalCluster nodes (all corpora combined)
-    GET /analytics/radical-positions — Root nodes aggregated by r1/r2/r3
-    GET /analytics/r3-depth          — Distinct r3 counts per r1-r2 pair
-
-  Data available but not yet exposed:
-    CorpusItem.quran_frequency       — Quran-specific occurrence count per item
-    CorpusItem.corpus_id             — Corpus identifier (Quran = specific ID)
-    Root.feature_corpus_count        — Per-root corpus count (source unspecified)
-
-Frontend:
-  src/components/staticPages/Analytics.js   — main container + data fetch + inline charts 0-3
-  src/components/analytics/
-    phonology.js       — PHON_CLASSES, CLASS_META, sameClass() helper
-    shared.js          — useSize hook (ResizeObserver)
-    Scatter3D.js       — Chart 4: canvas 3D (fertility × gravity × family size)
-    DepthMap.js        — Chart 5: r3 depth heatmap
-    NetworkGraph.js    — Chart 6: D3 force simulation
-    OCPMatrix.js       — Chart 7: 5×5 class occupancy matrix
-    DepthFertility.js  — Chart 8: depth × fertility scatter, colored by phon. class
-    ZipfChart.js       — Chart 9: ranked bar chart, top N by corpus
-    LeadershipChart.js — Chart 10: per-radical r1 share bars
-    DarkMatter.js      — Chart 11: absent pair grid + mystery classification
-    Depth3D.js         — Chart 12: canvas 3D terrain (r1×r2 floor, height=r3 depth)
-```
-
-Charts 1–3 are inline in `Analytics.js`; Charts 4–12 are separate component files.
-
-Each chart has a short interpretive report rendered below it (defined in the `REPORTS` object in `Analytics.js`).
-
-The 3D charts (4 and 12) use identical perspective-projection math as `Universe.js`: Y-rotation then X-rotation, perspective divide, back-to-front sort per frame via `requestAnimationFrame`.
-
----
-
-## Phonological Classification
-
-Defined in `src/components/analytics/phonology.js`.
-
-| Class | Color | Members | Articulatory feature |
-|---|---|---|---|
-| Labial | Blue (#3b82f6) | ب م ف و | lips |
-| Coronal | Green (#22c55e) | ت ث ج د ذ ر ز س ش ل ن ي | front of tongue |
-| Emphatic | Orange (#f97316) | ص ض ط ظ | pharyngealized coronals |
-| Dorsal | Purple (#a855f7) | خ غ ك ق | back of tongue / uvula |
-| Guttural | Red (#ef4444) | ح ع ه ء | pharynx / larynx |
-
-Emphatics are classified separately from plain coronals because pharyngealization makes them behave differently under OCP — they co-occur with coronals more freely than with each other.
-
----
-
-*Screenshots not yet captured — take them manually from `/analytics` on production for each chart tab.*
+*Last updated: June 2026*

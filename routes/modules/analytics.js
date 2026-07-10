@@ -250,7 +250,7 @@ router.get('/analytics/top-roots', async (req, res) => {
           WITH r, count(DISTINCT w) AS words, count(w) AS corpus
           RETURN r.r1 AS r1, r.r2 AS r2, r.r3 AS r3, words, corpus
           ORDER BY corpus DESC
-          LIMIT 20
+          LIMIT 50
         `, { corpusId: corpus_id, surah: surah || null });
       } else {
         result = await session.run(`
@@ -260,7 +260,7 @@ router.get('/analytics/top-roots', async (req, res) => {
                  r.feature_word_count   AS words,
                  r.feature_corpus_count AS corpus
           ORDER BY corpus DESC
-          LIMIT 20
+          LIMIT 50
         `);
       }
       return result.records.map(r => ({
@@ -274,6 +274,42 @@ router.get('/analytics/top-roots', async (req, res) => {
     res.json({ roots: data });
   } catch (err) {
     console.error('[analytics/top-roots]', err);
+    res.status(500).json({ error: err.message });
+  } finally {
+    await session.close();
+  }
+});
+
+// GET /analytics/root-words?r1=ع&r2=ل&r3=م
+router.get('/analytics/root-words', async (req, res) => {
+  const { r1, r2, r3 } = req.query;
+  if (!r1 || !r2 || !r3) return res.status(400).json({ error: 'r1, r2, r3 required' });
+  const session = req.driver.session();
+  try {
+    const cacheKey = `root-words:${r1}:${r2}:${r3}`;
+    const data = await cached(cacheKey, async () => {
+      const result = await session.run(`
+        MATCH (r:Root)-[:HAS_WORD]->(w:Word)
+        WHERE r.r1 = $r1 AND r.r2 = $r2 AND r.r3 = $r3
+        RETURN w.arabic   AS arabic,
+               w.english  AS english,
+               w.word_id  AS word_id,
+               w.word_type AS word_type
+        ORDER BY w.word_id
+        LIMIT 60
+      `, { r1, r2, r3 });
+      return result.records
+        .map(r => ({
+          arabic:    r.get('arabic'),
+          english:   r.get('english'),
+          word_id:   toNum(r.get('word_id')),
+          word_type: r.get('word_type'),
+        }))
+        .filter(w => w.arabic);
+    });
+    res.json({ words: data });
+  } catch (err) {
+    console.error('[analytics/root-words]', err);
     res.status(500).json({ error: err.message });
   } finally {
     await session.close();

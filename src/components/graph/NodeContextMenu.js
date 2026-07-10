@@ -100,6 +100,11 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
           { label: t.reportIssue, action: 'report' }
         );
         break;
+      case 'ayah':
+        options.push(
+          { label: t.inspectNode, action: 'inspect' }
+        );
+        break;
       default:
         options.push(
           { label: t.moreInfo, action: 'more-info' },

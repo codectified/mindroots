@@ -38,16 +38,76 @@ const ProfilePage = () => {
           </h1>
           {/* CSS class covers layout; inline was redundant */}
           <nav className="hero-navigation">
-            <a href="#resume" className="nav-link">Resume</a>
             <a href="#projects" className="nav-link">Projects</a>
-            <a href="#availability" className="nav-link">Availability</a>
-            <a href="#contact" className="nav-link">Contact</a>
+            <a href="#professional-services" className="nav-link">Services</a>
+            <a href="#resume" className="nav-link">Resume</a>
+            <a href="#contact" className="nav-link">Connect</a>
           </nav>
         </div>
       </section>
 
+      {/* Projects Section */}
+      <section id="projects" className="projects-section">
+        <div className="section-container">
+          <h2>Projects</h2>
+          <div className="project-card">
+            <div className="flex flex-col gap-[30px] my-[30px]">
+
+              {/* MindRoots */}
+              <div className="flex items-start gap-5">
+                <Link to="/mindroots" className="no-underline flex-shrink-0">
+                  <img
+                    src={`${process.env.PUBLIC_URL}/root-tree.jpeg`}
+                    alt="MindRoots"
+                    className="w-20 h-20 rounded-lg cursor-pointer"
+                  />
+                </Link>
+                <div className="flex-1">
+                  <p className="m-0 text-[0.95em] leading-[1.6]">
+                    <strong>MindRoots:</strong> An advanced search and language exploration tool, connecting key texts and primary sources with graph technology and cognitive-linguistic ontology design
+                  </p>
+                </div>
+              </div>
+
+              {/* MindRoots GPT */}
+              <div className="flex items-start gap-5">
+                <a href="https://chatgpt.com/g/g-6837e9a3285081919820781cf0fb2292-mindroots" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                  <img
+                    src={`${process.env.PUBLIC_URL}/MindrootsGPT.png`}
+                    alt="MindRoots GPT"
+                    className="w-20 h-20 rounded-lg cursor-pointer"
+                  />
+                </a>
+                <div className="flex-1">
+                  <p className="m-0 text-[0.95em] leading-[1.6]">
+                    <strong>MindRoots GPT:</strong> An AI chatbot which can talk to Mindroots and summarize entries from Lane's Lexicon and other data sources
+                  </p>
+                </div>
+              </div>
+
+              {/* QuranRoots GPT */}
+              <div className="flex items-start gap-5">
+                <a href="https://chatgpt.com/g/g-68c8fbd5dcf48191a399e8045059a8d4-quranroots" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
+                  <img
+                    src={`${process.env.PUBLIC_URL}/qroots.png`}
+                    alt="QuranRoots GPT"
+                    className="w-20 h-20 rounded-lg cursor-pointer"
+                  />
+                </a>
+                <div className="flex-1">
+                  <p className="m-0 text-[0.95em] leading-[1.6]">
+                    <strong>QuranRoots GPT (Beta):</strong> An AI chatbot with advanced search capability specifically for the quran
+                  </p>
+                </div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Professional Services Bio Section */}
-      <section id="bio" className="bio-section">
+      <section id="professional-services" className="bio-section">
         <div className="section-container">
           <h2>Professional Services</h2>
 
@@ -191,82 +251,6 @@ const ProfilePage = () => {
                 <span className="coming-soon">(Coming Soon)</span>
               </button>
             </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Projects Section */}
-      <section id="projects" className="projects-section">
-        <div className="section-container">
-          <h2>Projects</h2>
-          <div className="project-card">
-            <div className="flex flex-col gap-[30px] my-[30px]">
-
-              {/* MindRoots */}
-              <div className="flex items-start gap-5">
-                <Link to="/mindroots" className="no-underline flex-shrink-0">
-                  <img
-                    src={`${process.env.PUBLIC_URL}/root-tree.jpeg`}
-                    alt="MindRoots"
-                    className="w-20 h-20 rounded-lg cursor-pointer"
-                  />
-                </Link>
-                <div className="flex-1">
-                  <p className="m-0 text-[0.95em] leading-[1.6]">
-                    <strong>MindRoots:</strong> An advanced search and language exploration tool, connecting key texts and primary sources with graph technology and cognitive-linguistic ontology design
-                  </p>
-                </div>
-              </div>
-
-              {/* MindRoots GPT */}
-              <div className="flex items-start gap-5">
-                <a href="https://chatgpt.com/g/g-6837e9a3285081919820781cf0fb2292-mindroots" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                  <img
-                    src={`${process.env.PUBLIC_URL}/MindrootsGPT.png`}
-                    alt="MindRoots GPT"
-                    className="w-20 h-20 rounded-lg cursor-pointer"
-                  />
-                </a>
-                <div className="flex-1">
-                  <p className="m-0 text-[0.95em] leading-[1.6]">
-                    <strong>MindRoots GPT:</strong> An AI chatbot which can talk to Mindroots and summarize entries from Lane's Lexicon and other data sources
-                  </p>
-                </div>
-              </div>
-
-              {/* QuranRoots GPT */}
-              <div className="flex items-start gap-5">
-                <a href="https://chatgpt.com/g/g-68c8fbd5dcf48191a399e8045059a8d4-quranroots" target="_blank" rel="noopener noreferrer" className="flex-shrink-0">
-                  <img
-                    src={`${process.env.PUBLIC_URL}/qroots.png`}
-                    alt="QuranRoots GPT"
-                    className="w-20 h-20 rounded-lg cursor-pointer"
-                  />
-                </a>
-                <div className="flex-1">
-                  <p className="m-0 text-[0.95em] leading-[1.6]">
-                    <strong>QuranRoots GPT (Beta):</strong> An AI chatbot with advanced search capability specifically for the quran
-                  </p>
-                </div>
-              </div>
-
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Calendar Section */}
-      <section id="availability" className="calendar-section">
-        <div className="section-container">
-          <h2>Availability</h2>
-          <div className="calendar-container">
-            <iframe
-              src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FChicago&showPrint=0&mode=WEEK&src=b21hcmlicmFoaW0xMTMwQGdtYWlsLmNvbQ&color=%23039be5"
-              style={{ border: "solid 1px #777", width: "100%", height: "600px" }}
-              frameBorder="0"
-              scrolling="no"
-              title="Schedule Calendar"
-            ></iframe>
           </div>
         </div>
       </section>

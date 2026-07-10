@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import { fetchBiradicals, fetchRadicalPositions, fetchR3Depth, fetchCorpora, fetchTopRoots } from '../../services/apiService';
 import { useSize } from '../analytics/shared';
 import { PHON_CLASSES, CLASS_META, sameClass } from '../analytics/phonology';
-import Overview        from '../analytics/Overview';
+import ProfileBrowser  from '../analytics/ProfileBrowser';
 import FertilityGravity from '../analytics/FertilityGravity';
 import SoundProfile    from '../analytics/SoundProfile';
 import Scatter3D      from '../analytics/Scatter3D';
@@ -368,7 +368,7 @@ export default function Analytics() {
       fetchTopRoots(corpusId, surah),
     ])
       .then(([b, p, r, t]) => {
-        setBiradicals(b.biradicals || []);
+        setBiradicals((b.biradicals || []).filter(d => { const [a, z] = d.pair_key.split('-'); return a !== z; }));
         setPositions(p.positions   || []);
         setDepths(r.depths         || []);
         setTopRoots(t.roots        || []);
@@ -389,9 +389,8 @@ export default function Analytics() {
   const trueRoots = depths.reduce((s, d) => s + d.r3_count, 0);
   const totalWords = biradicals.reduce((s, d) => s + d.total_words, 0);
   const totalCorpus = biradicals.reduce((s, d) => s + d.total_corpus, 0);
-  const seenRadicals = new Set(biradicals.flatMap(d => d.pair_key.split('-').filter(Boolean))).size;
-  const totalPossible = seenRadicals > 0 ? seenRadicals * (seenRadicals - 1) : 0;
-  const coverage = totalPossible > 0 ? ((counts / totalPossible) * 100).toFixed(0) : '—';
+  const totalPossible = 29 * 28; // 812 ordered pairs from 29 Arabic consonants
+  const coverage = ((counts / totalPossible) * 100).toFixed(0);
   const avgRoots = counts > 0 ? (trueRoots / counts).toFixed(1) : '—';
   const r3Coverage = counts > 0 ? `${((depths.length / counts) * 100).toFixed(0)}% of families` : '';
 
@@ -470,10 +469,10 @@ export default function Analytics() {
       </div>
 
       {/* stats bar — single scrollable row */}
-      {counts > 0 && (
+      {counts > 0 && chart === 0 && (
         <div style={{ display: 'flex', gap: 18, padding: '6px 12px', borderBottom: '1px solid rgba(255,255,255,0.04)', flexShrink: 0, overflowX: 'auto', flexWrap: 'nowrap', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
           <Stat value={counts.toLocaleString()}        color="#eab308" label="r1-r2 families"     sub="bi-radical root clusters" />
-          <Stat value={`${coverage}%`}               color="#22c55e" label="of possible r1-r2s" sub={`${seenRadicals} consonants, ${totalPossible} ordered pairs`} />
+          <Stat value={`${coverage}%`}               color="#22c55e" label="of possible r1-r2s" sub={`out of ${totalPossible} ordered consonant pairs`} />
           <Stat value={trueRoots.toLocaleString()}    color="#a855f7" label="tri-literal roots"  sub={`distinct r1-r2-r3 combos · ${avgRoots} per family`} />
           <Stat value={totalWords.toLocaleString()}   color="#22c55e" label="lexical words"      sub="word forms derived from roots" />
           <Stat value={depths[0]?.r3_count ?? '—'}   color="#f97316" label="max r3 variants"    sub="3rd-radical options on one pair" />
@@ -484,7 +483,7 @@ export default function Analytics() {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
         {loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
         {error   && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
-        {!loading && !error && chart === 0 && <Overview biradicals={biradicals} positions={positions} depths={depths} topRoots={topRoots} corpusLabel={corpusId === 'all' ? null : (corpora.find(c => String(c.id) === corpusId)?.english || `Corpus ${corpusId}`)} />}
+        {!loading && !error && chart === 0 && <ProfileBrowser biradicals={biradicals} positions={positions} depths={depths} topRoots={topRoots} corpusLabel={corpusId === 'all' ? null : (corpora.find(c => String(c.id) === corpusId)?.english || `Corpus ${corpusId}`)} />}
         {!loading && !error && chart === 1 && <FertilityGravity biradicals={biradicals} depths={depths} positions={positions} />}
         {!loading && !error && chart === 2 && <Heatmap       data={biradicals} />}
         {!loading && !error && chart === 3 && <EcologyChart  data={positions} />}

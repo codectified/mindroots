@@ -447,10 +447,6 @@ section h2 { font-size: 2.5rem; color: #333; margin-bottom: 40px; text-align: ce
 .mindroots-image-button:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.3); }
 .coming-soon { display: block; font-size: 0.8rem; opacity: 0.8; margin-top: 5px; }
 
-.calendar-section { background: #f8f9fa; }
-.calendar-container { max-width: 800px; margin: 0 auto; border-radius: 12px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.1); background: white; }
-.calendar-container iframe { display: block; border-radius: 12px; }
-
 .projects-section { background: white; }
 .project-card { background: white; border-radius: 12px; padding: 40px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.1); border: 1px solid rgba(0,0,0,0.05); max-width: 600px; margin: 0 auto; }
 .project-card h3 { font-size: 1.8rem; color: #333; margin-bottom: 15px; font-weight: 400; }
@@ -473,8 +469,6 @@ section h2 { font-size: 2.5rem; color: #333; margin-bottom: 40px; text-align: ce
   section { padding: 60px 0; }
   section h2 { font-size: 2rem; margin-bottom: 30px; }
   .resume-card, .project-card { padding: 30px 20px; margin: 0 10px; }
-  .calendar-container { margin: 0 10px; }
-  .calendar-container iframe { height: 400px; }
   .social-links { gap: 20px; }
   .social-link { min-width: 60px; padding: 10px; }
 }

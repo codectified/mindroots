@@ -27,6 +27,7 @@ Arabic morphology graph features — corpus navigation, analysis, search, valida
 |---|---|---|
 | [Analysis Nodes](features/linguistics/ANALYSIS-NODES-DOCUMENTATION.md) | ✅ | LLM-generated linguistic analysis with v2 schema |
 | [Corpus Navigation System](features/linguistics/CORPUS-NAVIGATION-SYSTEM.md) | ✅ | Sequential corpus browsing via `global_position` |
+| [Node Inspector](features/linguistics/NODE-INSPECTOR-DOCUMENTATION.md) | ✅ | Inspector hub — endpoints, context menu surfaces (incl. ayah markers), custom tagger |
 | [Validation System](features/linguistics/VALIDATION-SYSTEM-DOCUMENTATION.md) | ✅ | Inline editing and approval workflow for linguistic data |
 | [Radical Search Integration](features/linguistics/RADICAL-SEARCH-INTEGRATION.md) | ✅ | RadicalPosition-based search system architecture |
 | [Corpus Filter](features/linguistics/CORPUS-FILTER-DOCUMENTATION.md) | ✅ | Unified corpus scoping via `CorpusFilterContext` |
@@ -103,6 +104,7 @@ docs/
 │   │   ├── GPT-ANALYSIS-REFERENCE.md
 │   │   ├── INFOBUBBLE-POSITIONING-GUIDE.md
 │   │   ├── MOBILE-DEVELOPMENT-READINESS.md
+│   │   ├── NODE-INSPECTOR-DOCUMENTATION.md
 │   │   ├── RADICAL-SEARCH-INTEGRATION.md
 │   │   ├── SURAH-FILTER-DOCUMENTATION.md
 │   │   ├── TYPOGRAPHY-CONTROL-DOCUMENTATION.md

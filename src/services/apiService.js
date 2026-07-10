@@ -802,3 +802,9 @@ export const fetchProjection = async ({ centerType, center, projection, corpusId
   const response = await api.get(`/analytics/projection?${p.toString()}`);
   return response.data;
 };
+
+export const fetchRootWords = async (r1, r2, r3) => {
+  const p = new URLSearchParams({ r1, r2, r3 });
+  const response = await api.get(`/analytics/root-words?${p}`);
+  return response.data;
+};
