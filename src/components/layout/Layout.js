@@ -24,7 +24,7 @@ const Layout = ({ children }) => {
   }
 
   // Full-screen views — BottomNav floats on top
-  if (location.pathname === "/universe" || location.pathname === "/analytics") {
+  if (location.pathname === "/universe" || location.pathname === "/analytics" || location.pathname === "/projection") {
     return (
       <>
         <div style={{ position: 'fixed', inset: 0 }}>
