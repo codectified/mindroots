@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchCorpora, fetchBiradicals, fetchProjection } from '../../services/apiService';
 import { PHON_CLASSES } from '../analytics/phonology';
 import BranchSnapshot from '../analytics/BranchSnapshot';
+import SnapshotFingerprint from '../analytics/SnapshotFingerprint';
 
 const RADICALS = Object.keys(PHON_CLASSES);
 
@@ -27,6 +28,7 @@ export default function ProjectionLab() {
   const [snapshot, setSnapshot] = useState(null);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState(null);
+  const [view,     setView]     = useState('fingerprint'); // 'fingerprint' | 'data'
 
   useEffect(() => {
     fetchCorpora().then(d => setCorpora(Array.isArray(d) ? d : [])).catch(() => {});
@@ -104,13 +106,18 @@ export default function ProjectionLab() {
               style={{ ...selectStyle, width: 70 }}
             />
           )}
+          <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+            <button style={btn(view === 'fingerprint')} onClick={() => setView('fingerprint')}>fingerprint</button>
+            <button style={btn(view === 'data')} onClick={() => setView('data')}>raw data</button>
+          </span>
         </div>
       </div>
 
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
         {loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
         {error && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
-        {!loading && !error && <BranchSnapshot snapshot={snapshot} />}
+        {!loading && !error && view === 'fingerprint' && <SnapshotFingerprint snapshot={snapshot} />}
+        {!loading && !error && view === 'data' && <BranchSnapshot snapshot={snapshot} />}
       </div>
     </div>
   );
