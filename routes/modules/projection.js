@@ -7,6 +7,17 @@ const router  = express.Router();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 const { cached } = makeDiskCache(path.join(__dirname, 'projection-cache.json'), CACHE_TTL);
 
+// A Neo4j session runs only one query at a time, so concurrent queries (Promise.all)
+// each need their own session — sharing one throws "open transaction" errors.
+const runQuery = async (driver, cypher, params) => {
+  const session = driver.session();
+  try {
+    return await session.run(cypher, params);
+  } finally {
+    await session.close();
+  }
+};
+
 // surah filter is Quran-only (corpus_id=2), matches item_id's leading "surah:" segment
 const surahFilter = (surah) =>
   surah ? `AND toInteger(split(ci.item_id, ':')[0]) = toInteger($surah)` : '';
@@ -63,11 +74,11 @@ const groupSatellites = (records) => {
 };
 
 // ── Projection: by_position (center = single radical) ──────────────────────
-async function byPosition(session, radical, corpusId, surah) {
+async function byPosition(driver, radical, corpusId, surah) {
   let branchResult, satelliteResult;
   if (corpusId) {
     [branchResult, satelliteResult] = await Promise.all([
-      session.run(`
+      runQuery(driver, `
         MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
         WHERE (r.r1 = $radical OR r.r2 = $radical OR r.r3 = $radical) ${surahFilter(surah)}
         WITH r, count(DISTINCT w) AS words, count(w) AS corpus
@@ -86,7 +97,7 @@ async function byPosition(session, radical, corpusId, surah) {
         RETURN branch_key, roots, words, corpus, examples
         ORDER BY branch_key
       `, { corpusId, radical, surah: surah || null }),
-      session.run(`
+      runQuery(driver, `
         MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
         WHERE (r.r1 = $radical OR r.r2 = $radical OR r.r3 = $radical) ${surahFilter(surah)}
         WITH r, count(DISTINCT w) AS words, count(w) AS corpus
@@ -107,7 +118,7 @@ async function byPosition(session, radical, corpusId, surah) {
     ]);
   } else {
     [branchResult, satelliteResult] = await Promise.all([
-      session.run(`
+      runQuery(driver, `
         MATCH (r:Root)
         WHERE r.r1 = $radical OR r.r2 = $radical OR r.r3 = $radical
         WITH r,
@@ -125,7 +136,7 @@ async function byPosition(session, radical, corpusId, surah) {
         RETURN branch_key, roots, words, corpus, examples
         ORDER BY branch_key
       `, { radical }),
-      session.run(`
+      runQuery(driver, `
         MATCH (r:Root)
         WHERE r.r1 = $radical OR r.r2 = $radical OR r.r3 = $radical
         WITH r,
@@ -150,11 +161,11 @@ async function byPosition(session, radical, corpusId, surah) {
 }
 
 // ── Projection: r3_completions (center = biradical r1-r2 pair) ─────────────
-async function r3Completions(session, r1, r2, corpusId, surah) {
+async function r3Completions(driver, r1, r2, corpusId, surah) {
   let branchResult, coreResult;
   if (corpusId) {
     [branchResult, coreResult] = await Promise.all([
-      session.run(`
+      runQuery(driver, `
         MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
         WHERE r.r1 = $r1 AND r.r2 = $r2 AND r.r3 IS NOT NULL ${surahFilter(surah)}
         WITH r, count(DISTINCT w) AS words, count(w) AS corpus
@@ -167,7 +178,7 @@ async function r3Completions(session, r1, r2, corpusId, surah) {
         RETURN branch_key, roots, words, corpus, examples
         ORDER BY corpus DESC
       `, { corpusId, r1, r2, surah: surah || null }),
-      session.run(`
+      runQuery(driver, `
         MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
         WHERE r.r1 = $r1 AND r.r2 = $r2 AND r.r3 IS NULL ${surahFilter(surah)}
         RETURN count(DISTINCT r) AS roots, count(DISTINCT w) AS words, count(w) AS corpus
@@ -175,7 +186,7 @@ async function r3Completions(session, r1, r2, corpusId, surah) {
     ]);
   } else {
     [branchResult, coreResult] = await Promise.all([
-      session.run(`
+      runQuery(driver, `
         MATCH (r:Root)
         WHERE r.r1 = $r1 AND r.r2 = $r2 AND r.r3 IS NOT NULL
         WITH r ORDER BY r.feature_corpus_count DESC
@@ -187,7 +198,7 @@ async function r3Completions(session, r1, r2, corpusId, surah) {
         RETURN branch_key, roots, words, corpus, examples
         ORDER BY corpus DESC
       `, { r1, r2 }),
-      session.run(`
+      runQuery(driver, `
         MATCH (r:Root)
         WHERE r.r1 = $r1 AND r.r2 = $r2 AND r.r3 IS NULL
         RETURN count(r) AS roots, sum(r.feature_word_count) AS words, sum(r.feature_corpus_count) AS corpus
@@ -228,14 +239,13 @@ router.get('/analytics/projection', async (req, res) => {
     [r1, r2] = parts;
   }
 
-  const session = req.driver.session();
   try {
     const cacheKey = `${projection}:${center_type}:${center}:${corpus_id || 'all'}:${surah || ''}`;
     const { branches, coreStats } = await cached(cacheKey, async () => {
       if (center_type === 'radical') {
-        return byPosition(session, center, corpus_id, surah);
+        return byPosition(req.driver, center, corpus_id, surah);
       }
-      return r3Completions(session, r1, r2, corpus_id, surah);
+      return r3Completions(req.driver, r1, r2, corpus_id, surah);
     });
 
     let scopeLabel = 'Entire lexicon';
@@ -259,8 +269,6 @@ router.get('/analytics/projection', async (req, res) => {
   } catch (err) {
     console.error('[analytics/projection]', err);
     res.status(500).json({ error: err.message });
-  } finally {
-    await session.close();
   }
 });
 
