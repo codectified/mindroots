@@ -14,63 +14,118 @@ import { PHON_CLASSES } from './phonology';
 // function of its input, not from cross-snapshot absolute comparability.
 
 export const VIEWBOX = [0, 0, 600, 600];
-const CENTER = { x: 300, y: 300 };
+export const CENTER = { x: 300, y: 300 };
 
 const toXY = (cx, cy, angleDeg, radius) => {
   const rad = (angleDeg - 90) * (Math.PI / 180); // 0deg = up, clockwise
   return { x: cx + radius * Math.cos(rad), y: cy + radius * Math.sin(rad) };
 };
 
-// ── Radical Position Signature ──────────────────────────────────────────────
-// center = radical, three fixed spokes (r1/r2/r3) at 120deg apart.
+// ── Radical Tree ─────────────────────────────────────────────────────────────
+// center = radical. Radial dendrogram, not a decorative glyph: the tree
+// preserves the actual shape of the query —
+//   radical -> position (r1/r2/r3, only the ones attested)
+//            -> bi-radical continuation (top CHILD_LIMIT from the API, +"other")
+//                     -> root example (top ~5 from the API, +"N more" leaf)
+// Angular position per node comes from d3.tree's default leaf-count-based
+// spacing, so a position/continuation with more real children naturally
+// claims more of the circle — that's what makes the shape asymmetric and
+// data-driven instead of a fixed 3-arm icon. Radius is depth-based (one
+// ring per tree level), so branches that stop early (an "other" bucket
+// with nothing beneath it) visibly stop short of the outer ring.
 const POSITIONS = ['r1', 'r2', 'r3'];
-const SPOKE_ANGLES = { r1: 0, r2: 120, r3: 240 };
-const SATELLITE_OFFSETS = { 1: [0], 2: [-10, 10], 3: [-14, 0, 14] };
+const TREE_MAX_RADIUS = 260;
 
-export function layoutRadicalSignature(snapshot) {
+const rootLabel = (ex) => ex.arabic || [ex.r1, ex.r2, ex.r3].filter(Boolean).join('');
+
+function buildTreeData(snapshot) {
   const branchByPos = {};
   (snapshot?.branches || []).forEach(b => { branchByPos[b.key] = b; });
 
-  const present = POSITIONS.map(p => branchByPos[p]).filter(Boolean);
-  const maxRoots  = d3.max(present, b => b.roots)  || 1;
-  const maxWords  = d3.max(present, b => b.words)  || 1;
-  const maxCorpus = d3.max(present, b => b.corpus) || 1;
-
-  const lengthScale     = d3.scaleLog().domain([1, Math.max(maxRoots, 1)]).range([40, 220]).clamp(true);
-  const thicknessScale  = d3.scaleSqrt().domain([0, maxWords]).range([2, 16]);
-  const brightnessScale = d3.scaleLinear().domain([0, maxCorpus]).range([0.15, 1]).clamp(true);
-  const satelliteRScale = d3.scaleSqrt().domain([0, maxRoots]).range([3, 11]);
-
-  const spokes = POSITIONS.map(position => {
-    const branch = branchByPos[position] || { roots: 0, words: 0, corpus: 0, satellites: [] };
-    const angle  = SPOKE_ANGLES[position];
-    const length = branch.roots > 0 ? lengthScale(branch.roots) : 24;
-    const tip    = toXY(CENTER.x, CENTER.y, angle, length);
-    const satellites = (branch.satellites || []).map((s, i) => {
-      const offsets = SATELLITE_OFFSETS[Math.min(branch.satellites.length, 3)] || [0];
-      const satAngle = angle + (offsets[i] ?? 0);
-      const pos = toXY(CENTER.x, CENTER.y, satAngle, length + 26);
-      return {
-        label: s.label, x: pos.x, y: pos.y,
-        r: satelliteRScale(s.roots),
-        brightness: brightnessScale(s.corpus),
-        roots: s.roots, words: s.words, corpus: s.corpus,
-      };
-    });
+  const children = POSITIONS.filter(p => branchByPos[p]).map(position => {
+    const branch = branchByPos[position];
     return {
-      position, angle,
-      x1: CENTER.x, y1: CENTER.y, x2: tip.x, y2: tip.y,
-      length, thickness: branch.roots > 0 ? thicknessScale(branch.words) : 1,
-      brightness: branch.roots > 0 ? brightnessScale(branch.corpus) : 0.08,
+      kind: 'position', label: position,
       roots: branch.roots, words: branch.words, corpus: branch.corpus,
-      satellites,
+      children: (branch.children || []).map(child => {
+        if (child.other) {
+          return {
+            kind: 'other', label: child.label,
+            roots: child.roots, words: child.words, corpus: child.corpus,
+            children: [],
+          };
+        }
+        const exampleLeaves = (child.examples || []).map(ex => ({
+          kind: 'root', label: rootLabel(ex), example: ex,
+          roots: 1, words: 0, corpus: ex.corpus,
+          children: [],
+        }));
+        const shown = child.examples?.length || 0;
+        if (child.roots > shown) {
+          exampleLeaves.push({
+            kind: 'other', label: `+${child.roots - shown} more`,
+            roots: child.roots - shown, words: 0, corpus: 0,
+            children: [],
+          });
+        }
+        return {
+          kind: 'continuation', label: child.label,
+          roots: child.roots, words: child.words, corpus: child.corpus,
+          children: exampleLeaves,
+        };
+      }),
     };
   });
+
+  return { kind: 'center', label: snapshot?.center?.label || '', roots: 0, words: 0, corpus: 0, children };
+}
+
+export function layoutRadicalTree(snapshot) {
+  const data = buildTreeData(snapshot);
+  const root = d3.hierarchy(data, d => d.children);
+
+  d3.tree()
+    .size([2 * Math.PI, TREE_MAX_RADIUS])
+    .separation((a, b) => (a.parent === b.parent ? 1 : 2) / a.depth)
+    (root);
+
+  const descendants = root.descendants();
+  const withoutRoot  = descendants.filter(d => d.depth > 0);
+  const maxRoots  = d3.max(withoutRoot, d => d.data.roots)  || 1;
+  const maxWords  = d3.max(withoutRoot, d => d.data.words)  || 1;
+  const maxCorpus = d3.max(withoutRoot, d => d.data.corpus) || 1;
+
+  const nodeRadiusScale = d3.scaleSqrt().domain([0, maxRoots]).range([4, 16]);
+  const thicknessScale  = d3.scaleSqrt().domain([0, maxWords]).range([1, 9]);
+  const brightnessScale = d3.scaleLinear().domain([0, maxCorpus]).range([0.15, 1]).clamp(true);
+
+  const nodeXY = (d) => toXY(CENTER.x, CENTER.y, d.x * (180 / Math.PI), d.y);
+
+  const nodes = withoutRoot.map(d => {
+    const { x, y } = nodeXY(d);
+    const isOther = d.data.kind === 'other';
+    return {
+      id: d.data.label + '@' + d.depth + ':' + x.toFixed(1) + ',' + y.toFixed(1),
+      kind: d.data.kind, depth: d.depth, label: d.data.label, example: d.data.example || null,
+      x, y,
+      r: isOther ? 3 : nodeRadiusScale(d.data.roots),
+      brightness: isOther ? 0.12 : brightnessScale(d.data.corpus),
+      roots: d.data.roots, words: d.data.words, corpus: d.data.corpus,
+    };
+  });
+
+  const linkGen = d3.linkRadial().angle(d => d.x).radius(d => d.y);
+  const links = root.links().filter(l => l.target.depth > 0).map(l => ({
+    d: linkGen(l),
+    thickness:  l.target.data.kind === 'other' ? 0.75 : thicknessScale(l.target.data.words),
+    brightness: l.target.data.kind === 'other' ? 0.1  : brightnessScale(l.target.data.corpus),
+  }));
 
   return {
     viewBox: VIEWBOX,
     center: { x: CENTER.x, y: CENTER.y, label: snapshot?.center?.label || '' },
-    spokes,
+    links,
+    nodes,
   };
 }
 

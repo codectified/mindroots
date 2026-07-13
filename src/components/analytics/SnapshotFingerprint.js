@@ -1,6 +1,6 @@
 import { useMemo, useRef } from 'react';
-import { layoutRadicalSignature, layoutBiradicalMandala } from './projectionLayout';
-import RadicalSignatureSVG from './RadicalSignatureSVG';
+import { layoutRadicalTree, layoutBiradicalMandala } from './projectionLayout';
+import RadicalTreeSVG from './RadicalTreeSVG';
 import BiradicalMandalaSVG from './BiradicalMandalaSVG';
 
 const slug = (s) => String(s || '').trim().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '') || 'x';
@@ -13,7 +13,7 @@ export default function SnapshotFingerprint({ snapshot }) {
 
   const layout = useMemo(() => {
     if (!snapshot) return null;
-    if (snapshot.projection === 'by_position') return layoutRadicalSignature(snapshot);
+    if (snapshot.projection === 'by_position') return layoutRadicalTree(snapshot);
     if (snapshot.projection === 'r3_completions') return layoutBiradicalMandala(snapshot);
     return null;
   }, [snapshot]);
@@ -48,7 +48,7 @@ export default function SnapshotFingerprint({ snapshot }) {
     <div style={{ width: '100%', height: '100%', display: 'flex', flexDirection: 'column' }}>
       <div ref={containerRef} style={{ flex: 1, minHeight: 0, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         {snapshot.projection === 'by_position'
-          ? <RadicalSignatureSVG layout={layout} />
+          ? <RadicalTreeSVG layout={layout} />
           : <BiradicalMandalaSVG layout={layout} />}
       </div>
       <div style={{ display: 'flex', justifyContent: 'center', padding: '4px 0 12px', flexShrink: 0 }}>

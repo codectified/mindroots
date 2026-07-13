@@ -38,7 +38,7 @@ const mapBranch = (r) => ({
     english: e.english ?? null,
     corpus:  toNum(e.corpus),
   })),
-  satellites: [],
+  children: [],
 });
 
 const buildMeta = (branches) => ({
@@ -48,36 +48,57 @@ const buildMeta = (branches) => ({
   total_corpus:   branches.reduce((s, b) => s + b.corpus, 0),
 });
 
-const SATELLITE_LIMIT = 3;
+// Top bi-radical continuations kept per position before folding the rest into "other".
+const CHILD_LIMIT = 10;
 
-// Groups flat {position, partner, roots, words, corpus} rows into
-// { r1: [top 3 partners by corpus], r2: [...], r3: [...] }
-const groupSatellites = (records) => {
+const mapChild = (r) => ({
+  key:      r.get('partner'),
+  label:    r.get('partner'),
+  roots:    toNum(r.get('roots')),
+  words:    toNum(r.get('words')),
+  corpus:   toNum(r.get('corpus')),
+  examples: (r.get('examples') || []).map(e => ({
+    r1:      e.r1 ?? null,
+    r2:      e.r2 ?? null,
+    r3:      e.r3 ?? null,
+    arabic:  e.arabic ?? null,
+    english: e.english ?? null,
+    corpus:  toNum(e.corpus),
+  })),
+});
+
+// Groups flat {position, partner, roots, words, corpus, examples} rows into
+// { r1: [top CHILD_LIMIT continuations + trailing "other" bucket], r2: [...], r3: [...] }
+const groupChildren = (records) => {
   const byPosition = { r1: [], r2: [], r3: [] };
   records.forEach(r => {
     const position = r.get('position');
     if (!byPosition[position]) return;
-    byPosition[position].push({
-      key:    r.get('partner'),
-      label:  r.get('partner'),
-      roots:  toNum(r.get('roots')),
-      words:  toNum(r.get('words')),
-      corpus: toNum(r.get('corpus')),
-    });
+    byPosition[position].push(mapChild(r));
   });
   Object.keys(byPosition).forEach(pos => {
-    byPosition[pos] = byPosition[pos]
-      .sort((a, b) => b.corpus - a.corpus)
-      .slice(0, SATELLITE_LIMIT);
+    const sorted = byPosition[pos].sort((a, b) => b.corpus - a.corpus);
+    const kept   = sorted.slice(0, CHILD_LIMIT);
+    const rest   = sorted.slice(CHILD_LIMIT);
+    if (rest.length > 0) {
+      kept.push({
+        key: 'other', label: `+${rest.length} more`, other: true, foldedCount: rest.length,
+        roots:  rest.reduce((s, c) => s + c.roots, 0),
+        words:  rest.reduce((s, c) => s + c.words, 0),
+        corpus: rest.reduce((s, c) => s + c.corpus, 0),
+        examples: [],
+      });
+    }
+    byPosition[pos] = kept;
   });
   return byPosition;
 };
 
 // ── Projection: by_position (center = single radical) ──────────────────────
 async function byPosition(driver, radical, corpusId, surah) {
-  let branchResult, satelliteResult;
+  let branchResult, childResult;
   if (corpusId) {
-    [branchResult, satelliteResult] = await Promise.all([
+    [branchResult, childResult] = await Promise.all([
       runQuery(driver, `
         MATCH (ci:CorpusItem {corpus_id: toInteger($corpusId)})-[:HAS_WORD]->(w:Word)<-[:HAS_WORD]-(r:Root)
         WHERE (r.r1 = $radical OR r.r2 = $radical OR r.r3 = $radical) ${surahFilter(surah)}
@@ -106,18 +127,20 @@ async function byPosition(driver, radical, corpusId, surah) {
              CASE WHEN r.r2 = $radical THEN {position: 'r2', partner: r.r1} END AS m2,
              CASE WHEN r.r3 = $radical THEN {position: 'r3', partner: r.r1 + '-' + r.r2} END AS m3
         UNWIND [m1, m2, m3] AS match
-        WITH match, words, corpus WHERE match IS NOT NULL AND match.partner IS NOT NULL
-        WITH match.position AS position, match.partner AS partner, words, corpus
+        WITH match, r, words, corpus WHERE match IS NOT NULL AND match.partner IS NOT NULL
+        WITH match.position AS position, match.partner AS partner, r, words, corpus
+        WITH position, partner, r, words, corpus ORDER BY corpus DESC
         WITH position, partner,
-             count(*) AS roots,
+             count(r) AS roots,
              sum(words) AS words,
-             sum(corpus) AS corpus
-        RETURN position, partner, roots, words, corpus
+             sum(corpus) AS corpus,
+             collect({r1: r.r1, r2: r.r2, r3: r.r3, arabic: r.arabic, english: r.english, corpus: corpus})[0..5] AS examples
+        RETURN position, partner, roots, words, corpus, examples
         ORDER BY position, corpus DESC
       `, { corpusId, radical, surah: surah || null }),
     ]);
   } else {
-    [branchResult, satelliteResult] = await Promise.all([
+    [branchResult, childResult] = await Promise.all([
       runQuery(driver, `
         MATCH (r:Root)
         WHERE r.r1 = $radical OR r.r2 = $radical OR r.r3 = $radical
@@ -145,18 +168,21 @@ async function byPosition(driver, radical, corpusId, surah) {
              CASE WHEN r.r3 = $radical THEN {position: 'r3', partner: r.r1 + '-' + r.r2} END AS m3
         UNWIND [m1, m2, m3] AS match
         WITH match, r WHERE match IS NOT NULL AND match.partner IS NOT NULL
-        WITH match.position AS position, match.partner AS partner,
+        WITH match.position AS position, match.partner AS partner, r
+        ORDER BY r.feature_corpus_count DESC
+        WITH position, partner,
              count(r) AS roots,
              sum(r.feature_word_count) AS words,
-             sum(r.feature_corpus_count) AS corpus
-        RETURN position, partner, roots, words, corpus
+             sum(r.feature_corpus_count) AS corpus,
+             collect({r1: r.r1, r2: r.r2, r3: r.r3, arabic: r.arabic, english: r.english, corpus: r.feature_corpus_count})[0..5] AS examples
+        RETURN position, partner, roots, words, corpus, examples
         ORDER BY position, corpus DESC
       `, { radical }),
     ]);
   }
   const branches = branchResult.records.map(mapBranch);
-  const satellitesByPosition = groupSatellites(satelliteResult.records);
-  branches.forEach(b => { b.satellites = satellitesByPosition[b.key] || []; });
+  const childrenByPosition = groupChildren(childResult.records);
+  branches.forEach(b => { b.children = childrenByPosition[b.key] || []; });
   return { branches };
 }
 
