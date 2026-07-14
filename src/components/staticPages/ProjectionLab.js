@@ -3,6 +3,7 @@ import { fetchCorpora, fetchBiradicals, fetchProjection } from '../../services/a
 import { PHON_CLASSES } from '../analytics/phonology';
 import BranchSnapshot from '../analytics/BranchSnapshot';
 import SnapshotFingerprint from '../analytics/SnapshotFingerprint';
+import MorphologicalFlow from '../analytics/MorphologicalFlow';
 
 const RADICALS = Object.keys(PHON_CLASSES);
 
@@ -28,7 +29,7 @@ export default function ProjectionLab() {
   const [snapshot, setSnapshot] = useState(null);
   const [loading,  setLoading]  = useState(false);
   const [error,    setError]    = useState(null);
-  const [view,     setView]     = useState('fingerprint'); // 'fingerprint' | 'data'
+  const [view,     setView]     = useState('universe'); // 'universe' | 'fingerprint' | 'data'
 
   useEffect(() => {
     fetchCorpora().then(d => setCorpora(Array.isArray(d) ? d : [])).catch(() => {});
@@ -60,6 +61,15 @@ export default function ProjectionLab() {
       .catch(err => setError(err.message))
       .finally(() => setLoading(false));
   }, [centerType, center, projection, corpusId, surah]);
+
+  // Called when the universe view is clicked into — recentering reuses the
+  // exact same state that drives the dropdowns, so the two stay in sync and
+  // the dropdowns effectively become a breadcrumb of where you are.
+  const handleRecenter = ({ centerType: nextType, center: nextCenter }) => {
+    setCenterType(nextType);
+    if (nextType === 'biradical') setPairKey(nextCenter);
+    if (nextType === 'radical') setRadical(nextCenter);
+  };
 
   const btn = active => ({
     padding: '3px 10px', borderRadius: 6, fontSize: 11, cursor: 'pointer',
@@ -107,6 +117,7 @@ export default function ProjectionLab() {
             />
           )}
           <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+            <button style={btn(view === 'universe')} onClick={() => setView('universe')}>universe</button>
             <button style={btn(view === 'fingerprint')} onClick={() => setView('fingerprint')}>fingerprint</button>
             <button style={btn(view === 'data')} onClick={() => setView('data')}>raw data</button>
           </span>
@@ -116,6 +127,7 @@ export default function ProjectionLab() {
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
         {loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
         {error && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
+        {!loading && !error && view === 'universe' && <MorphologicalFlow snapshot={snapshot} onRecenter={handleRecenter} />}
         {!loading && !error && view === 'fingerprint' && <SnapshotFingerprint snapshot={snapshot} />}
         {!loading && !error && view === 'data' && <BranchSnapshot snapshot={snapshot} />}
       </div>
