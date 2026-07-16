@@ -42,3 +42,6 @@ universe-preview.html
 
 # Shared workspace assets ARE tracked
 !/workspaces/_shared/**
+
+# Generated analytics cache artifacts (built at runtime, not in git)
+/routes/modules/*-cache.json

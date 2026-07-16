@@ -4,6 +4,7 @@ import { PHON_CLASSES } from '../analytics/phonology';
 import BranchSnapshot from '../analytics/BranchSnapshot';
 import SnapshotFingerprint from '../analytics/SnapshotFingerprint';
 import MorphologicalFlow from '../analytics/MorphologicalFlow';
+import LexiconCloud from '../analytics/LexiconCloud';
 
 const RADICALS = Object.keys(PHON_CLASSES);
 
@@ -117,6 +118,7 @@ export default function ProjectionLab() {
             />
           )}
           <span style={{ marginLeft: 'auto', display: 'flex', gap: 4 }}>
+            <button style={btn(view === 'landscape')} onClick={() => setView('landscape')}>landscape</button>
             <button style={btn(view === 'universe')} onClick={() => setView('universe')}>universe</button>
             <button style={btn(view === 'fingerprint')} onClick={() => setView('fingerprint')}>fingerprint</button>
             <button style={btn(view === 'data')} onClick={() => setView('data')}>raw data</button>
@@ -125,8 +127,17 @@ export default function ProjectionLab() {
       </div>
 
       <div style={{ flex: 1, overflow: 'hidden', position: 'relative', minHeight: 0 }}>
-        {loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
-        {error && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
+        {/* landscape is the whole-lexicon base map — independent of the per-center
+            projection fetch, so it renders regardless of that request's state */}
+        {view === 'landscape' && (
+          <LexiconCloud
+            highlightRadical={centerType === 'radical' ? radical : null}
+            corpusId={corpusId}
+            surah={surah}
+          />
+        )}
+        {view !== 'landscape' && loading && <Centered><span style={{ color: '#333' }}>loading…</span></Centered>}
+        {view !== 'landscape' && error && <Centered><span style={{ color: '#ef4444' }}>{error}</span></Centered>}
         {!loading && !error && view === 'universe' && <MorphologicalFlow snapshot={snapshot} onRecenter={handleRecenter} />}
         {!loading && !error && view === 'fingerprint' && <SnapshotFingerprint snapshot={snapshot} />}
         {!loading && !error && view === 'data' && <BranchSnapshot snapshot={snapshot} />}

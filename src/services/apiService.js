@@ -803,6 +803,13 @@ export const fetchProjection = async ({ centerType, center, projection, corpusId
   return response.data;
 };
 
+// Whole-lexicon 2D hierarchical point map (families → roots → words). The base
+// map is lexicon-wide and cached server-side; corpus/radical are client overlays.
+export const fetchLexiconCloud = async () => {
+  const response = await api.get('/analytics/lexicon-cloud');
+  return response.data;
+};
+
 export const fetchRootWords = async (r1, r2, r3) => {
   const p = new URLSearchParams({ r1, r2, r3 });
   const response = await api.get(`/analytics/root-words?${p}`);

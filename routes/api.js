@@ -33,6 +33,7 @@ const workspaceRoutes = require('./modules/workspace');
 const observabilityRoutes = require('./modules/observability');
 const analyticsRoutes     = require('./modules/analytics');
 const projectionRoutes    = require('./modules/projection');
+const lexiconCloudRoutes  = require('./modules/lexiconCloud');
 
 // Mount modular route modules
 router.use('/', corpusRoutes);           // Corpus data operations
@@ -47,5 +48,6 @@ router.use('/', workspaceRoutes);        // Creative workspace module (Custom GP
 router.use('/', observabilityRoutes);    // Semantic observability layer (Neo4j → Notion)
 router.use('/', analyticsRoutes);        // Linguistic analytics (bi-radical, radical positions)
 router.use('/', projectionRoutes);       // Projection Snapshot API (center + scope + projection rule)
+router.use('/', lexiconCloudRoutes);     // Lexicon Morphology Landscape (whole-lexicon 2D point map)
 
 module.exports = router;
