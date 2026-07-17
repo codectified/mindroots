@@ -67,6 +67,7 @@ export default function LexiconCloud({ highlightRadical, corpusId, surah }) {
   const [data, setData]   = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [showKey, setShowKey] = useState(true);
 
   const sc = useRef(null); // imperative three.js scene state
 
@@ -310,17 +311,16 @@ export default function LexiconCloud({ highlightRadical, corpusId, surah }) {
     <div ref={wrapRef} style={{ width: '100%', height: '100%', position: 'relative', cursor: 'grab' }}>
       {loading && <Overlay><span style={{ color: '#555' }}>building lexicon map…</span></Overlay>}
       {error && <Overlay><span style={{ color: '#ef4444' }}>{error}</span></Overlay>}
-      {data && (
-        <div style={{ position: 'absolute', left: 12, bottom: 10, display: 'flex', gap: 12, flexWrap: 'wrap', pointerEvents: 'none' }}>
-          {(data.legend || []).map(l => (
-            <span key={l.index} style={{ fontSize: 10, color: '#888', display: 'flex', alignItems: 'center', gap: 4 }}>
-              <span style={{ width: 8, height: 8, borderRadius: 8, background: l.color, display: 'inline-block' }} />{l.name}
-            </span>
-          ))}
-          <span style={{ fontSize: 10, color: '#555' }}>
-            {data.counts.families} families · {data.counts.roots.toLocaleString()} roots · {data.counts.words.toLocaleString()} words
-          </span>
-        </div>
+      {data && (showKey
+        ? <KeyPanel data={data} corpusId={corpusId} highlightRadical={highlightRadical} onClose={() => setShowKey(false)} />
+        : (
+          <button onClick={() => setShowKey(true)}
+            style={{ position: 'absolute', left: 12, top: 12, zIndex: 6, cursor: 'pointer',
+              background: 'rgba(10,10,15,0.85)', border: '1px solid rgba(255,255,255,0.12)',
+              borderRadius: 6, color: '#aaa', fontSize: 11, padding: '4px 9px' }}>
+            key
+          </button>
+        )
       )}
       <div ref={tipRef} style={{ position: 'absolute', display: 'none', pointerEvents: 'none', background: 'rgba(10,10,15,0.92)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 6, padding: '5px 8px', zIndex: 5, maxWidth: 260 }} />
     </div>
@@ -331,6 +331,56 @@ function Overlay({ children }) {
   return (
     <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 4 }}>
       {children}
+    </div>
+  );
+}
+
+// Reading key for the map — explains the three layers (size = productivity),
+// color (phonetic class), brightness (corpus attestation), and shows the
+// active radical / corpus overlay.
+const dot = (px, color) => (
+  <span style={{ width: px, height: px, borderRadius: px, background: color, display: 'inline-block', flexShrink: 0 }} />
+);
+const rowStyle = { display: 'flex', alignItems: 'center', gap: 7, fontSize: 11, color: '#bbb', minHeight: 16 };
+const headStyle = { fontSize: 9, letterSpacing: '0.08em', textTransform: 'uppercase', color: '#666', marginTop: 9, marginBottom: 3 };
+
+function KeyPanel({ data, corpusId, highlightRadical, onClose }) {
+  const scope = corpusId && corpusId !== 'all' ? (data.corpus_labels?.[corpusId] || `corpus ${corpusId}`) : 'entire lexicon';
+  return (
+    <div style={{ position: 'absolute', left: 12, top: 12, zIndex: 6, width: 210, pointerEvents: 'auto',
+      background: 'rgba(10,10,15,0.9)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: 8,
+      padding: '10px 12px', color: '#bbb', font: '400 12px/1.4 system-ui, sans-serif', backdropFilter: 'blur(2px)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <span style={{ fontSize: 11, color: '#ddd', letterSpacing: '0.04em' }}>LEXICON MAP</span>
+        <span onClick={onClose} style={{ cursor: 'pointer', color: '#666', fontSize: 14, lineHeight: 1 }}>×</span>
+      </div>
+      <div style={{ fontSize: 10, color: '#777', marginTop: 2 }}>each point is a morphological entity, nested by lineage</div>
+
+      <div style={headStyle}>layers · size = productivity</div>
+      <div style={rowStyle}>{dot(13, '#e5c07b')}<span>family — bi-radical · size ∝ roots</span></div>
+      <div style={rowStyle}>{dot(8, '#e5c07b')}<span>root — triliteral · size ∝ words</span></div>
+      <div style={rowStyle}>{dot(4, '#8a8a8a')}<span>word — lexical entry</span></div>
+
+      <div style={headStyle}>color = sound class</div>
+      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+        {(data.legend || []).map(l => (
+          <span key={l.index} style={{ ...rowStyle, gap: 4, fontSize: 10 }}>{dot(8, l.color)}<span>{l.name}</span></span>
+        ))}
+      </div>
+
+      <div style={headStyle}>brightness = attestation</div>
+      <div style={{ fontSize: 10, color: '#999' }}>bright = attested in a corpus · faint = lexicon only</div>
+
+      <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', marginTop: 9, paddingTop: 7, fontSize: 10, color: '#888' }}>
+        <div>drag to pan · scroll to zoom · hover for details</div>
+        <div style={{ marginTop: 4, color: '#aaa' }}>
+          scope: <span style={{ color: '#eab308' }}>{scope}</span>
+          {highlightRadical && <> · radical: <span style={{ fontFamily: 'serif', color: '#eab308' }}>{highlightRadical}</span></>}
+        </div>
+        <div style={{ marginTop: 4, color: '#666' }}>
+          {data.counts.families} families · {data.counts.roots.toLocaleString()} roots · {data.counts.words.toLocaleString()} words
+        </div>
+      </div>
     </div>
   );
 }
