@@ -7,6 +7,7 @@ import MorphologicalFlow from '../analytics/MorphologicalFlow';
 import LexiconCloud from '../analytics/LexiconCloud';
 
 const RADICALS = Object.keys(PHON_CLASSES);
+const DEBOUNCE_MS = 350; // coalesce rapid control changes into one API request
 
 const selectStyle = {
   background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
@@ -40,14 +41,19 @@ export default function ProjectionLab() {
 
   // bi-radical center options come from the existing biradicals endpoint,
   // scoped to the currently selected corpus — no hardcoded pair list.
+  // Debounced: stepping the surah input fires rapid changes; without this the
+  // burst of API calls trips the server rate limit (and fail2ban ban).
   useEffect(() => {
-    fetchBiradicals(corpusId, surah)
-      .then(d => {
-        const keys = (d.biradicals || []).map(b => b.pair_key).sort();
-        setPairOptions(keys);
-        setPairKey(prev => (keys.includes(prev) ? prev : (keys[0] || '')));
-      })
-      .catch(() => setPairOptions([]));
+    const t = setTimeout(() => {
+      fetchBiradicals(corpusId, surah)
+        .then(d => {
+          const keys = (d.biradicals || []).map(b => b.pair_key).sort();
+          setPairOptions(keys);
+          setPairKey(prev => (keys.includes(prev) ? prev : (keys[0] || '')));
+        })
+        .catch(() => setPairOptions([]));
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(t);
   }, [corpusId, surah]);
 
   const center     = centerType === 'radical' ? radical : pairKey;
@@ -57,10 +63,15 @@ export default function ProjectionLab() {
     if (!center) return;
     setLoading(true);
     setError(null);
-    fetchProjection({ centerType, center, projection, corpusId, surah })
-      .then(setSnapshot)
-      .catch(err => setError(err.message))
-      .finally(() => setLoading(false));
+    // Debounced so rapid center/scope/surah changes coalesce into one request
+    // instead of a burst that trips the API rate limit.
+    const t = setTimeout(() => {
+      fetchProjection({ centerType, center, projection, corpusId, surah })
+        .then(setSnapshot)
+        .catch(err => setError(err.message))
+        .finally(() => setLoading(false));
+    }, DEBOUNCE_MS);
+    return () => clearTimeout(t);
   }, [centerType, center, projection, corpusId, surah]);
 
   // Called when the universe view is clicked into — recentering reuses the
