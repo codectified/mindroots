@@ -161,9 +161,11 @@ A local Elasticsearch index over ~2 years of Omar's ChatGPT conversation
 history is running at `http://127.0.0.1:9200` (index `chatgpt-export`,
 2,582 conversations, full text). It includes a `gpt_project_label` field —
 `mindroots-family` is a high-confidence label covering conversations from
-three dedicated custom GPTs Omar used for this project's research and
-engineering. Query it for historical context, early design rationale, or
-past decisions:
+several dedicated ChatGPT Projects and Custom GPTs Omar used for this
+project's research and engineering (not "three custom GPTs" — a mix of
+both features; see `gpt_template_kind` and
+`C:\dev\chatgpt-export\README.md` for the distinction). Query it for
+historical context, early design rationale, or past decisions:
 
 ```bash
 curl -s -X POST http://127.0.0.1:9200/chatgpt-export/_search \
