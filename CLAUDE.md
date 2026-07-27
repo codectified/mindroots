@@ -149,3 +149,29 @@ node server.js  # Start fresh server (dev)
 
 **Last Updated**: May 2026  
 **File Purpose**: Streamlined index and quick reference only
+
+---
+
+## Shared HQ infrastructure: ChatGPT-export knowledge base
+
+*(Added 2026-07-27 by HQ's ceo/ role — see C:\dev\hq\ceo\CLAUDE.md's
+infrastructure-pattern exception for why HQ is allowed to add this section.)*
+
+A local Elasticsearch index over ~2 years of Omar's ChatGPT conversation
+history is running at `http://127.0.0.1:9200` (index `chatgpt-export`,
+2,582 conversations, full text). It includes a `gpt_project_label` field —
+`mindroots-family` is a high-confidence label covering conversations from
+three dedicated custom GPTs Omar used for this project's research and
+engineering. Query it for historical context, early design rationale, or
+past decisions:
+
+```bash
+curl -s -X POST http://127.0.0.1:9200/chatgpt-export/_search \
+  -H "Content-Type: application/json" \
+  -d '{"query": {"bool": {"must": [{"match": {"full_text": "YOUR QUERY"}}],
+       "filter": [{"term": {"gpt_project_label": "mindroots-family"}}]}},
+       "size": 5, "_source": ["title", "create_date"]}'
+```
+
+Full docs: `C:\dev\chatgpt-export\README.md`. Not authoritative — cross-check
+findings against this repo's own git history and `docs/`.
