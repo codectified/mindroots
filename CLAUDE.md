@@ -4,6 +4,21 @@
 
 ---
 
+## Session Start
+
+*(Directive added 2026-07-27/28 by HQ's ceo/ role, per Omar's request to
+consolidate session-start instructions — see the infrastructure-pattern
+exception in `C:\dev\hq\ceo\CLAUDE.md`.)*
+
+No `HANDOFF.md` exists in this repo as of 2026-07-27 — check again in case
+one's been added since. Otherwise: this file (`CLAUDE.md`) already
+functions as the session-start index per the section below — read it,
+then follow into `docs/DOCUMENTATION-INDEX.md`. The shared ChatGPT-export
+knowledge base (further down this file) is a secondary resource for
+historical context, not a first step.
+
+---
+
 ## 📚 **Documentation Index**
 
 **IMPORTANT**: Always check organized documentation first. This file is just an index.
