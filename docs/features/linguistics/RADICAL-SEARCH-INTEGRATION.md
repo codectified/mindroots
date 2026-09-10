@@ -232,6 +232,58 @@ All CorpusItems store corpus membership as a `corpus_id` integer property. The `
 
 ---
 
+## Weak Radical Wildcard (Semivowel Search)
+
+**Date Added**: September 2026
+**Status**: Implemented, build/lint clean, **not yet deployed to production**
+**Impact**: Adds a fourth sentinel value (`'Weak'`) to the existing per-position wildcard system, scoped to the four weak radicals/semivowels: و (wāw), ي (yā'), ا (alif), ء (hamza).
+
+### Purpose
+Extends the existing `'*'` (any radical) / `'None'` (biradical-only) sentinel pattern with a `'Weak'` sentinel: "any radical in this position that's a weak letter," rather than either a fully open wildcard or one exact letter. Requested to let users find weak/hollow/defective roots without enumerating all four letters by hand.
+
+### Implementation
+**File**: `routes/modules/search-modern.js`
+```javascript
+const WEAK_RADICALS = ['و', 'ي', 'ا', 'ء'];
+
+function radicalCondition(alias, value, position, paramName, queryParams) {
+  if (!value || value === '*') return null;
+  const posClause = position != null ? ` AND ${alias}.position = ${position}` : '';
+  if (value === 'Weak') {
+    queryParams[paramName] = WEAK_RADICALS;
+    return `(${alias}.radical IN $${paramName}${posClause})`;
+  }
+  queryParams[paramName] = value;
+  return `(${alias}.radical = $${paramName}${posClause})`;
+}
+```
+This helper replaces the old inline `if (r1 && r1 !== '*') {...}` blocks in all three live routes and is a drop-in: existing `'*'`/exact-letter/`'None'` behavior is unchanged.
+
+- **`/search-roots`** — position-anchored; `radicalCondition` substituted directly per slot.
+- **`/search-extended`** — no position anchor (OR-membership across up to 3 slots); same substitution.
+- **`/search-combinate`** — reworked from a flat literal-list match to a literal/weak split (`literalRadicals` + `weakCount`), since this route's multiset "permutation" matching can't take `'Weak'` as just another literal string. **Known limitation**: if a literal slot itself asks for a weak letter (e.g. `r1='و'`) on a root with two instances of that same letter (e.g. a geminate وو root), the second instance won't count toward a separate weak slot — value-based accounting can't distinguish it from the instance already claimed by the literal. Narrow edge case (exact-weak-literal + weak-wildcard together in the same search), not solved.
+
+**Frontend** (`src/components/graph/Search.js`, `src/constants/uiLabels.js`): a `Weak` option added to all three r1/r2/r3 `<select>` dropdowns, plus a `displayRadical()` helper so the pattern-feedback line shows a translated label (`weakRadical` in `uiLabels.js`) instead of the raw sentinel string.
+
+### ⚠️ Open dependency: DB-side normalization is unverified — and may conflict with this doc
+
+This feature matches weak radicals against a **fixed canonical set** (`['و','ي','ا','ء']`) with no in-app normalization step. That's only correct if `RadicalPosition.radical` values are already normalized at ingestion — i.e., surface variants (أ, إ, آ, ة, ى, ؤ, etc.) are collapsed to canonical form before being stored, so a query for `ا` also catches roots whose true underlying letter is a hamza-on-alif variant.
+
+Omar's recollection (2026-09-01, via `mindroots-hub` `HANDOFF.md`): *"normalization is db side. it's done on the radical node props but also on root node props too I believe."* That's the assumption this feature is built on.
+
+**But** the "Proposed Enhancements → Orthographical Normalization" section elsewhere in this same file (last updated March 26, 2026 — about 5 months before that recollection) says the opposite: *"RadicalPosition stores exact Arabic characters without normalization"* and proposes an unimplemented `normalizeArabicLetter()` JS function as future work. A repo-wide search turns up no such function, or any other normalization logic, anywhere in the codebase — so if normalization happens at all, it happens outside this repo (manual data entry, an external ingestion script, or a Neo4j-side transform this repo doesn't contain), and there's no evidence here confirming that it does.
+
+**This has not been resolved.** Before trusting this feature's results in production, run a one-off check against the live DB:
+```cypher
+// Do any RadicalPosition or Root nodes still carry un-normalized surface variants?
+MATCH (rp:RadicalPosition)
+WHERE rp.radical IN ['أ', 'إ', 'آ', 'ة', 'ى', 'ؤ']
+RETURN rp.radical, count(*) AS n
+```
+If this returns any rows, weak-radical search will silently miss roots whose real letter is one of those variants (the query only matches the canonical four), and the fix is either widening `WEAK_RADICALS` to include the variant forms or fixing normalization upstream. Nobody has run this query yet — no local `.env`/Neo4j credentials were available in the session that built this feature.
+
+---
+
 ## Search Logic & Edge Cases
 
 ### **Wildcard Handling**

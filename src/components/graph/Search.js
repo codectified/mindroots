@@ -145,6 +145,12 @@ const Search = () => {
     }
   };
 
+  const displayRadical = (value) => {
+    if (value === 'Weak') return t.weakRadical;
+    if (value === 'NoR3') return t.noneLabel;
+    return value || '*';
+  };
+
   const formatNeo4jData = (neo4jData) => {
     const nodes = [];
     const links = [];
@@ -222,6 +228,7 @@ const Search = () => {
           <label>{t.r1}</label>
           <select className={selectClass} value={r1} onChange={(e) => setR1(e.target.value)}>
             <option value="">*</option>
+            <option value="Weak">{t.weakRadical}</option>
             {arabicLetters.map((letter) => <option key={letter} value={letter}>{letter}</option>)}
           </select>
         </div>
@@ -229,6 +236,7 @@ const Search = () => {
           <label>{t.r2}</label>
           <select className={selectClass} value={r2} onChange={(e) => setR2(e.target.value)}>
             <option value="">*</option>
+            <option value="Weak">{t.weakRadical}</option>
             {arabicLetters.map((letter) => <option key={letter} value={letter}>{letter}</option>)}
           </select>
         </div>
@@ -236,6 +244,7 @@ const Search = () => {
           <label>{t.r3}</label>
           <select className={selectClass} value={r3} onChange={(e) => setR3(e.target.value)}>
             <option value="">*</option>
+            <option value="Weak">{t.weakRadical}</option>
             <option value="NoR3">{t.noR3}</option>
             {arabicLetters.map((letter) => <option key={letter} value={letter}>{letter}</option>)}
           </select>
@@ -254,7 +263,7 @@ const Search = () => {
         <div>🔀 <strong>{t.combinate}:</strong> {r3 === 'NoR3' ? t.biradicalOnly : ''}</div>
         {r1 && (
           <div className="mt-[5px] italic">
-            {t.patternLabel} {r1 || '*'} - {r2 || '*'} - {r3 === 'NoR3' ? t.noneLabel : (r3 || '*')}
+            {t.patternLabel} {displayRadical(r1)} - {displayRadical(r2)} - {displayRadical(r3)}
           </div>
         )}
       </div>

@@ -2,6 +2,30 @@ const express = require('express');
 const { convertIntegers } = require('./utils');
 const router = express.Router();
 
+// Weak radicals / semivowels (wāw, yā', alif, hamza) — treated as a single
+// wildcard class for root search. Relies on RadicalPosition.radical values
+// already being normalized to these canonical single-character forms at the
+// DB layer (hamza/alif surface variants collapsed before storage) — see
+// mindroots-hub HANDOFF.md for the underlying assumption this depends on.
+const WEAK_RADICALS = ['و', 'ي', 'ا', 'ء'];
+
+// Builds a single radical-position match condition for `alias` (a
+// RadicalPosition Cypher variable). The sentinel value 'Weak' becomes an IN
+// match against WEAK_RADICALS instead of an exact-letter '=' match; '*' or a
+// falsy value means unconstrained (returns null so callers can filter it
+// out with the same `if (cond)` pattern already used in this file).
+// `position` is optional — omit it for routes that don't anchor by position.
+function radicalCondition(alias, value, position, paramName, queryParams) {
+  if (!value || value === '*') return null;
+  const posClause = position != null ? ` AND ${alias}.position = ${position}` : '';
+  if (value === 'Weak') {
+    queryParams[paramName] = WEAK_RADICALS;
+    return `(${alias}.radical IN $${paramName}${posClause})`;
+  }
+  queryParams[paramName] = value;
+  return `(${alias}.radical = $${paramName}${posClause})`;
+}
+
 /**
  * Batch-fetch corpus occurrence counts for a list of root IDs.
  * Returns a Map<root_id (number), count>.
@@ -250,11 +274,11 @@ router.get('/search-roots', async (req, res) => {
           MATCH (root:Root)
           WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) = 2
         `;
-        if (r1 && r1 !== '*') {
+        const biradicalR1Cond = radicalCondition('rp1', r1, 1, 'r1', queryParams);
+        if (biradicalR1Cond) {
           cypherQuery += `
-            AND EXISTS { MATCH (root)-[:HAS_RADICAL]->(rp1:RadicalPosition) WHERE rp1.radical = $r1 AND rp1.position = 1 }
+            AND EXISTS { MATCH (root)-[:HAS_RADICAL]->(rp1:RadicalPosition) WHERE ${biradicalR1Cond} }
           `;
-          queryParams.r1 = r1;
         }
         cypherQuery += `
           ${corpusClause}
@@ -268,18 +292,12 @@ router.get('/search-roots', async (req, res) => {
     // Standard position-specific search
     if (actualR3 !== 'None') {
       const conditions = [];
-      if (r1 && r1 !== '*') {
-        conditions.push('(rp.radical = $r1 AND rp.position = 1)');
-        queryParams.r1 = r1;
-      }
-      if (r2 && r2 !== '*') {
-        conditions.push('(rp.radical = $r2 AND rp.position = 2)');
-        queryParams.r2 = r2;
-      }
-      if (actualR3 && actualR3 !== '*') {
-        conditions.push('(rp.radical = $r3 AND rp.position = 3)');
-        queryParams.r3 = actualR3;
-      }
+      const r1Cond = radicalCondition('rp', r1, 1, 'r1', queryParams);
+      if (r1Cond) conditions.push(r1Cond);
+      const r2Cond = radicalCondition('rp', r2, 2, 'r2', queryParams);
+      if (r2Cond) conditions.push(r2Cond);
+      const r3Cond = radicalCondition('rp', actualR3, 3, 'r3', queryParams);
+      if (r3Cond) conditions.push(r3Cond);
 
       if (conditions.length === 0) {
         cypherQuery = `
@@ -354,15 +372,24 @@ router.get('/search-combinate', async (req, res) => {
       return res.status(400).json({ error: 'L1 language parameter is required' });
     }
 
-    const inputRadicals = [r1, r2, r3].filter(r => r && r !== '*');
+    const literalRadicals = [r1, r2, r3].filter(r => r && r !== '*' && r !== 'Weak');
+    const weakCount = [r1, r2, r3].filter(r => r === 'Weak').length;
 
-    if (inputRadicals.length === 0) {
+    if (literalRadicals.length === 0 && weakCount === 0) {
       return res.status(400).json({ error: 'At least one radical is required for combinate search' });
     }
 
     const session = req.driver.session();
     let cypherQuery = '';
-    let queryParams = { radicals: inputRadicals };
+    // NOTE on weak-radical slots: a weak slot is satisfied by any RadicalPosition
+    // instance whose value is in WEAK_RADICALS and isn't already needed to satisfy
+    // a literal slot. Known limitation: if a literal slot itself asks for a weak
+    // letter (e.g. r1='و') on a root with two instances of that same letter (e.g.
+    // a geminate وو root), the second instance won't count toward a separate weak
+    // slot even though it legitimately could — value-based accounting can't tell
+    // that instance apart from the one already claimed by the literal. Rare
+    // combination (exact weak literal + weak wildcard together); not solved here.
+    let queryParams = { literals: literalRadicals, weakRadicals: WEAK_RADICALS, weakCount };
 
     const surahNumbersParsed = surah_numbers
       ? surah_numbers.split(',').map(s => parseInt(s, 10)).filter(n => !isNaN(n))
@@ -383,11 +410,12 @@ router.get('/search-combinate', async (req, res) => {
     if (r3 === 'None') {
       cypherQuery = `
         MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
-        WHERE rp.radical IN $radicals
-        WITH root, collect(rp.radical) as root_radicals
+        WHERE rp.radical IN $literals OR rp.radical IN $weakRadicals
+        WITH root, collect(rp.radical) as matched_radicals
         WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) = 2
-          AND all(radical in $radicals WHERE radical in root_radicals)
-          AND size(root_radicals) = 2
+          AND all(lit in $literals WHERE lit in matched_radicals)
+          AND size(matched_radicals) = size($literals) + $weakCount
+          AND size([r in matched_radicals WHERE r IN $weakRadicals AND NOT r IN $literals]) >= $weakCount
         ${corpusClause}
         RETURN root
         ORDER BY root.${L1}
@@ -396,11 +424,12 @@ router.get('/search-combinate', async (req, res) => {
     } else {
       cypherQuery = `
         MATCH (root:Root)-[:HAS_RADICAL]->(rp:RadicalPosition)
-        WHERE rp.radical IN $radicals
-        WITH root, collect(rp.radical) as root_radicals
+        WHERE rp.radical IN $literals OR rp.radical IN $weakRadicals
+        WITH root, collect(rp.radical) as matched_radicals
         WHERE size([(root)-[:HAS_RADICAL]->(:RadicalPosition) | 1]) <= 3
-          AND all(radical in $radicals WHERE radical in root_radicals)
-          AND size([r in root_radicals WHERE r IN $radicals]) = size($radicals)
+          AND all(lit in $literals WHERE lit in matched_radicals)
+          AND size(matched_radicals) = size($literals) + $weakCount
+          AND size([r in matched_radicals WHERE r IN $weakRadicals AND NOT r IN $literals]) >= $weakCount
         ${corpusClause}
         RETURN root
         ORDER BY root.${L1}
@@ -467,18 +496,12 @@ router.get('/search-extended', async (req, res) => {
     let queryParams = {};
     const conditions = [];
 
-    if (r1 && r1 !== '*') {
-      conditions.push('(rp.radical = $r1)');
-      queryParams.r1 = r1;
-    }
-    if (r2 && r2 !== '*') {
-      conditions.push('(rp.radical = $r2)');
-      queryParams.r2 = r2;
-    }
-    if (r3 && r3 !== '*') {
-      conditions.push('(rp.radical = $r3)');
-      queryParams.r3 = r3;
-    }
+    const extR1Cond = radicalCondition('rp', r1, null, 'r1', queryParams);
+    if (extR1Cond) conditions.push(extR1Cond);
+    const extR2Cond = radicalCondition('rp', r2, null, 'r2', queryParams);
+    if (extR2Cond) conditions.push(extR2Cond);
+    const extR3Cond = radicalCondition('rp', r3, null, 'r3', queryParams);
+    if (extR3Cond) conditions.push(extR3Cond);
 
     if (conditions.length > 0) {
       cypherQuery += ' AND (' + conditions.join(' OR ') + ')';
