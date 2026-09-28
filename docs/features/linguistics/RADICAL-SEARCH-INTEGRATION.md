@@ -265,22 +265,27 @@ This helper replaces the old inline `if (r1 && r1 !== '*') {...}` blocks in all 
 
 **Frontend** (`src/components/graph/Search.js`, `src/constants/uiLabels.js`): a `Weak` option added to all three r1/r2/r3 `<select>` dropdowns, plus a `displayRadical()` helper so the pattern-feedback line shows a translated label (`weakRadical` in `uiLabels.js`) instead of the raw sentinel string.
 
-### ⚠️ Open dependency: DB-side normalization is unverified — and may conflict with this doc
+### ✅ Resolved 2026-09-28: DB-side normalization does NOT hold — fixed by widening the match set
 
-This feature matches weak radicals against a **fixed canonical set** (`['و','ي','ا','ء']`) with no in-app normalization step. That's only correct if `RadicalPosition.radical` values are already normalized at ingestion — i.e., surface variants (أ, إ, آ, ة, ى, ؤ, etc.) are collapsed to canonical form before being stored, so a query for `ا` also catches roots whose true underlying letter is a hamza-on-alif variant.
-
-Omar's recollection (2026-09-01, via `mindroots-hub` `HANDOFF.md`): *"normalization is db side. it's done on the radical node props but also on root node props too I believe."* That's the assumption this feature is built on.
-
-**But** the "Proposed Enhancements → Orthographical Normalization" section elsewhere in this same file (last updated March 26, 2026 — about 5 months before that recollection) says the opposite: *"RadicalPosition stores exact Arabic characters without normalization"* and proposes an unimplemented `normalizeArabicLetter()` JS function as future work. A repo-wide search turns up no such function, or any other normalization logic, anywhere in the codebase — so if normalization happens at all, it happens outside this repo (manual data entry, an external ingestion script, or a Neo4j-side transform this repo doesn't contain), and there's no evidence here confirming that it does.
-
-**This has not been resolved.** Before trusting this feature's results in production, run a one-off check against the live DB:
+The open dependency below was verified against production (via the app's own `/api/execute-query` endpoint, no direct DB credentials needed):
 ```cypher
-// Do any RadicalPosition or Root nodes still carry un-normalized surface variants?
 MATCH (rp:RadicalPosition)
 WHERE rp.radical IN ['أ', 'إ', 'آ', 'ة', 'ى', 'ؤ']
 RETURN rp.radical, count(*) AS n
 ```
-If this returns any rows, weak-radical search will silently miss roots whose real letter is one of those variants (the query only matches the canonical four), and the fix is either widening `WEAK_RADICALS` to include the variant forms or fixing normalization upstream. Nobody has run this query yet — no local `.env`/Neo4j credentials were available in the session that built this feature.
+Result: `ى` (alif maqsura) and `أ` (hamza-on-alif) both appear as live, un-normalized `RadicalPosition.radical` values — **551 distinct roots** carry one of these two variants instead of the canonical `ي`/`ا`+`ء` forms (`RadicalPosition` nodes are a shared dimension keyed by `(radical, position)`, so a small node count fans out to hundreds of roots via `HAS_RADICAL`). No other variant (`إ`, `آ`, `ة`, `ؤ`) appears anywhere in the data. Root-node legacy `r1`/`r2`/`r3` properties show the same two variants on the same roots, consistent with `RadicalPosition`.
+
+Since `ى` and `أ` are legitimate orthographic forms of radicals already in the weak-radical class (final weak yā' is conventionally written `ى`; hamza-on-alif is a seated form of hamza), the fix widens `WEAK_RADICALS` in `search-modern.js` to `['و', 'ي', 'ا', 'ء', 'أ', 'ى']` rather than attempting a DB-side normalization migration — no query changes needed beyond that constant, and it carries no risk to existing exact-letter or `'*'` searches.
+
+<details><summary>Original open-dependency writeup (kept for history)</summary>
+
+This feature matches weak radicals against a **fixed canonical set** (`['و','ي','ا','ء']`) with no in-app normalization step. That's only correct if `RadicalPosition.radical` values are already normalized at ingestion.
+
+Omar's recollection (2026-09-01, via `mindroots-hub` `HANDOFF.md`): *"normalization is db side. it's done on the radical node props but also on root node props too I believe."* That's the assumption this feature was built on.
+
+**But** the "Proposed Enhancements → Orthographical Normalization" section elsewhere in this same file (last updated March 26, 2026) says the opposite: *"RadicalPosition stores exact Arabic characters without normalization"* and proposes an unimplemented `normalizeArabicLetter()` JS function as future work. A repo-wide search turned up no such function anywhere in the codebase.
+
+</details>
 
 ---
 

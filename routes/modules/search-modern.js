@@ -3,11 +3,15 @@ const { convertIntegers } = require('./utils');
 const router = express.Router();
 
 // Weak radicals / semivowels (wāw, yā', alif, hamza) — treated as a single
-// wildcard class for root search. Relies on RadicalPosition.radical values
-// already being normalized to these canonical single-character forms at the
-// DB layer (hamza/alif surface variants collapsed before storage) — see
-// mindroots-hub HANDOFF.md for the underlying assumption this depends on.
-const WEAK_RADICALS = ['و', 'ي', 'ا', 'ء'];
+// wildcard class for root search. DB-side normalization was assumed but
+// unverified (see RADICAL-SEARCH-INTEGRATION.md); verified 2026-09-28
+// against production that it does NOT hold — 551 RadicalPosition-bearing
+// roots store the un-normalized surface variants أ (hamza-on-alif) and ى
+// (alif maqsura) instead of ء/ا and ي respectively (no other variants —
+// إ, آ, ة, ؤ — appear anywhere in the data). Both variants are legitimate
+// orthographic forms of radicals already in this list, so they're included
+// directly here rather than fixed via a DB-side migration.
+const WEAK_RADICALS = ['و', 'ي', 'ا', 'ء', 'أ', 'ى'];
 
 // Builds a single radical-position match condition for `alias` (a
 // RadicalPosition Cypher variable). The sentinel value 'Weak' becomes an IN
