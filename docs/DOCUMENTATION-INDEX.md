@@ -40,6 +40,7 @@ Arabic morphology graph features — corpus navigation, analysis, search, valida
 | [Typography Controls](features/linguistics/TYPOGRAPHY-CONTROL-DOCUMENTATION.md) | ✅ | Typography control UI documentation |
 | [Mobile Development Readiness](features/linguistics/MOBILE-DEVELOPMENT-READINESS.md) | ✅ | Mobile adaptation status and approach |
 | [GPT Root Analysis Reference](features/linguistics/GPT-ANALYSIS-REFERENCE.md) | ✅ | GPT workflow for creating morphological analysis nodes |
+| [Lexicon Landscape Handoff](features/linguistics/LEXICON-LANDSCAPE-HANDOFF.md) | 🔧 | Projection Lab whole-lexicon point map — deployed first pass; physics-driven layout pivot explored but paused, not implemented |
 
 **Agent & API:**
 - [MindRoots Linguistics Agent Instructions](features/linguistics/agent-instructions/MINDROOTS-AGENT-INSTRUCTIONS.md) — Semitic root analysis workflow and graph query patterns
