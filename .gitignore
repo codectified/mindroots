@@ -5,6 +5,12 @@
 /.pnp
 .pnp.js
 
+# Local-only working data (downloads, scratch scripts, pulled datasets not meant
+# for Neo4j/git yet) that must survive a Claude Code session restart — the
+# session scratchpad directory does NOT survive restarts, so anything here
+# intentionally lives in the repo tree instead, just gitignored.
+/.local-data
+
 # testing
 /coverage
 
