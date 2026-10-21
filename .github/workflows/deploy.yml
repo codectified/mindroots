@@ -1,0 +1,131 @@
+# Build in CI (never on the 1 GB prod box) and deploy:
+#   push to any non-master branch → https://theoption.life/staging/
+#   push/merge to master          → https://theoption.life/ (backend restart only
+#                                   if routes/, middleware/, server.js or package.json changed)
+#
+# SSH to the box is IP-whitelisted in sg-5032de2b, so the job opens port 22 for
+# the runner's IP, deploys, and always closes it again.
+#
+# Secrets: REACT_APP_API_KEY, DEPLOY_SSH_KEY (private key for bitnami@theoption.life),
+#          AWS_ACCESS_KEY_ID / AWS_SECRET_ACCESS_KEY (may only authorize/revoke on that SG).
+name: deploy
+
+on:
+  push:
+    branches: ['**']
+  workflow_dispatch:
+
+concurrency:
+  group: deploy-${{ github.ref == 'refs/heads/master' && 'prod' || 'staging' }}
+  cancel-in-progress: false
+
+env:
+  HOST: bitnami@theoption.life
+  SG_ID: sg-5032de2b
+  AWS_REGION: us-east-1
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Pick target
+        id: target
+        run: |
+          if [ "$GITHUB_REF" = "refs/heads/master" ]; then
+            echo "name=production" >> "$GITHUB_OUTPUT"
+            echo "public_url=" >> "$GITHUB_OUTPUT"
+            echo "build_dir=/var/www/mindroots/build" >> "$GITHUB_OUTPUT"
+            echo "site_url=https://theoption.life/" >> "$GITHUB_OUTPUT"
+          else
+            echo "name=staging" >> "$GITHUB_OUTPUT"
+            echo "public_url=/staging" >> "$GITHUB_OUTPUT"
+            echo "build_dir=/var/www/mindroots-staging/build" >> "$GITHUB_OUTPUT"
+            echo "site_url=https://theoption.life/staging/" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Did backend files change?
+        id: backend
+        if: steps.target.outputs.name == 'production'
+        run: |
+          BEFORE="${{ github.event.before }}"
+          if [ -z "$BEFORE" ] || [ "$BEFORE" = "0000000000000000000000000000000000000000" ]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          elif git diff --name-only "$BEFORE" "$GITHUB_SHA" | grep -qE '^(routes/|middleware/|server\.js$|package\.json$)'; then
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - run: npm ci
+
+      - name: Build
+        env:
+          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+          PUBLIC_URL: ${{ steps.target.outputs.public_url }}
+          GENERATE_SOURCEMAP: 'false'
+          CI: 'false' # CRA treats warnings as errors under CI=true; the codebase has pre-existing warnings
+        run: |
+          if [ -z "$REACT_APP_API_KEY" ]; then echo "REACT_APP_API_KEY secret missing"; exit 1; fi
+          npm run build
+
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Open SSH for this runner
+        id: ip
+        run: |
+          IP=$(curl -s https://checkip.amazonaws.com)
+          echo "ip=$IP" >> "$GITHUB_OUTPUT"
+          aws ec2 authorize-security-group-ingress --group-id "$SG_ID" \
+            --ip-permissions "IpProtocol=tcp,FromPort=22,ToPort=22,IpRanges=[{CidrIp=$IP/32,Description=github-actions-$GITHUB_RUN_ID}]"
+
+      - name: SSH key
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.DEPLOY_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh-keyscan -H theoption.life >> ~/.ssh/known_hosts
+
+      - name: Deploy frontend
+        run: |
+          SSH="ssh -i ~/.ssh/deploy_key"
+          DIR="${{ steps.target.outputs.build_dir }}"
+          $SSH "$HOST" "mkdir -p $DIR"
+          rsync -az --delete -e "$SSH" build/ "$HOST:$DIR/"
+
+      - name: Deploy backend + restart
+        if: steps.backend.outputs.changed == 'true'
+        run: |
+          SSH="ssh -i ~/.ssh/deploy_key"
+          rsync -az -e "$SSH" routes middleware server.js package.json "$HOST:/var/www/mindroots/"
+          $SSH "$HOST" "cd /var/www/mindroots && pm2 restart mindroots-backend && pm2 list"
+
+      - name: Close SSH for this runner
+        if: always() && steps.ip.outputs.ip != ''
+        run: |
+          aws ec2 revoke-security-group-ingress --group-id "$SG_ID" \
+            --ip-permissions "IpProtocol=tcp,FromPort=22,ToPort=22,IpRanges=[{CidrIp=${{ steps.ip.outputs.ip }}/32}]"
+
+      - name: Verify
+        env:
+          REACT_APP_API_KEY: ${{ secrets.REACT_APP_API_KEY }}
+        run: |
+          CODE=$(curl -s -o /dev/null -w '%{http_code}' "${{ steps.target.outputs.site_url }}")
+          echo "${{ steps.target.outputs.site_url }} → HTTP $CODE"
+          [ "$CODE" = "200" ]
+          JS=$(curl -s "${{ steps.target.outputs.site_url }}" | grep -o 'static/js/main[^"]*\.js' | head -1)
+          curl -s "https://theoption.life${{ steps.target.outputs.public_url }}/$JS" | grep -qF "$REACT_APP_API_KEY" \
+            || { echo "Live bundle doesn't contain the API key"; exit 1; }
+          echo "Deployed ${{ steps.target.outputs.name }}: ${{ steps.target.outputs.site_url }}"

@@ -89,7 +89,7 @@ const App = () => {
               <FormFilterProvider>
                 <SemiticLanguageFilterProvider>
                   <GraphDataProvider>
-              <Router basename="/">
+              <Router basename={process.env.PUBLIC_URL || "/"}>
                 <Routes>
                 <Route path="/" element={<ProfilePage />} />
                   <Route path="/projects" element={<Layout><MainMenu /></Layout>} />
