@@ -12,8 +12,15 @@ import styles from './MobileQuranReader.module.css';
 
 const SURAH_MAP = Object.fromEntries(SURAHS.map(s => [s.number, s]));
 const BASMALA = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
-const TRANSLIT_KEY = 'mobileReader.showTransliteration';
-const GLOSS_KEY = 'mobileReader.showGloss';
+// Lines that can appear under each Arabic word. A toggle only shows when the
+// current page has data for it (Quran words have roots today; word meanings and
+// transliteration arrive with Phase 5 translations).
+const ANNOTATIONS = [
+  { key: 'root', label: '√', aria: 'Show roots', defaultOn: true },
+  { key: 'gloss', label: 'EN', aria: 'Show word meanings', defaultOn: true },
+  { key: 'translit', label: 'Aa', aria: 'Show transliteration', defaultOn: false },
+];
+const prefKey = (key) => `mobileReader.show.${key}`;
 
 const readPref = (key, fallback) => {
   try {
@@ -45,8 +52,9 @@ const MobileQuranReader = ({
   onWordTap,
   onAyahMenu,
 }) => {
-  const [showTranslit, setShowTranslit] = useState(() => readPref(TRANSLIT_KEY, false));
-  const [showGloss, setShowGloss] = useState(() => readPref(GLOSS_KEY, true));
+  const [shown, setShown] = useState(() =>
+    Object.fromEntries(ANNOTATIONS.map((a) => [a.key, readPref(prefKey(a.key), a.defaultOn)]))
+  );
   const surahNumber = Number(surah);
   const meta = SURAH_MAP[surahNumber];
   const ayaEntries = Object.entries(groupedByAya);
@@ -63,14 +71,19 @@ const MobileQuranReader = ({
     lastFirstKey.current = pageKey;
   }, [surahNumber, firstKey]);
 
-  const toggleTranslit = () => {
-    setShowTranslit(!showTranslit);
-    writePref(TRANSLIT_KEY, !showTranslit);
+  const toggle = (key) => {
+    setShown({ ...shown, [key]: !shown[key] });
+    writePref(prefKey(key), !shown[key]);
   };
-  const toggleGloss = () => {
-    setShowGloss(!showGloss);
-    writePref(GLOSS_KEY, !showGloss);
+
+  // Word meaning: the chosen second language, else the English gloss
+  const annotationText = {
+    root: (item) => (item.root ? item.root.split('').join(' ') : null),
+    gloss: (item) => (L2 !== 'off' && item[L2]) || item.english || null,
+    translit: (item) => item.transliteration || null,
   };
+  const allItems = ayaEntries.flatMap(([, ayaItems]) => ayaItems);
+  const available = ANNOTATIONS.filter((a) => allItems.some((item) => annotationText[a.key](item)));
 
   const num = (n) => (L1 === 'sem' ? toArabicNumerals(n) : n);
   const atSurahEnd = nav.currentEndAya >= (ayaCount || 286);
@@ -100,24 +113,18 @@ const MobileQuranReader = ({
             </option>
           ))}
         </select>
-        <button
-          type="button"
-          className={`${styles.iconBtn} ${showTranslit ? styles.iconBtnActive : ''}`}
-          onClick={toggleTranslit}
-          aria-pressed={showTranslit}
-          aria-label="Show transliteration"
-        >
-          Aa
-        </button>
-        <button
-          type="button"
-          className={`${styles.iconBtn} ${showGloss ? styles.iconBtnActive : ''}`}
-          onClick={toggleGloss}
-          aria-pressed={showGloss}
-          aria-label="Show word meanings"
-        >
-          EN
-        </button>
+        {available.map((a) => (
+          <button
+            key={a.key}
+            type="button"
+            className={`${styles.iconBtn} ${shown[a.key] ? styles.iconBtnActive : ''}`}
+            onClick={() => toggle(a.key)}
+            aria-pressed={shown[a.key]}
+            aria-label={a.aria}
+          >
+            {a.label}
+          </button>
+        ))}
         <button
           type="button"
           className={styles.iconBtn}
@@ -175,8 +182,10 @@ const MobileQuranReader = ({
 
               <div className={styles.verseText} translate="no">
                 {ayaItems.map((item) => {
-                  // Word meaning: the chosen second language, else the English gloss
-                  const gloss = showGloss ? (L2 !== 'off' && item[L2]) || item.english : null;
+                  const lines = available
+                    .filter((a) => shown[a.key])
+                    .map((a) => [a.key, annotationText[a.key](item)])
+                    .filter(([, text]) => text);
                   return (
                     <span
                       key={item.item_id}
@@ -190,10 +199,11 @@ const MobileQuranReader = ({
                       <span className={styles.arabic} lang="ar">
                         {item[L1] || item.arabic}
                       </span>
-                      {showTranslit && item.transliteration && (
-                        <span className={styles.wbw}>{item.transliteration}</span>
-                      )}
-                      {gloss && <span className={styles.gloss}>{gloss}</span>}
+                      {lines.map(([key, text]) => (
+                        <span key={key} className={styles[key]}>
+                          {text}
+                        </span>
+                      ))}
                     </span>
                   );
                 })}

@@ -103,6 +103,8 @@ router.get('/list/quran_items_range', async (req, res) => {
           item.sem AS sem,
           item.s1_tag AS pos,
           item.gender AS gender,
+          item.root AS root,
+          item.lemma AS lemma,
           toInteger(parts[0]) AS sura_index,
           toInteger(parts[0]) AS surah,
           toInteger(parts[1]) AS ayah,

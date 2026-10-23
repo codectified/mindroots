@@ -50,7 +50,7 @@
 
 .iconBtn {
   flex-shrink: 0;
-  min-width: 44px;
+  min-width: 40px;
   min-height: 44px;
   display: inline-flex;
   align-items: center;
@@ -192,6 +192,18 @@
 .gloss {
   composes: wbw;
   color: var(--qr-text);
+}
+
+.translit {
+  composes: wbw;
+}
+
+.root {
+  font-family: var(--font-arabic);
+  font-size: 0.85rem;
+  line-height: 1.4;
+  color: var(--qr-accent);
+  white-space: nowrap;
 }
 
 /* Ayah end marker — opens the ayah's node menu */
