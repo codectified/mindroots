@@ -13,12 +13,22 @@ import styles from './MobileQuranReader.module.css';
 const SURAH_MAP = Object.fromEntries(SURAHS.map(s => [s.number, s]));
 const BASMALA = 'بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ';
 const TRANSLIT_KEY = 'mobileReader.showTransliteration';
+const GLOSS_KEY = 'mobileReader.showGloss';
 
-const readTranslitPref = () => {
+const readPref = (key, fallback) => {
   try {
-    return localStorage.getItem(TRANSLIT_KEY) === 'true';
+    const v = localStorage.getItem(key);
+    return v === null ? fallback : v === 'true';
   } catch {
-    return false;
+    return fallback;
+  }
+};
+
+const writePref = (key, value) => {
+  try {
+    localStorage.setItem(key, String(value));
+  } catch {
+    /* private mode: keep the in-memory toggle only */
   }
 };
 
@@ -35,7 +45,8 @@ const MobileQuranReader = ({
   onWordTap,
   onAyahMenu,
 }) => {
-  const [showTranslit, setShowTranslit] = useState(readTranslitPref);
+  const [showTranslit, setShowTranslit] = useState(() => readPref(TRANSLIT_KEY, false));
+  const [showGloss, setShowGloss] = useState(() => readPref(GLOSS_KEY, true));
   const surahNumber = Number(surah);
   const meta = SURAH_MAP[surahNumber];
   const ayaEntries = Object.entries(groupedByAya);
@@ -53,13 +64,12 @@ const MobileQuranReader = ({
   }, [surahNumber, firstKey]);
 
   const toggleTranslit = () => {
-    const next = !showTranslit;
-    setShowTranslit(next);
-    try {
-      localStorage.setItem(TRANSLIT_KEY, String(next));
-    } catch {
-      /* private mode: keep the in-memory toggle only */
-    }
+    setShowTranslit(!showTranslit);
+    writePref(TRANSLIT_KEY, !showTranslit);
+  };
+  const toggleGloss = () => {
+    setShowGloss(!showGloss);
+    writePref(GLOSS_KEY, !showGloss);
   };
 
   const num = (n) => (L1 === 'sem' ? toArabicNumerals(n) : n);
@@ -101,6 +111,15 @@ const MobileQuranReader = ({
         </button>
         <button
           type="button"
+          className={`${styles.iconBtn} ${showGloss ? styles.iconBtnActive : ''}`}
+          onClick={toggleGloss}
+          aria-pressed={showGloss}
+          aria-label="Show word meanings"
+        >
+          EN
+        </button>
+        <button
+          type="button"
           className={styles.iconBtn}
           onClick={nav.onNext}
           disabled={nav.nextDisabled}
@@ -124,7 +143,8 @@ const MobileQuranReader = ({
         )}
       </div>
 
-      {surahNumber !== 9 && atSurahStart && <div className={styles.basmala}>{BASMALA}</div>}
+      {/* Al-Fatiha's basmala is its own ayah 1; at-Tawba has none */}
+      {surahNumber !== 1 && surahNumber !== 9 && atSurahStart && <div className={styles.basmala}>{BASMALA}</div>}
 
       {ayaEntries.map(([ayaIndex, ayaItems]) => {
         const isAyaHighlighted = ayaItems.every((item) => item.isFreeformHighlighted);
@@ -155,7 +175,8 @@ const MobileQuranReader = ({
 
               <div className={styles.verseText} translate="no">
                 {ayaItems.map((item) => {
-                  const gloss = L2 !== 'off' ? item[L2] : null;
+                  // Word meaning: the chosen second language, else the English gloss
+                  const gloss = showGloss ? (L2 !== 'off' && item[L2]) || item.english : null;
                   return (
                     <span
                       key={item.item_id}

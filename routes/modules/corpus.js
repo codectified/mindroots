@@ -214,11 +214,13 @@ router.get('/list/surah_aya_count', async (req, res) => {
 
   const session = req.driver.session();
   try {
+    // Quran items have no sura_index/aya_index properties — position lives in the
+    // hierarchical item_id "surah:ayah:word" (same as /list/quran_items_range).
     const result = await session.run(`
-      MATCH (item:CorpusItem {sura_index: toInteger($sura_index)})
-      WITH DISTINCT item.aya_index AS aya
-      RETURN count(aya) AS aya_count
-    `, { sura_index });
+      MATCH (item:CorpusItem {corpus_id: 2})
+      WHERE item.item_id STARTS WITH $prefix
+      RETURN coalesce(max(toInteger(split(item.item_id, ':')[1])), 0) AS aya_count
+    `, { prefix: `${parseInt(sura_index, 10)}:` });
 
     const ayaCount = result.records[0].get('aya_count').toInt(); // Get the aya count
     res.json({ aya_count: ayaCount });
