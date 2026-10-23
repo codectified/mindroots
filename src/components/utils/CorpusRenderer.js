@@ -8,8 +8,28 @@ import NodeInspector from '../graph/NodeInspector';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { SURAHS, toArabicNumerals } from '../../constants/surahs';
+import MobileQuranReader from '../reader/MobileQuranReader';
+import { useMediaQuery, TOUCH_QUERY } from '../../hooks/useMediaQuery';
 
 const SURAH_MAP = Object.fromEntries(SURAHS.map(s => [s.number, s]));
+
+// Phones/tablets and narrow windows get the touch-first reader for the Quran.
+// Override for testing with ?reader=mobile or ?reader=classic (remembered).
+const MOBILE_READER_QUERY = `${TOUCH_QUERY}, (max-width: 767px)`;
+const READER_OVERRIDE_KEY = 'readerOverride';
+const readReaderOverride = () => {
+  try {
+    const param = new URLSearchParams(window.location.search).get('reader');
+    if (param === 'mobile' || param === 'classic') {
+      localStorage.setItem(READER_OVERRIDE_KEY, param);
+      return param;
+    }
+    if (param === 'auto') localStorage.removeItem(READER_OVERRIDE_KEY);
+    return localStorage.getItem(READER_OVERRIDE_KEY);
+  } catch {
+    return null;
+  }
+};
 
 const CorpusRenderer = ({
   corpusId,
@@ -49,6 +69,10 @@ const CorpusRenderer = ({
     setNodeInspectorData,
     handleNodeNavigation,
   } = useGraphData();
+  const isMobileViewport = useMediaQuery(MOBILE_READER_QUERY);
+  const [readerOverride] = useState(readReaderOverride);
+  const showMobileReader =
+    readerOverride === 'mobile' || (readerOverride !== 'classic' && isMobileViewport);
 
   useEffect(() => {
     setTempAyahsPerPage(ayahsPerPage);
@@ -171,23 +195,68 @@ const CorpusRenderer = ({
   };
 
 
-  const renderQuran = () => {
-    const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
-    const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : null);
-
-    const groupedByAya = items.reduce((acc, item) => {
+  const groupQuranByAya = () =>
+    items.reduce((acc, item) => {
       if (!acc[item.aya_index]) acc[item.aya_index] = [];
       acc[item.aya_index].push(item);
       return acc;
     }, {});
 
+  // Prev/Next paging shared by the desktop and mobile Quran readers
+  const getQuranNav = (groupedByAya) => {
     const ayaNumbers = Object.keys(groupedByAya).map(Number).sort((a, b) => a - b);
     const currentStartAya = ayaNumbers.length > 0 ? ayaNumbers[0] : 1;
     const currentEndAya = ayaNumbers.length > 0 ? ayaNumbers[ayaNumbers.length - 1] : 1;
-    const totalAyasInRange = ayaNumbers.length;
+    return {
+      currentStartAya,
+      currentEndAya,
+      totalAyasInRange: ayaNumbers.length,
+      prevDisabled: surah <= 1 && currentStartAya <= 1,
+      nextDisabled: surah >= 114 && currentEndAya >= (ayaCount || 286),
+      onPrev: () => {
+        if (currentStartAya <= 1) {
+          if (surah > 1) { setSurah(surah - 1); setAya(-1); }
+        } else {
+          setAya(Math.max(1, currentStartAya - ayahsPerPage));
+        }
+      },
+      onNext: () => {
+        if (currentEndAya >= (ayaCount || 286)) {
+          if (surah < 114) { setSurah(surah + 1); setAya(0); }
+        } else {
+          setAya(currentEndAya + 1);
+        }
+      },
+    };
+  };
 
-    const prevDisabled = surah <= 1 && currentStartAya <= 1;
-    const nextDisabled = surah >= 114 && currentEndAya >= (ayaCount || 286);
+  const renderMobileQuran = () => {
+    const groupedByAya = groupQuranByAya();
+    return (
+      <MobileQuranReader
+        surah={Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : 1)}
+        setSurah={setSurah}
+        groupedByAya={groupedByAya}
+        nav={getQuranNav(groupedByAya)}
+        ayaCount={ayaCount}
+        L1={L1}
+        L2={L2}
+        fontSize={fontSize}
+        getWordStyle={getWordStyle}
+        onWordTap={handleSelectCorpusItem}
+        onAyahMenu={handleAyahMarkerClick}
+      />
+    );
+  };
+
+  const renderQuran = () => {
+    const basmala = "بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ";
+    const surahNumber = Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : null);
+
+    const groupedByAya = groupQuranByAya();
+    const {
+      currentStartAya, currentEndAya, totalAyasInRange, prevDisabled, nextDisabled, onPrev, onNext,
+    } = getQuranNav(groupedByAya);
 
     const navBtnCls =
       'py-2 px-4 min-w-[70px] border border-[#4a7c4a] rounded-md text-[14px] font-medium ' +
@@ -206,13 +275,7 @@ const CorpusRenderer = ({
             <div className="flex items-center gap-[15px]">
               <div className="flex items-center gap-2">
                 <button
-                  onClick={() => {
-                    if (currentStartAya <= 1) {
-                      if (surah > 1) { setSurah(surah - 1); setAya(-1); }
-                    } else {
-                      setAya(Math.max(1, currentStartAya - ayahsPerPage));
-                    }
-                  }}
+                  onClick={onPrev}
                   disabled={prevDisabled}
                   className={navBtnCls}
                 >
@@ -220,13 +283,7 @@ const CorpusRenderer = ({
                 </button>
 
                 <button
-                  onClick={() => {
-                    if (currentEndAya >= (ayaCount || 286)) {
-                      if (surah < 114) { setSurah(surah + 1); setAya(0); }
-                    } else {
-                      setAya(currentEndAya + 1);
-                    }
-                  }}
+                  onClick={onNext}
                   disabled={nextDisabled}
                   className={navBtnCls}
                 >
@@ -509,7 +566,7 @@ const CorpusRenderer = ({
 
   return (
     <div>
-      {corpusId === '2' ? renderQuran() :
+      {corpusId === '2' ? (showMobileReader ? renderMobileQuran() : renderQuran()) :
        corpusId === '1' ? renderList() :
        corpusId === '3' ? renderPoetry() :
        <div>No valid corpus found. Please check the corpus configuration.</div>}
