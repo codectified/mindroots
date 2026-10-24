@@ -8,6 +8,8 @@ module.exports = defineConfig({
   timeout: 60_000,
   expect: { timeout: 20_000 },
   retries: process.env.CI ? 1 : 0,
+  // One browser at a time: the server bans IPs that open many connections at once
+  workers: 1,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {
     baseURL: process.env.BASE_URL || 'https://theoption.life/staging/',
