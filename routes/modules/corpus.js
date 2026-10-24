@@ -73,9 +73,12 @@ router.get('/list/quran_items_range', async (req, res) => {
     let query, params = { corpus_id, sura_index };
     
     if (corpus_id === '2') {
-      // Corpus 2: Hierarchical IDs (surah:ayah:word)
+      // Corpus 2: Hierarchical IDs (surah:ayah:word). The STARTS WITH narrows
+      // to one surah before splitting every one of the 77k item_ids.
+      params.prefix = `${parseInt(sura_index, 10)}:`;
       query = `
         MATCH (item:CorpusItem {corpus_id: toInteger($corpus_id)})
+        WHERE item.item_id STARTS WITH $prefix
         WITH item, split(item.item_id, ':') as parts
         WHERE toInteger(parts[0]) = toInteger($sura_index)
       `;
