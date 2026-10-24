@@ -136,6 +136,36 @@ test('the graph’s own word meaning wins over quran.com’s', async () => {
   expect(screen.queryByText('In (the) name')).toBeNull();
 });
 
+test('translation and word-meaning languages can be changed and are remembered', async () => {
+  const routes = {
+    'resources/translations': {
+      translations: [
+        { id: 20, name: 'Saheeh International', language_name: 'english' },
+        { id: 97, name: 'Tafheem e Quran', language_name: 'urdu' },
+      ],
+    },
+    'resources/languages': { languages: [{ name: 'English', direction: 'ltr' }, { name: 'Urdu', direction: 'rtl' }] },
+    'verses/by_chapter': quranCom,
+  };
+  global.fetch = jest.fn((url) => {
+    const route = Object.keys(routes).find((r) => url.includes(r));
+    return Promise.resolve({ ok: true, json: () => Promise.resolve(routes[route]) });
+  });
+  setup(fatiha(), { surah: 50 + surahCounter });
+  fireEvent.click(screen.getByLabelText('Reader settings'));
+  const picker = await screen.findByLabelText('Translation by');
+  fireEvent.change(picker, { target: { value: '97' } });
+  await waitFor(() =>
+    expect(global.fetch.mock.calls.some(([url]) => /translations=97/.test(url))).toBe(true)
+  );
+  expect(localStorage.getItem('mobileReader.translation')).toBe('97');
+  expect(await screen.findByText(/Translation: Tafheem e Quran/)).toBeInTheDocument();
+
+  fireEvent.change(screen.getByLabelText('Word meanings in'), { target: { value: 'ur' } });
+  await waitFor(() => expect(global.fetch.mock.calls.some(([url]) => /language=ur/.test(url))).toBe(true));
+  expect(localStorage.getItem('mobileReader.wordLanguage')).toBe('ur');
+});
+
 test('ayat per page and go-to-ayah drive paging', () => {
   const { setAyahsPerPage, setAya } = setup(fatiha());
   fireEvent.click(screen.getByLabelText('Reader settings'));

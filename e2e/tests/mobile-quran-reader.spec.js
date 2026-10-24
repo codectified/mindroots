@@ -92,3 +92,16 @@ test('tapping a word opens it in the graph', async ({ page }) => {
   await page.locator('[data-ayah="1:2"]').getByRole('button').filter({ hasText: 'الْحَمْدُ' }).first().click();
   await expect(page).toHaveURL(/\/graph/);
 });
+
+test('any quran.com translation and word-meaning language can be picked', async ({ page }) => {
+  await page.goto(readerUrl(1));
+  await expect(page.locator('[data-ayah="1:1"]').getByText('In (the) name')).toBeVisible();
+  await page.getByLabel('Reader settings').first().click();
+  const picker = page.getByLabel('Translation by');
+  await expect(picker.locator('option')).not.toHaveCount(0);
+  expect(await picker.locator('option').count()).toBeGreaterThan(100);
+  await picker.selectOption({ label: 'M.A.S. Abdel Haleem' });
+  await page.getByLabel('Word meanings in').selectOption('ur');
+  await expect(page.getByText(/Translation: M\.A\.S\. Abdel Haleem/)).toBeVisible();
+  await expect(page.locator('[data-ayah="1:2"]').getByText('اللہ کے لیے ہے')).toBeVisible();
+});

@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { SURAHS, toArabicNumerals } from '../../constants/surahs';
-import { useQuranComVerses, TRANSLATION_NAME, RECITER_NAME } from '../../services/quranComService';
+import {
+  useQuranComVerses,
+  fetchTranslationList,
+  DEFAULT_TRANSLATION_ID,
+  DEFAULT_TRANSLATION_NAME,
+  WORD_LANGUAGES,
+  RECITER_NAME,
+} from '../../services/quranComService';
 import styles from './MobileQuranReader.module.css';
 
 // Touch-first Quran reader, modelled on quran.com's translation view: one cell
@@ -36,6 +43,16 @@ const SCALE_MIN = 0.8;
 const SCALE_MAX = 1.8;
 const prefKey = (key) => `mobileReader.show.${key}`;
 const SCALE_KEY = 'mobileReader.scale';
+const TRANSLATION_KEY = 'mobileReader.translation';
+const WORD_LANGUAGE_KEY = 'mobileReader.wordLanguage';
+
+const readString = (key, fallback) => {
+  try {
+    return localStorage.getItem(key) || fallback;
+  } catch {
+    return fallback;
+  }
+};
 
 const readPref = (key, fallback) => {
   try {
@@ -88,11 +105,33 @@ const MobileQuranReader = ({
   const [scale, setScale] = useState(readScale);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [goToAyah, setGoToAyah] = useState('');
+  const [translationId, setTranslationId] = useState(() => Number(readString(TRANSLATION_KEY, DEFAULT_TRANSLATION_ID)));
+  const [wordLanguage, setWordLanguage] = useState(() => readString(WORD_LANGUAGE_KEY, 'en'));
+  const [translationGroups, setTranslationGroups] = useState([]);
   const surahNumber = Number(surah);
   const meta = SURAH_MAP[surahNumber];
   const ayaEntries = Object.entries(groupedByAya);
   const firstKey = ayaEntries.length ? ayaEntries[0][0] : null;
-  const verses = useQuranComVerses(surahNumber, ayaEntries.length ? nav.currentStartAya : null, nav.currentEndAya);
+  const verses = useQuranComVerses(surahNumber, ayaEntries.length ? nav.currentStartAya : null, nav.currentEndAya, {
+    translationId,
+    wordLanguage,
+  });
+
+  // The translation picker's options (126 translations in ~70 languages)
+  useEffect(() => {
+    let live = true;
+    fetchTranslationList()
+      .then((groups) => live && setTranslationGroups(groups))
+      .catch(() => {});
+    return () => {
+      live = false;
+    };
+  }, []);
+  const translationGroup = translationGroups.find((g) => g.translations.some((t) => t.id === translationId));
+  const translationName =
+    translationGroup?.translations.find((t) => t.id === translationId)?.name ||
+    (translationId === DEFAULT_TRANSLATION_ID ? DEFAULT_TRANSLATION_NAME : 'quran.com');
+  const translationDir = translationGroup?.direction || 'ltr';
 
   // ── Recitation ──────────────────────────────────────────────────
   const audioRef = useRef(null);
@@ -177,6 +216,16 @@ const MobileQuranReader = ({
   const toggle = (key) => {
     setShown({ ...shown, [key]: !shown[key] });
     writePref(prefKey(key), !shown[key]);
+  };
+
+  const changeTranslation = (id) => {
+    setTranslationId(id);
+    writePref(TRANSLATION_KEY, id);
+  };
+
+  const changeWordLanguage = (code) => {
+    setWordLanguage(code);
+    writePref(WORD_LANGUAGE_KEY, code);
   };
 
   const changeScale = (delta) => {
@@ -331,6 +380,48 @@ const MobileQuranReader = ({
               </div>
             ))}
 
+            {translationGroups.length > 0 && (
+              <div className={styles.sheetRow}>
+                <label className={styles.sheetLabel} htmlFor="mqr-translation">
+                  Translation by
+                </label>
+                <select
+                  id="mqr-translation"
+                  className={styles.sheetSelect}
+                  value={translationId}
+                  onChange={(e) => changeTranslation(Number(e.target.value))}
+                >
+                  {translationGroups.map((g) => (
+                    <optgroup key={g.language} label={g.language[0].toUpperCase() + g.language.slice(1)}>
+                      {g.translations.map((t) => (
+                        <option key={t.id} value={t.id}>
+                          {t.name}
+                        </option>
+                      ))}
+                    </optgroup>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            <div className={styles.sheetRow}>
+              <label className={styles.sheetLabel} htmlFor="mqr-word-language">
+                Word meanings in
+              </label>
+              <select
+                id="mqr-word-language"
+                className={styles.sheetSelect}
+                value={wordLanguage}
+                onChange={(e) => changeWordLanguage(e.target.value)}
+              >
+                {WORD_LANGUAGES.map((l) => (
+                  <option key={l.code} value={l.code}>
+                    {l.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             <form className={styles.sheetRow} onSubmit={submitGoTo}>
               <label className={styles.sheetLabel} htmlFor="mqr-goto">
                 Go to ayah
@@ -438,7 +529,7 @@ const MobileQuranReader = ({
                           {item[L1] || item.arabic}
                         </span>
                         {lines.map(([key, text]) => (
-                          <span key={key} className={styles[key]}>
+                          <span key={key} className={styles[key]} dir={key === 'root' ? 'rtl' : 'auto'}>
                             {text}
                           </span>
                         ))}
@@ -456,7 +547,7 @@ const MobileQuranReader = ({
                 </div>
 
                 {showTranslation && verse?.translation && (
-                  <p className={styles.translation} lang="en">
+                  <p className={styles.translation} dir={translationDir}>
                     {verse.translation}
                   </p>
                 )}
@@ -490,7 +581,7 @@ const MobileQuranReader = ({
 
       {(showTranslation || hasAudio || wordLines.some((a) => a.key !== 'root')) && (
         <p className={styles.credits}>
-          Translation: {TRANSLATION_NAME}. Recitation: {RECITER_NAME}. Word-by-word data via quran.com.
+          Translation: {translationName}. Recitation: {RECITER_NAME}. Word-by-word data via quran.com.
         </p>
       )}
     </div>
