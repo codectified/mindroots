@@ -6,6 +6,7 @@ import { useShowLinks } from '../selectors/ShowLinksToggle';
 import NodeContextMenu from './NodeContextMenu';
 import NodeInspector from './NodeInspector';
 import * as d3 from 'd3';
+import { footprint, forceLabelCollide, seedNewNodes } from './graphLayout';
 
 const GraphVisualization = ({ data, onNodeClick }) => {
   const svgRef = useRef();
@@ -73,11 +74,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
     const { width, height } = containerRef.current.getBoundingClientRect();
     if (!width || !height) return;
 
-    // Initialize new nodes at center so they don't flash off-screen
-    data.nodes.forEach(node => {
-      if (node.x === undefined) node.x = width / 2 + (Math.random() - 0.5) * 40;
-      if (node.y === undefined) node.y = height / 2 + (Math.random() - 0.5) * 40;
-    });
+    // New nodes bloom out of the node they were expanded from (first load: the centre)
+    seedNewNodes(data.nodes, data.links, { x: width / 2, y: height / 2 });
 
     // Set up zoom and pan behavior once
     const zoom = d3.zoom()
@@ -130,6 +128,18 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .range([4, 12]) // Small nodes start at 4px, largest ones capped at 12px
       .clamp(true); // Ensure that sizes stay within the range
 
+    const nodeRadius = (d) => {
+      if (d.type === 'word') {
+        if (d.dataSize === 0) return 1; // Very small size for zero data size
+        return sizeScale(d.dataSize);    // Use log scale for Word nodes
+      }
+      return 10; // Default size for non-Word nodes
+    };
+
+    // Circle + label, measured once the labels are drawn (see below)
+    const labelGap = 4;
+    const nodeFootprint = (d) => footprint(nodeRadius(d), d.labelWidth || 0, d.labelHeight || 0, labelGap);
+
     // Set up the force simulation with adjusted charge and link forces
     const newSimulation = d3.forceSimulation(data.nodes)
       .force('link', d3.forceLink(data.links)
@@ -139,7 +149,8 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .force('charge', d3.forceManyBody()
         .strength(d => d.type === 'word' ? -350 * sizeScale(d.dataSize) : -100)
       )
-      .force('center', d3.forceCenter(width / 2, height / 2))
+      // Gentle: at full strength adding nodes on one side jerked the whole graph sideways
+      .force('center', d3.forceCenter(width / 2, height / 2).strength(0.05))
       .force('x', d3.forceX(d => {
         if (d.type === 'corpusitem') return width / 2;
         if (d.type === 'form') return width / 4;
@@ -154,6 +165,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         return height / 3; // Default to a higher position
       }).strength(1))
       .force('collide', d3.forceCollide(d => d.type === 'word' ? sizeScale(d.dataSize) + 15 : 50)) // Sets collision radius: 'word' nodes vary based on size; others have fixed radius (10).
+      .force('labels', forceLabelCollide(nodeFootprint)) // keeps circles + labels from overlapping; see graphLayout.js
       .alphaDecay(0.02) // Alpha decay for stability
       .velocityDecay(0.992); // Adjusted velocity decay
 
@@ -225,13 +237,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .data(data.nodes)
       .enter().append('circle')
       // Adjust node radius based on dataSize, only for Word nodes
-      .attr('r', d => {
-        if (d.type === 'word') {
-          if (d.dataSize === 0) return 1; // Very small size for zero data size
-          return sizeScale(d.dataSize);    // Use log scale for Word nodes
-        }
-        return 10; // Default size for non-Word nodes
-      })
+      .attr('r', nodeRadius)
       .attr('fill', d => getColor(d)) // Use the getColor function
       .call(d3.drag()
         .on('start', dragstarted)
@@ -249,8 +255,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       .selectAll('text')
       .data(data.nodes)
       .enter().append('text')
-      .attr('x', 12)
-      .attr('y', '.31em')
+      .attr('dy', '0.35em') // vertically centred on the node
       .text(d => d.label)
       .style('font-family', d => isArabic(d.label) ? 'var(--font-arabic)' : 'var(--font-serif)')
       .style('font-size',   d => isArabic(d.label) ? 'var(--arabic-base)' : 'var(--text-sm)')
@@ -266,6 +271,29 @@ const GraphVisualization = ({ data, onNodeClick }) => {
         .on('drag', dragged)
         .on('end', dragended));
 
+    // Label sizes feed the label collision force; fonts can load after the first
+    // measure, so measure again then and nudge the layout if anything grew
+    const measureLabels = () => {
+      let grew = false;
+      text.each(function (d) {
+        try {
+          const box = this.getBBox();
+          if (box.width > (d.labelWidth || 0) + 2) grew = true;
+          d.labelWidth = box.width;
+          d.labelHeight = box.height;
+        } catch {
+          /* not rendered (hidden tab, tests) */
+        }
+      });
+      return grew;
+    };
+    measureLabels();
+    if (document.fonts && document.fonts.ready) {
+      document.fonts.ready.then(() => {
+        if (measureLabels() && newSimulation.alpha() < 0.1) newSimulation.alpha(0.1).restart();
+      });
+    }
+
     newSimulation.nodes(data.nodes).on('tick', () => {
       // Find the minimum Y value (the highest node)
       const minY = d3.min(data.nodes, d => d.y);
@@ -278,7 +306,7 @@ const GraphVisualization = ({ data, onNodeClick }) => {
       node.attr('cx', d => d.x)
         .attr('cy', d => d.y + shiftY);
 
-      text.attr('x', d => d.x)
+      text.attr('x', d => d.x + nodeRadius(d) + labelGap)
         .attr('y', d => d.y + shiftY);
 
       link.attr('x1', d => d.source.x)
