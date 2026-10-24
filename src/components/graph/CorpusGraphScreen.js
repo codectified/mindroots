@@ -175,7 +175,9 @@ const CorpusGraphScreen = () => {
     return <div>Loading...</div>;
   }
 
-  if (!selectedCorpus || !selectedCorpusItem) {
+  // The item carries its corpus_id, so a word opened from a direct /list link
+  // (reload, shared link) works without having gone through the Library
+  if (!selectedCorpusItem) {
     return (
       <div>
         <MainMenu />

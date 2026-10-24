@@ -91,6 +91,7 @@ test('tapping a word opens it in the graph', async ({ page }) => {
   await page.goto(readerUrl(1));
   await page.locator('[data-ayah="1:2"]').getByRole('button').filter({ hasText: 'الْحَمْدُ' }).first().click();
   await expect(page).toHaveURL(/\/graph/);
+  await expect(page.locator('svg .nodes circle').first()).toBeVisible(); // a graph, not the main menu
 });
 
 test('any quran.com translation and word-meaning language can be picked', async ({ page }) => {
