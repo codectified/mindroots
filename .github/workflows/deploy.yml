@@ -129,3 +129,24 @@ jobs:
           curl -s "https://theoption.life${{ steps.target.outputs.public_url }}/$JS" | grep -qF "$REACT_APP_API_KEY" \
             || { echo "Live bundle doesn't contain the API key"; exit 1; }
           echo "Deployed ${{ steps.target.outputs.name }}: ${{ steps.target.outputs.site_url }}"
+
+      # Real browsers (Pixel 7 + desktop Chrome) against the site just deployed
+      - name: Browser smoke tests
+        working-directory: e2e
+        env:
+          BASE_URL: ${{ steps.target.outputs.site_url }}
+          CI: 'true'
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: |
+            e2e/playwright-report
+            e2e/test-results
+          retention-days: 14

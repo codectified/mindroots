@@ -1,0 +1,11 @@
+{
+  "name": "mindroots-e2e",
+  "private": true,
+  "description": "Browser smoke tests against a deployed mindroots (staging by default). See README.md.",
+  "scripts": {
+    "test": "playwright test"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0"
+  }
+}
