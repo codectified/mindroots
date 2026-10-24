@@ -193,3 +193,26 @@ test('word tap and ayah menu call the shared handlers', () => {
   fireEvent.click(screen.getByLabelText('Ayah 1:1 options'));
   expect(onAyahMenu).toHaveBeenCalledWith(expect.anything(), '1');
 });
+
+describe('prose layout', () => {
+  beforeEach(() => {
+    global.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(quranCom) }));
+  });
+
+  it('runs the ayat together as text: words still tap, markers open the ayah menu, no root lines', async () => {
+    const { onWordTap, onAyahMenu } = setup(fatiha(), { surah: 9000 + ++surahCounter, layout: 'prose' });
+    fireEvent.click(screen.getByText('بِسْمِ'));
+    expect(onWordTap).toHaveBeenCalledWith(expect.objectContaining({ item_id: '1:1:1' }));
+    fireEvent.click(screen.getByText('﴿٢﴾'));
+    expect(onAyahMenu).toHaveBeenCalled();
+    expect(screen.queryByText('س م و')).toBeNull();
+  });
+
+  it('switches layout from the settings sheet', () => {
+    const setLayout = jest.fn();
+    setup(fatiha(), { surah: 9000 + ++surahCounter, setLayout });
+    fireEvent.click(screen.getByLabelText('Reader settings'));
+    fireEvent.click(screen.getByRole('button', { name: 'Prose' }));
+    expect(setLayout).toHaveBeenCalledWith('prose');
+  });
+});

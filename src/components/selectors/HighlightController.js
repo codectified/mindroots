@@ -1,11 +1,13 @@
 import React from 'react';
-import { useHighlight } from '../../contexts/HighlightContext';
+import { useHighlight, HIGHLIGHT_COLORS } from '../../contexts/HighlightContext';
 import { useLabels } from '../../hooks/useLabels';
 
 const HighlightController = () => {
   const {
     highlightGender,
     setHighlightGender,
+    highlightNoun,
+    setHighlightNoun,
     highlightVerb,
     setHighlightVerb,
     highlightParticle,
@@ -18,9 +20,10 @@ const HighlightController = () => {
   const t = useLabels();
 
   const highlightOptions = [
-    { label: t.nounsF,      value: 'feminine', active: highlightGender === 'feminine', setState: () => setHighlightGender(highlightGender === 'feminine' ? null : 'feminine'), color: '#FFD700' },
-    { label: t.verbs,       value: 'verb',      active: highlightVerb,                 setState: () => setHighlightVerb(!highlightVerb),                                        color: '#32CD32' },
-    { label: t.particles,   value: 'particle',  active: highlightParticle,             setState: () => setHighlightParticle(!highlightParticle),                                color: '#007bff' },
+    { label: t.nouns,       value: 'noun',      active: highlightNoun,                 setState: () => setHighlightNoun(!highlightNoun),                                        color: HIGHLIGHT_COLORS.noun },
+    { label: t.nounsF,      value: 'feminine', active: highlightGender === 'feminine', setState: () => setHighlightGender(highlightGender === 'feminine' ? null : 'feminine'), color: HIGHLIGHT_COLORS.feminine },
+    { label: t.verbs,       value: 'verb',      active: highlightVerb,                 setState: () => setHighlightVerb(!highlightVerb),                                        color: HIGHLIGHT_COLORS.verb },
+    { label: t.particles,   value: 'particle',  active: highlightParticle,             setState: () => setHighlightParticle(!highlightParticle),                                color: HIGHLIGHT_COLORS.particle },
     { label: t.freeformMode,value: 'freeform',  active: freeformMode,                  setState: () => setFreeformMode(!freeformMode),                                          color: '#FF4500' },
   ];
 

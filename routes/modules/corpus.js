@@ -96,7 +96,11 @@ router.get('/list/quran_items_range', async (req, res) => {
         params.end_aya = end_aya;
       }
       
+      // pos is the first segment's tag (often a prefix like CONJ or P); the
+      // word's own class is the tag of its STEM segment.
       query += `
+        WITH item, parts, properties(item) AS p
+        WITH item, parts, p, [k IN range(1, 8) WHERE p['s' + k + '_features'] STARTS WITH 'STEM' | k][0] AS stem
         RETURN 
           item.sem AS arabic,  /* Use sem for full word display */
           item.transliteration AS transliteration, 
@@ -105,6 +109,8 @@ router.get('/list/quran_items_range', async (req, res) => {
           item.english AS english,
           item.sem AS sem,
           item.s1_tag AS pos,
+          CASE WHEN stem IS NULL THEN null ELSE p['s' + stem + '_tag'] END AS stem_tag,
+          CASE WHEN stem IS NULL THEN null ELSE p['s' + stem + '_features'] END AS stem_features,
           item.gender AS gender,
           item.root AS root,
           item.lemma AS lemma,

@@ -33,6 +33,11 @@ const ANNOTATIONS = [
   { key: 'translation', label: 'Translation', defaultOn: true },
 ];
 const WORD_ANNOTATIONS = ['root', 'gloss', 'translit'];
+// Same values as the desktop layout toggle (TextLayoutContext)
+const LAYOUTS = [
+  { value: 'line-by-line', label: 'Line by line' },
+  { value: 'prose', label: 'Prose' },
+];
 const PAGE_SIZES = [
   { value: 5, label: '5' },
   { value: 10, label: '10' },
@@ -98,7 +103,10 @@ const MobileQuranReader = ({
   getWordStyle,
   onWordTap,
   onAyahMenu,
+  layout = 'line-by-line',
+  setLayout,
 }) => {
+  const prose = layout === 'prose';
   const [shown, setShown] = useState(() =>
     Object.fromEntries(ANNOTATIONS.map((a) => [a.key, readPref(prefKey(a.key), a.defaultOn)]))
   );
@@ -322,6 +330,25 @@ const MobileQuranReader = ({
 
         {settingsOpen && (
           <div className={styles.sheet} role="group" aria-label="Reader settings">
+            {setLayout && (
+              <div className={styles.sheetRow}>
+                <span className={styles.sheetLabel}>Layout</span>
+                <div className={styles.segmented}>
+                  {LAYOUTS.map((l) => (
+                    <button
+                      key={l.value}
+                      type="button"
+                      className={`${styles.segment} ${layout === l.value ? styles.segmentActive : ''}`}
+                      aria-pressed={layout === l.value}
+                      onClick={() => setLayout(l.value)}
+                    >
+                      {l.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             <div className={styles.sheetRow}>
               <span className={styles.sheetLabel}>Ayat per page</span>
               <div className={styles.segmented}>
@@ -364,7 +391,7 @@ const MobileQuranReader = ({
               </div>
             </div>
 
-            {available.map((a) => (
+            {!prose && available.map((a) => (
               <div key={a.key} className={styles.sheetRow}>
                 <span className={styles.sheetLabel}>{a.label}</span>
                 <button
@@ -463,8 +490,59 @@ const MobileQuranReader = ({
       {/* Al-Fatiha's basmala is its own ayah 1; at-Tawba has none */}
       {surahNumber !== 1 && surahNumber !== 9 && nav.atSurahStart && <div className={styles.basmala}>{BASMALA}</div>}
 
+      {/* Prose: the page as running text, ayah markers inline, no per-word lines */}
+      {prose && (
+        <div
+          className={`${styles.prose} ${loading ? styles.pageLoading : ''}`}
+          aria-busy={loading || undefined}
+          translate="no"
+        >
+          {ayaEntries.map(([ayaIndex, ayaItems]) => {
+            const isAyaHighlighted = ayaItems.every((item) => item.isFreeformHighlighted);
+            const isPlaying = playing === Number(ayaIndex);
+            return (
+              <React.Fragment key={ayaIndex}>
+                {/* backgroundColor is user-supplied at runtime — must stay inline */}
+                <span
+                  ref={(el) => {
+                    cellRefs.current[ayaIndex] = el;
+                  }}
+                  className={`${styles.proseAyah} ${isPlaying ? styles.cellPlaying : ''}`}
+                  style={isAyaHighlighted ? { backgroundColor: ayaItems[0].highlightColor } : undefined}
+                  data-ayah={`${surahNumber}:${ayaIndex}`}
+                >
+                  {ayaItems.map((item) => (
+                    <React.Fragment key={item.item_id}>
+                      <span
+                        role="button"
+                        tabIndex={0}
+                        lang="ar"
+                        className={`${styles.proseWord} ${isPlaying && playingWord === wordPosition(item) ? styles.wordReciting : ''}`}
+                        style={getWordStyle(item)}
+                        onClick={() => onWordTap(item)}
+                        onKeyDown={(e) => e.key === 'Enter' && onWordTap(item)}
+                      >
+                        {item[L1] || item.arabic}
+                      </span>{' '}
+                    </React.Fragment>
+                  ))}
+                  <button
+                    type="button"
+                    className={styles.proseMarker}
+                    onClick={(e) => onAyahMenu(e, ayaIndex)}
+                    aria-label={`Ayah ${surahNumber}:${ayaIndex} options`}
+                  >
+                    ﴿{toArabicNumerals(ayaIndex)}﴾
+                  </button>
+                </span>{' '}
+              </React.Fragment>
+            );
+          })}
+        </div>
+      )}
+
       <div className={loading ? styles.pageLoading : undefined} aria-busy={loading || undefined}>
-        {ayaEntries.map(([ayaIndex, ayaItems]) => {
+        {!prose && ayaEntries.map(([ayaIndex, ayaItems]) => {
           const isAyaHighlighted = ayaItems.every((item) => item.isFreeformHighlighted);
           const isPlaying = playing === Number(ayaIndex);
           const verse = verses?.[ayaIndex];
@@ -579,7 +657,7 @@ const MobileQuranReader = ({
         </div>
       )}
 
-      {(showTranslation || hasAudio || wordLines.some((a) => a.key !== 'root')) && (
+      {((!prose && (showTranslation || wordLines.some((a) => a.key !== 'root'))) || hasAudio) && (
         <p className={styles.credits}>
           Translation: {translationName}. Recitation: {RECITER_NAME}. Word-by-word data via quran.com.
         </p>

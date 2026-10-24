@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useHighlight } from '../../contexts/HighlightContext';
+import { useHighlight, HIGHLIGHT_COLORS } from '../../contexts/HighlightContext';
+import { wordClass, wordGender } from './wordClass';
 import { useTextLayout } from '../../contexts/TextLayoutContext';
 import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
 import { useGraphData } from '../../contexts/GraphDataContext';
@@ -56,12 +57,13 @@ const CorpusRenderer = ({
   const [sortOrder, setSortOrder] = useState('asc');
   const {
     highlightGender,
+    highlightNoun,
     highlightVerb,
     highlightParticle,
     freeformMode,
     highlightColor,
   } = useHighlight();
-  const { layout } = useTextLayout();
+  const { layout, setLayout } = useTextLayout();
   const { showStatistics } = useCorpusStatistics();
   const {
     contextMenu,
@@ -186,13 +188,13 @@ const CorpusRenderer = ({
     if (item.isFreeformHighlighted) {
       return { backgroundColor: item.highlightColor || '#FF4500', borderRadius: '5px', padding: '2px' };
     }
-    if (highlightGender && item.gender === highlightGender) {
-      return { color: highlightGender === 'feminine' ? 'gold' : 'lightblue' };
+    const cls = wordClass(item);
+    if (cls === 'noun' && highlightGender === 'feminine' && wordGender(item) === 'feminine') {
+      return { color: HIGHLIGHT_COLORS.feminine };
     }
-    if (highlightVerb && item.pos === 'verb') return { color: 'green' };
-    if (highlightParticle && item.pos && item.pos !== 'noun' && item.pos !== 'verb') {
-      return { color: 'blue' };
-    }
+    if (cls === 'noun' && highlightNoun) return { color: HIGHLIGHT_COLORS.noun };
+    if (cls === 'verb' && highlightVerb) return { color: HIGHLIGHT_COLORS.verb };
+    if (cls === 'particle' && highlightParticle) return { color: HIGHLIGHT_COLORS.particle };
     return {};
   };
 
@@ -233,6 +235,8 @@ const CorpusRenderer = ({
         getWordStyle={getWordStyle}
         onWordTap={handleSelectCorpusItem}
         onAyahMenu={handleAyahMarkerClick}
+        layout={layout}
+        setLayout={setLayout}
       />
     );
   };
@@ -338,7 +342,7 @@ const CorpusRenderer = ({
 
         {/* fontSize is prop-driven; direction has no Tailwind utility — both stay inline */}
         <div
-          className={`arabic whitespace-pre-wrap ${layout === 'prose' ? 'text-justify max-w-[800px] mx-auto px-5' : 'text-center'} ${layout === 'line-by-line' ? 'leading-[2.5]' : 'leading-[1.8]'}`}
+          className={`arabic whitespace-pre-wrap ${layout === 'prose' ? 'text-justify max-w-[800px] mx-auto px-5' : 'text-start'} ${layout === 'line-by-line' ? 'leading-[2.5]' : 'leading-[1.8]'}`}
           style={{ direction: 'rtl', fontSize: `${fontSize}px` }}
         >
           {surahNumber !== 9 && (

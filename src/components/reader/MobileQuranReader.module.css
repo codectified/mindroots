@@ -302,15 +302,7 @@
 }
 
 @media (hover: hover) {
-  .word:hover .wordReciting {
-  background: var(--qr-accent-faded);
-}
-
-.wordReciting .arabic {
-  color: var(--qr-accent-dark);
-}
-
-.arabic {
+  .word:hover .arabic {
     color: var(--qr-accent);
   }
 }
@@ -367,6 +359,49 @@
   border: none;
   padding: 0 0.25rem;
   min-height: 44px;
+  touch-action: manipulation;
+}
+
+/* Prose layout: running text, like a mushaf page */
+.prose {
+  direction: rtl;
+  text-align: justify;
+  padding: 1rem var(--qr-edge);
+  font-family: var(--font-arabic);
+  font-size: var(--qr-arabic);
+  line-height: 2.3;
+}
+
+.proseAyah {
+  border-radius: 6px;
+  scroll-margin-top: 5rem; /* clear the sticky bar */
+  transition: background 0.2s;
+}
+
+.proseWord {
+  border-radius: 4px;
+  cursor: pointer;
+  touch-action: manipulation;
+}
+
+.proseWord:active {
+  background: var(--qr-accent-faded);
+}
+
+@media (hover: hover) {
+  .proseWord:hover {
+    color: var(--qr-accent);
+  }
+}
+
+.proseMarker {
+  font: inherit;
+  font-size: 0.85em;
+  color: var(--qr-grey);
+  background: none;
+  border: none;
+  padding: 0 0.15em;
+  cursor: pointer;
   touch-action: manipulation;
 }
 
