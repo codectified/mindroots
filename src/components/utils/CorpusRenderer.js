@@ -9,6 +9,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { SURAHS, toArabicNumerals } from '../../constants/surahs';
 import MobileQuranReader from '../reader/MobileQuranReader';
+import { getQuranNav } from '../reader/quranNav';
 import { useMediaQuery, TOUCH_QUERY } from '../../hooks/useMediaQuery';
 
 const SURAH_MAP = Object.fromEntries(SURAHS.map(s => [s.number, s]));
@@ -44,6 +45,7 @@ const CorpusRenderer = ({
   ayahsPerPage,
   setAyahsPerPage,
   fontSize = 16,
+  loading = false,
   L1,
   L2,
   handleSelectCorpusItem,
@@ -202,33 +204,15 @@ const CorpusRenderer = ({
       return acc;
     }, {});
 
-  // Prev/Next paging shared by the desktop and mobile Quran readers
-  const getQuranNav = (groupedByAya) => {
-    const ayaNumbers = Object.keys(groupedByAya).map(Number).sort((a, b) => a - b);
-    const currentStartAya = ayaNumbers.length > 0 ? ayaNumbers[0] : 1;
-    const currentEndAya = ayaNumbers.length > 0 ? ayaNumbers[ayaNumbers.length - 1] : 1;
-    return {
-      currentStartAya,
-      currentEndAya,
-      totalAyasInRange: ayaNumbers.length,
-      prevDisabled: surah <= 1 && currentStartAya <= 1,
-      nextDisabled: surah >= 114 && currentEndAya >= (ayaCount || 286),
-      onPrev: () => {
-        if (currentStartAya <= 1) {
-          if (surah > 1) { setSurah(surah - 1); setAya(-1); }
-        } else {
-          setAya(Math.max(1, currentStartAya - ayahsPerPage));
-        }
-      },
-      onNext: () => {
-        if (currentEndAya >= (ayaCount || 286)) {
-          if (surah < 114) { setSurah(surah + 1); setAya(0); }
-        } else {
-          setAya(currentEndAya + 1);
-        }
-      },
-    };
-  };
+  const quranNav = (groupedByAya) =>
+    getQuranNav({
+      surah,
+      ayaNumbers: Object.keys(groupedByAya),
+      ayaCount,
+      ayahsPerPage,
+      setSurah,
+      setAya,
+    });
 
   const renderMobileQuran = () => {
     const groupedByAya = groupQuranByAya();
@@ -236,9 +220,13 @@ const CorpusRenderer = ({
       <MobileQuranReader
         surah={Number(surah) || (items.length > 0 ? Number(items[0].sura_index) : 1)}
         setSurah={setSurah}
+        setAya={setAya}
         groupedByAya={groupedByAya}
-        nav={getQuranNav(groupedByAya)}
+        nav={quranNav(groupedByAya)}
         ayaCount={ayaCount}
+        ayahsPerPage={ayahsPerPage}
+        setAyahsPerPage={setAyahsPerPage}
+        loading={loading}
         L1={L1}
         L2={L2}
         fontSize={fontSize}
@@ -256,7 +244,7 @@ const CorpusRenderer = ({
     const groupedByAya = groupQuranByAya();
     const {
       currentStartAya, currentEndAya, totalAyasInRange, prevDisabled, nextDisabled, onPrev, onNext,
-    } = getQuranNav(groupedByAya);
+    } = quranNav(groupedByAya);
 
     const navBtnCls =
       'py-2 px-4 min-w-[70px] border border-[#4a7c4a] rounded-md text-[14px] font-medium ' +
@@ -323,7 +311,7 @@ const CorpusRenderer = ({
                   <span className="aya-range-info">
                     Showing ayat {currentStartAya}
                     {currentEndAya !== currentStartAya ? `-${currentEndAya}` : ''}{' '}
-                    out of {ayaCount || 286} total
+                    out of {ayaCount} total
                   </span>
                 </div>
               )}

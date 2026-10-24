@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { fetchQuranItemsRange, fetchAyaCount, fetchCorpusItems, fetchPoetryItems } from '../../services/apiService';
+import { fetchQuranItemsRange, fetchCorpusItems, fetchPoetryItems } from '../../services/apiService';
+import { ayahCount } from '../../constants/surahs';
 import { useLanguage } from '../../contexts/LanguageContext';
 import { useCorpus } from '../../contexts/CorpusContext';
 import CorpusRenderer from '../utils/CorpusRenderer'; // Import the consolidated rendering component
@@ -11,21 +12,45 @@ import { faEllipsisV } from '@fortawesome/free-solid-svg-icons';
 import { useCorpusStatistics } from '../../contexts/CorpusStatisticsContext';
 import { useLabels } from '../../hooks/useLabels';
 
+const AYAHS_PER_PAGE_KEY = 'quran.ayahsPerPage';
+
 const PrimaryList = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [surah, setSurah] = useState(1); // Default to Surah 1 for Quran
-  const [aya, setAya] = useState(0); // Default to Aya 0 (all Ayas)
-  const [ayaCount, setAyaCount] = useState(7); // Default Aya count for Surah 1
-  const [ayahsPerPage, setAyahsPerPage] = useState(10); // Track ayahs per page
+  const [surah, setSurahState] = useState(1); // Default to Surah 1 for Quran
+  const [aya, setAya] = useState(0); // 0 = first page, -1 = last page, n = page starting at ayah n
+  const [ayahsPerPage, setAyahsPerPageState] = useState(() => {
+    try {
+      return parseInt(localStorage.getItem(AYAHS_PER_PAGE_KEY), 10) || 10;
+    } catch {
+      return 10;
+    }
+  });
+  const ayaCount = ayahCount(surah);
   const [showTextSettings, setShowTextSettings] = useState(false); // Text settings collapsed by default
   const [fontSize, setFontSize] = useState(16); // Font size control
   const { L1, L2 } = useLanguage();
   const { handleSelectCorpusItem } = useCorpus();
   const { showStatistics, handleToggleStatistics } = useCorpusStatistics();
   const t = useLabels();
+
+  // Picking a surah starts at its first ayah; callers that want another ayah
+  // (Prev → last page, View in Context) call setAya right after.
+  const setSurah = (n) => {
+    setSurahState(Number(n));
+    setAya(0);
+  };
+
+  const setAyahsPerPage = (n) => {
+    setAyahsPerPageState(n);
+    try {
+      localStorage.setItem(AYAHS_PER_PAGE_KEY, String(n));
+    } catch {
+      /* private mode */
+    }
+  };
 
   const queryParams = new URLSearchParams(location.search);
   const corpusId = queryParams.get('corpus_id');
@@ -37,7 +62,13 @@ const PrimaryList = () => {
   const urlAya = queryParams.get('aya');
 
 
+  // Don't show one corpus's items in another's renderer while loading
   useEffect(() => {
+    setItems([]);
+  }, [corpusId]);
+
+  useEffect(() => {
+    let stale = false; // a newer page was requested before this one arrived
     const fetchData = async () => {
       setLoading(true);
       console.log('Fetching data for corpus ID:', corpusId);
@@ -49,20 +80,21 @@ const PrimaryList = () => {
           
           if (aya === 0) {
             // Fetch first page of ayat - using ayahsPerPage setting
-            const endAya = Math.min(ayahsPerPage, ayaCount || ayahsPerPage);
+            const endAya = Math.min(ayahsPerPage, ayaCount);
             quranData = await fetchQuranItemsRange(corpusId, surah, 1, endAya);
           } else if (aya < 0) {
             // Special case: coming from next surah, start from the end
-            const startAya = Math.max(1, (ayaCount || 286) - ayahsPerPage + 1);
-            const endAya = ayaCount || 286;
+            const startAya = Math.max(1, ayaCount - ayahsPerPage + 1);
+            const endAya = ayaCount;
             quranData = await fetchQuranItemsRange(corpusId, surah, startAya, endAya);
           } else {
             // Fetch range starting from specified aya
-            const startAya = Math.max(1, aya);
-            const endAya = Math.min(ayaCount || (startAya + ayahsPerPage - 1), startAya + ayahsPerPage - 1);
+            const startAya = Math.min(Math.max(1, aya), ayaCount);
+            const endAya = Math.min(ayaCount, startAya + ayahsPerPage - 1);
             quranData = await fetchQuranItemsRange(corpusId, surah, startAya, endAya);
           }
-          
+
+          if (stale) return;
           setItems(quranData);
         } catch (error) {
           console.error('Error fetching Quran items:', error);
@@ -86,26 +118,23 @@ const PrimaryList = () => {
       } else {
         console.error('Unrecognized corpus ID:', corpusId);
       }
-      setLoading(false);
+      if (!stale) setLoading(false);
     };
   
     fetchData();
+    return () => {
+      stale = true;
+    };
   }, [corpusId, surah, aya, ayahsPerPage, L1, L2, ayaCount]);
 
+  // Keep the reading position in the address bar so reload / share / back work
   useEffect(() => {
-    if (corpusId === '2') { // Fetch Aya count when Surah changes (for Quran)
-      const fetchAyaData = async () => {
-        try {
-          const ayaCountData = await fetchAyaCount(surah);
-          setAyaCount(ayaCountData);
-          setAya(0); // Reset to show all Ayas when Surah changes
-        } catch (error) {
-          console.error('Error fetching Aya count:', error);
-        }
-      };
-      fetchAyaData();
-    }
-  }, [surah, corpusId]);
+    if (corpusId !== '2') return;
+    const params = new URLSearchParams(window.location.search);
+    params.set('surah', String(surah));
+    params.set('aya', String(aya));
+    window.history.replaceState(window.history.state, '', `${window.location.pathname}?${params}`);
+  }, [corpusId, surah, aya]);
 
   // Handle "View in Context" navigation from graph screen
   useEffect(() => {
@@ -121,7 +150,7 @@ const PrimaryList = () => {
         if (itemCorpusId === 2 && typeof corpusItemData.item_id === 'string' && corpusItemData.item_id.includes(':')) {
           const [surahFromId, ayaFromId] = corpusItemData.item_id.split(':');
           console.log(`🎯 View in Context: Setting position from corpus item ID: Surah ${surahFromId}, Aya ${ayaFromId}`);
-          setSurah(parseInt(surahFromId));
+          setSurahState(parseInt(surahFromId));
           setAya(parseInt(ayaFromId));
           
           // Force update the saved state with the correct position immediately
@@ -153,8 +182,8 @@ const PrimaryList = () => {
     console.log(`PrimaryList URL parameters: corpusId=${corpusId}, urlSurah=${urlSurah}, urlAya=${urlAya}`);
     if (corpusId === '2' && urlSurah && urlAya) {
       console.log(`Setting position from URL: Surah ${urlSurah}, Aya ${urlAya}`);
-      setSurah(parseInt(urlSurah));
-      setAya(parseInt(urlAya));
+      setSurahState(parseInt(urlSurah) || 1);
+      setAya(parseInt(urlAya) || 0);
     }
   }, [corpusId, urlSurah, urlAya]);
 
@@ -249,13 +278,15 @@ const PrimaryList = () => {
         )}
       </div>
 
-      {loading && (
+      {loading && !(corpusId === '2' && items.length > 0) && (
         <div className="flex justify-center items-center p-5 text-[16px] text-muted">
           {t.loading}
         </div>
       )}
 
-      {!loading && (
+      {/* The Quran reader stays mounted while the next page loads (keeps scroll,
+          audio and settings); it dims the old page instead */}
+      {(!loading || (corpusId === '2' && items.length > 0)) && (
         /* Use CorpusRenderer to handle rendering based on corpus type */
         <CorpusRenderer
         corpusId={corpusId}
@@ -270,6 +301,7 @@ const PrimaryList = () => {
         ayahsPerPage={ayahsPerPage}
         setAyahsPerPage={setAyahsPerPage}
         fontSize={fontSize}
+        loading={loading}
         L1={L1}
         L2={L2}
         handleSelectCorpusItem={handleItemClick}

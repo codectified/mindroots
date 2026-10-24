@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import MobileQuranReader from './MobileQuranReader';
 
 const word = (ayah, n, sem, root, extra = {}) => ({
@@ -15,6 +15,8 @@ const word = (ayah, n, sem, root, extra = {}) => ({
 const nav = (overrides = {}) => ({
   currentStartAya: 1,
   currentEndAya: 2,
+  atSurahStart: true,
+  atSurahEnd: false,
   prevDisabled: true,
   nextDisabled: false,
   onPrev: jest.fn(),
@@ -22,9 +24,36 @@ const nav = (overrides = {}) => ({
   ...overrides,
 });
 
+// quran.com /verses/by_chapter response for al-Fatiha 1–2
+const quranCom = {
+  verses: [
+    {
+      verse_number: 1,
+      translations: [{ text: 'In the name of Allah<sup foot_note=1>1</sup>' }],
+      audio: { url: 'Alafasy/mp3/001001.mp3', segments: [[0, 1, 0, 500]] },
+      words: [
+        { position: 1, char_type_name: 'word', translation: { text: 'In (the) name' }, transliteration: { text: "bis'mi" } },
+        { position: 2, char_type_name: 'end', translation: { text: '(1)' } },
+      ],
+    },
+    {
+      verse_number: 2,
+      translations: [{ text: 'All praise is for Allah' }],
+      audio: { url: 'Alafasy/mp3/001002.mp3', segments: [] },
+      words: [{ position: 1, char_type_name: 'word', translation: { text: 'All praises and thanks' } }],
+    },
+  ],
+  pagination: { next_page: null },
+};
+
+let surahCounter = 0;
 const setup = (groupedByAya, props = {}) => {
-  const onWordTap = jest.fn();
-  const onAyahMenu = jest.fn();
+  const handlers = {
+    onWordTap: jest.fn(),
+    onAyahMenu: jest.fn(),
+    setAya: jest.fn(),
+    setAyahsPerPage: jest.fn(),
+  };
   render(
     <MobileQuranReader
       surah={1}
@@ -32,25 +61,36 @@ const setup = (groupedByAya, props = {}) => {
       groupedByAya={groupedByAya}
       nav={nav()}
       ayaCount={7}
+      ayahsPerPage={10}
       L1="sem"
       L2="off"
       fontSize={16}
       getWordStyle={() => ({})}
-      onWordTap={onWordTap}
-      onAyahMenu={onAyahMenu}
+      {...handlers}
       {...props}
     />
   );
-  return { onWordTap, onAyahMenu };
+  return handlers;
 };
 
-beforeEach(() => localStorage.clear());
+const fatiha = () => ({
+  1: [word(1, 1, 'بِسْمِ', 'سمو')],
+  2: [word(2, 1, 'الْحَمْدُ', 'حمد')],
+});
+
+beforeEach(() => {
+  localStorage.clear();
+  surahCounter += 1;
+  global.fetch = jest.fn(() => Promise.reject(new Error('offline')));
+  jest.spyOn(console, 'warn').mockImplementation(() => {});
+});
+
+afterEach(() => {
+  console.warn.mockRestore();
+});
 
 test('renders each ayah with its words, roots and range', () => {
-  setup({
-    1: [word(1, 1, 'بِسْمِ', 'سمو'), word(1, 2, 'اللَّهِ', 'اله')],
-    2: [word(2, 1, 'الْحَمْدُ', 'حمد')],
-  });
+  setup(fatiha());
   expect(screen.getByText('1:1')).toBeInTheDocument();
   expect(screen.getByText('1:2')).toBeInTheDocument();
   expect(screen.getByText('الْحَمْدُ')).toBeInTheDocument();
@@ -63,21 +103,57 @@ test('al-Fatiha does not repeat the basmala above ayah 1', () => {
   expect(screen.queryByText('بِسْمِ اللَّهِ الرَّحْمَٰنِ الرَّحِيمِ')).toBeNull();
 });
 
-test('only offers toggles for data the page has; root toggle hides roots', () => {
+test('settings only offer switches for data the page has; roots switch hides roots', () => {
   setup({ 1: [word(1, 1, 'بِسْمِ', 'سمو')] });
-  expect(screen.queryByLabelText('Show word meanings')).toBeNull();
-  expect(screen.queryByLabelText('Show transliteration')).toBeNull();
-  fireEvent.click(screen.getByLabelText('Show roots'));
+  fireEvent.click(screen.getByLabelText('Reader settings'));
+  expect(screen.queryByRole('switch', { name: 'Word meanings' })).toBeNull();
+  expect(screen.queryByRole('switch', { name: 'Translation' })).toBeNull();
+  fireEvent.click(screen.getByRole('switch', { name: 'Roots' }));
   expect(screen.queryByText('س م و')).toBeNull();
   expect(localStorage.getItem('mobileReader.show.root')).toBe('false');
 });
 
-test('shows meanings when present, preferring the chosen second language', () => {
+test('adds word meanings, translation and audio from quran.com', async () => {
+  global.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(quranCom) }));
+  // a surah number nothing else in this file uses, so the module cache is cold
+  setup(fatiha(), { surah: 50 + surahCounter });
+  expect(await screen.findByText('In (the) name')).toBeInTheDocument();
+  expect(screen.getByText('In the name of Allah')).toBeInTheDocument(); // footnote stripped
+  expect(screen.getByText('All praise is for Allah')).toBeInTheDocument();
+  expect(screen.queryByText("bis'mi")).toBeNull(); // transliteration is off by default
+  expect(screen.getByLabelText('Play recitation')).toBeInTheDocument();
+  expect(global.fetch.mock.calls[0][0]).toMatch(/from=1&to=2/);
+});
+
+test('the graph’s own word meaning wins over quran.com’s', async () => {
+  global.fetch = jest.fn(() => Promise.resolve({ ok: true, json: () => Promise.resolve(quranCom) }));
   setup(
-    { 1: [word(1, 1, 'بِسْمِ', 'سمو', { english: 'In (the) name', fr: 'Au nom' })] },
-    { L2: 'fr' }
+    { 1: [word(1, 1, 'بِسْمِ', 'سمو', { english: 'graph gloss', fr: 'Au nom' })], 2: [word(2, 1, 'الْحَمْدُ', 'حمد')] },
+    { L2: 'fr', surah: 50 + surahCounter }
   );
   expect(screen.getByText('Au nom')).toBeInTheDocument();
+  await waitFor(() => expect(screen.getByText('All praises and thanks')).toBeInTheDocument());
+  expect(screen.queryByText('In (the) name')).toBeNull();
+});
+
+test('ayat per page and go-to-ayah drive paging', () => {
+  const { setAyahsPerPage, setAya } = setup(fatiha());
+  fireEvent.click(screen.getByLabelText('Reader settings'));
+  fireEvent.click(screen.getByRole('button', { name: '5' }));
+  expect(setAyahsPerPage).toHaveBeenCalledWith(5);
+  fireEvent.change(screen.getByLabelText('Go to ayah'), { target: { value: '99' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Go' }));
+  expect(setAya).not.toHaveBeenCalled(); // out of range is ignored
+  fireEvent.change(screen.getByLabelText('Go to ayah'), { target: { value: '6' } });
+  fireEvent.click(screen.getByRole('button', { name: 'Go' }));
+  expect(setAya).toHaveBeenCalledWith(6);
+  expect(screen.queryByLabelText('Go to ayah')).toBeNull(); // sheet closes
+});
+
+test('pager labels follow the position in the surah', () => {
+  setup(fatiha(), { nav: nav({ atSurahStart: false, atSurahEnd: true, prevDisabled: false }) });
+  expect(screen.getByText('‹ Previous')).toBeInTheDocument();
+  expect(screen.getByText('Next surah ›')).toBeInTheDocument();
 });
 
 test('word tap and ayah menu call the shared handlers', () => {
