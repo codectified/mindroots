@@ -35,7 +35,7 @@ const settledOverlaps = async (page) => {
 
 test('graph labels do not overlap, before or after expanding a root', async ({ page }) => {
   await page.goto(`${readerUrl(1)}&reader=auto`);
-  await page.getByText('الرَّحْمَٰنِ').first().click();
+  await page.getByText('الرَّحْمَٰنِ', { exact: true }).first().click(); // a word, not the basmala line
   await expect(page).toHaveURL(/\/graph/);
   await expect(page.locator('svg .nodes circle').first()).toBeVisible();
 
