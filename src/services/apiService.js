@@ -9,9 +9,9 @@ const api = axios.create({
 });
 
 // nginx on the box rate-limits /api/ and answers bursts with an instant 503
-// (repeated 503s can get the IP banned). Retry GETs a couple of times with
+// (repeated 503s can get the IP banned). Retry a GET once, after a pause, with
 // backoff instead of failing the page.
-const RETRY_DELAYS_MS = [1000, 2500];
+const RETRY_DELAYS_MS = [1500];
 api.interceptors.response.use(undefined, async (error) => {
   const config = error.config;
   const status = error.response?.status;

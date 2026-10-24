@@ -1,5 +1,7 @@
 const { test, expect } = require('@playwright/test');
-const { readerUrl, ayahKeys } = require('./quran');
+const { readerUrl, ayahKeys, pause } = require('./quran');
+
+test.afterEach(pause);
 
 test.beforeEach(async ({ page }) => {
   // Per-device settings start from defaults (10 ayat per page, translation on)

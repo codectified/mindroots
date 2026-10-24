@@ -6,4 +6,7 @@ const readerUrl = (surah, aya = 0) =>
 const ayahKeys = (page) =>
   page.locator('[data-ayah]').evaluateAll((els) => els.map((el) => el.dataset.ayah));
 
-module.exports = { readerUrl, ayahKeys };
+// Give nginx's /api/ rate limit time to drain between tests
+const pause = () => new Promise((resolve) => setTimeout(resolve, 4000));
+
+module.exports = { readerUrl, ayahKeys, pause };

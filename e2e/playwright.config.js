@@ -7,8 +7,10 @@ module.exports = defineConfig({
   testDir: './tests',
   timeout: 60_000,
   expect: { timeout: 20_000 },
-  retries: process.env.CI ? 1 : 0,
-  // One browser at a time: the server bans IPs that open many connections at once
+  // nginx rate-limits /api/ (instant 503) and repeated 503s get the IP banned,
+  // so: one browser at a time, a pause between tests, and no retries (a retry
+  // after a ban only adds strikes).
+  retries: 0,
   workers: 1,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
   use: {

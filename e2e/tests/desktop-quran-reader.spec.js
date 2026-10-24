@@ -1,5 +1,7 @@
 const { test, expect } = require('@playwright/test');
-const { readerUrl } = require('./quran');
+const { readerUrl, pause } = require('./quran');
+
+test.afterEach(pause);
 
 // The classic (desktop) reader shares the paging logic
 test('desktop reader pages past the end of a short surah', async ({ page }) => {
