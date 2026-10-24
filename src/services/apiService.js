@@ -8,6 +8,22 @@ const api = axios.create({
   },
 });
 
+// nginx on the box rate-limits /api/ and answers bursts with an instant 503
+// (repeated 503s can get the IP banned). Retry GETs a couple of times with
+// backoff instead of failing the page.
+const RETRY_DELAYS_MS = [1000, 2500];
+api.interceptors.response.use(undefined, async (error) => {
+  const config = error.config;
+  const status = error.response?.status;
+  if (!config || (config.method || 'get') !== 'get' || ![429, 503].includes(status)) {
+    throw error;
+  }
+  config.retryCount = (config.retryCount || 0) + 1;
+  if (config.retryCount > RETRY_DELAYS_MS.length) throw error;
+  await new Promise((resolve) => setTimeout(resolve, RETRY_DELAYS_MS[config.retryCount - 1]));
+  return api(config);
+});
+
 // Localhost development setup (comment out for production)
 // const api = axios.create({
 //   baseURL: 'http://localhost:5001/api',

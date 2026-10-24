@@ -253,7 +253,7 @@ const CorpusRenderer = ({
       'disabled:bg-[#f5f5f5] disabled:text-[#999] disabled:cursor-not-allowed';
 
     return (
-      <div>
+      <div className={loading ? 'opacity-50 transition-opacity' : undefined} aria-busy={loading || undefined}>
         <div className="quran-header mb-5 border border-[#a8d5a8] rounded-xl bg-[#f8fdf8] shadow-[0_2px_4px_rgba(0,0,0,0.05)]">
           <div className={`px-5 py-[15px] flex items-center justify-between ${showQuranControls ? 'border-b border-[#d4edd4]' : ''}`}>
             <h2 className="m-0 text-[20px] text-[#2d5a2d] font-semibold">

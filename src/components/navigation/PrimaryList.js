@@ -19,8 +19,16 @@ const PrimaryList = () => {
   const location = useLocation();
   const [items, setItems] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [surah, setSurahState] = useState(1); // Default to Surah 1 for Quran
-  const [aya, setAya] = useState(0); // 0 = first page, -1 = last page, n = page starting at ayah n
+  // Start at the position in the URL (reload / shared link / Library restore) so
+  // the first request is already the right page
+  const [surah, setSurahState] = useState(() => {
+    const n = parseInt(new URLSearchParams(location.search).get('surah'), 10);
+    return n >= 1 && n <= 114 ? n : 1;
+  });
+  // 0 = first page, -1 = last page, n = page starting at ayah n
+  const [aya, setAya] = useState(() => parseInt(new URLSearchParams(location.search).get('aya'), 10) || 0);
+  const [loadError, setLoadError] = useState(null);
+  const [reloadKey, setReloadKey] = useState(0);
   const [ayahsPerPage, setAyahsPerPageState] = useState(() => {
     try {
       return parseInt(localStorage.getItem(AYAHS_PER_PAGE_KEY), 10) || 10;
@@ -71,6 +79,7 @@ const PrimaryList = () => {
     let stale = false; // a newer page was requested before this one arrived
     const fetchData = async () => {
       setLoading(true);
+      setLoadError(null);
       console.log('Fetching data for corpus ID:', corpusId);
   
       if (corpusId === '2') { // Quran
@@ -98,6 +107,10 @@ const PrimaryList = () => {
           setItems(quranData);
         } catch (error) {
           console.error('Error fetching Quran items:', error);
+          if (stale) return;
+          // Don't leave the previous page's ayat under the new heading
+          setItems([]);
+          setLoadError(error);
         }
       } else if (corpusId === '1') { // 99 Names
         try {
@@ -125,7 +138,7 @@ const PrimaryList = () => {
     return () => {
       stale = true;
     };
-  }, [corpusId, surah, aya, ayahsPerPage, L1, L2, ayaCount]);
+  }, [corpusId, surah, aya, ayahsPerPage, L1, L2, ayaCount, reloadKey]);
 
   // Keep the reading position in the address bar so reload / share / back work
   useEffect(() => {
@@ -281,6 +294,18 @@ const PrimaryList = () => {
       {loading && !(corpusId === '2' && items.length > 0) && (
         <div className="flex justify-center items-center p-5 text-[16px] text-muted">
           {t.loading}
+        </div>
+      )}
+
+      {loadError && !loading && (
+        <div className="flex flex-col items-center gap-3 p-5 text-[15px] text-muted" role="alert">
+          <span>Couldn't load this page. The server may be busy.</span>
+          <button
+            onClick={() => setReloadKey((k) => k + 1)}
+            className="py-2 px-5 min-h-[44px] bg-[#4a7c4a] text-white border-none rounded-md cursor-pointer text-[15px] font-medium"
+          >
+            Retry
+          </button>
         </div>
       )}
 
