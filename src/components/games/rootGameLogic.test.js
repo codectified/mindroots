@@ -1,5 +1,6 @@
 import {
   checkRoot, cleanArabic, formatRoot, wordSegments, isPlayable, points, pickChoices, glossFor, relatedWords, rootLetters,
+  rootKind, lettersVisible, fitsLevel, itemFitsLevel, lexiconCandidates,
 } from './rootGameLogic';
 
 describe('checkRoot', () => {
@@ -73,5 +74,50 @@ describe('scoring and options', () => {
     expect(glossFor(words, 'عَالَم')).toBeNull();
     expect(relatedWords(words, 'عِلْم')).toEqual([words[0]]);
     expect(glossFor([{ arabic: 'قَوْلٌ', english: 'saying' }, { arabic: 'قَالَ', english: 'said' }], 'قَوْل')).toBe('saying');
+  });
+});
+
+describe('levels', () => {
+  it('classifies roots', () => {
+    expect(rootKind('كتب')).toEqual({ weak: false, doubled: false });
+    expect(rootKind('قول').weak).toBe(true);
+    expect(rootKind('ابب')).toEqual({ weak: true, doubled: true }); // hamza counts as weak
+    expect(rootKind('مدد').doubled).toBe(true);
+  });
+
+  it('finds root letters written in the word, in order', () => {
+    expect(lettersVisible('كتب', 'مَكْتُوب')).toBe(true);
+    expect(lettersVisible('قول', 'قَالَ')).toBe(false); // the و became ا
+    expect(lettersVisible('مدد', 'مَدَّ')).toBe(true); // shadda doubles the د
+    expect(lettersVisible('امن', 'آمَنَ')).toBe(true); // hamza forms are ا
+    expect(lettersVisible('كتب', 'بَكَتَ')).toBe(false); // out of order
+  });
+
+  it('filters by level', () => {
+    expect(fitsLevel('كتب', 'كَتَبَ', 'beginner')).toBe(true);
+    expect(fitsLevel('قول', 'قَوْل', 'beginner')).toBe(false);
+    expect(fitsLevel('قول', 'قَوْل', 'intermediate')).toBe(true);
+    expect(fitsLevel('قول', 'قَالَ', 'intermediate')).toBe(false);
+    expect(fitsLevel('قول', 'قَالَ', 'advanced')).toBe(true);
+  });
+
+  it('checks Quran words against their stem, not the prefix', () => {
+    // وَعَدَ-like: the prefix وَ must not stand in for a root و
+    const item = { root: 'وجد', s1_arabic: 'وَ', s1_features: 'PREFIX|w:CONJ+', s2_arabic: 'جَدُوا', s2_features: 'STEM|POS:V' };
+    expect(itemFitsLevel(item, 'intermediate')).toBe(false);
+  });
+
+  it('keeps Arabic nouns and verbs with a gloss for the lexicon', () => {
+    const words = [
+      { arabic: 'كَتَبَ', english: 'wrote', word_type: 'verb' },
+      { arabic: 'כתב', english: 'write', word_type: 'verb' },
+      { arabic: 'كِتَابٌ', english: null, word_type: 'noun' },
+      { arabic: 'اِكْتَتَبَ', english: 'subscribed', word_type: 'phrase' },
+    ];
+    expect(lexiconCandidates('كتب', words, 'beginner')).toEqual([words[0]]);
+  });
+
+  it('keeps spaces when cleaning text', () => {
+    expect(cleanArabic('تَقَوَّلَ عَلَيْهِ')).toBe('تَقَوَّلَ عَلَيْهِ');
   });
 });

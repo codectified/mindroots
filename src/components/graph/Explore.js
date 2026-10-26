@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import GraphVisualization from './GraphVisualization';
 import NodesTable from './NodesTable';
 import { fetchRandomNodes, expandGraph, fetchAnalysisData, fetchArticleHeaders, fetchArticleById, fetchRootEntry } from '../../services/apiService';
@@ -20,6 +20,7 @@ import InfoBubble from '../layout/InfoBubble';
 import ContextShiftSelector from '../selectors/ContextShiftSelector';
 import DisplayModeSelector from '../selectors/DisplayModeSelector';
 import SurahSelector from '../selectors/SurahSelector';
+import RootGame from '../games/RootGame';
 
 const Explore = () => {
   const location = useLocation();
@@ -33,6 +34,13 @@ const Explore = () => {
   const { displayMode } = useDisplayMode();
   const { graphData, setGraphData, handleNodeClick, infoBubble, setInfoBubble } = useGraphData();
   const [markdownContent, setMarkdownContent] = useState('');
+  // Explore the graph, or Play the root game (?tab=play)
+  const [searchParams, setSearchParams] = useSearchParams();
+  const tab = searchParams.get('tab') === 'play' ? 'play' : 'explore';
+  const tabClass = (active) =>
+    `py-1.5 px-4 text-[1.25rem] font-semibold rounded-md ${
+      active ? 'bg-ink text-white' : 'bg-transparent text-muted hover:bg-surface-alt'
+    }`;
 
   const handleReset = () => {
     setGraphData({ nodes: [], links: [] });
@@ -146,15 +154,26 @@ const Explore = () => {
     <div>
       {/* Header */}
       <div className="mb-3">
-        <div className="flex items-center justify-between">
-          <h2 className="m-0">{t.exploreTitle}</h2>
-          <div className="flex items-center gap-2">
-            <ContextShiftSelector />
-            <DisplayModeSelector size="large" />
+        <div className="flex items-center justify-between flex-wrap gap-2">
+          <div className="flex gap-1" role="tablist" aria-label={t.exploreTitle}>
+            <button role="tab" aria-selected={tab === 'explore'} className={tabClass(tab === 'explore')} onClick={() => setSearchParams({})}>
+              {t.exploreTab}
+            </button>
+            <button role="tab" aria-selected={tab === 'play'} className={tabClass(tab === 'play')} onClick={() => setSearchParams({ tab: 'play' })}>
+              {t.playTab}
+            </button>
           </div>
+          {tab === 'explore' && (
+            <div className="flex items-center gap-2">
+              <ContextShiftSelector />
+              <DisplayModeSelector size="large" />
+            </div>
+          )}
         </div>
-        <SurahSelector />
+        {tab === 'explore' && <SurahSelector />}
       </div>
+
+      {tab === 'play' ? <RootGame /> : (<>
 
       {/* Action buttons */}
       <div className="flex flex-wrap gap-5 items-center my-5">
@@ -203,6 +222,7 @@ const Explore = () => {
       )}
 
       <ReactMarkdown>{markdownContent}</ReactMarkdown>
+      </>)}
     </div>
   );
 };

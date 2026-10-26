@@ -8,7 +8,7 @@
 
 import { useEffect, lazy, Suspense } from 'react';
 import { Link } from 'react-router-dom';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, Navigate } from 'react-router-dom';
 import ProfilePage from './components/staticPages/ProfilePage';
 import MainMenu from './components/navigation/MainMenu';
 import Library from './components/navigation/Library';
@@ -18,7 +18,6 @@ import CorpusGraphScreen from './components/graph/CorpusGraphScreen';
 import Settings from './components/staticPages/Settings';
 import About from './components/staticPages/About';
 import Explore from './components/graph/Explore';
-import RootGame from './components/games/RootGame';
 import Search from './components/graph/Search';
 import ArticleViewer from './components/staticPages/ArticleViewer';
 
@@ -107,7 +106,7 @@ const App = () => {
                   <Route path="/project-news" element={<Layout><ProjectNews /></Layout>} />
                   <Route path="/about" element={<Layout><About /></Layout>} />
                   <Route path="/start" element={<Layout><Explore /></Layout>} />
-                  <Route path="/games/root" element={<Layout><RootGame /></Layout>} />
+                  <Route path="/games/root" element={<Navigate to="/start?tab=play" replace />} />
                   <Route path="/sandbox" element={<Layout><Search /></Layout>} />
                   <Route path="/lisan-lab" element={<Layout><LisanLab /></Layout>} />
                   <Route path="/lisan-lab/reports" element={<Layout><LisanLabReports /></Layout>}/>

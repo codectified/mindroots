@@ -1,70 +1,124 @@
-// "Find the root": a random Quran word, the player names its root.
-// Built only on existing endpoints (random words, ayah range, root words),
-// so it works against the prod backend that staging uses.
+// "Find the root": a random word, the player names its root.
+// Words come from the whole lexicon, the whole Quran, or one surah, at one of
+// three levels (see LEVELS in rootGameLogic). Built only on existing
+// endpoints, so it runs on the prod backend that staging uses. That API is
+// rate-limited (30 requests/min), so each question costs about one request:
+// lexicon questions pick a random root and one of its Words, and the same
+// word list answers the meaning and related-words hints.
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { fetchRandomNodes, fetchQuranItemsRange, fetchRootWords } from '../../services/apiService';
 import { SURAHS } from '../../constants/surahs';
 import { useLabels } from '../../hooks/useLabels';
 import {
-  RADICALS, MAX_HINTS, checkRoot, formatRoot, rootLetters, wordSegments, isPlayable, points, pickChoices,
-  glossFor, relatedWords, normalizeLetter, cleanArabic,
+  RADICALS, MAX_HINTS, LEVELS, checkRoot, formatRoot, rootLetters, rootKind, wordSegments, isPlayable,
+  itemFitsLevel, lexiconCandidates, points, pickChoices, pickRandom, glossFor, relatedWords, normalizeLetter,
+  cleanArabic,
 } from './rootGameLogic';
 
 const ROUND_LENGTH = 10;
 const QURAN = 2;
 const HINTS = ['gloss', 'stem', 'first', 'related'];
 const BEST_KEY = 'rootGameBest';
+const SETTINGS_KEY = 'rootGameSettings';
+const DEFAULTS = { source: 'lexicon', level: 'beginner', mode: 'type' };
 
-const readBest = () => {
-  try { return Number(localStorage.getItem(BEST_KEY)) || 0; } catch { return 0; }
+const readStored = (key, fallback) => {
+  try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
 };
-const writeBest = (n) => {
-  try { localStorage.setItem(BEST_KEY, String(n)); } catch { /* private mode */ }
+const writeStored = (key, value) => {
+  try { localStorage.setItem(key, JSON.stringify(value)); } catch { /* private mode */ }
 };
 
 const newRound = () => ({ number: 0, score: 0, streak: 0, history: [] });
 
 const RootGame = () => {
   const t = useLabels();
-  const [surah, setSurah] = useState(0); // 0 = whole Quran
-  const [mode, setMode] = useState('type');
+  // source: 'lexicon' | 'quran' | a surah number
+  const [settings, setSettings] = useState(() => ({ ...DEFAULTS, ...readStored(SETTINGS_KEY, {}) }));
+  const { source, level, mode } = settings;
   const [round, setRound] = useState(newRound);
   const [question, setQuestion] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [best, setBest] = useState(readBest);
+  const [best, setBest] = useState(() => Number(readStored(BEST_KEY, 0)) || 0);
 
-  // Fetched but not yet played words, roots seen (for distractors), ids played
-  const queue = useRef([]);
-  const rootPool = useRef(new Set());
+  const queue = useRef([]); // Quran: fetched items; lexicon: fetched Roots
+  const rootPool = useRef(new Set()); // roots seen, for multiple-choice distractors
   const played = useRef(new Set());
+  const rootWords = useRef(new Map()); // root -> its Words, so hints don't refetch
 
-  const nextItem = useCallback(async () => {
-    const filters = { corpus_id: QURAN, ...(surah ? { surah_numbers: [surah] } : {}) };
-    for (let attempt = 0; attempt < 4; attempt++) {
+  const update = (patch) => setSettings((s) => {
+    const next = { ...s, ...patch };
+    writeStored(SETTINGS_KEY, next);
+    return next;
+  });
+
+  const wordsFor = useCallback(async (root) => {
+    const key = formatRoot(root);
+    if (!rootWords.current.has(key)) {
+      // As stored (r2/r3 can be أ or ى), not normalized
+      const [r1, r2, r3] = [...root.replace(/[-\s]/g, '')];
+      const data = await fetchRootWords(r1, r2, r3).catch(() => ({ words: [] }));
+      rootWords.current.set(key, data.words || []);
+    }
+    return rootWords.current.get(key);
+  }, []);
+
+  const nextQuranItem = useCallback(async () => {
+    const filters = { corpus_id: QURAN, ...(source !== 'quran' ? { surah_numbers: [source] } : {}) };
+    for (let attempt = 0; attempt < 5; attempt++) {
       if (!queue.current.length) {
-        const data = await fetchRandomNodes('word', 8, filters);
+        const data = await fetchRandomNodes('word', 12, filters);
         const fresh = (data.nodes || []).filter(isPlayable);
         fresh.forEach((n) => rootPool.current.add(formatRoot(n.root)));
         // After a few tries in a short surah, allow repeats
-        queue.current = attempt < 2 ? fresh.filter((n) => !played.current.has(n.item_id)) : fresh;
+        queue.current = fresh
+          .filter((n) => itemFitsLevel(n, level))
+          .filter((n) => attempt >= 3 || !played.current.has(n.item_id));
       }
       const item = queue.current.shift();
-      if (item) return item;
+      if (item) return { item, words: null };
     }
     return null;
-  }, [surah]);
+  }, [source, level]);
+
+  const nextLexiconItem = useCallback(async () => {
+    for (let calls = 0; calls < 4; calls++) {
+      if (!queue.current.length) {
+        const data = await fetchRandomNodes('root', 12, {});
+        // Triliteral only: the root-words endpoint matches on r1–r3
+        const roots = (data.nodes || [])
+          .filter((r) => r.r1 && r.r2 && r.r3 && !r.r4)
+          .map((r) => [r.r1, r.r2, r.r3].join(''));
+        roots.forEach((r) => rootPool.current.add(formatRoot(r)));
+        queue.current = roots.filter((r) => level !== 'beginner' || (!rootKind(r).weak && !rootKind(r).doubled));
+        continue;
+      }
+      const root = queue.current.shift();
+      const words = await wordsFor(root);
+      const candidates = lexiconCandidates(root, words, level).filter((w) => !played.current.has(`word:${w.word_id}`));
+      if (candidates.length) {
+        const w = pickRandom(candidates);
+        return {
+          item: { item_id: `word:${w.word_id}`, sem: w.arabic, lemma: w.arabic, root, word_type: w.word_type },
+          words,
+        };
+      }
+    }
+    return null;
+  }, [level, wordsFor]);
 
   const loadQuestion = useCallback(async () => {
     setLoading(true);
     setError(null);
     try {
-      const item = await nextItem();
-      if (!item) {
+      const next = source === 'lexicon' ? await nextLexiconItem() : await nextQuranItem();
+      if (!next) {
         setQuestion(null);
         setError(t.gameNoWords);
         return;
       }
+      const { item, words } = next;
       played.current.add(item.item_id);
       let choices = null;
       if (mode === 'choose') {
@@ -78,39 +132,42 @@ const RootGame = () => {
         item,
         letters: rootLetters(item.root),
         segments: wordSegments(item),
+        quran: source !== 'lexicon',
         choices,
         picked: null,
         guess: [],
         locked: 0, // slots filled by the "first letter" hint
         hints: [],
-        words: null, // Words under the root, fetched for the gloss / related hints
+        words, // Words under the root, for the meaning / related hints
         ayah: null,
         result: null,
       });
-      fetchQuranItemsRange(QURAN, item.surah_number, item.ayah_number, item.ayah_number)
-        .then((ayah) => setQuestion((q) => (q && q.item.item_id === item.item_id ? { ...q, ayah } : q)))
-        .catch(() => {});
+      if (item.surah_number) {
+        fetchQuranItemsRange(QURAN, item.surah_number, item.ayah_number, item.ayah_number)
+          .then((ayah) => setQuestion((q) => (q && q.item.item_id === item.item_id ? { ...q, ayah } : q)))
+          .catch(() => {});
+      }
     } catch (e) {
       console.error('Root game: failed to load a word', e);
       setError(t.gameLoadError);
     } finally {
       setLoading(false);
     }
-  }, [mode, nextItem, t]);
+  }, [source, mode, nextLexiconItem, nextQuranItem, t]);
 
-  // A new round whenever the scope or mode changes
+  // A new round whenever the settings change
   useEffect(() => {
     queue.current = [];
     played.current = new Set();
     setRound(newRound());
     loadQuestion();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [surah, mode]);
+  }, [source, level, mode]);
 
   useEffect(() => {
     if (round.number === ROUND_LENGTH && round.score > best) {
       setBest(round.score);
-      writeBest(round.score);
+      writeStored(BEST_KEY, round.score);
     }
   }, [round, best]);
 
@@ -122,7 +179,9 @@ const RootGame = () => {
       number: r.number + 1,
       score: r.score + gained,
       streak: gained ? r.streak + 1 : 0,
-      history: [...r.history, { word: cleanArabic(question.item.sem), root: formatRoot(question.item.root), ref: question.item.item_id, gained }],
+      history: [...r.history, {
+        word: cleanArabic(question.item.sem), root: formatRoot(question.item.root), ref: question.quran ? question.item.item_id : '', gained,
+      }],
     }));
   };
 
@@ -135,8 +194,7 @@ const RootGame = () => {
     }
     setQuestion(q);
     if ((hint === 'gloss' || hint === 'related') && !q.words) {
-      const [r1, r2, r3] = q.letters;
-      const words = await fetchRootWords(r1, r2, r3).then((d) => d.words || []).catch(() => []);
+      const words = await wordsFor(q.item.root);
       setQuestion((cur) => (cur && cur.item.item_id === q.item.item_id ? { ...cur, words } : cur));
     }
   };
@@ -197,6 +255,9 @@ const RootGame = () => {
   const scored = question?.result === 'exact' || question?.result === 'weak';
   const gloss = question?.words ? glossFor(question.words, question.item.lemma) : null;
   const related = question?.words ? relatedWords(question.words, question.item.lemma) : null;
+  const hints = question
+    ? HINTS.filter((h) => !(h === 'related' && question.letters.length === 4) && !(h === 'stem' && !question.quran))
+    : [];
 
   const pill = (active) =>
     `py-1.5 px-3 text-dynamic-sm rounded-md border ${
@@ -205,28 +266,36 @@ const RootGame = () => {
   const quiet = 'py-2 px-4 rounded-md bg-neutral hover:bg-neutral-hover';
 
   return (
-    <div className="max-w-[640px] mx-auto px-4 pb-10">
-      <h2 className="mb-1">{t.gameRootTitle}</h2>
-      <p className="text-muted text-dynamic-sm mb-4">{t.gameRootIntro}</p>
+    <div className="max-w-[640px] mx-auto pb-10">
+      <p className="text-muted text-dynamic-sm mb-3">{t.gameRootIntro}</p>
 
       {/* Settings */}
-      <div className="flex flex-wrap items-center gap-3 mb-4">
+      <div className="flex flex-wrap items-center gap-3 mb-2">
         <select
-          value={surah}
-          onChange={(e) => setSurah(Number(e.target.value))}
+          value={String(source)}
+          onChange={(e) => update({ source: ['lexicon', 'quran'].includes(e.target.value) ? e.target.value : Number(e.target.value) })}
           className="border border-border rounded-md py-1.5 px-2 bg-white text-ink max-w-full"
-          aria-label={t.surahLabel}
+          aria-label={t.gameSource}
         >
-          <option value={0}>{t.gameAllQuran}</option>
-          {SURAHS.map((s) => (
-            <option key={s.number} value={s.number}>{s.number}. {s.english} · {s.arabic}</option>
-          ))}
+          <option value="lexicon">{t.gameLexicon}</option>
+          <option value="quran">{t.gameAllQuran}</option>
+          <optgroup label={t.surahLabel}>
+            {SURAHS.map((s) => (
+              <option key={s.number} value={s.number}>{s.number}. {s.english} · {s.arabic}</option>
+            ))}
+          </optgroup>
         </select>
-        <div className="flex gap-1" role="group">
-          <button className={pill(mode === 'type')} onClick={() => setMode('type')}>{t.gameModeType}</button>
-          <button className={pill(mode === 'choose')} onClick={() => setMode('choose')}>{t.gameModeChoose}</button>
+        <div className="flex gap-1" role="group" aria-label={t.gameLevel}>
+          {LEVELS.map((l) => (
+            <button key={l} className={pill(level === l)} onClick={() => update({ level: l })}>{t[`gameLevel_${l}`]}</button>
+          ))}
+        </div>
+        <div className="flex gap-1" role="group" aria-label={t.gameAnswerMode}>
+          <button className={pill(mode === 'type')} onClick={() => update({ mode: 'type' })}>{t.gameModeType}</button>
+          <button className={pill(mode === 'choose')} onClick={() => update({ mode: 'choose' })}>{t.gameModeChoose}</button>
         </div>
       </div>
+      <p className="text-dynamic-xs text-muted mb-4">{t[`gameLevelNote_${level}`]}</p>
 
       {/* Score bar */}
       <div className="flex justify-between text-dynamic-sm text-muted mb-3">
@@ -235,7 +304,12 @@ const RootGame = () => {
         <span>{t.gameStreak}: <strong className="text-ink">{round.streak}</strong></span>
       </div>
 
-      {error && <p className="text-danger">{error}</p>}
+      {error && (
+        <p className="text-danger">
+          {error}{' '}
+          <button onClick={loadQuestion} className="py-1 px-3 ms-2 rounded-md text-dynamic-sm">{t.gameTryAgain}</button>
+        </p>
+      )}
       {loading && !question && <p className="text-muted">{t.gameLoading}</p>}
 
       {question && (
@@ -250,7 +324,7 @@ const RootGame = () => {
               ))}
             </div>
             <div className="text-dynamic-xs text-muted mt-1">
-              {question.item.item_id}
+              {question.quran ? question.item.item_id : t[`gameWordType_${question.item.word_type}`]}
               {question.letters.length === 4 && ` · ${t.gameFourLetters}`}
             </div>
           </div>
@@ -269,12 +343,12 @@ const RootGame = () => {
           {/* Hints */}
           {!question.result && (
             <div className="mb-3">
-              <div className="text-dynamic-xs text-muted mb-1">{t.gameHintsLeft(MAX_HINTS - question.hints.length)}</div>
+              <div className="text-dynamic-xs text-muted mb-1">{t.gameHintsLeft(hints.length - question.hints.length)}</div>
               <div className="flex flex-wrap gap-2">
-                {HINTS.filter((h) => !(h === 'related' && question.letters.length === 4)).map((h) => (
+                {hints.map((h) => (
                   <button
                     key={h}
-                    disabled={question.hints.includes(h)}
+                    disabled={question.hints.includes(h) || question.hints.length >= MAX_HINTS}
                     onClick={() => takeHint(h)}
                     className="py-1 px-3 text-dynamic-sm rounded-md bg-white text-ink border border-border hover:bg-surface-alt disabled:opacity-40"
                   >
