@@ -6,6 +6,7 @@ import {
   faMapMarked,
   faPodcast,
   faBookOpen,
+  faPuzzlePiece,
 } from '@fortawesome/free-solid-svg-icons';
 import {
   faInstagram,
@@ -139,6 +140,13 @@ const MainMenu = () => {
         >
           <FontAwesomeIcon icon={faPodcast} className="text-[40px] mb-2.5" />
           <span className="text-dynamic-sm font-serif text-ink break-words leading-[1.3] max-w-[90%]">{t.lisanLab}</span>
+        </div>
+        <div
+          className="col-span-2 flex items-center justify-center gap-4 bg-[#f9f9f9] rounded-xl text-center cursor-pointer transition-all duration-200 w-full h-[100px] p-5 hover:-translate-y-[5px] hover:bg-[#f0f0f0]"
+          onClick={() => handleNavigation('/games/root')}
+        >
+          <FontAwesomeIcon icon={faPuzzlePiece} className="text-[32px]" />
+          <span className="text-dynamic-sm font-serif text-ink break-words leading-[1.3]">{t.games}</span>
         </div>
       </div>
 
