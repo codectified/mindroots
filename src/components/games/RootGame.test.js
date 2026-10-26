@@ -2,12 +2,13 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import RootGame from './RootGame';
 import { LanguageProvider } from '../../contexts/LanguageContext';
 import { AdvancedModeProvider } from '../../contexts/AdvancedModeContext';
-import { fetchRandomNodes, fetchQuranItemsRange, fetchRootWords } from '../../services/apiService';
+import { fetchRandomNodes, fetchQuranItemsRange, fetchRootWords, expandGraph } from '../../services/apiService';
 
 jest.mock('../../services/apiService', () => ({
   fetchRandomNodes: jest.fn(),
   fetchQuranItemsRange: jest.fn(),
   fetchRootWords: jest.fn(),
+  expandGraph: jest.fn(),
 }));
 
 // وَقَالُوا (2:11:6): prefix وَ, stem قَالُ, suffix وا; root قول (the و drops)
@@ -43,7 +44,7 @@ const pressLetters = (letters) => letters.forEach((ch) => fireEvent.click(screen
 it('plays a Quran word, skipping particles, and scores a typed root', async () => {
   play({ source: 'quran', level: 'advanced' });
   await waitFor(() => expect(screen.getByTestId('game-word')).toHaveTextContent('وَقَالُوا'));
-  expect(fetchRandomNodes).toHaveBeenCalledWith('word', 12, { corpus_id: 2 });
+  expect(fetchRandomNodes).toHaveBeenCalledWith('word', 30, { corpus_id: 2 });
 
   pressLetters(['ق', 'و', 'ل']);
   fireEvent.click(screen.getByRole('button', { name: 'Check' }));
@@ -66,7 +67,7 @@ it('accepts a weak-letter guess as close and charges for hints', async () => {
   expect(screen.getByText('Score:').parentElement).toHaveTextContent('6');
 });
 
-it('keeps hidden-letter words out of the beginner level', async () => {
+it('keeps weak roots out of the beginner level', async () => {
   play({ source: 'quran', level: 'beginner' });
   expect(await screen.findByText('No words at this level found here.')).toBeInTheDocument();
 });
@@ -75,10 +76,10 @@ it('scopes Quran words to the chosen surah', async () => {
   play({ source: 'quran', level: 'advanced' });
   await screen.findByTestId('game-word');
   fireEvent.change(screen.getByRole('combobox'), { target: { value: '112' } });
-  await waitFor(() => expect(fetchRandomNodes).toHaveBeenLastCalledWith('word', 12, { corpus_id: 2, surah_numbers: [112] }));
+  await waitFor(() => expect(fetchRandomNodes).toHaveBeenLastCalledWith('word', 30, { corpus_id: 2, surah_numbers: [112] }));
 });
 
-it('plays the whole lexicon from a random root, beginner skipping weak roots', async () => {
+it('plays the whole lexicon from a random root, beginner taking a Form I verb from a sound root', async () => {
   play({});
   await waitFor(() => expect(screen.getByTestId('game-word')).toHaveTextContent('كَتَبَ'));
   expect(fetchRandomNodes).toHaveBeenCalledWith('root', 12, {});
@@ -89,4 +90,19 @@ it('plays the whole lexicon from a random root, beginner skipping weak roots', a
   fireEvent.click(screen.getByRole('button', { name: 'Meaning' }));
   expect(screen.getByText('wrote')).toBeInTheDocument();
   expect(screen.queryByRole('button', { name: 'Hide prefixes' })).toBeNull();
+});
+
+it('plays longer roots in advanced lexicon mode, by root id', async () => {
+  fetchRandomNodes.mockResolvedValue({ nodes: [{ root_id: 99, r1: 'ز', r2: 'ل', r3: 'ز', r4: 'ل', arabic: 'ز-ل-ز-ل' }] });
+  expandGraph.mockResolvedValue({
+    nodes: [
+      { node_type: 'Root', arabic: 'ز-ل-ز-ل' },
+      { node_type: 'Word', arabic: 'زَلْزَلَ', english: 'shook', word_id: 9, word_type: 'verb' },
+    ],
+  });
+  play({ source: 'lexicon', level: 'advanced' });
+  await waitFor(() => expect(screen.getByTestId('game-word')).toHaveTextContent('زَلْزَلَ'));
+  expect(expandGraph).toHaveBeenCalledWith('root', 99, 'word', { L1: 'sem', L2: 'english' });
+  expect(fetchRootWords).not.toHaveBeenCalled();
+  expect(screen.getByText(/4-letter root/)).toBeInTheDocument();
 });

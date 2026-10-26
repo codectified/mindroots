@@ -1,6 +1,6 @@
 import {
   checkRoot, cleanArabic, formatRoot, wordSegments, isPlayable, points, pickChoices, glossFor, relatedWords, rootLetters,
-  rootKind, lettersVisible, fitsLevel, itemFitsLevel, lexiconCandidates,
+  rootKind, rootFitsLevel, isFormOneItem, isFormOneVerb, itemFitsLevel, lexiconCandidates,
 } from './rootGameLogic';
 
 describe('checkRoot', () => {
@@ -85,26 +85,46 @@ describe('levels', () => {
     expect(rootKind('مدد').doubled).toBe(true);
   });
 
-  it('finds root letters written in the word, in order', () => {
-    expect(lettersVisible('كتب', 'مَكْتُوب')).toBe(true);
-    expect(lettersVisible('قول', 'قَالَ')).toBe(false); // the و became ا
-    expect(lettersVisible('مدد', 'مَدَّ')).toBe(true); // shadda doubles the د
-    expect(lettersVisible('امن', 'آمَنَ')).toBe(true); // hamza forms are ا
-    expect(lettersVisible('كتب', 'بَكَتَ')).toBe(false); // out of order
+  it('filters roots by level', () => {
+    expect(rootFitsLevel('كتب', 'beginner')).toBe(true);
+    expect(rootFitsLevel('مدد', 'beginner')).toBe(false); // doubled
+    expect(rootFitsLevel('مدد', 'intermediate')).toBe(true);
+    expect(rootFitsLevel('قول', 'intermediate')).toBe(false); // weak
+    expect(rootFitsLevel('اكل', 'intermediate')).toBe(false); // hamzated
+    expect(rootFitsLevel('زلزل', 'intermediate')).toBe(false);
+    expect(rootFitsLevel('قول', 'advanced')).toBe(true);
+    expect(rootFitsLevel('زلزل', 'advanced')).toBe(true);
+    expect(rootFitsLevel('اسطرلاب', 'advanced')).toBe(true);
   });
 
-  it('filters by level', () => {
-    expect(fitsLevel('كتب', 'كَتَبَ', 'beginner')).toBe(true);
-    expect(fitsLevel('قول', 'قَوْل', 'beginner')).toBe(false);
-    expect(fitsLevel('قول', 'قَوْل', 'intermediate')).toBe(true);
-    expect(fitsLevel('قول', 'قَالَ', 'intermediate')).toBe(false);
-    expect(fitsLevel('قول', 'قَالَ', 'advanced')).toBe(true);
+  it('recognises Form I verbs in Quran items', () => {
+    const verb = (features) => ({ root: 'كتب', s1_arabic: 'كَتَبَ', s1_features: features });
+    expect(isFormOneItem(verb('STEM|POS:V|PERF|LEM:kataba|ROOT:ktb|3MS'))).toBe(true);
+    expect(isFormOneItem(verb('STEM|POS:V|IMPF|PASS|LEM:kataba|ROOT:ktb|3MS'))).toBe(true);
+    expect(isFormOneItem(verb('STEM|POS:V|PERF|(II)|LEM:qad~ara|ROOT:qdr|3MP'))).toBe(false);
+    expect(isFormOneItem(verb('STEM|POS:V|PERF|(X)|LEM:{sotakobara|ROOT:kbr|3MS'))).toBe(false);
+    expect(isFormOneItem(verb('STEM|POS:N|LEM:kitaAb|ROOT:ktb|M|NOM'))).toBe(false);
+    // the stem, not a prefix, decides
+    expect(isFormOneItem({ s1_features: 'PREFIX|w:CONJ+', s2_features: 'STEM|POS:V|PERF|LEM:kataba|ROOT:ktb|3MS' })).toBe(true);
   });
 
-  it('checks Quran words against their stem, not the prefix', () => {
-    // وَعَدَ-like: the prefix وَ must not stand in for a root و
-    const item = { root: 'وجد', s1_arabic: 'وَ', s1_features: 'PREFIX|w:CONJ+', s2_arabic: 'جَدُوا', s2_features: 'STEM|POS:V' };
-    expect(itemFitsLevel(item, 'intermediate')).toBe(false);
+  it('recognises Form I verbs in the lexicon', () => {
+    expect(isFormOneVerb('كتب', 'كَتَبَ')).toBe(true);
+    expect(isFormOneVerb('كتب', 'كَتَبَهُ')).toBe(true); // with an object pronoun
+    expect(isFormOneVerb('بخع', 'بَخَعَ الذَّبِيحَةَ')).toBe(true); // a phrase headword
+    expect(isFormOneVerb('كتب', 'كَتَّبَ')).toBe(false); // II
+    expect(isFormOneVerb('كتب', 'كَاتَبَ')).toBe(false); // III
+    expect(isFormOneVerb('كتب', 'أَكْتَبَ')).toBe(false); // IV
+    expect(isFormOneVerb('كتب', 'إِكْتَتَبَ')).toBe(false); // VIII
+    expect(isFormOneVerb('كتب', 'استكتبهُ')).toBe(false); // X
+  });
+
+  it('filters Quran items by level', () => {
+    const noun = { root: 'كتب', s1_arabic: 'كِتَٰب', s1_features: 'STEM|POS:N|LEM:kitaAb|ROOT:ktb' };
+    const verb = { root: 'كتب', s1_arabic: 'كَتَبَ', s1_features: 'STEM|POS:V|PERF|LEM:kataba|ROOT:ktb|3MS' };
+    expect(itemFitsLevel(verb, 'beginner')).toBe(true);
+    expect(itemFitsLevel(noun, 'beginner')).toBe(false);
+    expect(itemFitsLevel(noun, 'intermediate')).toBe(true);
   });
 
   it('keeps Arabic nouns and verbs with a gloss for the lexicon', () => {
@@ -113,8 +133,12 @@ describe('levels', () => {
       { arabic: 'כתב', english: 'write', word_type: 'verb' },
       { arabic: 'كِتَابٌ', english: null, word_type: 'noun' },
       { arabic: 'اِكْتَتَبَ', english: 'subscribed', word_type: 'phrase' },
+      { arabic: 'كَتَّبَ', english: 'taught to write', word_type: 'verb' },
+      { arabic: 'مَكْتَبٌ', english: 'school', word_type: 'noun' },
     ];
     expect(lexiconCandidates('كتب', words, 'beginner')).toEqual([words[0]]);
+    expect(lexiconCandidates('كتب', words, 'intermediate')).toEqual([words[0], words[4], words[5]]);
+    expect(lexiconCandidates('قول', [{ arabic: 'قَالَ', english: 'said', word_type: 'verb' }], 'intermediate')).toEqual([]);
   });
 
   it('keeps spaces when cleaning text', () => {

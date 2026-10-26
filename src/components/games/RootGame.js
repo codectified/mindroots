@@ -4,19 +4,22 @@
 // endpoints, so it runs on the prod backend that staging uses. That API is
 // rate-limited (30 requests/min), so each question costs about one request:
 // lexicon questions pick a random root and one of its Words, and the same
-// word list answers the meaning and related-words hints.
+// word list answers the meaning and related-words hints. Triliteral roots
+// use the lean root-words endpoint (it matches on r1-r3); longer roots,
+// which only Advanced plays, expand the Root by id.
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { fetchRandomNodes, fetchQuranItemsRange, fetchRootWords } from '../../services/apiService';
+import { fetchRandomNodes, fetchQuranItemsRange, fetchRootWords, expandGraph } from '../../services/apiService';
 import { SURAHS } from '../../constants/surahs';
 import { useLabels } from '../../hooks/useLabels';
 import {
-  RADICALS, MAX_HINTS, LEVELS, checkRoot, formatRoot, rootLetters, rootKind, wordSegments, isPlayable,
-  itemFitsLevel, lexiconCandidates, points, pickChoices, pickRandom, glossFor, relatedWords, normalizeLetter,
+  RADICALS, MAX_HINTS, LEVELS, checkRoot, formatRoot, rootLetters, wordSegments, isPlayable,
+  itemFitsLevel, rootFitsLevel, lexiconCandidates, points, pickChoices, pickRandom, glossFor, relatedWords, normalizeLetter,
   cleanArabic,
 } from './rootGameLogic';
 
 const ROUND_LENGTH = 10;
 const QURAN = 2;
+const QURAN_BATCH = 30;
 const HINTS = ['gloss', 'stem', 'first', 'related'];
 const BEST_KEY = 'rootGameBest';
 const SETTINGS_KEY = 'rootGameSettings';
@@ -53,13 +56,22 @@ const RootGame = () => {
     return next;
   });
 
-  const wordsFor = useCallback(async (root) => {
+  const wordsFor = useCallback(async (root, rootId) => {
     const key = formatRoot(root);
     if (!rootWords.current.has(key)) {
       // As stored (r2/r3 can be أ or ى), not normalized
-      const [r1, r2, r3] = [...root.replace(/[-\s]/g, '')];
-      const data = await fetchRootWords(r1, r2, r3).catch(() => ({ words: [] }));
-      rootWords.current.set(key, data.words || []);
+      const letters = [...root.replace(/[-\s]/g, '')];
+      let words = [];
+      if (letters.length === 3) {
+        const data = await fetchRootWords(...letters).catch(() => ({ words: [] }));
+        words = data.words || [];
+      } else if (rootId) {
+        const data = await expandGraph('root', rootId, 'word', { L1: 'sem', L2: 'english' }).catch(() => ({ nodes: [] }));
+        words = (data.nodes || [])
+          .filter((n) => n.node_type === 'Word' && n.arabic)
+          .map(({ arabic, english, word_id, word_type }) => ({ arabic, english, word_id, word_type }));
+      }
+      rootWords.current.set(key, words);
     }
     return rootWords.current.get(key);
   }, []);
@@ -68,7 +80,8 @@ const RootGame = () => {
     const filters = { corpus_id: QURAN, ...(source !== 'quran' ? { surah_numbers: [source] } : {}) };
     for (let attempt = 0; attempt < 5; attempt++) {
       if (!queue.current.length) {
-        const data = await fetchRandomNodes('word', 12, filters);
+        // Beginner keeps only ~6% of Quran words (Form I verbs, sound roots)
+        const data = await fetchRandomNodes('word', QURAN_BATCH, filters);
         const fresh = (data.nodes || []).filter(isPlayable);
         fresh.forEach((n) => rootPool.current.add(formatRoot(n.root)));
         // After a few tries in a short surah, allow repeats
@@ -86,16 +99,15 @@ const RootGame = () => {
     for (let calls = 0; calls < 4; calls++) {
       if (!queue.current.length) {
         const data = await fetchRandomNodes('root', 12, {});
-        // Triliteral only: the root-words endpoint matches on r1–r3
         const roots = (data.nodes || [])
-          .filter((r) => r.r1 && r.r2 && r.r3 && !r.r4)
-          .map((r) => [r.r1, r.r2, r.r3].join(''));
-        roots.forEach((r) => rootPool.current.add(formatRoot(r)));
-        queue.current = roots.filter((r) => level !== 'beginner' || (!rootKind(r).weak && !rootKind(r).doubled));
+          .filter((r) => r.arabic)
+          .map((r) => ({ root: r.arabic.replace(/-/g, ''), id: r.root_id }));
+        roots.forEach((r) => rootPool.current.add(formatRoot(r.root)));
+        queue.current = roots.filter((r) => rootFitsLevel(r.root, level));
         continue;
       }
-      const root = queue.current.shift();
-      const words = await wordsFor(root);
+      const { root, id } = queue.current.shift();
+      const words = await wordsFor(root, id);
       const candidates = lexiconCandidates(root, words, level).filter((w) => !played.current.has(`word:${w.word_id}`));
       if (candidates.length) {
         const w = pickRandom(candidates);
@@ -256,7 +268,8 @@ const RootGame = () => {
   const gloss = question?.words ? glossFor(question.words, question.item.lemma) : null;
   const related = question?.words ? relatedWords(question.words, question.item.lemma) : null;
   const hints = question
-    ? HINTS.filter((h) => !(h === 'related' && question.letters.length === 4) && !(h === 'stem' && !question.quran))
+    // Quran words look their root up by r1-r3, which can't list a longer root's words
+    ? HINTS.filter((h) => !(h === 'related' && question.quran && question.letters.length > 3) && !(h === 'stem' && !question.quran))
     : [];
 
   const pill = (active) =>
@@ -325,7 +338,7 @@ const RootGame = () => {
             </div>
             <div className="text-dynamic-xs text-muted mt-1">
               {question.quran ? question.item.item_id : t[`gameWordType_${question.item.word_type}`]}
-              {question.letters.length === 4 && ` · ${t.gameFourLetters}`}
+              {question.letters.length > 3 && ` · ${t.gameLongRoot(question.letters.length)}`}
             </div>
           </div>
 
@@ -385,7 +398,7 @@ const RootGame = () => {
                   <button
                     key={i}
                     onClick={() => clearSlot(i)}
-                    className={`w-14 h-14 rounded-lg border-2 border-border-dark arabic text-[28px] p-0 flex items-center justify-center text-ink ${
+                    className={`${question.letters.length > 4 ? 'w-11 h-11' : 'w-14 h-14'} rounded-lg border-2 border-border-dark arabic text-[28px] p-0 flex items-center justify-center text-ink ${
                       i < question.locked ? 'bg-surface-dark hover:bg-surface-dark' : 'bg-white hover:bg-surface-alt'
                     }`}
                     aria-label={t.gameSlot(i + 1)}

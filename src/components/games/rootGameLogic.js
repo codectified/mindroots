@@ -67,14 +67,15 @@ const stemOf = (item) => wordSegments(item).filter((s) => s.kind === 'stem').map
 
 // Only rooted words can be played: particles and pronouns have no root.
 export const isPlayable = (item) =>
-  Boolean(item && item.root) && [3, 4].includes(rootLetters(item.root).length) && Boolean(item.sem || item.full_arabic);
+  Boolean(item && item.root) && rootLetters(item.root).length >= 3 && Boolean(item.sem || item.full_arabic);
 
 // ── Difficulty ─────────────────────────────────────────────────────────
-// beginner:     sound roots (no و/ي/ا or hamza, no doubled letter), and every
-//               root letter is written in the word, in order (كَتَبُوا → ك-ت-ب)
-// intermediate: any root, as long as every letter is still written in the
-//               word (قَوْل → ق-و-ل, مَدَّ → م-د-د via the shadda)
-// advanced:     anything, including letters that drop or change (قَالَ, يَعِدُ, رَمَى)
+// beginner:     Form I verbs (فَعَلَ, يَفْعَلُ) from sound triliteral roots:
+//               no و/ي/ا or hamza, no doubled letter (كَتَبَ → ك-ت-ب)
+// intermediate: any word from a sound triliteral root, now including
+//               doubled (biliteral) roots (مَدَّ → م-د-د)
+// advanced:     everything, adding weak and hamzated roots (قَالَ, رَمَى,
+//               أَكَلَ) and roots of four or more letters (زَلْزَلَ)
 export const LEVELS = ['beginner', 'intermediate', 'advanced'];
 
 export const rootKind = (root) => {
@@ -85,32 +86,34 @@ export const rootKind = (root) => {
   };
 };
 
-// Every root letter appears in the word in order. A shadda doubles its letter.
-export const lettersVisible = (root, word = '') => {
-  const letters = [];
-  for (const ch of word) {
-    if (ch === SHADDA && letters.length) letters.push(letters[letters.length - 1]);
-    else if (!ch.match(MARKS) && ch.trim()) letters.push(normalizeLetter(ch));
-  }
-  let i = 0;
-  for (const r of rootLetters(root)) {
-    while (i < letters.length && letters[i] !== r) i++;
-    if (i === letters.length) return false;
-    i++;
-  }
-  return true;
+export const rootFitsLevel = (root, level) => {
+  const length = rootLetters(root).length;
+  if (level === 'advanced') return length >= 3;
+  if (length !== 3) return false;
+  const { weak, doubled } = rootKind(root);
+  return !weak && (level === 'intermediate' || !doubled);
 };
 
-export const fitsLevel = (root, word, level) => {
-  if (level === 'advanced') return true;
-  if (level === 'beginner') {
-    const { weak, doubled } = rootKind(root);
-    if (weak || doubled) return false;
-  }
-  return lettersVisible(root, word);
+// QAC marks derived verb forms on the stem, "(II)" to "(XII)"; Form I has none.
+export const isFormOneItem = (item) => {
+  const stem = Array.from({ length: 8 }, (_, k) => item[`s${k + 1}_features`] || '').find((f) => f.startsWith('STEM')) || '';
+  return /\|POS:V(\||$)/.test(stem) && !/\([IVX]+\)/.test(stem);
 };
 
-export const itemFitsLevel = (item, level) => fitsLevel(item.root, stemOf(item) || item.sem, level);
+// Lexicon verbs are headed by the perfect, often with an object pronoun
+// (كَتَبَهُ). Form I is the bare root letters: no shadda (II), no added
+// letters (أَفْعَلَ, فَاعَلَ, تَفَعَّلَ, اِفْتَعَلَ, ...).
+const OBJECT_PRONOUN = /^(|ه|ها|هما|هم|هن|ك|كما|كم|كن|ني|نا)$/;
+export const isFormOneVerb = (root, word = '') => {
+  const head = word.split(/\s+/)[0];
+  if (head.includes(SHADDA)) return false;
+  const bare = [...stripDiacritics(head)].map(normalizeLetter).join('');
+  const letters = rootLetters(root).join('');
+  return bare.startsWith(letters) && OBJECT_PRONOUN.test(bare.slice(letters.length));
+};
+
+export const itemFitsLevel = (item, level) =>
+  rootFitsLevel(item.root, level) && (level !== 'beginner' || isFormOneItem(item));
 
 export const MAX_HINTS = 4;
 
@@ -165,6 +168,8 @@ export const relatedWords = (words, lemma, n = 3) => {
 };
 
 // Lexicon mode: the Arabic nouns and verbs under a root that suit the level.
-export const lexiconCandidates = (root, words, level) =>
-  words.filter((w) => ['noun', 'verb'].includes(w.word_type) && w.english && isArabicWord(w.arabic)
-    && fitsLevel(root, w.arabic.split(/\s+/)[0], level));
+export const lexiconCandidates = (root, words, level) => {
+  if (!rootFitsLevel(root, level)) return [];
+  return words.filter((w) => ['noun', 'verb'].includes(w.word_type) && w.english && isArabicWord(w.arabic)
+    && (level !== 'beginner' || (w.word_type === 'verb' && isFormOneVerb(root, w.arabic))));
+};
