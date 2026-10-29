@@ -9,7 +9,8 @@ const menuOptionCls =
   'hover:bg-surface-alt hover:border-border-dark active:bg-surface-dark active:translate-y-px ' +
   'focus:outline-none focus:border-muted focus:shadow-[0_0_0_2px_rgba(102,102,102,0.2)]';
 
-const NodeContextMenu = ({ node, position, onClose, onAction }) => {
+// extraOptions: screen-specific items ({ label, action }) after the standard ones
+const NodeContextMenu = ({ node, position, onClose, onAction, extraOptions = [] }) => {
   const menuRef = useRef(null);
   const [openSubmenu, setOpenSubmenu] = useState(null);
   const t = useLabels();
@@ -113,7 +114,7 @@ const NodeContextMenu = ({ node, position, onClose, onAction }) => {
         );
     }
 
-    return options;
+    return [...options, ...extraOptions];
   };
 
   const handleOptionClick = (option) => {

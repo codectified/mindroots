@@ -62,9 +62,6 @@ export const wordSegments = (item) => {
   return segments.length ? segments : [{ arabic: cleanArabic(item.sem || item.full_arabic), kind: 'stem' }];
 };
 
-// The part of the word the root letters should be found in.
-const stemOf = (item) => wordSegments(item).filter((s) => s.kind === 'stem').map((s) => s.arabic).join('');
-
 // Only rooted words can be played: particles and pronouns have no root.
 export const isPlayable = (item) =>
   Boolean(item && item.root) && rootLetters(item.root).length >= 3 && Boolean(item.sem || item.full_arabic);
@@ -74,8 +71,9 @@ export const isPlayable = (item) =>
 //               no و/ي/ا or hamza, no doubled letter (كَتَبَ → ك-ت-ب)
 // intermediate: any word from a sound triliteral root, now including
 //               doubled (biliteral) roots (مَدَّ → م-د-د)
-// advanced:     everything, adding weak and hamzated roots (قَالَ, رَمَى,
-//               أَكَلَ) and roots of four or more letters (زَلْزَلَ)
+// advanced:     only the hard cases: weak and hamzated roots (قَالَ → ق-و-ل,
+//               أَكَلَ) and roots of four or more letters (زَلْزَلَ), and
+//               never a Form I verb
 export const LEVELS = ['beginner', 'intermediate', 'advanced'];
 
 export const rootKind = (root) => {
@@ -88,9 +86,9 @@ export const rootKind = (root) => {
 
 export const rootFitsLevel = (root, level) => {
   const length = rootLetters(root).length;
-  if (level === 'advanced') return length >= 3;
-  if (length !== 3) return false;
   const { weak, doubled } = rootKind(root);
+  if (level === 'advanced') return length > 3 || (length === 3 && weak);
+  if (length !== 3) return false;
   return !weak && (level === 'intermediate' || !doubled);
 };
 
@@ -112,8 +110,16 @@ export const isFormOneVerb = (root, word = '') => {
   return bare.startsWith(letters) && OBJECT_PRONOUN.test(bare.slice(letters.length));
 };
 
-export const itemFitsLevel = (item, level) =>
-  rootFitsLevel(item.root, level) && (level !== 'beginner' || isFormOneItem(item));
+// Lexicon verbs carry their form number (itype); without it, read the headword.
+export const isFormOneWord = (root, word) => word.word_type === 'verb'
+  && (word.itype != null ? String(word.itype) === '1' : isFormOneVerb(root, word.arabic));
+
+export const itemFitsLevel = (item, level) => {
+  if (!rootFitsLevel(item.root, level)) return false;
+  if (level === 'beginner') return isFormOneItem(item);
+  if (level === 'advanced') return !isFormOneItem(item);
+  return true;
+};
 
 export const MAX_HINTS = 4;
 
@@ -149,7 +155,7 @@ export const pickChoices = (root, pool, n = 4, rand = Math.random) => {
 
 // The Word under the root that is this lemma: the same vowelled spelling if
 // there is one (عِلْم, not عَلِمَ), otherwise the same consonants.
-const lemmaWord = (words, lemma = '') => {
+export const lemmaWord = (words, lemma = '') => {
   // Lexicon headwords carry tanwin (قَوْلٌ) where QAC lemmas don't (قَوْل)
   const vowelled = (s = '') => [...s.replace(/[ـً-ٍ]/g, '')].map(normalizeLetter).join('');
   const bare = (s) => vowelled(stripDiacritics(s));
@@ -158,18 +164,42 @@ const lemmaWord = (words, lemma = '') => {
     || null;
 };
 
-// The English gloss of the word, from the Words under its root.
-export const glossFor = (words, lemma) => lemmaWord(words, lemma)?.english || null;
+// A short meaning from the Word's Lane entry (Word.definitions). Lane writes
+// English with the Arabic in between, split by ';'. The Arabic would give the
+// root away, so it becomes '…'; source sigla (S, K), Lane's [insertions],
+// sense markers (-A2-), grammar abbreviations and "see ..." cross-references
+// go too. Word.english is not used: many of those glosses are wrong.
+export const laneGloss = (definitions, max = 180) => {
+  let text = (definitions || '').split(';').map((s) => s.trim()).map((s) => (/[؀-ۿ]/.test(s) ? '…' : s)).join(' ')
+    .replace(/^\d+\s*/, '')
+    .replace(/\([^()]*\)/g, '')
+    .replace(/\[[^\][]*\]/g, '')
+    .replace(/-[A-Za-z]\d+-/g, '')
+    .replace(/\b(?:aor|inf\. ns?|pl|dim|fem|q\. ?v|i\. q)\./g, '')
+    .replace(/\baccord\. to [A-Z][\w']*,?/g, '')
+    .replace(/[:,]?\s*\bsee\b[^.:;A-Z]*\.?/gi, ' ')
+    .replace(/\b(?:also|and|or)\b(?:[\s,]*…)+/gi, '…')
+    .replace(/\s+([,.:;!])/g, '$1')
+    .replace(/(?:…[\s,.:]*)+/g, '… ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  const start = text.search(/[A-Z“"]/);
+  if (start < 0) return null;
+  text = text.slice(start).replace(/^(?:Also|And),?\s+/, '').replace(/[…,:;\s]+$/, '');
+  if (!/[A-Za-z]{2,}\W+[A-Za-z]{2,}/.test(text)) return null;
+  return text.length > max ? `${text.slice(0, text.lastIndexOf(' ', max))} …` : text;
+};
 
-// Other Words from the same root, for the "related words" hint.
+// Other Arabic Words from the same root, for the "related words" hint.
 export const relatedWords = (words, lemma, n = 3) => {
   const own = lemmaWord(words, lemma);
-  return words.filter((w) => w !== own && w.english).slice(0, n);
+  return words.filter((w) => w !== own && isArabicWord(w.arabic)).slice(0, n);
 };
 
 // Lexicon mode: the Arabic nouns and verbs under a root that suit the level.
 export const lexiconCandidates = (root, words, level) => {
   if (!rootFitsLevel(root, level)) return [];
-  return words.filter((w) => ['noun', 'verb'].includes(w.word_type) && w.english && isArabicWord(w.arabic)
-    && (level !== 'beginner' || (w.word_type === 'verb' && isFormOneVerb(root, w.arabic))));
+  return words.filter((w) => ['noun', 'verb'].includes(w.word_type) && isArabicWord(w.arabic)
+    && (level === 'beginner' ? isFormOneWord(root, w) && isFormOneVerb(root, w.arabic)
+      : level !== 'advanced' || !isFormOneWord(root, w)));
 };

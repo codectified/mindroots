@@ -1,6 +1,6 @@
 import {
-  checkRoot, cleanArabic, formatRoot, wordSegments, isPlayable, points, pickChoices, glossFor, relatedWords, rootLetters,
-  rootKind, rootFitsLevel, isFormOneItem, isFormOneVerb, itemFitsLevel, lexiconCandidates,
+  checkRoot, cleanArabic, formatRoot, wordSegments, isPlayable, points, pickChoices, lemmaWord, laneGloss, relatedWords,
+  rootLetters, rootKind, rootFitsLevel, isFormOneItem, isFormOneVerb, isFormOneWord, itemFitsLevel, lexiconCandidates,
 } from './rootGameLogic';
 
 describe('checkRoot', () => {
@@ -68,12 +68,36 @@ describe('scoring and options', () => {
     expect(choices).not.toContain('ز-ل-ز-ل'); // same length preferred
   });
 
-  it('finds the gloss of the lemma', () => {
-    const words = [{ arabic: 'عَلِمَ', english: 'to know' }, { arabic: 'عِلْم', english: 'knowledge' }];
-    expect(glossFor(words, 'عِلْم')).toBe('knowledge');
-    expect(glossFor(words, 'عَالَم')).toBeNull();
+  it('finds the Word of the lemma, and the other words of its root', () => {
+    const words = [{ arabic: 'عَلِمَ' }, { arabic: 'عِلْم' }, { arabic: 'כתב' }];
+    expect(lemmaWord(words, 'عِلْم')).toBe(words[1]);
+    expect(lemmaWord(words, 'عَالَم')).toBeNull();
     expect(relatedWords(words, 'عِلْم')).toEqual([words[0]]);
-    expect(glossFor([{ arabic: 'قَوْلٌ', english: 'saying' }, { arabic: 'قَالَ', english: 'said' }], 'قَوْل')).toBe('saying');
+    const qawl = [{ arabic: 'قَوْلٌ' }, { arabic: 'قَالَ' }];
+    expect(lemmaWord(qawl, 'قَوْل')).toBe(qawl[0]); // tanwin ignored
+  });
+});
+
+describe('laneGloss', () => {
+  it('keeps the English of a Lane entry, without the Arabic or the sources', () => {
+    expect(laneGloss('1; كَتَبَهُ; ذ; , aor.; كَتُبَ; , inf. n.; كَتْبٌ; and; كِتَابٌ; (S, K); He wrote it:; (S, K:)'))
+      .toBe('He wrote it');
+    expect(laneGloss('2; كَتَّبَ; See 1 and 4; -A2-; كتّب النَّاقَةَ; , inf. n.; تَكْتِيبٌ; ,; He tied the udder of the camel.; (AZ, S.)'))
+      .toBe('He tied the udder of the camel.');
+    expect(laneGloss('مَا أَطَبَّهُمْ; How [knowing, or] skilful, or expert, are they!')).toBe('How skilful, or expert, are they!');
+  });
+
+  it('gives nothing for bare cross-references or empty entries', () => {
+    expect(laneGloss('5; تَلَصَّصَ; see 1.')).toBeNull();
+    expect(laneGloss('ذَرَّاحٌ; ذ; : see what next follows.')).toBeNull();
+    expect(laneGloss('')).toBeNull();
+    expect(laneGloss(undefined)).toBeNull();
+  });
+
+  it('cuts long entries at a word', () => {
+    const long = laneGloss(`A ${'very '.repeat(60)}long entry.`, 40);
+    expect(long.length).toBeLessThanOrEqual(42);
+    expect(long.endsWith(' …')).toBe(true);
   });
 });
 
@@ -93,8 +117,12 @@ describe('levels', () => {
     expect(rootFitsLevel('اكل', 'intermediate')).toBe(false); // hamzated
     expect(rootFitsLevel('زلزل', 'intermediate')).toBe(false);
     expect(rootFitsLevel('قول', 'advanced')).toBe(true);
+    expect(rootFitsLevel('اكل', 'advanced')).toBe(true);
     expect(rootFitsLevel('زلزل', 'advanced')).toBe(true);
     expect(rootFitsLevel('اسطرلاب', 'advanced')).toBe(true);
+    // advanced keeps only the hard roots
+    expect(rootFitsLevel('كتب', 'advanced')).toBe(false);
+    expect(rootFitsLevel('مدد', 'advanced')).toBe(false);
   });
 
   it('recognises Form I verbs in Quran items', () => {
@@ -119,15 +147,29 @@ describe('levels', () => {
     expect(isFormOneVerb('كتب', 'استكتبهُ')).toBe(false); // X
   });
 
+  it('reads the verb form from itype when the Word has one', () => {
+    expect(isFormOneWord('قول', { arabic: 'قَالَ', word_type: 'verb', itype: '1' })).toBe(true); // weak: headword can't tell
+    expect(isFormOneWord('قول', { arabic: 'قَالَ', word_type: 'verb' })).toBe(false);
+    expect(isFormOneWord('كتب', { arabic: 'مُكَاتَبَةٌ', word_type: 'verb', itype: '3' })).toBe(false);
+    expect(isFormOneWord('كتب', { arabic: 'كِتَابٌ', word_type: 'noun', itype: '1' })).toBe(false);
+  });
+
   it('filters Quran items by level', () => {
     const noun = { root: 'كتب', s1_arabic: 'كِتَٰب', s1_features: 'STEM|POS:N|LEM:kitaAb|ROOT:ktb' };
     const verb = { root: 'كتب', s1_arabic: 'كَتَبَ', s1_features: 'STEM|POS:V|PERF|LEM:kataba|ROOT:ktb|3MS' };
     expect(itemFitsLevel(verb, 'beginner')).toBe(true);
     expect(itemFitsLevel(noun, 'beginner')).toBe(false);
     expect(itemFitsLevel(noun, 'intermediate')).toBe(true);
+    expect(itemFitsLevel(noun, 'advanced')).toBe(false); // sound root
+    const weakVerb = { root: 'قول', s1_arabic: 'قَالَ', s1_features: 'STEM|POS:V|PERF|LEM:qaAla|ROOT:qwl|3MS' };
+    const weakNoun = { root: 'قول', s1_arabic: 'قَوْل', s1_features: 'STEM|POS:N|LEM:qawol|ROOT:qwl' };
+    const weakDerived = { root: 'قول', s1_arabic: 'تَقَوَّلَ', s1_features: 'STEM|POS:V|PERF|(V)|LEM:taqaw~ala|ROOT:qwl|3MS' };
+    expect(itemFitsLevel(weakVerb, 'advanced')).toBe(false); // Form I
+    expect(itemFitsLevel(weakNoun, 'advanced')).toBe(true);
+    expect(itemFitsLevel(weakDerived, 'advanced')).toBe(true);
   });
 
-  it('keeps Arabic nouns and verbs with a gloss for the lexicon', () => {
+  it('keeps Arabic nouns and verbs for the lexicon', () => {
     const words = [
       { arabic: 'كَتَبَ', english: 'wrote', word_type: 'verb' },
       { arabic: 'כתב', english: 'write', word_type: 'verb' },
@@ -137,8 +179,15 @@ describe('levels', () => {
       { arabic: 'مَكْتَبٌ', english: 'school', word_type: 'noun' },
     ];
     expect(lexiconCandidates('كتب', words, 'beginner')).toEqual([words[0]]);
-    expect(lexiconCandidates('كتب', words, 'intermediate')).toEqual([words[0], words[4], words[5]]);
+    expect(lexiconCandidates('كتب', words, 'intermediate')).toEqual([words[0], words[2], words[4], words[5]]);
     expect(lexiconCandidates('قول', [{ arabic: 'قَالَ', english: 'said', word_type: 'verb' }], 'intermediate')).toEqual([]);
+    expect(lexiconCandidates('كتب', words, 'advanced')).toEqual([]); // sound root
+    const qwl = [
+      { arabic: 'قَالَ', word_type: 'verb', itype: '1' },
+      { arabic: 'تَقَوَّلَ عَلَيْهِ', word_type: 'verb', itype: '5' },
+      { arabic: 'قَوْلٌ', word_type: 'noun' },
+    ];
+    expect(lexiconCandidates('قول', qwl, 'advanced')).toEqual([qwl[1], qwl[2]]);
   });
 
   it('keeps spaces when cleaning text', () => {

@@ -425,7 +425,8 @@ const handleWordNodeClick = async (
       // FIRST CLICK: Show InfoBubble with definitions (what users expect first)
       console.log('First click: showing definitions');
       
-      const definitions = node.properties?.definitions ||
+      // Word nodes carry their Lane entry (definitions) at the top level
+      const definitions = node.definitions || node.properties?.definitions ||
         await fetchLaneEntry(wordId, L1, L2);
       setInfoBubble({
         definition: definitions,
