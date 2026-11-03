@@ -803,9 +803,18 @@ router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
       return res.status(404).json({ error: 'Node not found' });
     }
     
+    // Only the fields NodeInspector edits. Field names go into the Cypher text,
+    // so anything else would let a caller rewrite the query.
+    const editableFields = ['english', 'wazn', 'spanish', 'urdu', 'classification', 'transliteration',
+      'frame', 'opposite', 'metaphor', 'dua', 'notes', 'qrootfreq', 'quran_frequency'];
+    const badField = Object.keys(updates || {}).find(f => !editableFields.includes(f));
+    if (!updates || typeof updates !== 'object' || badField) {
+      return res.status(400).json({ error: `Field not editable: ${badField}` });
+    }
+
     const node = nodeResult.records[0].get('n');
     const actualNodeId = node.identity.toNumber();
-    
+
     // Process each field update sequentially to avoid transaction conflicts
     for (const [fieldName, updateData] of Object.entries(updates)) {
       if (updateData.value !== undefined) {

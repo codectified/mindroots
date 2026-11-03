@@ -1,10 +1,11 @@
 const express = require('express');
+const neo4j = require('neo4j-driver');
 const { convertIntegers } = require('./utils');
 const { authenticateAdminAPI, sanitizeReadOnlyQuery } = require('../../middleware/auth');
 const router = express.Router();
 
-// READ-ONLY Cypher query execution endpoint (PUBLIC API)
-router.post('/execute-query', async (req, res) => {
+// READ-ONLY Cypher query execution endpoint (ADMIN API ONLY: the public key ships in the website bundle)
+router.post('/execute-query', authenticateAdminAPI, async (req, res) => {
   const { query } = req.body;  
   
   // Validate query is read-only
@@ -17,7 +18,8 @@ router.post('/execute-query', async (req, res) => {
     });
   }
   
-  const session = req.driver.session();  
+  // READ mode: the database itself rejects writes, whatever gets past the text check
+  const session = req.driver.session({ defaultAccessMode: neo4j.session.READ });
   try {
     console.log(`Executing read-only query from IP: ${req.ip}`);
     const result = await session.run(query);
@@ -79,14 +81,8 @@ router.post('/query', authenticateAdminAPI, async (req, res) => {
 
 // SPECIALIZED ROOT ANALYSIS WRITE ENDPOINT
 // Creates structured Analysis nodes linked to Root nodes
-router.post('/write-root-analysis', async (req, res) => {
-  // Verify this is using public API key (GPT authentication)
-  if (req.authLevel !== 'public') {
-    return res.status(403).json({ 
-      error: 'This endpoint requires public GPT API key authentication' 
-    });
-  }
-
+// (ADMIN API ONLY: it used to take the public key, which ships in the website bundle)
+router.post('/write-root-analysis', authenticateAdminAPI, async (req, res) => {
   const { rootId, analysis } = req.body;
   
   // Validate analysis object structure

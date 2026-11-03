@@ -2,6 +2,18 @@ const express = require('express');
 const { convertIntegers } = require('./utils');
 const router = express.Router();
 
+// L1/L2 are property names pasted into ORDER BY, so they can't be parameters;
+// allow plain names only (sem, english, arabic, off) or a caller could rewrite the query.
+const checkLangParams = (req, res, next) => {
+  for (const k of ['L1', 'L2']) {
+    const v = req.query[k];
+    if (v !== undefined && !(typeof v === 'string' && /^[a-z][a-z0-9_]*$/.test(v))) {
+      return res.status(400).json({ error: `Invalid ${k}` });
+    }
+  }
+  next();
+};
+
 // Weak radicals / semivowels (wāw, yā', alif, hamza) — treated as a single
 // wildcard class for root search. DB-side normalization was assumed but
 // unverified (see RADICAL-SEARCH-INTEGRATION.md); verified 2026-09-28
@@ -80,7 +92,7 @@ const getCorpusCounts = async (session, rootIds, corpusId, surahNumbers) => {
 // Purpose: Advanced RadicalPosition query with JSON input structure
 // Features: Multiple search types, flexible radical/position matching
 // ====================================================================
-router.get('/radical-search', async (req, res) => {
+router.get('/radical-search', checkLangParams, async (req, res) => {
   try {
     const { radicals, L1, L2, searchType } = req.query;
     
@@ -238,7 +250,7 @@ router.get('/radical-search', async (req, res) => {
 // Purpose: Position-specific RadicalPosition search (r1, r2, r3)
 // Features: Wildcard support (*), biradical "None" handling, geminate conversion
 // ====================================================================
-router.get('/search-roots', async (req, res) => {
+router.get('/search-roots', checkLangParams, async (req, res) => {
   try {
     const { r1, r2, r3, L1, L2, limit = 25, corpus_id, surah_numbers } = req.query;
 
@@ -368,7 +380,7 @@ router.get('/search-roots', async (req, res) => {
 // Purpose: Find all roots containing specified radicals in any positions
 // Features: "None" handling for biradical-only searches, permutation logic
 // ====================================================================
-router.get('/search-combinate', async (req, res) => {
+router.get('/search-combinate', checkLangParams, async (req, res) => {
   try {
     const { r1, r2, r3, L1, L2, limit = 25, corpus_id, surah_numbers } = req.query;
 
@@ -483,7 +495,7 @@ router.get('/search-combinate', async (req, res) => {
 // Purpose: Search only quadriliteral and longer roots
 // Features: Automatic 4+ radical filtering, optional radical filtering
 // ====================================================================
-router.get('/search-extended', async (req, res) => {
+router.get('/search-extended', checkLangParams, async (req, res) => {
   try {
     const { r1, r2, r3, L1, L2, limit = 25, corpus_id, surah_numbers } = req.query;
 
@@ -585,7 +597,7 @@ router.get('/search-extended', async (req, res) => {
 // Features: Lucene syntax, multi-source filter (comma-separated),
 //           source detection per word, merged word-centered results
 // ====================================================================
-router.get('/search-fulltext', async (req, res) => {
+router.get('/search-fulltext', checkLangParams, async (req, res) => {
   try {
     const { query, sources, limit = 25, corpus_id, surah_numbers } = req.query;
 

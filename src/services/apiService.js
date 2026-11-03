@@ -178,17 +178,6 @@ export const fetchWordsByCorpusItem = async (itemId, corpusId, L1, L2) => {
 
 
 
-// Execute a Cypher query by sending it to the backend
-export const executeQuery = async (query) => {
-  try {
-    const response = await api.post('/execute-query', { query });  // Axios uses the baseURL set earlier
-    return response.data;
-  } catch (error) {
-    console.error('Error executing query:', error);
-    throw error;
-  }
-};
-
 export const fetchRootByWord = async (wordId, L1, L2) => {
   try {
     const response = await api.get(`/rootbyword/${wordId}`, {
