@@ -1,6 +1,32 @@
 const express = require('express');
 const { convertIntegers } = require('./utils');
+const { rateLimit } = require('../../middleware/rateLimit');
 const router = express.Router();
+
+// ── Public editing ───────────────────────────────────────────────────────────
+// Editing labels and properties is open to every visitor on purpose. What makes
+// that safe:
+//   - rate limits per IP and for everyone together (below);
+//   - every change writes an EditRecord with the old and new value, the IP and
+//     the time, so any edit or batch of edits can be undone
+//     (scripts/revert-edits.js);
+//   - nightly full backups to S3 (see HANDOFF in mindroots-hub).
+const writeLimit = rateLimit({ name: 'edits', windowMs: 60 * 60 * 1000, perIp: 60, global: 600 });
+const tagLimit = rateLimit({ name: 'tags', windowMs: 24 * 60 * 60 * 1000, perIp: 20 });
+const MAX_VALUE_LENGTH = 2000;
+const isValidValue = v =>
+  (typeof v === 'string' && v.length <= MAX_VALUE_LENGTH) || (typeof v === 'number' && Number.isFinite(v));
+// Records the old value and sets the new one in one statement. field is
+// checked against an allow-list or a strict pattern before it gets here.
+const loggedSet = (field, via) => `
+  MATCH (n) WHERE id(n) = $nodeId
+  WITH n, n[$field] AS old
+  SET n.${field} = $value
+  CREATE (n)-[:EDITED_BY]->(:EditRecord {
+    field: $field, old_value: old, new_value: $value,
+    ip: $ip, timestamp: datetime(), via: '${via}'
+  })
+`;
 
 // Node Inspector - Get comprehensive corpus item information (specific endpoint for corpus items)
 router.get('/inspect/corpusitem/:corpusId/:itemId', async (req, res) => {
@@ -782,7 +808,7 @@ router.get('/navigate-by-position/:corpusId/:globalPosition/:direction', async (
 });
 
 // Update validation fields for a node
-router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
+router.post('/update-validation/:nodeType/:nodeId', writeLimit, async (req, res) => {
   const session = req.driver.session();
   const { nodeType, nodeId } = req.params;
   const { updates } = req.body; // { field_name: { value: "new_value", approve: true }, ... }
@@ -795,6 +821,23 @@ router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
       return res.status(400).json({ error: 'Invalid node type' });
     }
     
+    // Only the fields NodeInspector edits. Field names go into the Cypher text,
+    // so anything else would let a caller rewrite the query.
+    const editableFields = ['english', 'wazn', 'spanish', 'urdu', 'classification', 'transliteration',
+      'frame', 'opposite', 'metaphor', 'dua', 'notes', 'qrootfreq', 'quran_frequency'];
+    if (!updates || typeof updates !== 'object' || Array.isArray(updates)) {
+      return res.status(400).json({ error: 'updates must be an object' });
+    }
+    const badField = Object.keys(updates).find(f => !editableFields.includes(f));
+    if (badField) {
+      return res.status(400).json({ error: `Field not editable: ${badField}` });
+    }
+    const badValue = Object.entries(updates).find(([, u]) =>
+      !u || typeof u !== 'object' || (u.value !== undefined && !isValidValue(u.value)));
+    if (badValue) {
+      return res.status(400).json({ error: `Invalid value for ${badValue[0]}: text up to ${MAX_VALUE_LENGTH} characters, or a number` });
+    }
+
     // Get the node first to verify it exists - use only the property-based lookup
     const nodeQuery = `MATCH (n:${nodeType.charAt(0).toUpperCase() + nodeType.slice(1)}) WHERE n.${nodeType}_id = $nodeId RETURN n`;
     const nodeResult = await session.run(nodeQuery, { nodeId: parseInt(nodeId) });
@@ -803,30 +846,19 @@ router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
       return res.status(404).json({ error: 'Node not found' });
     }
     
-    // Only the fields NodeInspector edits. Field names go into the Cypher text,
-    // so anything else would let a caller rewrite the query.
-    const editableFields = ['english', 'wazn', 'spanish', 'urdu', 'classification', 'transliteration',
-      'frame', 'opposite', 'metaphor', 'dua', 'notes', 'qrootfreq', 'quran_frequency'];
-    const badField = Object.keys(updates || {}).find(f => !editableFields.includes(f));
-    if (!updates || typeof updates !== 'object' || badField) {
-      return res.status(400).json({ error: `Field not editable: ${badField}` });
-    }
 
     const node = nodeResult.records[0].get('n');
     const actualNodeId = node.identity.toNumber();
 
     // Process each field update sequentially to avoid transaction conflicts
     for (const [fieldName, updateData] of Object.entries(updates)) {
-      if (updateData.value !== undefined) {
-        // Update field value
-        const updateValueQuery = `
-          MATCH (n) WHERE id(n) = $nodeId
-          SET n.${fieldName} = $value
-          RETURN n
-        `;
-        await session.run(updateValueQuery, { 
-          nodeId: actualNodeId, 
-          value: updateData.value 
+      if (updateData.value !== undefined && updateData.value !== node.properties[fieldName]) {
+        // Update field value, logging the old one
+        await session.run(loggedSet(fieldName, 'update-validation'), {
+          nodeId: actualNodeId,
+          field: fieldName,
+          value: updateData.value,
+          ip: clientIP
         });
       }
       
@@ -896,7 +928,7 @@ router.post('/update-validation/:nodeType/:nodeId', async (req, res) => {
 });
 
 // Add a custom tag (property) to a node
-router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
+router.post('/add-tag/:nodeType/:nodeId', writeLimit, tagLimit, async (req, res) => {
   const session = req.driver.session();
   const { nodeType, nodeId } = req.params;
   const { key, value } = req.body;
@@ -911,8 +943,8 @@ router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
     const isAyah = nodeType.toLowerCase() === 'ayah';
 
     // Validate key format: lowercase alphanumeric and underscores only, must start with a letter
-    if (!key || !/^[a-z][a-z0-9_]*$/.test(key)) {
-      return res.status(400).json({ error: 'Invalid key format. Use lowercase letters, numbers, and underscores. Must start with a letter.' });
+    if (typeof key !== 'string' || !/^[a-z][a-z0-9_]{0,39}$/.test(key)) {
+      return res.status(400).json({ error: 'Invalid key format. Use lowercase letters, numbers, and underscores (at most 40). Must start with a letter.' });
     }
 
     // Protect system fields
@@ -920,15 +952,16 @@ router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
       'word_id', 'root_id', 'form_id', 'item_id', 'corpus_id', 'entry_id',
       'arabic', 'definitions', 'hanswehr_entry', 'global_position',
       'surah_number', 'ayah_number', 'word_position',
-      'ayah_key', 'surah_id', 'ayah_id', 'node_type'
+      'ayah_key', 'surah_id', 'ayah_id', 'node_type',
+      'r1', 'r2', 'r3', 'r4' // radicals: root search depends on them
     ];
-    if (systemFields.includes(key) || key.endsWith('_validated_count')) {
+    if (systemFields.includes(key) || key.endsWith('_id') || key.endsWith('_validated_count')) {
       return res.status(400).json({ error: `Cannot overwrite system field: ${key}` });
     }
 
     // Validate value: must be a string
-    if (typeof value !== 'string') {
-      return res.status(400).json({ error: 'Value must be a string' });
+    if (typeof value !== 'string' || value.length > MAX_VALUE_LENGTH) {
+      return res.status(400).json({ error: `Value must be text, at most ${MAX_VALUE_LENGTH} characters` });
     }
 
     // Find the node — Ayah nodes use a string key ("surah:ayah"), others an integer ID
@@ -954,31 +987,8 @@ router.post('/add-tag/:nodeType/:nodeId', async (req, res) => {
     const node = nodeResult.records[0].get('n');
     const actualNodeId = node.identity.toNumber();
 
-    // IP rate limit: allow at most 20 tag additions per IP per 24h
-    const recentTagQuery = `
-      MATCH (n)-[:TAGGED_BY]->(tag:TagRecord)
-      WHERE tag.ip = $ip AND tag.timestamp > datetime() - duration('PT24H')
-      RETURN count(tag) AS recent_count
-    `;
-    const rateResult = await session.run(recentTagQuery, { ip: clientIP });
-    const recentCount = rateResult.records[0]?.get('recent_count')?.toNumber?.() ?? 0;
-    if (recentCount >= 20) {
-      return res.status(429).json({ error: 'Rate limit exceeded. Too many tags added in the last 24 hours.' });
-    }
-
-    // Set the property and create a tag record
-    const setQuery = `
-      MATCH (n) WHERE id(n) = $nodeId
-      SET n.${key} = $value
-      CREATE (n)-[:TAGGED_BY]->(tag:TagRecord {
-        key: $key,
-        value: $value,
-        ip: $ip,
-        timestamp: datetime()
-      })
-      RETURN n
-    `;
-    await session.run(setQuery, { nodeId: actualNodeId, key, value, ip: clientIP });
+    // Set the property, logging the old value (the 20-per-day cap is tagLimit)
+    await session.run(loggedSet(key, 'add-tag'), { nodeId: actualNodeId, field: key, value, ip: clientIP });
 
     res.json({ success: true, message: `Tag '${key}' added successfully` });
 

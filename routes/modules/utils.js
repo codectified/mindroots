@@ -27,7 +27,17 @@ const formatSimpleData = (records) => {
   }));
 };
 
+// Parse a query-string number and keep it within [min, max]; fall back to def.
+// Every user-supplied limit/count goes through this, so no request can ask the
+// database for an unbounded amount of work.
+const clampInt = (value, def, max, min = 1) => {
+  const n = parseInt(value, 10);
+  if (Number.isNaN(n)) return def;
+  return Math.min(Math.max(n, min), max);
+};
+
 module.exports = {
+  clampInt,
   convertIntegers,
   formatSimpleData
 };

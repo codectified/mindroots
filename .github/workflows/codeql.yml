@@ -1,0 +1,27 @@
+# Security scan on every push and pull request (GitHub CodeQL; free for public
+# repos). Finds injection, path traversal, XSS and similar patterns in the
+# JavaScript (backend and frontend). Results: repo → Security → Code scanning.
+# It runs separately from deploy.yml and doesn't block deploys.
+name: codeql
+
+on:
+  push:
+    branches: ['**']
+  pull_request:
+  schedule:
+    - cron: '17 5 * * 1' # weekly, to catch newly published query rules
+
+permissions:
+  contents: read
+  security-events: write
+
+jobs:
+  analyze:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+          queries: security-extended
+      - uses: github/codeql-action/analyze@v3

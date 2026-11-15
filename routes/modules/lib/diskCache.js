@@ -1,7 +1,9 @@
 const fs = require('fs');
 
 // Persistent disk cache. Survives server restarts. One JSON file per module.
-const makeDiskCache = (filePath, ttlMs) => {
+// maxEntries bounds memory and file size: cache keys come from query strings,
+// so without a cap anyone could grow the cache (and the file) without limit.
+const makeDiskCache = (filePath, ttlMs, maxEntries = 500) => {
   let cache = {};
   try {
     const raw = fs.readFileSync(filePath, 'utf8');
@@ -22,6 +24,12 @@ const makeDiskCache = (filePath, ttlMs) => {
     if (hit && Date.now() - hit.ts < ttlMs) return hit.data;
     const data = await fn();
     cache[key] = { data, ts: Date.now() };
+    const keys = Object.keys(cache);
+    if (keys.length > maxEntries) {
+      keys.sort((a, b) => cache[a].ts - cache[b].ts)
+        .slice(0, keys.length - maxEntries)
+        .forEach(k => { delete cache[k]; });
+    }
     save();
     return data;
   };

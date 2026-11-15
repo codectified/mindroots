@@ -1,10 +1,21 @@
+const crypto = require('crypto');
+
+// Constant-time string comparison: hash both sides so lengths match, then
+// compare with timingSafeEqual (a plain === leaks how many characters matched).
+const safeEqual = (a, b) => {
+  if (typeof a !== 'string' || typeof b !== 'string' || !a || !b) return false;
+  const ha = crypto.createHash('sha256').update(a).digest();
+  const hb = crypto.createHash('sha256').update(b).digest();
+  return crypto.timingSafeEqual(ha, hb);
+};
+
 const authenticateAPI = (req, res, next) => {
   const authHeader = req.headers.authorization;
 
   // Core API keys
   const mainKey = process.env.API_KEY; // Main production key
-  const publicKey = process.env.PUBLIC_API_KEY; // GPT read-only key
-  const adminKey = process.env.ADMIN_API_KEY; // GPT admin key
+  const publicKey = process.env.PUBLIC_API_KEY; // the key the website bundle ships: treat as public
+  const adminKey = process.env.ADMIN_API_KEY; // admin key: /execute-query (backup + data-quality scripts)
   const flyerKey = process.env.FLYER_API_KEY; // Flyer module key (Custom GPT)
 
   if (!mainKey && !publicKey && !adminKey && !flyerKey) {
@@ -28,14 +39,16 @@ const authenticateAPI = (req, res, next) => {
   // Workspace token: ws_<workspaceId>_<secret>
   if (token.startsWith('ws_')) {
     const parts = token.split('_');
-    if (parts.length >= 3) {
+    // Same rule as requireWorkspace in routes/modules/workspace.js (minus "_",
+    // which is the token separator), so the id can't climb out of workspaces/.
+    if (parts.length >= 3 && /^[a-zA-Z0-9-]+$/.test(parts[1])) {
       const workspaceId = parts[1];
       const fs = require('fs');
       const path = require('path');
       const tokenFile = path.join(__dirname, '..', 'workspaces', workspaceId, '.token');
       try {
         const storedToken = fs.readFileSync(tokenFile, 'utf8').trim();
-        if (token === storedToken) {
+        if (safeEqual(token, storedToken)) {
           req.authLevel = 'workspace';
           req.workspace = workspaceId;
           console.log(`Workspace access granted (${workspaceId}) for IP: ${req.ip} at ${new Date().toISOString()}`);
@@ -45,18 +58,18 @@ const authenticateAPI = (req, res, next) => {
         // .token file doesn't exist or unreadable — fall through to rejection
       }
     }
-    console.log(`Authentication failed for IP: ${req.ip}, Key: ${token.substring(0, 8)}...`);
+    console.log(`Authentication failed for IP: ${req.ip}`);
     return res.status(403).json({ error: "Invalid workspace token" });
   }
 
   // Check if token matches any valid key
-  const isMainKey = mainKey && token === mainKey;
-  const isPublicKey = publicKey && token === publicKey;
-  const isAdminKey = adminKey && token === adminKey;
-  const isFlyerKey = flyerKey && token === flyerKey;
+  const isMainKey = safeEqual(token, mainKey);
+  const isPublicKey = safeEqual(token, publicKey);
+  const isAdminKey = safeEqual(token, adminKey);
+  const isFlyerKey = safeEqual(token, flyerKey);
 
   if (!isMainKey && !isPublicKey && !isAdminKey && !isFlyerKey) {
-    console.log(`Authentication failed for IP: ${req.ip}, Key: ${token.substring(0, 8)}...`);
+    console.log(`Authentication failed for IP: ${req.ip}`);
     return res.status(403).json({
       error: "Invalid API key"
     });
@@ -93,8 +106,8 @@ const authenticateAdminAPI = (req, res, next) => {
     ? authHeader.slice(7) 
     : authHeader;
 
-  if (token !== adminKey) {
-    console.log(`Admin authentication failed for IP: ${req.ip}, Key: ${token.substring(0, 8)}...`);
+  if (!safeEqual(token, adminKey)) {
+    console.log(`Admin authentication failed for IP: ${req.ip}`);
     return res.status(403).json({ 
       error: "Invalid admin API key" 
     });
@@ -151,7 +164,7 @@ const sanitizeReadOnlyQuery = (query) => {
     if (normalizedQuery.includes(operation)) {
       return { 
         isValid: false, 
-        error: `Write operation '${operation}' not allowed in read-only endpoint. Use /api/admin-query for write operations.` 
+        error: `Write operation '${operation}' not allowed in read-only endpoint. Writes go through scripts on the server.` 
       };
     }
   }
