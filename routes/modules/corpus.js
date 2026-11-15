@@ -1,5 +1,5 @@
 const express = require('express');
-const { convertIntegers, formatSimpleData } = require('./utils');
+const { convertIntegers, formatSimpleData, clampInt } = require('./utils');
 const router = express.Router();
 
 // List Quran items by corpus and sura
@@ -295,7 +295,8 @@ router.get('/list/corpora', async (req, res) => {
 // Fetch words by form and corpus filter
 router.get('/form/:formId/corpus/:corpusId', async (req, res) => {
   const { formId, corpusId } = req.params;
-  const { L1, L2, limit = 25 } = req.query; // Default limit to 25 if not provided
+  const { L1, L2 } = req.query;
+  const limit = clampInt(req.query.limit, 25, 500);
   const session = req.driver.session();
   try {
     let query = `

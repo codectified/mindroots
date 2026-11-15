@@ -40,12 +40,12 @@ router.use('/', corpusRoutes);           // Corpus data operations
 router.use('/', graphRoutes);            // Graph expansion and visualization
 router.use('/', searchModernRoutes);     // Modern RadicalPosition-based search (production)
 router.use('/', searchLegacyRoutes);     // Legacy hardcoded r1/r2/r3 search (deprecated)
-router.use('/', gptAdminRoutes);         // GPT integration and admin queries
+router.use('/', gptAdminRoutes);         // Admin read-only query (/execute-query)
 router.use('/', lexiconRoutes);          // Dictionary and lexicon entries
 router.use('/', inspectionRoutes);       // Node inspection, navigation, and validation
 router.use('/', contentRoutes);          // Articles and analyses content
 router.use('/', workspaceRoutes);        // Creative workspace module (Custom GPT integration)
-router.use('/', observabilityRoutes);    // Semantic observability layer (Neo4j → Notion)
+router.use('/', observabilityRoutes);    // Graph metrics and universe snapshot
 router.use('/', analyticsRoutes);        // Linguistic analytics (bi-radical, radical positions)
 router.use('/', projectionRoutes);       // Projection Snapshot API (center + scope + projection rule)
 router.use('/', lexiconCloudRoutes);     // Lexicon Morphology Landscape (whole-lexicon 2D point map)

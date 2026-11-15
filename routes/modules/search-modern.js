@@ -1,5 +1,5 @@
 const express = require('express');
-const { convertIntegers } = require('./utils');
+const { convertIntegers, clampInt } = require('./utils');
 const router = express.Router();
 
 // L1/L2 are property names pasted into ORDER BY, so they can't be parameters;
@@ -300,7 +300,7 @@ router.get('/search-roots', checkLangParams, async (req, res) => {
           ${corpusClause}
           RETURN root
           ORDER BY root.${L1}
-          LIMIT ${parseInt(limit)}
+          LIMIT ${clampInt(limit, 25, 200)}
         `;
       }
     }
@@ -321,7 +321,7 @@ router.get('/search-roots', checkLangParams, async (req, res) => {
           ${corpusClause}
           RETURN root
           ORDER BY root.${L1}
-          LIMIT ${parseInt(limit)}
+          LIMIT ${clampInt(limit, 25, 200)}
         `;
       } else {
         cypherQuery = `
@@ -332,7 +332,7 @@ router.get('/search-roots', checkLangParams, async (req, res) => {
           ${corpusClause}
           RETURN root
           ORDER BY root.${L1}
-          LIMIT ${parseInt(limit)}
+          LIMIT ${clampInt(limit, 25, 200)}
         `;
       }
     }
@@ -435,7 +435,7 @@ router.get('/search-combinate', checkLangParams, async (req, res) => {
         ${corpusClause}
         RETURN root
         ORDER BY root.${L1}
-        LIMIT ${parseInt(limit)}
+        LIMIT ${clampInt(limit, 25, 200)}
       `;
     } else {
       cypherQuery = `
@@ -449,7 +449,7 @@ router.get('/search-combinate', checkLangParams, async (req, res) => {
         ${corpusClause}
         RETURN root
         ORDER BY root.${L1}
-        LIMIT ${parseInt(limit)}
+        LIMIT ${clampInt(limit, 25, 200)}
       `;
     }
 
@@ -549,7 +549,7 @@ router.get('/search-extended', checkLangParams, async (req, res) => {
       ${corpusClause}
       RETURN DISTINCT root
       ORDER BY root.${L1}
-      LIMIT ${parseInt(limit)}
+      LIMIT ${clampInt(limit, 25, 200)}
     `;
 
     const result = await session.run(cypherQuery, queryParams);

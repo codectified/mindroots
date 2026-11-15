@@ -1,5 +1,5 @@
 const express = require('express');
-const { convertIntegers } = require('./utils');
+const { convertIntegers, clampInt } = require('./utils');
 const { authenticateAPI } = require('../../middleware/auth');
 const router = express.Router();
 
@@ -46,7 +46,7 @@ router.get('/expand/:sourceType/:sourceId/:targetType', async (req, res) => {
   if (sourceType !== 'corpusitem' || (sourceType === 'corpusitem' && !sourceId.includes(':'))) {
     sourceId = parseInt(sourceId, 10);
   }
-  const limit = parseInt(req.query.limit || 25, 10);
+  const limit = clampInt(req.query.limit, 25, 500); // NodeLimitSlider goes up to 500
   
   console.log(`Expand route called: ${sourceType}/${sourceId}/${targetType}`, { L1, L2, corpus_id, limit, sourceIdType: typeof sourceId, corpusIdType: typeof corpus_id, limitType: typeof limit });
   
@@ -805,7 +805,7 @@ router.get('/random-nodes/:nodeType', async (req, res) => {
   const session = req.driver.session();
 
   try {
-    const limit = parseInt(count, 10) || 1;
+    const limit = clampInt(count, 1, 50); // one query per node, so keep this small
 
     // Parse corpus and surah filters
     const corpusId = corpus_id ? parseInt(corpus_id, 10) : null;

@@ -1,7 +1,7 @@
 const express = require('express');
 const neo4j   = require('neo4j-driver');
-const fs      = require('fs');
 const path    = require('path');
+const { makeDiskCache } = require('./lib/diskCache');
 const router  = express.Router();
 
 const toNum = v => {
@@ -12,34 +12,9 @@ const toNum = v => {
 };
 
 // ── Persistent disk cache ────────────────────────────────────────────────────
-// Survives server restarts. Stored alongside this module.
-const CACHE_FILE = path.join(__dirname, 'analytics-cache.json');
+// Survives server restarts. Stored alongside this module. Capped (see diskCache).
 const CACHE_TTL  = 24 * 60 * 60 * 1000; // 24 hours
-
-let cache = {};
-try {
-  const raw = fs.readFileSync(CACHE_FILE, 'utf8');
-  cache = JSON.parse(raw);
-  // prune stale entries on load
-  const now = Date.now();
-  Object.keys(cache).forEach(k => { if (now - cache[k].ts > CACHE_TTL) delete cache[k]; });
-  console.log(`[analytics] loaded ${Object.keys(cache).length} cache entries from disk`);
-} catch (_) {
-  // no cache file yet — start fresh
-}
-
-const saveCache = () => {
-  try { fs.writeFileSync(CACHE_FILE, JSON.stringify(cache)); } catch (_) {}
-};
-
-const cached = async (key, fn) => {
-  const hit = cache[key];
-  if (hit && Date.now() - hit.ts < CACHE_TTL) return hit.data;
-  const data = await fn();
-  cache[key] = { data, ts: Date.now() };
-  saveCache();
-  return data;
-};
+const { cached } = makeDiskCache(path.join(__dirname, 'analytics-cache.json'), CACHE_TTL);
 
 // ── Query helpers ────────────────────────────────────────────────────────────
 // Graph traversal: (CorpusItem)-[:HAS_WORD]->(Word)<-[:HAS_WORD]-(Root)
