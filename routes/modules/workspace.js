@@ -800,7 +800,7 @@ router.post('/workspace/render', async (req, res) => {
   }
 
   format = format || 'letter';
-  if (!IMAGE_FORMATS[format]) {
+  if (typeof format !== 'string' || !Object.prototype.hasOwnProperty.call(IMAGE_FORMATS, format)) {
     return res.status(400).json({
       error: 'Invalid format',
       message: `Format must be one of: ${Object.keys(IMAGE_FORMATS).join(', ')}`,

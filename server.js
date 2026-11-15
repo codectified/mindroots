@@ -47,7 +47,7 @@ app.use((req, res, next) => {
   res.json = (body) => {
     if (res.statusCode >= 500 && req.authLevel !== 'admin') {
       const ref = crypto.randomBytes(4).toString('hex');
-      console.error(`[error ${ref}] ${req.method} ${req.originalUrl}:`, JSON.stringify(body));
+      console.error('[error %s] %s %s: %s', ref, req.method, JSON.stringify(req.originalUrl), JSON.stringify(body));
       return json({ error: 'Server error', ref });
     }
     return json(body);
