@@ -26,7 +26,6 @@ historical context, not a first step.
 ### **📁 Core Documentation**
 - **[Complete Documentation Index](docs/DOCUMENTATION-INDEX.md)** - Master navigation guide
 - **[Linguistics Features](docs/features/linguistics/)** - Arabic morphology app features
-- **[Workspace Features](docs/features/workspace/)** - Multi-tenant workspace platform features
 - **[Testing Procedures](docs/testing/)** - Test suites and verification steps
 - **[Archived Documentation](docs/archived/)** - Historical/completed features
 
@@ -37,9 +36,8 @@ historical context, not a first step.
 - **[Radical Search Integration](docs/features/linguistics/RADICAL-SEARCH-INTEGRATION.md)** - ✅ RadicalPosition-based search
 - **[Analysis Nodes](docs/features/linguistics/ANALYSIS-NODES-DOCUMENTATION.md)** - ✅ LLM-generated linguistic analysis
 
-### **🔑 Current Production Features — Workspace**
-- **[Workspace Module](docs/features/workspace/WORKSPACE-MODULE-DOCUMENTATION.md)** - ✅ Multi-tenant creative workspace with asset upload + master agent support (⚠ ChatGPT sandbox upload gap — file_id support pending)
-- **[Observability & Notion Projection](docs/features/workspace/OBSERVABILITY-NOTION-PROJECTION.md)** - 🔧 Neo4j metrics backend + Notion data_sources API ready, pending Notion credentials
+### **Removed: Workspace module (2026-11)**
+- The custom-GPT graphics workspace and the Notion projection were removed. Their docs are in [docs/archived/workspace/](docs/archived/workspace/); the code is in git history before the removal commit.
 
 ---
 
@@ -66,15 +64,9 @@ routes/
 ├── api.js                        # Main API router
 └── modules/
     ├── inspection.js             # Node inspection & navigation
-    ├── workspace.js              # Multi-tenant creative workspace (Custom GPT)
-    ├── observability.js          # Neo4j metrics + Notion projection layer
+    ├── observability.js          # Neo4j graph metrics
     └── [other modules]           # Feature-specific endpoints
 
-workspaces/                       # Tenant asset + project storage (gitignored except _shared/)
-├── aif/                          # AIF tenant
-├── cicit/                        # CICIT tenant
-├── mindroots/                    # MindRoots branding tenant
-└── _shared/                      # Shared fonts + icons (tracked in git)
 
 server.js                         # Express server entry point
 .env                             # Environment config (not in git)
@@ -146,7 +138,9 @@ node server.js  # Start fresh server (dev)
 
 ## 🎯 **Current Status**
 
-**Last Major Work**: Workspace + Observability overhaul (May 2026)
+**Last Major Work**: Security hardening (Nov 2026, PR #59): logged public edits, rate limits, caps; Notion, GPT write endpoints and the workspace module removed.
+
+**Before that**: Workspace + Observability overhaul (May 2026, since removed)
 - ✅ Multi-tenant workspace: AIF, CICIT, MindRoots tenants provisioned
 - ✅ Asset upload endpoint — agents upload images directly (no manual scp)
 - ✅ Master workspace agent — admin/main key + `?workspace=<id>` accesses all tenants

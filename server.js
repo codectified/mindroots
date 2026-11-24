@@ -11,7 +11,6 @@ require('dotenv').config(); // Load environment variables
 const express = require('express');
 const neo4j = require('neo4j-driver');
 const cors = require('cors');
-const path = require('path');
 const apiRoutes = require('./routes/api');
 
 const crypto = require('crypto');
@@ -29,12 +28,7 @@ app.set('trust proxy', 'loopback');
 app.disable('x-powered-by');
 
 app.use(cors());
-// Workspace uploads send base64 images (~10MB decoded); nothing else needs more than 100kb.
-app.use('/api/workspace', express.json({ limit: '15mb' }));
 app.use(express.json({ limit: '100kb' }));
-
-// Static file serving for multi-tenant workspaces (never serve .token files)
-app.use('/workspaces', express.static(path.join(__dirname, 'workspaces'), { dotfiles: 'deny' }));
 
 // Backstop per-IP limit for the whole API (nginx's limit_req is the first line).
 app.use('/api', rateLimit({ name: 'api', windowMs: 5 * 60 * 1000, perIp: 1500 }));

@@ -36,32 +36,6 @@ const authenticateAPI = (req, res, next) => {
     ? authHeader.slice(7)
     : authHeader;
 
-  // Workspace token: ws_<workspaceId>_<secret>
-  if (token.startsWith('ws_')) {
-    const parts = token.split('_');
-    // Same rule as requireWorkspace in routes/modules/workspace.js (minus "_",
-    // which is the token separator), so the id can't climb out of workspaces/.
-    if (parts.length >= 3 && /^[a-zA-Z0-9-]+$/.test(parts[1])) {
-      const workspaceId = parts[1];
-      const fs = require('fs');
-      const path = require('path');
-      const tokenFile = path.join(__dirname, '..', 'workspaces', workspaceId, '.token');
-      try {
-        const storedToken = fs.readFileSync(tokenFile, 'utf8').trim();
-        if (safeEqual(token, storedToken)) {
-          req.authLevel = 'workspace';
-          req.workspace = workspaceId;
-          console.log(`Workspace access granted (${workspaceId}) for IP: ${req.ip} at ${new Date().toISOString()}`);
-          return next();
-        }
-      } catch (e) {
-        // .token file doesn't exist or unreadable — fall through to rejection
-      }
-    }
-    console.log(`Authentication failed for IP: ${req.ip}`);
-    return res.status(403).json({ error: "Invalid workspace token" });
-  }
-
   // Check if token matches any valid key
   const isMainKey = safeEqual(token, mainKey);
   const isPublicKey = safeEqual(token, publicKey);
