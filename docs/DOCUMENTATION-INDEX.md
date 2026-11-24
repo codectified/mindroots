@@ -48,23 +48,23 @@ Arabic morphology graph features — corpus navigation, analysis, search, valida
 
 ---
 
-### Workspace Branch (`docs/features/workspace/`)
+### Workspace Branch (removed 2026-11, archived in `docs/archived/workspace/`)
 
 Multi-tenant creative workspace platform — Custom GPT integration, asset management, graphic generation, observability.
 
 | Document | Status | Description |
 |---|---|---|
-| [Workspace Module](features/workspace/WORKSPACE-MODULE-DOCUMENTATION.md) | ✅ | Full workspace API — versioned graphics, asset upload, PNG rendering |
-| [Observability & Notion Projection](features/workspace/OBSERVABILITY-NOTION-PROJECTION.md) | 🔧 | Live Neo4j metrics + Notion projection layer — pending credentials |
-| [GPT Orchestration Security](features/workspace/GPT-ORCHESTRATION-SECURITY.md) | ✅ | Security model for GPT-facing endpoints |
+| [Workspace Module](archived/workspace/WORKSPACE-MODULE-DOCUMENTATION.md) | ✅ | Full workspace API — versioned graphics, asset upload, PNG rendering |
+| [Observability & Notion Projection](archived/workspace/OBSERVABILITY-NOTION-PROJECTION.md) | 🔧 | Live Neo4j metrics + Notion projection layer — pending credentials |
+| [GPT Orchestration Security](archived/workspace/GPT-ORCHESTRATION-SECURITY.md) | ✅ | Security model for GPT-facing endpoints |
 
-**Known gap**: `uploadAsset` does not support ChatGPT sandbox file references — see [Known Limitations](features/workspace/WORKSPACE-MODULE-DOCUMENTATION.md#known-limitations) in the workspace doc. `file_id` support planned.
+**Known gap**: `uploadAsset` does not support ChatGPT sandbox file references — see [Known Limitations](archived/workspace/WORKSPACE-MODULE-DOCUMENTATION.md#known-limitations) in the workspace doc. `file_id` support planned.
 
 **Agents & API:**
-- [Tenant Workspace Agent Instructions](features/workspace/agent-instructions/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md) — Per-client GPT setup (`ws_*` token, single workspace)
-- [Master Workspace Agent Instructions](features/workspace/agent-instructions/MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md) — Cross-workspace master agent (admin/main key + `?workspace=<id>`)
-- [Tenant Workspace OpenAPI Spec](features/workspace/openapi-specs/workspace-openapi-spec.yaml) — Tenant-scoped workspace actions
-- [Master Workspace OpenAPI Spec](features/workspace/openapi-specs/master-workspace-openapi-spec.yaml) — All-tenant workspace actions
+- [Tenant Workspace Agent Instructions](archived/workspace/agent-instructions/CREATIVE-WORKSPACE-AGENT-INSTRUCTIONS.md) — Per-client GPT setup (`ws_*` token, single workspace)
+- [Master Workspace Agent Instructions](archived/workspace/agent-instructions/MASTER-WORKSPACE-AGENT-INSTRUCTIONS.md) — Cross-workspace master agent (admin/main key + `?workspace=<id>`)
+- [Tenant Workspace OpenAPI Spec](archived/workspace/openapi-specs/workspace-openapi-spec.yaml) — Tenant-scoped workspace actions
+- [Master Workspace OpenAPI Spec](archived/workspace/openapi-specs/master-workspace-openapi-spec.yaml) — All-tenant workspace actions
 
 ---
 
@@ -141,7 +141,7 @@ docs/
 ## Documentation Standards
 
 ### Adding new feature docs
-1. Choose `features/linguistics/` or `features/workspace/` based on which branch the feature belongs to
+1. Choose `features/linguistics/` or `archived/workspace/` based on which branch the feature belongs to
 2. Follow naming: `FEATURE-NAME-DOCUMENTATION.md` (uppercase with hyphens)
 3. Update this index with the new entry
 4. Update CLAUDE.md if it's a production feature

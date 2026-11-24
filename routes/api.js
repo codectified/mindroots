@@ -29,7 +29,6 @@ const gptAdminRoutes = require('./modules/gpt-admin');
 const lexiconRoutes = require('./modules/lexicon');
 const inspectionRoutes = require('./modules/inspection');
 const contentRoutes = require('./modules/content');
-const workspaceRoutes = require('./modules/workspace');
 const observabilityRoutes = require('./modules/observability');
 const analyticsRoutes     = require('./modules/analytics');
 const projectionRoutes    = require('./modules/projection');
@@ -44,7 +43,6 @@ router.use('/', gptAdminRoutes);         // Admin read-only query (/execute-quer
 router.use('/', lexiconRoutes);          // Dictionary and lexicon entries
 router.use('/', inspectionRoutes);       // Node inspection, navigation, and validation
 router.use('/', contentRoutes);          // Articles and analyses content
-router.use('/', workspaceRoutes);        // Creative workspace module (Custom GPT integration)
 router.use('/', observabilityRoutes);    // Graph metrics and universe snapshot
 router.use('/', analyticsRoutes);        // Linguistic analytics (bi-radical, radical positions)
 router.use('/', projectionRoutes);       // Projection Snapshot API (center + scope + projection rule)
